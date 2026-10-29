@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Y ai build: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
+<!-- Y ai build: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1758,7 +1758,7 @@ footer{color:var(--ink-dim);font-size:.78rem}
         <summary>ℹ️ Info</summary>
         <div id="pagePreviewInfo" style="font-size:0.8rem;color:var(--teal);line-height:1.5;font-weight:600;"></div>
         <div id="pageLabelsHint" style="font-size:0.75rem;color:var(--ink-faint);margin-top:6px;line-height:1.5;"></div>
-        <div class="note" data-i18n="ocrNote">PDF and Sanskrit OCR run fully in your browser — nothing is uploaded. In image mode with “Online OCR” ticked, only those images are sent to OCR.space; untick it to keep everything in your browser.</div>
+        <div class="note" data-i18n="ocrNote">With “Online OCR” ticked, images and scanned PDF pages are sent to OCR.space for faster reading. A PDF’s own text and Sanskrit OCR always stay in your browser; untick it to keep everything on your device.</div>
       </details>
     </div>
 
@@ -1985,7 +1985,7 @@ footer{color:var(--ink-dim);font-size:.78rem}
 </div>
 
 <footer>
-  <details class="cx"><summary>ℹ️ Info</summary><span data-i18n="footerText">Quiz play runs entirely in your browser. PDF and Sanskrit OCR also stay on your device; images are sent to OCR.space only when “Online OCR” is ticked (English/Hindi image mode).</span></details>
+  <details class="cx"><summary>ℹ️ Info</summary><span data-i18n="footerText">Quiz play runs entirely in your browser. Images and scanned PDF pages go to OCR.space only when “Online OCR” is ticked; PDF text and Sanskrit OCR always stay on your device.</span></details>
 </footer>
 
 <div class="toast" id="toast"></div>
@@ -2006,7 +2006,7 @@ const I18N = {
     totalPages: "Total pages",
     extractBtn: "Extract text",
     starting: "Starting...",
-    ocrNote: "PDF and Sanskrit OCR run fully in your browser — nothing is uploaded. In image mode with “Online OCR” ticked, only those images are sent to OCR.space; untick it to keep everything in your browser.",
+    ocrNote: "With “Online OCR” ticked, images and scanned PDF pages are sent to OCR.space for faster reading. A PDF’s own text and Sanskrit OCR always stay in your browser; untick it to keep everything on your device.",
     step3: "EXTRACTED TEXT",
     resultPlaceholder: "Extracted text will appear here...",
     copyBtn: "Copy",
@@ -2040,7 +2040,7 @@ const I18N = {
     proceedAiBtn: "Generate quiz",
     copyOpenBtn: "Copy prompt & open site",
     pasteNote: "This copies the extracted text plus quiz instructions, then opens the chosen site in a new tab — press Ctrl+V (Cmd+V on Mac) there to paste. Browsers don't allow auto-pasting across sites, so this one manual step is required.",
-    footerText: "Quiz play runs entirely in your browser. PDF and Sanskrit OCR also stay on your device; images are sent to OCR.space only when “Online OCR” is ticked (English/Hindi image mode).",
+    footerText: "Quiz play runs entirely in your browser. Images and scanned PDF pages go to OCR.space only when “Online OCR” is ticked; PDF text and Sanskrit OCR always stay on your device.",
     onlyPdf: "Only PDF files are allowed",
     pdfLoadError: "Could not load PDF: ",
     validRange: "Please enter a valid page range (1 - ",
@@ -2130,7 +2130,7 @@ const I18N = {
     totalPages: "कुल पेज",
     extractBtn: "टेक्स्ट निकालें",
     starting: "शुरू हो रहा है...",
-    ocrNote: "PDF और संस्कृत OCR पूरी तरह आपके ब्राउज़र में चलते हैं — कहीं अपलोड नहीं होता। इमेज मोड में “Online OCR” चुनने पर सिर्फ़ वही इमेज OCR.space को भेजी जाती हैं; इसे हटाओ तो सब कुछ ब्राउज़र में ही रहेगा।",
+    ocrNote: "“Online OCR” चुना हो तो इमेज और स्कैन किए PDF पेज तेज़ पढ़ने के लिए OCR.space को भेजे जाते हैं। PDF का अपना टेक्स्ट और संस्कृत OCR हमेशा आपके ब्राउज़र में रहते हैं; इसे हटाओ तो सब कुछ डिवाइस पर ही रहेगा।",
     step3: "निकाला गया टेक्स्ट",
     resultPlaceholder: "निकाला गया टेक्स्ट यहाँ दिखेगा...",
     copyBtn: "कॉपी करें",
@@ -2164,7 +2164,7 @@ const I18N = {
     proceedAiBtn: "क्विज़ बनाएं",
     copyOpenBtn: "प्रॉम्प्ट कॉपी करें और साइट खोलें",
     pasteNote: "यह निकाला गया टेक्स्ट और क्विज़ इंस्ट्रक्शन कॉपी करके चुनी हुई साइट नए टैब में खोल देगा — वहाँ Ctrl+V (Mac पर Cmd+V) दबाकर पेस्ट करें। ब्राउज़र किसी साइट को दूसरी साइट में अपने आप पेस्ट नहीं करने देते, इसलिए यह एक मैनुअल स्टेप ज़रूरी है।",
-    footerText: "क्विज़ पूरी तरह आपके ब्राउज़र में चलता है। PDF और संस्कृत OCR भी आपके डिवाइस पर ही रहते हैं; इमेज सिर्फ़ तब OCR.space को भेजी जाती हैं जब “Online OCR” चुना हो (अंग्रेज़ी/हिंदी इमेज मोड)।",
+    footerText: "क्विज़ पूरी तरह आपके ब्राउज़र में चलता है। इमेज और स्कैन किए PDF पेज सिर्फ़ तब OCR.space को भेजे जाते हैं जब “Online OCR” चुना हो; PDF का टेक्स्ट और संस्कृत OCR हमेशा आपके डिवाइस पर रहते हैं।",
     onlyPdf: "सिर्फ PDF फाइल की अनुमति है",
     pdfLoadError: "PDF लोड नहीं हो पाया: ",
     validRange: "सही पेज रेंज डालें (1 - ",
@@ -2586,11 +2586,8 @@ function updateStep2Visibility() {
     document.getElementById('step2txt').textContent = 'PAGE RANGE & OCR';
   } else {
     pdfRangeSection.style.display = 'none';
-    imgRangeSection.style.display = '';
+    imgRangeSection.style.display = 'none';
     document.getElementById('step2txt').textContent = 'OCR SETTINGS';
-    if (selectedImages.length) {
-      document.getElementById('imgReadyNote').textContent = '✅ ' + selectedImages.length + ' image' + (selectedImages.length > 1 ? 's' : '') + ' ready — OCR language chuno aur Extract karo';
-    }
   }
   document.getElementById('extractBtnTxt').textContent = uploadMode === 'img' ? 'Images se text nikalo' : 'Extract text';
   try { syncCloudUi(); } catch (e) {}
@@ -2653,7 +2650,12 @@ function handleImages(files) {
   const valid = files.filter(_isImgFile);
   if (!valid.length) { showToast('Sirf image files allowed hain (JPG, PNG, WEBP)'); return; }
   // Add to existing (allow accumulation across picks)
-  selectedImages = [...selectedImages, ...valid];
+  const lim = ocrItemLimit();   // 20 with Online OCR, unlimited without
+  const room = lim - selectedImages.length;
+  if (room <= 0) { showToast('Online OCR: max ' + lim + ' images'); return; }
+  let add = valid;
+  if (valid.length > room) { add = valid.slice(0, room); showToast('Online OCR: max ' + lim + ' images — sirf pehli ' + room + ' add hui'); }
+  selectedImages = [...selectedImages, ...add];
   fileNameEl.textContent = '✅ ' + selectedImages.length + ' image' + (selectedImages.length > 1 ? 's' : '');
   renderImgThumbs();
   updateStep2Visibility();
@@ -2847,6 +2849,7 @@ async function ocrProcessImage(file, sch, say) {
    ========================================== */
 async function runExtractionImages() {
   if (!selectedImages.length) { showToast('Pehle images select karo'); return; }
+  if (selectedImages.length > ocrItemLimit()) { showToast('Online OCR: max ' + CLOUD_MAX_ITEMS + ' images'); return; }
   extractBtn.disabled = true;
   progressWrap.style.display = 'block';
   resultCard.style.display = 'none';
@@ -2979,6 +2982,7 @@ function updatePagePreview() {
   if (!el || !currentPdf) return;
   const f = resolvePage(pageFrom.value), t2 = resolvePage(pageTo.value), total = currentPdf.numPages;
   if (f === null || t2 === null || f < 1 || t2 > total || f > t2) { el.style.color = 'var(--red, #c0392b)'; el.textContent = '⚠️ Valid range daalo (1 se ' + total + ' ke beech).'; if (infoEl) infoEl.textContent = ''; return; }
+  if (t2 - f + 1 > ocrItemLimit()) { el.style.color = 'var(--red, #c0392b)'; el.textContent = '⚠️ Online OCR: max ' + CLOUD_MAX_ITEMS + ' pages.'; if (infoEl) infoEl.textContent = ''; return; }
   el.textContent = '';
   if (infoEl) infoEl.textContent = `📄 Drive jaisa: page ${f} se ${t2} tak extract hoga (header me "Page ${f}" se "Page ${t2}").`;
 }
@@ -2996,31 +3000,38 @@ const CLOUD_PREF_KEY = 'yai_cloud_img';          // '1' (default) / '0'
 const CLOUD_MAX_BYTES = 900 * 1024;              // OCR.space free limit is 1 MB
 const CLOUD_SIDE_LATIN = 2000;                   // Engine 2 (English)
 const CLOUD_SIDE_HIN = 1600, CLOUD_SIDE_HIN_SMALL = 1000;   // Engine 3 (Hindi): try 1600 first, retry at 1000 if the proxy says "image problem"
-const CLOUD_TIMEOUT_MS = 30000, CLOUD_CONCURRENCY = 3;
+const CLOUD_TIMEOUT_MS = 40000, CLOUD_CONCURRENCY = 3;
+const CLOUD_MAX_ITEMS = 20;                      // Online OCR only: max pages per PDF run / max images per run. Offline OCR has NO limit.
 let cloudDeadUntil = (location.protocol === 'file:' || location.origin === 'null') ? Infinity : 0;   // file:// -> proxy says Forbidden -> offline silently
 
 function cloudPref() { try { return localStorage.getItem(CLOUD_PREF_KEY) !== '0'; } catch (e) { return true; } }
 function cloudLangOk(lang) { return !String(lang || '').includes('san'); }
-// Final decision (never trust the UI alone): images only + ticked + no Sanskrit.
+// Final decision (never trust the UI alone): ticked + no Sanskrit (PDF pages without a text layer and images).
 function cloudWanted(lang) {
   const chk = document.getElementById('cloudOcrChk');
-  return uploadMode === 'img' && !!(chk && chk.checked) && cloudLangOk(lang);
+  return !!(chk && chk.checked) && cloudLangOk(lang);
+}
+// Item limit for the CURRENT settings: 20 while Online OCR is on, unlimited (Infinity) when it is off / Sanskrit
+function ocrItemLimit() {
+  const s = document.getElementById('ocrLang');
+  return cloudWanted((s && s.value) || 'eng') ? CLOUD_MAX_ITEMS : Infinity;
 }
 function syncCloudUi() {
   const row = document.getElementById('cloudOcrRow'), chk = document.getElementById('cloudOcrChk'), hint = document.getElementById('cloudOcrHint');
   if (!row || !chk || !hint) return;
-  if (uploadMode !== 'img') { row.style.display = 'none'; return; }   // PDF: no online OCR at all
   row.style.display = '';
   const sel = document.getElementById('ocrLang'), lang = (sel && sel.value) || 'eng';
   if (!cloudLangOk(lang)) {
     chk.checked = false; chk.disabled = true;                          // saved preference is NOT touched
-    hint.textContent = 'Sanskrit ke liye sirf offline OCR (image browser me hi rehti hai).';
+    hint.textContent = 'Sanskrit ke liye sirf offline OCR';
   } else {
-    chk.disabled = false; chk.checked = cloudPref();
-    hint.textContent = chk.checked
-      ? 'Tez & accurate. Sirf ye images OCR.space ko bheji jaati hain. Pure offline ke liye untick karo.'
-      : 'Off: sab kuch browser me hi hoga (thoda slow), kuch upload nahi hota.';
+    chk.disabled = false; chk.checked = cloudPref(); hint.textContent = '';
+    if (typeof uploadMode !== 'undefined' && uploadMode === 'img' && selectedImages.length > CLOUD_MAX_ITEMS) {   // preference is NOT touched
+      chk.checked = false; hint.textContent = 'Online OCR: max ' + CLOUD_MAX_ITEMS + ' images';
+    }
   }
+  hint.style.display = hint.textContent ? '' : 'none';
+  try { updatePagePreview(); } catch (e) {}
 }
 (function () {
   const chk = document.getElementById('cloudOcrChk'), sel = document.getElementById('ocrLang');
@@ -3049,24 +3060,27 @@ async function cloudPost(image, lang) {
       let j = null; try { j = await r.json(); } catch (e) {}
       if (r.ok && j && j.ok) return String(j.text || '');
       if (r.status === 422 || (j && j.kind === 'image')) { const e = new Error((j && j.error) || 'image rejected'); e.imageLevel = true; throw e; }
-      if (r.status === 400 || r.status === 403 || r.status === 405 || (j && j.kind === 'keys')) { const e = new Error((j && j.error) || ('HTTP ' + r.status)); e.fatal = true; throw e; }
-      last = new Error('HTTP ' + r.status);
+      if (j && j.kind === 'transient') { last = new Error((j && j.error) || 'busy'); last.soft = true; }
+      else if (r.status === 400 || r.status === 403 || r.status === 405 || (j && j.kind === 'keys')) { const e = new Error((j && j.error) || ('HTTP ' + r.status)); e.fatal = true; throw e; }
+      else last = new Error('HTTP ' + r.status);
     } catch (e) { if (e && (e.imageLevel || e.fatal)) throw e; last = e; }
     finally { clearTimeout(tm); }
     if (a === 0) await new Promise(res => setTimeout(res, 600));
   }
-  last = last || new Error('cloud failed'); last.fatal = true; throw last;
+  last = last || new Error('cloud failed'); if (!last.soft) last.fatal = true; throw last;   // soft = proxy was just busy: only this item goes offline
+}
+// cv is NOT modified or freed here (the caller may still need it for the offline fallback)
+async function cloudOcrCanvas(cv, lang) {
+  const sides = lang.includes('hin') ? [CLOUD_SIDE_HIN, CLOUD_SIDE_HIN_SMALL] : [CLOUD_SIDE_LATIN];
+  for (let i = 0; i < sides.length; i++) {
+    try { return await cloudPost(cloudEncode(cv, sides[i]), lang); }
+    catch (e) { if (e && e.imageLevel && i < sides.length - 1) continue; throw e; }
+  }
+  return '';
 }
 async function cloudOcrImage(file, lang) {
-  const sides = lang.includes('hin') ? [CLOUD_SIDE_HIN, CLOUD_SIDE_HIN_SMALL] : [CLOUD_SIDE_LATIN];
   const cv = await ocrLoadCanvas(file);     // keeps the EXIF fix
-  try {
-    for (let i = 0; i < sides.length; i++) {
-      try { return await cloudPost(cloudEncode(cv, sides[i]), lang); }
-      catch (e) { if (e && e.imageLevel && i < sides.length - 1) continue; throw e; }
-    }
-    return '';
-  } finally { cv.width = cv.height = 0; }
+  try { return await cloudOcrCanvas(cv, lang); } finally { cv.width = cv.height = 0; }
 }
 
 // Light image clean-up before OCR: grayscale + contrast stretch (helps faint photos/scans of notes).
@@ -3831,6 +3845,7 @@ async function runExtractionInner() {
     showToast(t('validRange') + total + ')');
     return;
   }
+  if (pdfTo - pdfFrom + 1 > ocrItemLimit()) { showToast('Online OCR: max ' + CLOUD_MAX_ITEMS + ' pages'); return; }
 
   extractBtn.disabled = true;
   progressWrap.style.display = 'block';
@@ -3843,18 +3858,22 @@ async function runExtractionInner() {
   // OCR runs on several workers in parallel (2-3 pages at once). Pages with a real text layer skip OCR.
   const ocrLang = (ocrLangSel && ocrLangSel.value) || 'eng';
   const nWorkers = Math.max(1, Math.min((ocrLang.includes('hin') || ocrLang.includes('san')) ? 2 : 3, Math.floor((navigator.hardwareConcurrency || 2) / 2) || 1));
-  let scheduler = null;
-  const getScheduler = async () => {
-    if (!scheduler) {
-      scheduler = Tesseract.createScheduler();
-      window._ocrS = scheduler;
-      for (let k = 0; k < nWorkers; k++) {
-        const w = await Tesseract.createWorker(ocrLang, 1);
-        try { await w.setParameters({ preserve_interword_spaces: '1' }); } catch (e) {}
-        scheduler.addWorker(w);
-      }
-    }
-    return scheduler;
+  const useCloud = cloudWanted(ocrLang);   // scanned pages: online when ticked (never Sanskrit); text-layer pages never need OCR
+  let schP = null;                          // Tesseract scheduler: lazy + memoized, only created when offline OCR is needed
+  const getScheduler = () => {
+    if (!schP) schP = (async () => {
+      const sc0 = Tesseract.createScheduler();
+      window._ocrS = sc0;
+      try {
+        for (let k = 0; k < nWorkers; k++) {
+          const w = await Tesseract.createWorker(ocrLang, 1);
+          try { await w.setParameters({ preserve_interword_spaces: '1' }); } catch (e) {}
+          sc0.addWorker(w);
+        }
+      } catch (e) { try { await sc0.terminate(); } catch (e2) {} window._ocrS = null; schP = null; throw e; }
+      return sc0;
+    })();
+    return schP;
   };
   // A real text layer is instant and more accurate than OCR. Legacy-font Hindi PDFs
   // produce junk in the text layer, so accept it only if it looks like normal text.
@@ -3868,7 +3887,7 @@ async function runExtractionInner() {
   const pagesCount = pdfTo - pdfFrom + 1;
   const results = new Array(pagesCount).fill('');
   const pending = new Set();
-  let doneCount = 0, failedPages = 0;
+  let doneCount = 0, failedPages = 0, nOnline = 0, nOffline = 0;
   const bump = () => {
     doneCount++;
     const pct = Math.round(doneCount / pagesCount * 100);
@@ -3896,17 +3915,36 @@ async function runExtractionInner() {
     await page.render({ canvasContext: cv.getContext('2d', { willReadFrequently: true }), viewport }).promise;
     try { page.cleanup(); } catch (e) {}
     preprocessForOcr(cv);
-    const sch = await getScheduler();
-    const job = sch.addJob('recognize', cv)
-      .then(r => { results[idx] = cleanOcrText(r.data.text); })
-      .catch(() => { failedPages++; results[idx] = ''; })
-      .finally(() => { pending.delete(job); cv.width = cv.height = 0; bump(); });
+    const job = (async () => {
+      let done = false;
+      if (useCloud && Date.now() >= cloudDeadUntil) {
+        progressText.textContent = `☁️ ${t('processingPage')} ${idx + 1} ${t('of')} ${pagesCount} (online)...`;
+        try {
+          const txt = cleanOcrText(await cloudOcrCanvas(cv, ocrLang));
+          if (txt.replace(/\s/g, '').length >= 5) { results[idx] = txt; nOnline++; done = true; }
+        } catch (e) {
+          if (e && e.fatal) cloudDeadUntil = Date.now() + 5 * 60 * 1000;   // proxy down / keys exhausted: remaining pages go offline immediately
+        }
+      }
+      if (!done) {
+        try {
+          const sch = await getScheduler();
+          const r = await sch.addJob('recognize', cv);
+          results[idx] = cleanOcrText(r.data.text); nOffline++;
+        } catch (e) { failedPages++; results[idx] = ''; }
+      }
+    })().finally(() => { pending.delete(job); cv.width = cv.height = 0; bump(); });
     pending.add(job);
-    if (pending.size >= nWorkers + 1) await Promise.race(pending);
+    if (pending.size >= (useCloud ? CLOUD_CONCURRENCY : nWorkers + 1)) await Promise.race(pending);
   }
   await Promise.all(pending);
-  if (scheduler) { try { await scheduler.terminate(); } catch (e) {} window._ocrS = null; }
-  if (failedPages) showToast(failedPages + ' page(s) OCR nahi ho paaye — un pages ko dobara extract karo.');
+  if (schP) { try { const s0 = await schP; await s0.terminate(); } catch (e) {} window._ocrS = null; }
+  {
+    const msgs = [];
+    if (useCloud) msgs.push(`${nOnline} online, ${nOffline} offline`);
+    if (failedPages) msgs.push(failedPages + ' page(s) OCR nahi ho paaye — un pages ko dobara extract karo.');
+    if (msgs.length) showToast(msgs.join('\n'));
+  }
 
   let fullText = '';
   for (let k = 0; k < pagesCount; k++) {
