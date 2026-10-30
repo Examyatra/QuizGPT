@@ -1773,11 +1773,11 @@ footer{color:var(--ink-dim);font-size:.78rem}
         <label>OCR language</label>
         <select id="ocrLang">
           <option value="eng">English only (fastest)</option>
-          <option value="eng+hin">English + Hindi</option>
-          <option value="hin">Hindi only</option>
-          <option value="san">Sanskrit only</option>
-          <option value="san+hin">Sanskrit + Hindi</option>
-          <option value="san+eng">Sanskrit + English</option>
+          <option value="eng+hin">English + Hindi/Sanskrit</option>
+          <option value="hin">Hindi/Sanskrit only</option>
+          <option value="san" hidden disabled style="display:none">Sanskrit only</option>
+          <option value="san+hin" hidden disabled style="display:none">Sanskrit + Hindi</option>
+          <option value="san+eng" hidden disabled style="display:none">Sanskrit + English</option>
         </select>
       </div>
     </div>
@@ -1872,7 +1872,7 @@ footer{color:var(--ink-dim);font-size:.78rem}
       <div class="row">
         <div class="field">
           <label data-i18n="numQLabelManual">Number of questions</label>
-          <input type="number" id="numQuestionsManual" min="1" max="100" value="50">
+          <input type="number" id="numQuestionsManual" min="1" value="50">
         </div>
         <div class="field">
           <label data-i18n="examNameLabel">Exam name</label>
@@ -2289,6 +2289,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <script>
+const DEFAULT_EXAM_NAME = 'Indian competitive exam';   // used when the student leaves the exam name empty
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 /* Give this tab a stable name so the AI tab can focus it back using window.open(url, 'yai_app').
@@ -2633,6 +2634,7 @@ function renderImgThumbs() {
   const countLabel = document.getElementById('imgCountLabel');
   if (!selectedImages.length) { strip.style.display = 'none'; row.innerHTML = ''; return; }
   strip.style.display = 'block';
+  warmOcrIfOffline();
   countLabel.textContent = selectedImages.length + ' image' + (selectedImages.length > 1 ? 's' : '') + ' selected';
   row.innerHTML = '';
   selectedImages.forEach((file, i) => {
@@ -2697,6 +2699,7 @@ async function handleFile(file) {
     if (hintEl) { hintEl.textContent = 'Page number Google Drive jaisa hai: PDF viewer me jo page number dikhe (1 se ' + total + ') wahi daalo.'; hintEl.style.color = 'var(--ink-faint)'; }
     applyPageMode(true);
     updateStep2Visibility();
+    warmOcrIfOffline();
     rangeCard.style.display = 'block';
     rangeStepLabel.style.display = 'flex';
     syncHomeChrome();
@@ -2727,7 +2730,7 @@ async function runExtraction() {
   }
   catch (err) {
     console.error(err);
-    try { if (window._ocrS) await window._ocrS.terminate(); } catch (e) {}
+    try { await OcrPool.dispose(); } catch (e) {}
     try { if (window._ocrW) await window._ocrW.terminate(); } catch (e) {}
     progressWrap.style.display = 'none';
     showToast('Extraction fail: ' + (err && err.message ? err.message : err) + '\nInternet check karo aur dobara try karo.');
@@ -2862,21 +2865,10 @@ async function runExtractionImages() {
   const useCloud = cloudWanted(ocrLang);   // images + checkbox ticked + never Sanskrit
   const nWorkers = Math.max(1, Math.min((ocrLang.includes('hin') || ocrLang.includes('san')) ? 2 : 3, Math.floor((navigator.hardwareConcurrency || 2) / 2) || 1));
 
-  // Tesseract scheduler: created lazily, once (memoized promise), only when offline OCR is really needed
+  // Tesseract scheduler: taken from the shared pool lazily, once (memoized promise), only when offline OCR is really needed
   let schP = null;
   const getScheduler = () => {
-    if (!schP) schP = (async () => {
-      const s = Tesseract.createScheduler();
-      window._ocrS = s;
-      try {
-        for (let k = 0; k < nWorkers; k++) {
-          const w = await Tesseract.createWorker(ocrLang, 1);
-          try { await w.setParameters({ preserve_interword_spaces: '1' }); } catch (e) {}
-          s.addWorker(w);
-        }
-      } catch (e) { try { await s.terminate(); } catch (e2) {} window._ocrS = null; schP = null; throw e; }
-      return s;
-    })();
+    if (!schP) schP = OcrPool.acquire(ocrLang, nWorkers).catch(e => { schP = null; throw e; });
     return schP;
   };
 
@@ -2925,7 +2917,7 @@ async function runExtractionImages() {
     if (pending.size >= limit) await Promise.race(pending);
   }
   await Promise.all(pending);
-  if (schP) { try { const s = await schP; await s.terminate(); } catch (e) {} window._ocrS = null; }
+  if (schP) { let ok = false; try { await schP; ok = true; } catch (e) {} if (ok) OcrPool.release(); }
 
   // Combine: each image = one "page"
   let fullText = '';
@@ -2946,6 +2938,7 @@ async function runExtractionImages() {
   currentFileBase = selectedImages[0].name.replace(/\.[^.]+$/, '').trim() || 'images';
   currentPageRange = total + ' image' + (total > 1 ? 's' : '');
   try { saveExtractedText('1', String(total), rawExtractedText); } catch (e) {}
+  autoSetQuestionCount();
   resultCard.style.display = 'block';
   resultStepLabel.style.display = 'flex';
   methodCard.style.display = 'block';
@@ -2994,6 +2987,60 @@ if (ocrLangSel) {
   ocrLangSel.value = 'eng';   // always start with English OCR (choice is not remembered)
 }
 
+/* ===== Shared offline-OCR engine (Tesseract) =====
+   The engine + language data are loaded once and kept ready, so the next extraction starts at once
+   instead of rebuilding the workers every time. Workers are released after 3 idle minutes (phone memory). */
+const OcrPool = {
+  lang: null, sch: null, workers: 0, chain: Promise.resolve(), busy: 0, idle: null,
+  _build(lang, n) {
+    const run = this.chain.then(async () => {
+      if (this.sch && this.lang !== lang) await this._kill();
+      if (!this.sch) { this.sch = Tesseract.createScheduler(); this.lang = lang; this.workers = 0; window._ocrS = this.sch; }
+      while (this.workers < n) {
+        const w = await Tesseract.createWorker(lang, 1);
+        try { await w.setParameters({ preserve_interword_spaces: '1' }); } catch (e) {}
+        this.sch.addWorker(w); this.workers++;
+      }
+      return this.sch;
+    });
+    this.chain = run.catch(() => {});
+    return run;
+  },
+  async _kill() {
+    const s = this.sch; this.sch = null; this.workers = 0; this.lang = null;
+    if (window._ocrS === s) window._ocrS = null;
+    if (s) { try { await s.terminate(); } catch (e) {} }
+  },
+  async acquire(lang, n) {
+    clearTimeout(this.idle); this.busy++;
+    try { return await this._build(lang, n); }
+    catch (e) { this.busy = Math.max(0, this.busy - 1); await this._kill(); throw e; }
+  },
+  release() { this.busy = Math.max(0, this.busy - 1); this._armIdle(); },
+  _armIdle() {
+    clearTimeout(this.idle);
+    if (this.busy) return;
+    this.idle = setTimeout(() => { if (!this.busy) this.chain = this.chain.then(() => this._kill()); }, 180000);
+  },
+  async dispose() { clearTimeout(this.idle); this.busy = 0; await this._kill(); },
+  warm(lang) {   // background pre-load of ONE worker; never touches a run in progress
+    if (this.busy) return;
+    clearTimeout(this.idle); this.busy++;
+    this._build(lang, 1).catch(() => this._kill()).finally(() => { this.busy = Math.max(0, this.busy - 1); this._armIdle(); });
+  }
+};
+// Pre-load the offline engine as soon as a file is chosen and the student has opted for browser OCR.
+function warmOcrIfOffline() {
+  try {
+    if (typeof Tesseract === 'undefined') return;
+    if (!(currentPdf || (selectedImages && selectedImages.length))) return;
+    const lang = (ocrLangSel && ocrLangSel.value) || 'eng';
+    if (cloudWanted(lang)) return;                                   // online OCR chosen: nothing to pre-load
+    if (navigator.connection && navigator.connection.saveData) return;   // respect Data Saver
+    OcrPool.warm(lang);
+  } catch (e) {}
+}
+
 /* ===== Online OCR (OCR.space through the Val Town proxy; API keys live ONLY in the proxy) ===== */
 const CLOUD_OCR_URL = 'https://Babu420--6994d1b8d35b11f192a81607ee4eb77e.web.val.run';
 const CLOUD_PREF_KEY = 'yai_cloud_img';          // '1' (default) / '0'
@@ -3032,6 +3079,7 @@ function syncCloudUi() {
   }
   hint.style.display = hint.textContent ? '' : 'none';
   try { updatePagePreview(); } catch (e) {}
+  warmOcrIfOffline();
 }
 (function () {
   const chk = document.getElementById('cloudOcrChk'), sel = document.getElementById('ocrLang');
@@ -3111,10 +3159,50 @@ function cleanOcrText(txt) {
 }
 let rawExtractedText = '';
 
+// ---- Auto question count: 10 questions per extracted page (user can still edit it) ----
+function countExtractedPages(txt) {
+  const m = String(txt || '').match(/^--- Page [^\n]*? ---$/gm);
+  return m ? m.length : 0;
+}
+function autoSetQuestionCount() {
+  try {
+    const pages = countExtractedPages(rawExtractedText || (resultText && resultText.value));
+    if (!pages) return;
+    const q = Math.max(1, pages * 10);
+    const el = document.getElementById('numQuestionsManual');
+    if (el) el.value = q;
+  } catch (e) {}
+}
+// ---- Remember exam name: prefill from the last name the student used ----
+function prefillExamName() {
+  try {
+    const saved = (localStorage.getItem('yai_examName') || '').trim();
+    if (!saved || /^(indian )?competitive exam$/i.test(saved)) return;
+    ['examNameManual', 'examNameAuto'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.value.trim()) el.value = saved;
+    });
+  } catch (e) {}
+}
+function rememberExamNameOnInput() {
+  ['examNameManual', 'examNameAuto'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      const v = el.value.trim();
+      try { if (v) localStorage.setItem('yai_examName', v); } catch (e) {}
+      const other = document.getElementById(id === 'examNameManual' ? 'examNameAuto' : 'examNameManual');
+      if (other && v) other.value = el.value;
+    });
+  });
+}
+prefillExamName();
+rememberExamNameOnInput();
+
 function getExamName(manual) {
   const id = manual ? 'examNameManual' : 'examNameAuto';
   const el = document.getElementById(id);
-  return (el && el.value && el.value.trim()) ? el.value.trim() : 'competitive exam';
+  return (el && el.value && el.value.trim()) ? el.value.trim() : DEFAULT_EXAM_NAME;
 }
 
 // ---- Type plan: the app (not the AI) decides how many of each type and in which order, so it is truly mixed & random ----
@@ -3142,7 +3230,7 @@ function buildTypePlan(count, mode, typesPref) {
 
 
 // ---- EXAM ANALYSIS: the AI must study the exam BEFORE it writes any question (works for ANY exam, not only medical) ----
-function isUnnamedExam(examName) { return !examName || /^competitive exam$/i.test(String(examName).trim()); }
+function isUnnamedExam(examName) { return !examName || /^(indian )?competitive exam$/i.test(String(examName).trim()); }
 function buildExamResearchBlock(examName, mode) {
   const rev = (mode === 'revision');
   if (isUnnamedExam(examName)) {
@@ -3167,7 +3255,7 @@ ANALYSIS RULES:
 }
 
 function buildQuizInstruction(n, maxCap, mode, srcText, tier, startNum, examName) {
-  examName = (examName && examName.trim()) ? examName.trim() : 'competitive exam';
+  examName = (examName && examName.trim()) ? examName.trim() : DEFAULT_EXAM_NAME;
   mode = (mode === 'revision') ? 'revision' : 'exam';
   const cap = maxCap || 15;
   const count = Math.max(1, Math.min(cap, parseInt(n) || 10));
@@ -3704,33 +3792,33 @@ function usedLinesOf(prev) {
   return [...new Set(lines)];
 }
 function buildTierPrompt(pt, prev, srcText, mode, examName) {
-  examName = (examName && examName.trim()) ? examName.trim() : 'competitive exam';
+  examName = (examName && examName.trim()) ? examName.trim() : DEFAULT_EXAM_NAME;
   const excl = prev.slice(-100).map(q => '- ' + String(q.question).replace(/\s+/g, ' ').slice(0, 70)).join('\n');
   const usedLines = usedLinesOf(prev);
   let head = 'TASK: PART ' + pt.i + ' of ' + pt.P + ' (mixed pages). Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from the study notes below. The whole quiz of ' + lastRequestedCount + ' questions is written in ' + pt.P + ' parts. EVERY part samples the WHOLE notes (random pages, important topics a little more often) and together the parts cover every page. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.';
   if (pt.P > 1) head += '\n\nIf more parts follow in this chat, they will arrive as short messages later: in THIS reply write ONLY part ' + pt.i + '.';
   if (excl) head += '\n\nQUESTIONS ALREADY MADE (do NOT repeat these or their concepts):\n' + excl;
   if (usedLines.length) head += '\n\nSOURCE LINES ALREADY USED BY EARLIER PARTS (these exact lines already gave a question \u2014 this part MUST pick DIFFERENT lines/facts; do not build a new question from any line below, even with a different angle):\n' + usedLines.slice(-150).map(e => '- ' + e).join('\n');
-  return head + '\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (pt.marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 100, mode || 'exam', srcText, { k: pt.i, P: pt.P, must: pt.must, nPages: pt.nPages, usedLines, segs: pt.segs }, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
+  return head + '\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (pt.marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 1000000, mode || 'exam', srcText, { k: pt.i, P: pt.P, must: pt.must, nPages: pt.nPages, usedLines, segs: pt.segs }, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
 }
 function getManualPromptText(mode, partIdx) {
   const n = document.getElementById('numQuestionsManual').value;
   const srcText = (resultText.value || rawExtractedText).trim();
-  const qn = Math.max(1, Math.min(100, parseInt(n) || 10));
+  const qn = Math.max(1, parseInt(n) || 10);
   const examName = getExamName(true);
-  localStorage.setItem('yai_examName', examName);
+  if (!isUnnamedExam(examName)) localStorage.setItem('yai_examName', examName);
   const parts = planManualParts(srcText, qn);
   manualPartsExpected = parts.length; manualPartsPlan = parts; lastRequestedCount = qn;
   try { localStorage.setItem('yai_pending', JSON.stringify({ n: qn, ts: Date.now() })); } catch (e) {}
   if (parts.length === 1) {
-    return 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (parts[0].marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 100, mode || 'exam', srcText, (parts[0].segs && parts[0].segs.length) ? { k: 1, P: 1, segs: parts[0].segs } : null, 1, examName);
+    return 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (parts[0].marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 1000000, mode || 'exam', srcText, (parts[0].segs && parts[0].segs.length) ? { k: 1, P: 1, segs: parts[0].segs } : null, 1, examName);
   }
   const pt = parts[Math.min(Math.max(partIdx || 1, 1), parts.length) - 1];
   if (pt.tier) {
     const prev = (collectedRaw && pt.i > 1) ? normalizeQuiz(lenientParse(collectedRaw) || []) : [];
     return buildTierPrompt(pt, prev, srcText, mode, examName);
   }
-  return 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from ONLY the study notes below (pages ' + pt.from + '-' + pt.to + '). The other pages are handled in other parts, so cover THIS text completely: every important topic of these pages must be represented. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES PART ' + pt.i + '/' + pt.P + ' (OCR-extracted) ===\n' + pt.text.trim() + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 100, mode || 'exam', pt.text, null, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
+  return 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from ONLY the study notes below (pages ' + pt.from + '-' + pt.to + '). The other pages are handled in other parts, so cover THIS text completely: every important topic of these pages must be represented. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES PART ' + pt.i + '/' + pt.P + ' (OCR-extracted) ===\n' + pt.text.trim() + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 1000000, mode || 'exam', pt.text, null, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
 }
 // ---- Mixed parts: every part samples the WHOLE notes. The app deals random "must-cover" pages to the parts, so the union covers all pages. ----
 let _mustCache = { key: '', order: [] };
@@ -3745,7 +3833,7 @@ function shuffledPages(srcText) {
   return _mustCache.order;
 }
 function mixSelectionRule(tier, count, examName) {
-  examName = (examName && examName.trim()) ? examName.trim() : 'competitive exam';
+  examName = (examName && examName.trim()) ? examName.trim() : DEFAULT_EXAM_NAME;
   const must = tier.must || [];
   const usedN = (tier.usedLines || []).length;
   const cap = (tier.nPages || 0) > 2 ? Math.max(3, Math.ceil(count * 2 / tier.nPages)) : 0;
@@ -3769,7 +3857,7 @@ function buildContinuePrompt(pt, startN, mode) {
     : 'QUESTION TYPES: every question is type "mcq" with exactly 4 options.\n';
   return 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Continue the SAME quiz in THIS chat: same study notes (from my first message), same output language, same level and style, and the same YAI-Q OUTPUT FORMAT as in my first message.\n'
     + 'STYLE RECAP: ' + (mode === 'revision' ? 'SIMPLE quick-revision: direct line-based questions with a light twist, short stems, no long scenarios, at the real level of the exam you analysed in my first message.' : 'COMPLEX exam-level: mix 2-3 related topics of the notes per question, in the real pattern, level and latest trend of the exam you analysed in my first message, every option must need thought, all solvable from the notes alone.') + ' Keep ALL rules and language of my first message.' + '\n' + 'Create EXACTLY ' + count + ' NEW questions, numbered =Q' + startN + ' through =Q' + endN + '. Never stop early and never ask whether to continue.\n\n'
-    + ((pt.segs && pt.segs.length) ? segSelectionRule({ k: pt.i, P: pt.P, segs: pt.segs }, count, localStorage.getItem('yai_examName') || 'competitive exam', mode) : mixSelectionRule({ k: pt.i, P: pt.P, must: pt.must, nPages: pt.nPages }, count, localStorage.getItem('yai_examName') || 'competitive exam')) + '\n'
+    + ((pt.segs && pt.segs.length) ? segSelectionRule({ k: pt.i, P: pt.P, segs: pt.segs }, count, localStorage.getItem('yai_examName') || DEFAULT_EXAM_NAME, mode) : mixSelectionRule({ k: pt.i, P: pt.P, must: pt.must, nPages: pt.nPages }, count, localStorage.getItem('yai_examName') || DEFAULT_EXAM_NAME)) + '\n'
     + typeLine + '\n'
     + 'LINE-LEVEL EXCLUSION (hard rule): before writing each question, scroll back up to your own earlier reply(ies) in THIS chat and note every exact source line/fact you already tested (look at the EV: line of each earlier question). For every new question in this part, pick a source line that is NOT one of those — do not reuse the same line even to ask it differently. Different parts must revise different portions of the notes; never let two parts both draw from the same line.\n'
     + 'EXAM ANALYSIS: keep using the same exam analysis (pattern, previous-year level, latest trend, difficulty) of the exam named in my first message; do not lower or raise the level in this part.\n'
@@ -3859,20 +3947,9 @@ async function runExtractionInner() {
   const ocrLang = (ocrLangSel && ocrLangSel.value) || 'eng';
   const nWorkers = Math.max(1, Math.min((ocrLang.includes('hin') || ocrLang.includes('san')) ? 2 : 3, Math.floor((navigator.hardwareConcurrency || 2) / 2) || 1));
   const useCloud = cloudWanted(ocrLang);   // scanned pages: online when ticked (never Sanskrit); text-layer pages never need OCR
-  let schP = null;                          // Tesseract scheduler: lazy + memoized, only created when offline OCR is needed
+  let schP = null;                          // Tesseract scheduler from the shared pool: lazy + memoized, only created when offline OCR is needed
   const getScheduler = () => {
-    if (!schP) schP = (async () => {
-      const sc0 = Tesseract.createScheduler();
-      window._ocrS = sc0;
-      try {
-        for (let k = 0; k < nWorkers; k++) {
-          const w = await Tesseract.createWorker(ocrLang, 1);
-          try { await w.setParameters({ preserve_interword_spaces: '1' }); } catch (e) {}
-          sc0.addWorker(w);
-        }
-      } catch (e) { try { await sc0.terminate(); } catch (e2) {} window._ocrS = null; schP = null; throw e; }
-      return sc0;
-    })();
+    if (!schP) schP = OcrPool.acquire(ocrLang, nWorkers).catch(e => { schP = null; throw e; });
     return schP;
   };
   // A real text layer is instant and more accurate than OCR. Legacy-font Hindi PDFs
@@ -3938,7 +4015,7 @@ async function runExtractionInner() {
     if (pending.size >= (useCloud ? CLOUD_CONCURRENCY : nWorkers + 1)) await Promise.race(pending);
   }
   await Promise.all(pending);
-  if (schP) { try { const s0 = await schP; await s0.terminate(); } catch (e) {} window._ocrS = null; }
+  if (schP) { let ok = false; try { await schP; ok = true; } catch (e) {} if (ok) OcrPool.release(); }
   {
     const msgs = [];
     if (useCloud) msgs.push(`${nOnline} online, ${nOffline} offline`);
@@ -3961,6 +4038,7 @@ async function runExtractionInner() {
   
   currentPageRange = pageRangeText(labelFrom, labelTo);
   try { saveExtractedText(labelFrom, labelTo, rawExtractedText); } catch (e) { console.warn(e); }
+  autoSetQuestionCount();
   resultCard.style.display = 'block';
   resultStepLabel.style.display = 'flex';
   methodCard.style.display = 'block';
@@ -3990,13 +4068,13 @@ genBtnSelf.addEventListener('click', () => setGenMode('self'));
 function getSelfPromptText(mode) {
   const n = document.getElementById('numQuestionsManual').value;
   const srcText = (resultText.value || rawExtractedText).trim();
-  const qn = Math.max(1, Math.min(100, parseInt(n) || 10));
+  const qn = Math.max(1, parseInt(n) || 10);
   const examName = getExamName(true);
-  localStorage.setItem('yai_examName', examName);
+  if (!isUnnamedExam(examName)) localStorage.setItem('yai_examName', examName);
   lastRequestedCount = qn;
   try { localStorage.setItem('yai_pending', JSON.stringify({ n: qn, ts: Date.now() })); } catch (e) {}
   // Always treat as single part — Self mode user handles token limits themselves
-  return 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + srcText + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 100, mode || 'exam', srcText, null, 1, examName);
+  return 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + srcText + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 1000000, mode || 'exam', srcText, null, 1, examName);
 }
 
 /* ========== Self mode: paste card opened from header button — no auto-start ========== */
@@ -5586,7 +5664,7 @@ function resetRounds() {
   const b = document.getElementById('topupBar'); if (b) b.style.display = 'none';
 }
 function buildTopupPrompt(list, mode) {
-  const N = lastRequestedCount, got = list.length, remaining = Math.max(1, Math.min(100, N - got));
+  const N = lastRequestedCount, got = list.length, remaining = Math.max(1, N - got);
   const src = (resultText.value || rawExtractedText).trim();
   const covered = new Set(); list.forEach(q => (q.srcPages || []).forEach(pg => covered.add(String(pg))));
   const pnum = pg => (pg.match(/--- Page (\d+) ---/) || [])[1] || '';
@@ -5599,7 +5677,7 @@ function buildTopupPrompt(list, mode) {
   const examNameTopup = getExamName(true);
   return 'TASK: ROUND ' + (manualRound + 1) + ' (top-up). I already have ' + got + ' of ' + N + ' questions. Create EXACTLY ' + remaining + ' NEW ' + examNameTopup + '-level quiz questions from the study notes below. '
     + (focusUncovered ? 'These pages still have NO questions: cover them first and spread the questions over ALL of them. ' : 'Cover high-yield points that are not asked yet, from new angles. ')
-    + 'Do NOT repeat any of these already-made questions or their concepts:\n' + excl + '\n\n=== STUDY NOTES (OCR-extracted) ===\n' + text + '\n=== END OF NOTES ===' + buildQuizInstruction(remaining, 100, mode || 'exam', text, null, Math.max(got, ...list.map(q => Number.isFinite(q.num) ? q.num : 0)) + 1, examNameTopup);
+    + 'Do NOT repeat any of these already-made questions or their concepts:\n' + excl + '\n\n=== STUDY NOTES (OCR-extracted) ===\n' + text + '\n=== END OF NOTES ===' + buildQuizInstruction(remaining, 1000000, mode || 'exam', text, null, Math.max(got, ...list.map(q => Number.isFinite(q.num) ? q.num : 0)) + 1, examNameTopup);
 }
 function showTopup(list) {
   const N = lastRequestedCount, got = list.length, rem = N - got;
@@ -5763,7 +5841,7 @@ const fullText = (resultText.value || rawExtractedText).trim();
       ++done;
       if (per < 1) continue;
       aiGenSub.textContent = `Part ${done} / ${chunks.length}...`;
-      const _en = getExamName(false); localStorage.setItem('yai_examName', _en);
+      const _en = getExamName(false); if (!isUnnamedExam(_en)) localStorage.setItem('yai_examName', _en);
       const resp = await askAI(ch + '\n' + buildQuizInstruction(per, 15, mode, ch, null, null, _en));
       if (resp === null) continue;
       const pr = lenientParse(resp);
@@ -7134,7 +7212,7 @@ function decorateResult() {
   // Marks row — show only if student attempted at least one question
   const marksRow = document.getElementById('marksRow');
   if (marksRow && attempted > 0) {
-    const _examLabel = localStorage.getItem('yai_examName') || 'competitive exam';
+    const _examLabel = localStorage.getItem('yai_examName') || DEFAULT_EXAM_NAME;
     const scored = right * 4 - wrong;
     const maxScore = total * 4;
     marksRow.textContent = _examLabel + ' score: ' + scored + ' / ' + maxScore + '  (+4 correct, \u22121 wrong, 0 skipped)';
@@ -7242,6 +7320,7 @@ function openSavedText(id) {
   currentFileBase = rec.file || currentFileBase; currentTextId = rec.id;
   currentPageRange = (rec.from !== undefined && rec.from !== '') ? pageRangeText(rec.from, rec.to) : '';
   rawExtractedText = rec.text; resultText.value = rec.text;
+  autoSetQuestionCount();
   rec.updatedAt = Date.now(); writeSavedTexts(list);
   resultCard.style.display = 'block'; resultStepLabel.style.display = 'flex';
   methodCard.style.display = 'block'; methodStepLabel.style.display = 'flex';
