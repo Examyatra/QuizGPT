@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b1226"><title>Study Timer</title>
+<meta name="theme-color" content="#0b1226"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Timer"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><title>Study Timer</title>
 <style>
 :root{color-scheme:dark;--ink:#eef1f8;--mut:#9aa6c2;--lamp:#ffb454;--glass:#ffffff12;--line:#ffffff1f;--study:#ffb454;--lecture:#b79cf2;--practice:#5ec8f2;--break:#6ee7b7}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -58,6 +58,7 @@ dialog::backdrop{background:#000b;backdrop-filter:blur(3px)}
 .dot{width:10px;height:10px;border-radius:50%;flex:none}.blk span{flex:1}
 .blk button{background:none;border:0;color:var(--mut);padding:4px 8px;font-size:16px}
 .add{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
+.pre{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}.pc{padding:10px 6px;border-radius:14px;border:1px solid var(--line);background:#1b2850;text-align:center;display:flex;flex-direction:column;gap:2px;line-height:1.25}.pc small{color:var(--mut);font-size:11px}.pc.on{background:var(--lamp);border-color:var(--lamp);color:#2a1a00}.pc.on small{color:#2a1a00b3}.pc.on b::before{content:"✓ "}
 select,input[type=number]{font:inherit;color:var(--ink);background:#1b2850;border:1px solid var(--line);border-radius:10px;padding:8px}
 .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:#1b2850}
 .btn.main{background:var(--lamp);color:#2a1a00;border-color:var(--lamp);font-weight:600;width:100%;padding:13px;margin-top:8px}
@@ -130,6 +131,7 @@ body.dock #mini b,body.pip #mini b{display:block;font-size:16px;font-weight:600;
 body.dock #mini small,body.pip #mini small{color:var(--mut);font-size:10.5px;text-transform:uppercase;letter-spacing:.3px}
 @media(max-width:340px){.sm{width:40px;height:40px;font-size:15px}.play{width:62px;height:62px;font-size:24px}.row{gap:6px}#home{padding-left:8px;padding-right:8px}}
 @media(max-height:520px){#today{display:none}}
+@supports not (height:100dvh){#home{height:100vh}#ringw{width:min(66vw,36vh,300px)}#rec{max-height:15vh}dialog{max-height:88vh}}
 </style></head><body>
 <div id="bg"><i></i><i></i><i></i></div>
 <main id="home">
@@ -147,16 +149,16 @@ body.dock #mini small,body.pip #mini small{color:var(--mut);font-size:10.5px;tex
 <section class="glass" id="today"></section>
 </main>
 <div id="toast" role="status"></div>
-<div id="pipnote" hidden><p></p><button class="btn main"></button></div>
+<div id="pipnote" hidden><p></p><button class="btn main"></button><button class="btn" id="pnx" hidden>Not now</button></div>
 
 
 <dialog id="sd"><div class="dh"><h2>Settings</h2><button class="x" data-c="sd" aria-label="Close">✕</button></div>
 <div class="tabs" data-for="sd"><button class="on" data-t="tm">Timer</button><button data-t="mu">Music</button><button data-t="pf">Preferences</button></div>
 <div class="db">
  <div class="pane on" data-p="tm">
-  <section class="sec"><h3>Your plan<small>Blocks run one after another</small></h3><div id="dl"></div></section>
-  <section class="sec"><h3>Add a block</h3><div class="add"><select id="nt"><option value="study">Study</option><option value="lecture">Lecture</option><option value="practice">Question practice</option><option value="break">Break</option></select><input id="nm" type="number" min="1" max="600" value="60" aria-label="Minutes"><button class="btn" id="add">Add block</button></div>
-   <div class="add"><button class="btn" id="p1">60 / 30 / break</button><button class="btn" id="p2">Pomodoro 50/10</button></div></section>
+  <section class="sec"><h3>Choose a plan</h3><div class="pre" id="pre" role="group" aria-label="Plan presets"><button class="pc" data-k="p1" aria-pressed="false"><b>60 / 30 / Break</b><small>Study · Practice · 10 min break</small></button><button class="pc" data-k="p2" aria-pressed="false"><b>Pomodoro 50/10</b><small>50 min study · 10 min break</small></button><button class="pc" data-k="cu" aria-pressed="false"><b>Custom</b><small>Your own blocks</small></button></div></section>
+  <section class="sec"><h3 id="plt">Your plan<small>Blocks run one after another</small></h3><div id="dl"></div></section>
+  <section class="sec"><h3>Customize<small>Add a block to make your own plan</small></h3><div class="add"><select id="nt"><option value="study">Study</option><option value="lecture">Lecture</option><option value="practice">Question practice</option><option value="break">Break</option></select><input id="nm" type="number" min="1" max="600" value="60" aria-label="Minutes"><button class="btn" id="add">Add block</button></div></section>
   <button class="btn main" id="ss">Save and start</button></div>
  <div class="pane" data-p="mu">
   <section class="sec"><h3>Lofi &amp; beats<small>The most popular Pomodoro style</small></h3><div class="mus" id="mus">
@@ -220,7 +222,7 @@ function next(done){const nm=T[blk().t].n,a=cs?cs.act:0;closeS(done);el=0;ex=0;
  else{run=false;if(done){notify(nm+' complete');toast(nm+' done'+(a?' · focus '+fd(a):''))}}
  last=Date.now();wake();draw()}
 function toggle(){if(!blk())return;if(RO||HAND){toast('Timer is open in another window');return}run=!run;last=Date.now();
- if(run){endP();try{ac()}catch(e){}if(S.amu&&S.music&&!cur)play(S.music);if(mode==='plan'&&Date.now()>=pat&&idx===0&&el===0){pat=Date.now()+864e5;sv('pat',pat)}}
+ if(run){endP();if(!cs)openS();try{ac()}catch(e){}if(S.amu&&S.music&&!cur)play(S.music);if(mode==='plan'&&Date.now()>=pat&&idx===0&&el===0){pat=Date.now()+864e5;sv('pat',pat)}}
  else if(cs){cs.ps=Date.now();cs.np++;cs.al=0;cs.cur=0}wake();draw()}
 function setMode(m){if(m===mode)return;closeS(false);run=false;el=0;ex=0;mode=m;sv('mode',m);wake();draw()}
 function setQ(v){if(run||el>0){toast('Reset the timer before changing the duration');return}qm=v;sv('qm',v);draw()}
@@ -228,12 +230,13 @@ function tick(){
  if(++n10%4===0)saveT();
  if(cs&&cs.ps&&S.pal&&!cs.al&&Date.now()-cs.ps>S.pal*6e4){cs.al=1;beep();notify('You have been paused for over '+S.pal+' min. Resume when you are ready.')}
  const b=blk();if(run&&b){const n=Date.now(),d=Math.max(0,(n-last)/1000);last=n;const dur=durS(b),add=Math.min(d,dur-el);if(!cs)openS();el+=add;cs.act+=add;cs.cur=(cs.cur||0)+add;if(cs.cur>(cs.mx||0))cs.mx=cs.cur;if(el>=dur-.001){beep();next(true)}}
- draw()}
+
+ draw(1)}
 async function wake(){try{if(S.wake&&run&&!wl){wl=await navigator.wakeLock.request('screen');wl.onrelease=()=>wl=null}else if(!(S.wake&&run)&&wl){await wl.release()}}catch(e){}}
 
 /* ---------- analytics ---------- */
 function sess(n,off=0){const from=day0(n+off-1),to=off?day0(off-1):Infinity;let L=log.filter(l=>l.s>=from&&l.s<to);
- if(!off&&cs&&cs.act>=30&&cs.s>=from)L=L.concat(Object.assign({},cs,{e:Date.now(),done:false,pz:cs.pz+(cs.ps?(Date.now()-cs.ps)/1000:0)}));return L}
+ if(!off&&cs&&cs.act>=1&&cs.s>=from)L=L.concat(Object.assign({},cs,{e:Date.now(),done:false,pz:cs.pz+(cs.ps?(Date.now()-cs.ps)/1000:0)}));return L}
 function M(L){const F=L.filter(l=>l.t!=='break').sort((a,b)=>a.s-b.s),B=L.filter(l=>l.t==='break'),sp=l=>Math.max(1,(l.e-l.s)/1000),s=k=>F.reduce((a,l)=>a+(l[k]||0),0),sit=F.reduce((a,l)=>a+sp(l),0),P=F.filter(l=>l.plan>0),act=s('act'),pz=s('pz'),days={},hr=Array(24).fill(0);
  F.forEach(l=>{days[l.day]=(days[l.day]||0)+l.act;const d=sp(l);for(let t=l.s;t<l.e;){const h=new Date(t),n=Math.min(l.e,new Date(h.getFullYear(),h.getMonth(),h.getDate(),h.getHours()+1).getTime());hr[h.getHours()]+=l.act*(n-t)/1000/d;t=n}});
  return{k:F.length,F,B,brk:B.reduce((a,l)=>a+l.act,0),tk:P.length,dn:P.filter(l=>l.done).length,plan:P.reduce((a,l)=>a+l.plan*60,0),pdone:P.reduce((a,l)=>a+Math.min(l.act,l.plan*60),0),act,sit,pz,idle:Math.max(0,sit-act-pz),np:s('np'),mx:Math.max(0,...F.map(l=>l.mx||0)),days,ad:Object.values(days).filter(v=>v>=1500).length,hr,eff:sit?Math.round(act/sit*100):0}}
@@ -242,7 +245,7 @@ const line=l=>`<span class="t">${tm(l.s)} – ${tm(l.e)}</span><span class="n">$
 function streak(g){g=g||S.goal*3600;const by=Object.assign({},agg);if(cs&&cs.t!=='break'&&cs.act>=30)by[cs.day]=(by[cs.day]||0)+cs.act;let n=0,d=new Date();if((by[ymd(d)]||0)<g)d.setDate(d.getDate()-1);while((by[ymd(d)]||0)>=g){n++;d.setDate(d.getDate()-1)}return n}
 
 /* ---------- home ---------- */
-function draw(){
+let stAt=0;function draw(th){
  const b=blk(),sw=mode==='stopwatch';D.body.classList.toggle('run',run);D.documentElement.style.setProperty('--lamp',T[b?b.t:'study'].c);
  $$('#modes button').forEach(x=>x.classList.toggle('on',x.dataset.k===mode));
  $('#qc').style.display=mode==='quick'?'flex':'none';$$('#qc button').forEach(x=>x.classList.toggle('on',+x.dataset.q===qm));
@@ -256,6 +259,8 @@ function draw(){
  else{$('#lbl').textContent='Your plan is empty';$('#time').textContent='00:00';$('#nx').textContent='Add blocks in Settings';$('#rg').style.strokeDashoffset=565.49}
  $('#go').textContent=run?'⏸':'▶';
  $('#pz').textContent=cs&&(cs.np||cs.ps)?'This session: '+cs.np+' pause(s) · '+fd(cs.pz+(cs.ps?(Date.now()-cs.ps)/1000:0))+' paused':'';
+ if(th&&Date.now()-stAt>=0&&Date.now()-stAt<1000){if(pv)drawPv();return}stAt=Date.now();
+ {const dd=$('#dd');if(dd&&dd.open){const x=dd,y=dd.querySelector('.db'),t1=x.scrollTop,t2=y?y.scrollTop:0;dash(1);x.scrollTop=t1;if(y)y.scrollTop=t2}}
  const wkHtml=wkS(),m=M(sess(1)),L=m.F.slice(-3).reverse(),st=streak(1500),gp=S.goal?pc(m.act,S.goal*3600):0;
  if(D.getElementById('mini'))D.getElementById('mini').innerHTML=`<div><b>${m.k?m.eff+'%'+eTrend(m.eff):'\u2013'}</b><small>Efficiency</small></div><div><b>${fd(m.act)}</b><small>Today</small></div>`
  const h=`<h2><span>Today</span>${st?`<em class="stk">🔥 ${st}-day streak</em>`:''}</h2><div class="hl"><b>${fd(m.act)}</b><span>focused · ${gp}% of ${S.goal}h goal</span></div><div id="gb"><i style="width:${gp}%"></i></div>
@@ -269,8 +274,9 @@ const sec=(t,s,b)=>`<section class="sec"><h3>${t}${s?`<small>${s}</small>`:''}</
 const kv=(k,v)=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`;
 const rows=(o,mx,c)=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>`<div class="rw" style="--c:${c(k)}"><div><b>${esc(T[k]?T[k].n:k)}</b><span>${fd(v)}</span></div><div class="bar"><i style="width:${pc(v,mx)}%"></i></div></div>`).join('');
 const h12=h=>{h=(h+24)%24;return(h%12||12)+(h<12?' AM':' PM')};
-function dash(){
- $('#rg2').innerHTML=[[1,'Today'],[2,'2 days'],[3,'3 days'],[4,'4 days'],[7,'7 days'],[30,'30 days']].map(([n,t])=>`<button class="chip ${n===rgn?'on':''}" data-n="${n}">${t}</button>`).join('');
+let lastDv='';const put=h=>{if(h!==lastDv){$('#dv').innerHTML=h;lastDv=h}};
+function dash(re){
+ if(!re)$('#rg2').innerHTML=[[1,'Today'],[2,'2 days'],[3,'3 days'],[4,'4 days'],[7,'7 days'],[30,'30 days']].map(([n,t])=>`<button class="chip ${n===rgn?'on':''}" data-n="${n}">${t}</button>`).join('');
  const L=sess(rgn),m=M(L),gl=S.goal*3600,td=ymd(new Date()),gt=gl*rgn,gp=pc(m.act,gt),by={};
  sess(30).filter(l=>l.t!=='break').forEach(l=>by[l.day]=(by[l.day]||0)+l.act);
  const N=rgn>=30?30:14,mxv=Math.max(gl,...Object.values(by),1);let cells='',labs='';
@@ -278,7 +284,7 @@ function dash(){
   cells+=`<i title="${k}: ${fd(v)}" style="height:${v?Math.max(4,v/mxv*100):2}%;background:${v>=gl?'#6ee7b7':'var(--study)'};opacity:${v?1:.3}"></i>`;
   labs+=`<span class="${k===td?'on':''}">${N>14&&i%5?'':d.getDate()}</span>`}
  const chart=sec('Daily focus','Last '+N+' days',`<div class="plot">${cells}<u class="gl" style="bottom:${gl/mxv*100}%"><b>${S.goal}h goal</b></u></div><div class="axis">${labs}</div><div class="lg2"><span style="--c:var(--study)">Below goal</span><span style="--c:#6ee7b7">Goal met</span></div>`);
- if(!m.k){$('#dv').innerHTML=sec('No data yet','','<p class="tip">No sessions in this period. Start the timer to see your focus time, focus rate and patterns here.</p>')+chart;return}
+ if(!m.k){put(sec('No data yet','','<p class="tip">No sessions in this period. Start the timer to see your focus time, focus rate and patterns here.</p>')+chart);return}
  let sb1='&nbsp;';{const pv=rgn===1?M(sess(7,1)):rgn*2<=30?M(sess(rgn,rgn)):null;
   if(rgn===1){if(pv&&pv.ad>=2)sb1='7-day avg '+fd(pv.act/7)}else if(pv&&pv.act>0){const dl=Math.round((m.act-pv.act)/pv.act*100);sb1=(dl>=0?'+':'')+dl+'% vs previous '+rgn+' days'}}
  const q=m.eff>=85?['Excellent','g']:m.eff>=65?['Good','y']:['Needs work','r'],tip=m.eff>=85?'Almost all of your session time was real focus. Keep this rhythm.':m.eff>=65?'A noticeable share of time goes into pauses. Plan breaks in advance.':'A large share of session time is lost to pauses and idle time. Try shorter 25–45 min blocks.',pk=m.hr.indexOf(Math.max(...m.hr)),ins=[tip];
@@ -296,16 +302,20 @@ function dash(){
  const days=[];for(let i=0;i<rgn;i++){const d=new Date();d.setDate(d.getDate()-i);const k=ymd(d),dm=M(L.filter(l=>l.day===k));if(dm.k)days.push(`<div class="rw"><div><b>${d.toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'})}</b><span>${fd(dm.act)} · rate ${dm.eff}%</span></div><div class="bar"><i style="width:${pc(dm.act,gl)}%"></i></div></div>`)}
  const grp={};m.F.slice().reverse().slice(0,40).forEach(l=>(grp[l.day]=grp[l.day]||[]).push(l));
  const lg=sec('Session log','Most recent first',Object.values(grp).map(a=>`<div class="dg"><b>${new Date(a[0].s).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'})}</b><span>${fd(a.reduce((x,l)=>x+l.act,0))} focused</span></div>`+a.map(l=>`<div class="ses" style="--c:${T[l.t].c}"><div class="s1"><b>${tm(l.s)} – ${tm(l.e)}</b><em>${fd(l.act)}</em></div><div class="s2">${T[l.t].n}${l.sub?' · '+esc(l.sub):''}</div><div class="s3">${l.plan?l.plan+' min timer · '+(l.done?'Completed':'Ended early'):'Stopwatch'} · Paused ${fd(l.pz)} (${l.np}×) · ${eff(l)}% rate</div></div>`).join('')).join(''));
- $('#dv').innerHTML=kp+sm+ts+chart+cs2+ql+hs+bt+(rgn>1?sec('Daily breakdown','Focus vs goal',days.join('')):'')+lg}
+ put(kp+sm+ts+chart+cs2+ql+hs+bt+(rgn>1?sec('Daily breakdown','Focus vs goal',days.join('')):'')+lg)}
 
 /* ---------- settings ---------- */
-function dlist(){$('#dl').innerHTML=dp.map((p,i)=>`<div class="blk"><i class="dot" style="background:${T[p.t].c}"></i><span>${T[p.t].n} · ${p.m} min</span><button data-u="${i}" aria-label="Up">↑</button><button data-d="${i}" aria-label="Down">↓</button><button data-r="${i}" aria-label="Remove">✕</button></div>`).join('')||'<p class="tip">No blocks yet. Add one below.</p>'}
+const PRE={p1:[{t:'study',m:60},{t:'practice',m:30},{t:'break',m:10}],p2:[{t:'study',m:50},{t:'break',m:10}]},PN2={p1:'60 / 30 / Break',p2:'Pomodoro 50/10',cu:'Custom'},cpy=a=>a.map(x=>({...x})),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+const pkey=()=>same(dp,PRE.p1)?'p1':same(dp,PRE.p2)?'p2':'cu';
+function dlist(){const k=pkey();if(k==='cu'&&dp.length)sv('cplan',dp);
+ $$('#pre .pc').forEach(b=>{const on=b.dataset.k===k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+ $('#plt').innerHTML='Your plan · '+PN2[k]+'<small>'+(dp.length?dp.reduce((a,x)=>a+x.m,0)+' min in total':'Blocks run one after another')+'</small>';
+ $('#dl').innerHTML=dp.map((p,i)=>`<div class="blk"><i class="dot" style="background:${T[p.t].c}"></i><span>${T[p.t].n} · ${p.m} min</span><button data-u="${i}" aria-label="Up">↑</button><button data-d="${i}" aria-label="Down">↓</button><button data-r="${i}" aria-label="Remove">✕</button></div>`).join('')||'<p class="tip">No blocks yet. Add one below.</p>'}
 const NK=['goal','pal'],BK=['auto','sound','wake','notif','vib','amu'];
 function openSet(){dp=plan.map(x=>({...x}));dlist();NK.forEach(k=>$('#s_'+k).value=S[k]);BK.forEach(k=>$('#s_'+k).checked=S[k]);$('#s_tone').value=S.tone;$$('.mus button').forEach(b=>b.classList.toggle('on',!!cur&&b.dataset.m===S.music));$('#sd').showModal()}
 $('#dl').onclick=e=>{const u=e.target.dataset.u,r=e.target.dataset.r;if(u!==undefined&&+u>0){const i=+u;[dp[i-1],dp[i]]=[dp[i],dp[i-1]]}const dn=e.target.dataset.d;if(dn!==undefined&&+dn<dp.length-1){const i=+dn;[dp[i+1],dp[i]]=[dp[i],dp[i+1]]}if(r!==undefined)dp.splice(+r,1);dlist()};
 $('#add').onclick=()=>{dp.push({t:$('#nt').value,m:Math.max(1,Math.min(600,+$('#nm').value||1))});dlist()};
-$('#p1').onclick=()=>{dp=[{t:'study',m:60},{t:'practice',m:30},{t:'break',m:10}];dlist()};
-$('#p2').onclick=()=>{dp=[{t:'study',m:50},{t:'break',m:10}];dlist()};
+$('#pre').onclick=e=>{const b=e.target.closest('.pc');if(!b)return;const k=b.dataset.k;if(k==='cu'){if(pkey()==='cu')return;const c=ld('cplan',null);if(Array.isArray(c)&&c.length&&!same(c,PRE.p1)&&!same(c,PRE.p2)){dp=cpy(c.filter(x=>x&&T[x.t]&&x.m>0));dlist()}else{toast('Add or reorder blocks below to build your own plan');$('#nt').scrollIntoView({block:'center'})}return}dp=cpy(PRE[k]);dlist()};
 $('#ss').onclick=()=>{if(!dp.length)return;closeS(false);mode='plan';sv('mode',mode);plan=dp.map(x=>({...x}));sv('plan',plan);idx=0;el=0;ex=0;pat=Date.now()+864e5;sv('pat',pat);run=true;last=Date.now();if(S.amu&&S.music&&!cur)play(S.music);$('#sd').close();wake();draw()};
 $('#sd').onchange=async e=>{if(!e.target.id.startsWith('s_'))return;NK.forEach(k=>S[k]=+$('#s_'+k).value||0);BK.forEach(k=>S[k]=$('#s_'+k).checked);S.tone=$('#s_tone').value;if(S.goal<1)S.goal=1;
  if(S.notif&&window.Notification&&Notification.permission==='default'){const p=await Notification.requestPermission();if(p!=='granted'){S.notif=false;$('#s_notif').checked=false}}sv('set',S);wake();lastH='';draw()};
@@ -470,9 +480,9 @@ if(RO)toast('Timer is already open in another tab. Close it to avoid data loss.'
 /* ---------- popup mode ----------
    laptop : Chrome/Edge -> always-on-top mini window (Document PiP); other browsers -> normal window snapped to the right 30% of the screen
    phone  : floating mini timer (video Picture-in-Picture) that stays over other apps */
-const BASE=location.href.split('#')[0].split('?')[0],MV=['#bg','#home','#toast','#sd','#dd'],PN=document.getElementById('pipnote'),FINE=matchMedia('(hover:hover) and (pointer:fine)').matches;let cfT=0;
+const BASE=location.href.split('#')[0].split('?')[0],MV=['#bg','#home','#toast','#sd','#dd'],PN=document.getElementById('pipnote'),MOB=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),FINE=!MOB&&matchMedia('(hover:hover) and (pointer:fine)').matches;let cfT=0;
 function ask(m){if(!pip)return confirm(m);if(Date.now()<cfT){cfT=0;return true}cfT=Date.now()+3500;toast(m+' Tap again to confirm.');return false}
-function note(msg,btn,fn){PN.querySelector('p').textContent=msg;const b=PN.querySelector('button');b.textContent=btn;b.onclick=fn;PN.hidden=false}
+function note(msg,btn,fn,x){PN.querySelector('p').textContent=msg;const b=PN.querySelector('button');b.textContent=btn;b.onclick=fn;const bx=PN.querySelector('#pnx');if(bx){bx.hidden=!x;bx.onclick=()=>{PN.hidden=true}}PN.hidden=false}
 async function docPip(){
  const aw=screen.availWidth,ah=screen.availHeight,w=await documentPictureInPicture.requestWindow({width:clamp(Math.round(aw*.3),320,640),height:clamp(Math.round(ah*.85),420,1000)}),d=w.document;
  document.querySelectorAll('style').forEach(x=>d.head.appendChild(x.cloneNode(true)));d.title='Study Timer';d.body.classList.add('pip');
@@ -518,37 +528,55 @@ function drawPv(){const c=pvc;if(!c)return;const g=c.getContext('2d'),b=blk(),sw
   g.fillStyle=ch.c||'#eef1f8';g.font='600 34px system-ui,sans-serif';g.fillText(ch.v,RX+padX,yMid+14)
  });
  try{navigator.mediaSession.playbackState=run?'playing':'paused'}catch(e){}}
-function endPv(){if(!pv)return;const v=pv;pv=null;pvc=null;try{v.srcObject.getTracks().forEach(t=>t.stop())}catch(e){}v.remove();try{navigator.mediaSession.playbackState='none'}catch(e){}}
+const IOS=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),STANDALONE=navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;let cmp=false,pvr=null;
+/* compact view: same slim layout as the floating window, inside the page itself (works everywhere, e.g. iPad Slide Over / Split View) */
+function setCmp(on){cmp=!!on;document.body.classList.toggle('pip',cmp);sv('cmp',cmp?1:0);lastH='';draw()}
+function endPv(){if(!pv)return;pv=null;try{navigator.mediaSession.playbackState='none'}catch(e){}}
+/* the floating video is prepared in advance so entering Picture-in-Picture happens synchronously inside the tap (Safari requires that) */
+function prepPv(){
+ if(pvr||(IOS&&STANDALONE))return pvr;const kind=canVidPip();if(!kind)return null;
+ try{const v=document.createElement('video'),c=document.createElement('canvas');c.width=640;c.height=360;v.muted=true;v.defaultMuted=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('aria-hidden','true');
+  v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:.01;pointer-events:none';document.body.appendChild(v);pvc=c;drawPv();
+  v.srcObject=c.captureStream(5);const pl=v.play();if(pl&&pl.catch)pl.catch(()=>{});
+  v.addEventListener('leavepictureinpicture',endPv);v.addEventListener('webkitpresentationmodechanged',()=>{if(v.webkitPresentationMode!=='picture-in-picture')endPv()});
+  pvr=v}catch(e){pvr=null}
+ return pvr}
 function canVidPip(){
  try{
   if(document.pictureInPictureEnabled&&typeof HTMLCanvasElement.prototype.captureStream==='function')return'standard';
   const v=document.createElement('video');if(v.webkitSupportsPresentationMode&&typeof v.webkitSupportsPresentationMode==='function'&&typeof HTMLCanvasElement.prototype.captureStream==='function')return'webkit';
  }catch(e){}
  return null}
+/* no floating window possible here: desktop -> side window; phone/tablet -> explain honestly and offer the compact view (never a popup, it would stop the timer) */
+function noPip(){
+ if(!MOB&&FINE){toast('Floating popup is not available \u2014 opening a side window instead.');sidePop();return}
+ note(IOS&&STANDALONE?'Apple does not allow a floating timer inside Home Screen apps on iPad and iPhone. For a floating timer, open this page in Safari and tap the window button. Or keep this app in Slide Over / Split View and use the compact view.':'This browser cannot show a floating timer. You can use the compact view in a split-screen or small window.','Use compact view',()=>{PN.hidden=true;setCmp(true)},1)}
 async function vidPip(){
- const kind=canVidPip();
- if(!kind){ /* Firefox and most non-Chromium browsers (incl. most non-Safari mobile) don't support canvas->video PiP: fall back to the side window */
-  toast('Floating popup isn\u2019t supported in this browser \u2014 opening a side window instead.');sidePop();return}
- const v=document.createElement('video'),c=document.createElement('canvas');c.width=640;c.height=360;v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');
- v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';document.body.appendChild(v);pvc=c;drawPv();
- try{v.srcObject=c.captureStream(5);await v.play();
+ if(IOS&&STANDALONE){noPip();return}
+ const kind=canVidPip(),v=kind?prepPv():null;if(!v){noPip();return}
+ try{drawPv();if(v.paused){const pl=v.play();if(pl&&pl.catch)pl.catch(()=>{})}
+  if(v.readyState<1)await new Promise(r=>{v.addEventListener('loadedmetadata',r,{once:true});setTimeout(r,1500)});
   if(kind==='standard')await v.requestPictureInPicture();else v.webkitSetPresentationMode('picture-in-picture')}
- catch(e){v.remove();pvc=null;toast('Could not open the floating window \u2014 opening a side window instead.');sidePop();return}
- pv=v;v.addEventListener('leavepictureinpicture',endPv);v.addEventListener('webkitpresentationmodechanged',()=>{if(v.webkitPresentationMode!=='picture-in-picture')endPv()});
- try{const ms=navigator.mediaSession;ms.metadata=new MediaMetadata({title:'Study Timer',artist:'Focus session'});['play','pause'].forEach(a=>ms.setActionHandler(a,()=>toggle()));ms.setActionHandler('nexttrack',()=>$('#skip').click())}catch(e){}
+ catch(e){noPip();return}
+ pv=v;try{const ms=navigator.mediaSession;ms.metadata=new MediaMetadata({title:'Study Timer',artist:'Focus session'});['play','pause'].forEach(a=>ms.setActionHandler(a,()=>toggle()));ms.setActionHandler('nexttrack',()=>$('#skip').click())}catch(e){}
  drawPv();toast('Floating timer on. Switch to your lecture or PDF.')}
 function popup(){
  if(pip){pip.close();return}
  if(pv){try{document.pictureInPictureElement?document.exitPictureInPicture():pv.webkitSetPresentationMode('inline')}catch(e){}endPv();return}
+ if(cmp){setCmp(false);return}
  if(DOCK||HAND)return;
- if(FINE){if(window.documentPictureInPicture)docPip().catch(()=>toast('Could not open the floating window. Try Settings, Side window.'));else sidePop()}else vidPip()}
+ if(!MOB){if(window.documentPictureInPicture)docPip().catch(()=>{toast('Floating window failed \u2014 opening a side window instead.');sidePop()});else if(FINE)sidePop();else vidPip()}
+ else vidPip()}
 $('#pop').onclick=popup;
 $('#sw').onclick=()=>{if(DOCK||pip||pv||HAND){toast('Close the current popup first');return}$('#sd').close();sidePop()};
 if(DOCK){document.body.classList.add('dock');document.title='Study Timer';try{const aw=screen.availWidth,w=Math.round(aw*.3);resizeTo(w,screen.availHeight);moveTo((screen.availLeft||0)+aw-outerWidth,screen.availTop||0)}catch(e){}}
-if(!ld('hint',0)&&!DOCK&&!RO){sv('hint',1);setTimeout(()=>toast(FINE?'Tip: the window button opens a side window so your lecture keeps the rest of the screen':'Tip: the window button opens a floating mini timer'),1800)}
+if(!ld('hint',0)&&!DOCK&&!RO){sv('hint',1);setTimeout(()=>toast(IOS&&STANDALONE?'Tip: the window button switches to a compact timer view':FINE?'Tip: the window button opens a floating timer so your lecture keeps the rest of the screen':'Tip: the window button opens a floating mini timer'),1800)}
 /* background-proof ticker: a worker is not throttled when this tab is hidden behind your lecture */
 try{const wk=new Worker(URL.createObjectURL(new Blob(['setInterval(function(){postMessage(0)},250)'],{type:'text/javascript'})));wk.onmessage=()=>tick()}catch(e){setInterval(tick,250)}
 /* offline support: when opened from a web link, cache the app so it works without internet next time */
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){try{[['manifest','manifest.webmanifest'],['apple-touch-icon','icon-192.png']].forEach(([r,h])=>{const l=document.createElement('link');l.rel=r;l.href=h;document.head.appendChild(l)});addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}catch(e){}}
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+if(ld('cmp',0)){cmp=true;document.body.classList.add('pip')}
+if((MOB||!FINE)&&!(IOS&&STANDALONE))setTimeout(prepPv,800);
 subs();draw();
 </script></body></html>

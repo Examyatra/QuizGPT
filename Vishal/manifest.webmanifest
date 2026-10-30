@@ -19,5 +19,11 @@
    "type": "image/png",
    "purpose": "any maskable"
   }
+ ],
+ "id": "./index.html",
+ "orientation": "any",
+ "categories": [
+  "education",
+  "productivity"
  ]
 }
