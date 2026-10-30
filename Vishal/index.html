@@ -62,7 +62,21 @@ dialog::backdrop{background:#000b;backdrop-filter:blur(3px)}
 select,input[type=number]{font:inherit;color:var(--ink);background:#1b2850;border:1px solid var(--line);border-radius:10px;padding:8px}
 .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:#1b2850}
 .btn.main{background:var(--lamp);color:#2a1a00;border-color:var(--lamp);font-weight:600;width:100%;padding:13px;margin-top:8px}
-.tg{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.tg{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);min-width:0}
+.tg>span:first-child{flex:0 0 36%;min-width:0;overflow-wrap:anywhere}
+.tg>select{flex:1 1 0;width:0;min-width:0;max-width:64%;height:auto}
+.tg>span:last-child{min-width:0}
+.tg select{max-width:100%}
+.tg>input[type=range]{min-width:0}
+.tg:has(>select){align-items:center}
+.info-fold{margin:9px 0 2px;border:1px solid var(--line);border-radius:12px;background:#ffffff08;overflow:hidden}
+.info-fold summary{list-style:none;display:flex;align-items:center;gap:7px;padding:9px 11px;color:var(--mut);font-size:12px;font-weight:600;cursor:pointer;user-select:none}
+.info-fold summary::-webkit-details-marker{display:none}
+.info-fold summary::before{content:"ⓘ";font-size:14px;color:var(--lamp)}
+.info-fold[open] summary{border-bottom:1px solid var(--line);color:var(--ink)}
+.info-fold .info-body{padding:10px 11px;color:var(--mut);font-size:12px;line-height:1.55}
+.info-fold .info-body p{margin:0}
+@media(max-width:380px){.tg{gap:8px}.tg>span:first-child{flex-basis:33%}.tg>select{max-width:67%;font-size:13px;padding:8px 7px}}
 .tg input[type=number]{width:74px}.tg input[type=checkbox]{width:22px;height:22px;accent-color:var(--lamp)}
 .mus{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mus button{padding:14px 8px;border-radius:14px;border:1px solid var(--line);background:var(--glass)}.mus button.on{border-color:var(--break);background:#6ee7b724}
 .rg{display:flex;gap:6px;margin-bottom:12px}
@@ -71,7 +85,7 @@ select,input[type=number]{font:inherit;color:var(--ink);background:#1b2850;borde
 h3{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:600}
 .ln{font-size:13px;color:var(--mut);padding:7px 0;border-bottom:1px solid var(--line)}.ln b{color:var(--ink)}
 .sec{background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px}
-.sec h3{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 10px;font-size:15px;font-weight:650;color:var(--ink)}.sec h3 small{font-weight:400;color:var(--mut);font-size:12px}
+.sec h3{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 10px;font-size:15px;font-weight:650;color:var(--ink)}.sec h3 small{font-weight:400;color:var(--mut);font-size:12px;min-width:0;max-width:58%;text-align:right;white-space:normal}
 .hero{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.big{font-size:40px;font-weight:300;letter-spacing:-1.5px;line-height:1}
 .badge{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600}.badge.g{background:#6ee7b72b;color:#6ee7b7}.badge.y{background:#ffb4542b;color:#ffb454}.badge.r{background:#ff7a902b;color:#ff9aab}
 .kt{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kt div{background:#ffffff0d;border-radius:12px;padding:10px}.kt small{display:block;color:var(--mut);font-size:12px}.kt b{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
@@ -132,6 +146,15 @@ body.dock #mini small,body.pip #mini small{color:var(--mut);font-size:10.5px;tex
 @media(max-width:340px){.sm{width:40px;height:40px;font-size:15px}.play{width:62px;height:62px;font-size:24px}.row{gap:6px}#home{padding-left:8px;padding-right:8px}}
 @media(max-height:520px){#today{display:none}}
 @supports not (height:100dvh){#home{height:100vh}#ringw{width:min(66vw,36vh,300px)}#rec{max-height:15vh}dialog{max-height:88vh}}
+ 
+#musicctl{display:flex;align-items:center;gap:5px;padding:4px 6px 4px 4px;border:1px solid var(--line);border-radius:30px;background:var(--glass);min-height:58px}
+#musicctl #mbtn{width:48px;height:48px;flex:none;border-radius:50%;font-size:21px}
+.volstep{display:flex;flex-direction:column;gap:3px}
+.volstep button{width:25px;height:22px;padding:0;border:1px solid var(--line);border-radius:8px;background:#ffffff10;color:var(--ink);font-size:16px;line-height:1;font-weight:700}
+.volstep button:active{background:var(--lamp);color:#2a1a00}
+.music-cats{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:5px;margin:0 0 14px;border:1px solid var(--line);border-radius:14px;background:#ffffff08}
+.music-cats button{padding:11px 8px;border:0;border-radius:10px;background:transparent;color:var(--mut);font:600 13px system-ui}
+.music-cats button.on{background:var(--lamp);color:#2a1a00}
 </style></head><body>
 <div id="bg"><i></i><i></i><i></i></div>
 <main id="home">
@@ -143,7 +166,7 @@ body.dock #mini small,body.pip #mini small{color:var(--mut);font-size:10.5px;tex
  <div id="qc"><button data-q="5">5</button><button data-q="10">10</button><button data-q="15">15</button><button data-q="25">25</button><button data-q="45">45</button><button data-q="60">60</button><button data-q="0" aria-label="Custom minutes">✎</button></div>
  <div id="pz"></div>
  <div id="mini" aria-hidden="true"></div>
- <div class="row"><button class="sm" id="rst" aria-label="End session and save" title="End session and save">↺</button><button class="sm" id="ext" aria-label="Add 5 minutes">+5</button><button class="play" id="go" aria-label="Start or pause">▶</button><button class="sm" id="skip" aria-label="Next or stop">⏭</button><button class="sm" id="mbtn" aria-label="Music">♪</button></div>
+ <div class="row"><button class="sm" id="rst" aria-label="End session and save" title="End session and save">↺</button><button class="sm" id="ext" aria-label="Add 5 minutes">+5</button><button class="play" id="go" aria-label="Start or pause">▶</button><button class="sm" id="skip" aria-label="Next or stop">⏭</button><div id="musicctl" aria-label="Music controls"><button class="sm" id="mbtn" aria-label="Music on or off">♪</button><div class="volstep"><button id="volup" aria-label="Increase music volume" title="Volume up">+</button><button id="voldown" aria-label="Decrease music volume" title="Volume down">−</button></div></div></div>
 </section>
 <section class="glass" id="today"></section>
 </main>
@@ -160,24 +183,25 @@ body.dock #mini small,body.pip #mini small{color:var(--mut);font-size:10.5px;tex
   <section class="sec"><h3>Add a block</h3><div class="add"><select id="nt"><option value="study">Study</option><option value="lecture">Lecture</option><option value="practice">Question practice</option><option value="break">Break</option></select><input id="nm" type="number" min="1" max="600" value="60" aria-label="Minutes"><button class="btn" id="add">+ Add</button></div></section>
   <button class="btn main" id="ss">Save and start</button></div>
  <div class="pane" data-p="mu">
-  <section class="sec"><h3>Music source<small>Online music first, offline sounds as backup</small></h3>
+  <div class="music-cats" id="musicCats" role="tablist" aria-label="Music categories"><button type="button" class="on" data-music-cat="offline">Offline music</button><button type="button" data-music-cat="online">Online music</button></div>
+  <section class="sec music-online"><h3>Online music<small>Streaming tracks and radio</small></h3>
    <div class="tg"><span>Mode</span><select id="msrc"><option value="auto">Auto: online first, offline backup</option><option value="on">Online only</option><option value="off">Offline only (old way)</option></select></div>
-   <div class="tg"><span>Online source</span><select id="mson"><option value="mix">Auto mix</option><option value="ftu">Free To Use</option><option value="opn">Openverse (CC music)</option><option value="rad">Live radio</option></select></div>
-   <div class="tg"><span>Online style</span><select id="mcat"><option value="mix">Mixed</option><option value="lofi">Lofi &amp; chill</option><option value="piano">Piano &amp; calm</option><option value="amb">Ambient</option></select></div>
+   <div class="tg"><span>Online source</span><select id="mson"><option value="mix">Auto mix</option><option value="ftu">Free To Use</option><option value="opn">Openverse (CC music)</option><option value="rb">Instrumental radio directory</option><option value="rad">Live radio</option></select></div>
+   <div class="tg"><span>Online style</span><select id="mcat"><option value="mix">Mixed (Pomodoro playlist)</option><option value="lofi">Lofi beats</option><option value="jazz">Chillhop &amp; Jazz</option><option value="piano">Piano &amp; calm</option><option value="amb">Ambient &amp; space</option><option value="classic">Classical focus</option><option value="focus">Deep focus (electronic)</option><option value="indian">Indian instrumental (flute, sitar)</option><option value="nature">Background sounds (nature, rain, calm)</option></select></div>
    <div class="tg"><span>Offline backup</span><select id="mfb"><option value="brown">Brown Noise</option><option value="rain">Heavy Rain</option><option value="rand">Either one</option></select></div>
    
    <div class="tg" style="border:0"><span><button class="btn" id="monow">Play online now</button></span></div>
    <small id="mnow" style="display:block;color:var(--mut);font-size:12px;min-height:16px"></small>
-   <small style="display:block;color:var(--mut);font-size:11px;margin-top:6px">Online tracks come from Free To Use, Openverse (Creative Commons) and live radio (Radio Paradise, FluxFM). If one source fails the next is tried automatically; if all fail, Brown Noise or Heavy Rain plays offline.</small></section>
-  <section class="sec"><h3>Offline sounds<small>Made inside the app, work without internet, heavier on old PCs</small></h3></section>
-  <section class="sec"><h3>Lofi &amp; beats<small>The most popular Pomodoro style</small></h3><div class="mus" id="mus">
+   <details class="info-fold"><summary>Info</summary><div class="info-body"><p>Online music uses Free To Use tracks and live chill radio, with Openverse (Creative Commons) as a fallback. Study blocks get focus music and breaks get calm music. Tracks can change automatically. If a source fails, the next source is tried; if all online sources fail, the selected offline backup plays.</p></div></details></section>
+  <section class="sec music-offline-intro"><h3>Offline sounds</h3><details class="info-fold"><summary>Info</summary><div class="info-body"><p>Built-in sounds are generated on your device and work without an internet connection.</p></div></details></section>
+  <section class="sec music-offline"><h3>Lofi &amp; beats<small>The most popular Pomodoro style</small></h3><div class="mus" id="mus">
    <button data-m="lofi"><b>Lofi Chill</b><small>74 bpm · keys, soft beat</small></button><button data-m="night"><b>Midnight Lofi</b><small>70 bpm · late-night study</small></button><button data-m="rlofi"><b>Rainy Lofi</b><small>68 bpm · rain + lofi</small></button>
    <button data-m="hop"><b>Chillhop Groove</b><small>88 bpm · boom-bap, kalimba</small></button><button data-m="jazz"><b>Jazz Cafe</b><small>82 bpm · swing, walking bass</small></button></div></section>
-  <section class="sec"><h3>Piano &amp; acoustic</h3><div class="mus" id="mus2">
+  <section class="sec music-offline"><h3>Piano &amp; acoustic</h3><div class="mus" id="mus2">
    <button data-m="piano"><b>Calm Piano</b><small>66 bpm · arpeggio</small></button><button data-m="pulse"><b>Piano Pulse</b><small>72 bpm · ostinato, melody</small></button>
    <button data-m="classic"><b>Classical Focus</b><small>76 bpm · Alberti bass</small></button><button data-m="guitar"><b>Soft Guitar</b><small>84 bpm · fingerstyle</small></button>
    <button data-m="sun"><b>Acoustic Sunrise</b><small>96 bpm · strum, bright</small></button></div></section>
-  <section class="sec"><h3>Deep focus &amp; nature</h3><div class="mus" id="mus3">
+  <section class="sec music-offline"><h3>Deep focus &amp; nature</h3><div class="mus" id="mus3">
    <button data-m="synth"><b>Deep Focus Synth</b><small>96 bpm · arp, steady pulse</small></button><button data-m="amb"><b>Ambient Pulse</b><small>60 bpm · pad, heartbeat</small></button>
    <button data-m="alpha"><b>Alpha Waves</b><small>binaural + soft pulse</small></button><button data-m="forest"><b>Forest Morning</b><small>76 bpm · birds, kalimba</small></button>
    <button data-m="ocean"><b>Ocean Pulse</b><small>60 bpm · waves, pad</small></button><button data-m="raag"><b>Raag Bhupali</b><small>tanpura + bamboo flute</small></button><button data-m="zen"><b>Zen Bowls</b><small>singing bowls, stillness</small></button><button data-m="prain"><b>Piano + Rain</b><small>62 bpm · piano, rain</small></button><button data-m="rain"><b>Heavy Rain</b><small>steady rain, distant thunder</small></button><button data-m="brown"><b>Brown Noise</b><small>deep focus noise</small></button><button data-m="gamma"><b>Gamma 40Hz</b><small>binaural · headphones best</small></button><button data-m="tick"><b>Clock Tick Focus</b><small>60 bpm · classic Pomodoro tick</small></button></div></section>
@@ -186,12 +210,12 @@ body.dock #mini small,body.pip #mini small{color:var(--mut);font-size:10.5px;tex
  <div class="pane" data-p="pf">
   <section class="sec"><h3>Timer</h3><label class="tg">Auto-start next block<input id="s_auto" type="checkbox"></label><label class="tg" style="border:0">Pause alert (min, 0 = off)<input id="s_pal" type="number" min="0" max="120"></label></section>
   <section class="sec"><h3>Alerts</h3><label class="tg">Sound when a block ends<input id="s_sound" type="checkbox"></label><label class="tg">Alert sound<span><select id="s_tone"><option value="chime">Chime</option><option value="bell">Bell</option><option value="soft">Soft</option><option value="beep">Beep</option></select> <button class="btn" id="tt">Test</button></span></label><label class="tg">Vibration<input id="s_vib" type="checkbox"></label><label class="tg" style="border:0">Notifications<input id="s_notif" type="checkbox"></label></section>
-  <section class="sec"><h3>Screen</h3><label class="tg">Keep screen on while running<input id="s_wake" type="checkbox"></label><div class="tg"><span>Side window (30% of screen)</span><button class="btn" id="sw">Open</button></div><div class="tg" style="border:0"><span>Fullscreen focus</span><button class="btn" id="fs">Fullscreen</button></div><p class="tip" style="margin:6px 0 0">Shortcuts: Space start/pause · N next · R reset. Use +5 to extend the current block.</p></section>
-  <section class="sec"><h3>Data<small>Last 30 days of history only</small></h3><div class="add" style="margin:0"><button class="btn" id="csv">Export CSV</button><button class="btn" id="bk">Backup</button><button class="btn" id="rs">Restore</button><button class="btn" id="clr">Clear history</button></div><input type="file" id="rsf" accept=".json" hidden></section></div>
+  <section class="sec"><h3>Screen</h3><label class="tg">Keep screen on while running<input id="s_wake" type="checkbox"></label><div class="tg"><span>Side window (30% of screen)</span><button class="btn" id="sw">Open</button></div><div class="tg" style="border:0"><span>Fullscreen focus</span><button class="btn" id="fs">Fullscreen</button></div><details class="info-fold"><summary>Info</summary><div class="info-body"><p>Keyboard shortcuts: Space to start or pause, N for next, R to reset. Use +5 to extend the current block.</p></div></details></section>
+  <section class="sec"><h3>Data</h3><details class="info-fold"><summary>Info</summary><div class="info-body"><p>Only the last 30 days of history are kept. Older data is removed automatically.</p></div></details><div class="add" style="margin:0"><button class="btn" id="csv">Export CSV</button><button class="btn" id="bk">Backup</button><button class="btn" id="rs">Restore</button><button class="btn" id="clr">Clear history</button></div><input type="file" id="rsf" accept=".json" hidden></section></div>
 </div></dialog>
 
 <dialog id="dd"><div class="dh"><h2>Detailed analytics</h2><button class="x" data-c="dd" aria-label="Close">✕</button></div>
-<div class="db"><div class="rg" id="rg2"></div><div id="dv"></div><p class="tip" style="text-align:center">The last 30 days of history are kept. Older data is removed automatically.</p></div></dialog>
+<div class="db"><div class="rg" id="rg2"></div><div id="dv"></div><details class="info-fold"><summary>Info</summary><div class="info-body"><p>The last 30 days of history are kept. Older data is removed automatically.</p></div></details></div></dialog>
 
 <script>
 let D=document;const $=s=>D.querySelector(s),$$=s=>[...D.querySelectorAll(s)];
@@ -471,35 +495,49 @@ let hintAt=0;function audioHint(){if(((AC&&cur&&!cur.on&&AC.state!=='running')||
 /* ---------- hybrid music: ONLINE first (light on the CPU), offline synth as the backup ---------- */
 SONG.auto=function(){};
 const ON={a:null,q:[],tok:0,bad:0,pend:0,wd:0,dead:{},fail:{},tr:null},APP='PadhaiTimer';
-const OQ={mix:['lofi','chill','ambient','piano','study'],lofi:['lofi','chill'],piano:['piano','calm'],amb:['ambient','calm','nature']},AG={mix:['Lo-Fi','Ambient','Electronic'],lofi:['Lo-Fi'],piano:['Classical'],amb:['Ambient']};
+const OQ={mix:['lofi','chill','ambient','piano','study','focus'],lofi:['lofi','lofi hip hop','chill beats'],jazz:['chillhop','jazz','smooth jazz','jazzhop'],piano:['piano','calm piano','soft piano'],amb:['ambient','space ambient','calm'],classic:['classical','orchestral calm','strings'],focus:['focus','deep focus','electronic chill','downtempo'],nature:['nature','rain','meditation','calm'],indian:['indian','flute','sitar','meditation']},AG={mix:['Lo-Fi','Ambient','Electronic'],lofi:['Lo-Fi'],piano:['Classical'],amb:['Ambient']};
 const ocat=()=>catNow()==='b'?'amb':(OQ[S.mcat]?S.mcat:'mix'),ov=()=>clamp(vg($('#vol').value),0,1);
 const jf=(u,ms)=>{const c=new AbortController,t=setTimeout(()=>c.abort(),ms||7000);return fetch(u,{signal:c.signal}).then(r=>{if(!r.ok)throw new Error('http');return r.json()}).finally(()=>clearTimeout(t))};
 const FT='https://api.freetouse.com/v3/music/tracks/';
 async function srcFTU(){const c=ocat();let j=await jf(FT+'search?limit=40&order=random&query='+encodeURIComponent(rnd(OQ[c])));let d=(j&&j.data)||[];if(!d.length){j=await jf(FT+'all?limit=40&order=random');d=(j&&j.data)||[]}
  return d.filter(t=>t&&t.files&&t.files.mp3&&!t.is_premium).map(t=>({u:t.files.mp3,t:t.title||'Track',a:(t.artists||[]).map(x=>x&&x[1]&&x[1].name).filter(Boolean).join(', '),s:'Free To Use',i:'ftu'}))}
 /* extra online sources: Openverse (open JSON API, CC music, no key) and live radio streams (Radio Paradise, FluxFM; plain audio URLs, no CORS or key needed) */
-const OVQ={f:['lofi','chillhop','study music','ambient piano','downtempo instrumental'],b:['ambient','calm piano','nature relaxing','meditation']};
-async function srcOpn(){const q=rnd(OVQ[catNow()]);
+const OVQ={mix:['lofi','chillhop','study music','ambient piano','downtempo instrumental'],lofi:['lofi','lofi hip hop','chill beats instrumental'],jazz:['chillhop','jazz instrumental','smooth jazz'],piano:['calm piano','solo piano','piano instrumental'],amb:['ambient','space ambient','drone ambient'],classic:['classical piano','string quartet','orchestral calm'],focus:['downtempo instrumental','electronic ambient','deep focus'],nature:['nature relaxing','meditation','rain ambient'],indian:['indian classical','flute','sitar','bansuri'],b:['ambient','calm piano','nature relaxing','meditation']};
+async function srcOpn(){const q=rnd(catNow()==='b'?OVQ.b:(OVQ[ocat()]||OVQ.mix));
  const j=await jf('https://api.openverse.org/v1/audio/?category=music&extension=mp3&page_size=40&page='+(1+Math.floor(Math.random()*3))+'&q='+encodeURIComponent(q),8000);
  return((j&&j.results)||[]).filter(t=>t&&/^https:/.test(t.url||'')&&(t.duration||999999)>90000).map(t=>({u:t.url,t:t.title||'Track',a:t.creator||'',s:'Openverse',i:'opn'}))}
-const RAD={f:[['Chillhop','FluxFM','https://streams.fluxfm.de/Chillhop/mp3-128/audio/'],['Mellow Mix','Radio Paradise','https://stream.radioparadise.com/mellow-128']],
- b:[['Mellow Mix','Radio Paradise','https://stream.radioparadise.com/mellow-128'],['Chillhop','FluxFM','https://streams.fluxfm.de/Chillhop/mp3-128/audio/']]};
-async function srcRad(){return RAD[catNow()].map(r=>({u:r[2],t:r[0],a:'Live radio',s:r[1],i:'rad',live:1})).sort(()=>Math.random()-.5)}
-const SRC={ftu:srcFTU,opn:srcOpn,rad:srcRad};
-async function nextTr(){if(!ON.q.length){const pref=S.mson==='ftu'||S.mson==='opn'||S.mson==='rad'?[S.mson]:[],rest=['ftu','opn'].filter(x=>x!==pref[0]).sort(()=>Math.random()-.5),o=pref.concat(rest);if(o.indexOf('rad')<0)o.push('rad');
+const RAD={
+ mix:[['Groove Salad','SomaFM','https://ice.somafm.com/groovesalad'],['Chillhop','FluxFM','https://streams.fluxfm.de/Chillhop/mp3-128/audio/'],['Fluid','SomaFM','https://ice.somafm.com/fluid'],['Drone Zone','SomaFM','https://ice.somafm.com/dronezone'],['Deep Space One','SomaFM','https://ice.somafm.com/deepspaceone']],
+ lofi:[['Chillhop','FluxFM','https://streams.fluxfm.de/Chillhop/mp3-128/audio/'],['Fluid','SomaFM','https://ice.somafm.com/fluid'],['Groove Salad','SomaFM','https://ice.somafm.com/groovesalad']],
+ jazz:[['Chillhop','FluxFM','https://streams.fluxfm.de/Chillhop/mp3-128/audio/'],['Fluid','SomaFM','https://ice.somafm.com/fluid'],['Groove Salad','SomaFM','https://ice.somafm.com/groovesalad']],
+ piano:[['Chillhop','FluxFM','https://streams.fluxfm.de/Chillhop/mp3-128/audio/'],['Deep Space One','SomaFM','https://ice.somafm.com/deepspaceone'],['Groove Salad','SomaFM','https://ice.somafm.com/groovesalad']],
+ amb:[['Drone Zone','SomaFM','https://ice.somafm.com/dronezone'],['Deep Space One','SomaFM','https://ice.somafm.com/deepspaceone'],['Space Station Soma','SomaFM','https://ice.somafm.com/spacestation']],
+ classic:[['Deep Space One','SomaFM','https://ice.somafm.com/deepspaceone'],['Drone Zone','SomaFM','https://ice.somafm.com/dronezone'],['Chillhop','FluxFM','https://streams.fluxfm.de/Chillhop/mp3-128/audio/']],
+ focus:[['Groove Salad','SomaFM','https://ice.somafm.com/groovesalad'],['Space Station Soma','SomaFM','https://ice.somafm.com/spacestation'],['Chillhop','FluxFM','https://streams.fluxfm.de/Chillhop/mp3-128/audio/'],['Deep Space One','SomaFM','https://ice.somafm.com/deepspaceone']],
+ nature:[['Drone Zone','SomaFM','https://ice.somafm.com/dronezone'],['Deep Space One','SomaFM','https://ice.somafm.com/deepspaceone'],['Space Station Soma','SomaFM','https://ice.somafm.com/spacestation']],
+ indian:[['Drone Zone','SomaFM','https://ice.somafm.com/dronezone'],['Deep Space One','SomaFM','https://ice.somafm.com/deepspaceone']],
+ b:[['Drone Zone','SomaFM','https://ice.somafm.com/dronezone'],['Deep Space One','SomaFM','https://ice.somafm.com/deepspaceone'],['Space Station Soma','SomaFM','https://ice.somafm.com/spacestation'],['Groove Salad','SomaFM','https://ice.somafm.com/groovesalad']]};
+async function srcRad(){return(catNow()==='b'?RAD.b:(RAD[ocat()]||RAD.mix)).map(r=>({u:r[2],t:r[0],a:'Live radio',s:r[1],i:'rad',live:1})).sort(()=>Math.random()-.5)}
+/* Radio Browser: free community directory of internet radio (https, CORS open). Picks live stations by tag (lofi, ambient, instrumental, flute, sitar, nature...) so there is always something to play */
+const RBT={mix:['lofi','instrumental','ambient','chillout','meditation','relaxation'],lofi:['lofi','lofi hip hop','chillhop'],jazz:['jazz instrumental','smooth jazz','chillhop'],piano:['piano','solo piano','instrumental'],amb:['ambient','space ambient','drone'],classic:['classical','baroque','orchestral'],focus:['focus','downtempo','electronic ambient'],nature:['nature sounds','rain','relaxation','meditation'],indian:['indian classical','flute','sitar','bansuri','indian instrumental','meditation'],b:['ambient','meditation','nature sounds','relaxation']},RBH=['https://de1.api.radio-browser.info','https://fi1.api.radio-browser.info','https://de2.api.radio-browser.info'];
+async function srcRB(){const tg=rnd(catNow()==='b'?RBT.b:(RBT[ocat()]||RBT.mix));let j=null;
+ for(const h of RBH.slice().sort(()=>Math.random()-.5)){try{j=await jf(h+'/json/stations/search?hidebroken=true&is_https=true&order=votes&reverse=true&limit=60&tag='+encodeURIComponent(tg),8000);if(j&&j.length)break}catch(e){}}
+ const seen={};return(Array.isArray(j)?j:[]).filter(t=>{const u=t&&t.url_resolved||'';return /^https:/.test(u)&&!/\.m3u8?(\?|$)/i.test(u)&&!t.hls&&t.lastcheckok!==0&&/^(mp3|aac\+?)$/i.test(t.codec||'')&&!seen[u]&&(seen[u]=1)}).slice(0,30).sort(()=>Math.random()-.5).slice(0,8).map(t=>({u:t.url_resolved,t:String(t.name||'Radio').trim().slice(0,40),a:'Live radio',s:'Radio Browser',i:'rb',live:1}))}
+const SRC={ftu:srcFTU,opn:srcOpn,rad:srcRad,rb:srcRB};
+async function nextTr(){if(!ON.q.length){const pref=S.mson==='ftu'||S.mson==='opn'||S.mson==='rad'||S.mson==='rb'?[S.mson]:[],rest=['ftu','rad','rb'].filter(x=>x!==pref[0]).sort(()=>Math.random()-.5),o=pref.concat(rest);if(o.indexOf('opn')<0)o.push('opn');
  const now=Date.now();let ids=o.filter(x=>!(ON.dead[x]>now));if(!ids.length){ON.dead={};ids=o}
- for(const id of ids){try{const l=await SRC[id]();if(l.length){ON.q=S.mson==='rad'||id==='rad'?l:l.sort(()=>Math.random()-.5);break}ON.dead[id]=Date.now()+12e4}catch(e){ON.dead[id]=Date.now()+12e4}}}
- return ON.q.shift()||null}
+ for(const id of ids){try{const l=await SRC[id]();if(l.length){ON.q=S.mson==='rad'||id==='rad'||id==='rb'?l:l.sort(()=>Math.random()-.5);break}ON.dead[id]=Date.now()+12e4}catch(e){ON.dead[id]=Date.now()+12e4}}}
+ let n=ON.q.shift()||null;if(n&&ON.tr&&n.u===ON.tr.u&&ON.q.length){const m=ON.q.shift();ON.q.push(n);n=m}return n}
 function showNow(t){const e=$('#mnow');if(e)e.textContent=t?'\u266a '+t.t+(t.a?' \u2014 '+t.a:'')+' \u00b7 via '+t.s:'';if(t)toast('\u266a '+t.t+(t.a?' \u2014 '+t.a:'')+' ('+t.s+')')}
 function aud(){if(!ON.a){const a=new Audio();a.preload='auto';
  a.addEventListener('ended',()=>onEnd(1));a.addEventListener('error',()=>onEnd(0));
  a.addEventListener('playing',()=>{ON.bad=0;clearTimeout(ON.wd);if(ON.tr)ON.fail[ON.tr.i]=0});
  a.addEventListener('waiting',()=>{clearTimeout(ON.wd);const my=cur&&cur.on?cur.tok:-1;ON.wd=setTimeout(()=>{if(cur&&cur.on&&cur.tok===my)onEnd(0)},15000)});ON.a=a}return ON.a}
-function onEnd(ok){if(!cur||!cur.on||cur.tok!==ON.tok)return;clearTimeout(ON.wd);if(!ok){ON.bad++;const t=ON.tr;if(t&&t.i){ON.fail[t.i]=(ON.fail[t.i]||0)+1;if(ON.fail[t.i]>=2){ON.dead[t.i]=Date.now()+18e4;ON.fail[t.i]=0;ON.q=ON.q.filter(x=>x.i!==t.i)}}}if(ON.bad>=5)toOff();else nextOn()}
+function onEnd(ok){if(!cur||!cur.on||cur.tok!==ON.tok)return;clearTimeout(ON.wd);if(!ok){ON.bad++;const t=ON.tr;if(t&&t.i){ON.fail[t.i]=(ON.fail[t.i]||0)+1;if(ON.fail[t.i]>=(t.i==='rb'?6:2)){ON.dead[t.i]=Date.now()+18e4;ON.fail[t.i]=0;ON.q=ON.q.filter(x=>x.i!==t.i)}}}if(ON.bad>=8)toOff();else nextOn()}
 function startOn(tr){const a=aud(),my=cur.tok;ON.tr=tr;cur.live=!!tr.live;a.src=tr.u;a.volume=ov();tStart=Date.now();showNow(tr);
  clearTimeout(ON.wd);ON.wd=setTimeout(()=>{if(cur&&cur.on&&cur.tok===my&&!ON.pend)onEnd(0)},12000);
  const p=a.play();if(p&&p.catch)p.catch(e=>{if(!cur||cur.tok!==my)return;if(e&&e.name==='NotAllowedError'){ON.pend=1;clearTimeout(ON.wd)}else if(!e||e.name!=='AbortError')onEnd(0)})}
-async function nextOn(){if(!cur||!cur.on)return;const my=cur.tok,tr=await nextTr();if(!cur||!cur.on||cur.tok!==my)return;if(!tr){ON.bad=5;return toOff()}startOn(tr)}
+async function nextOn(){if(!cur||!cur.on)return;const my=cur.tok,tr=await nextTr();if(!cur||!cur.on||cur.tok!==my)return;if(!tr){ON.bad=8;return toOff()}startOn(tr)}
 function toOff(){if(S.msrc==='on'){stopMusic();toast('Online music is not available right now');return}
  const fb=S.mfb==='rain'?'rain':S.mfb==='rand'?rnd(['brown','rain']):'brown';stopMusic(.2);ON.bad=0;playOff(fb);if(cur)cur.fb=1;S.music='auto';sv('set',S);
  toast('\u266a Offline backup: '+(fb==='rain'?'Heavy Rain':'Brown Noise'))}
@@ -535,6 +573,22 @@ $('#skip').onclick=()=>{if(cs&&cs.act>=60&&mode!=='stopwatch'&&!ask('End this bl
 $('#rst').onclick=()=>{if(blocked())return;flush();const a=cs?cs.act:0,sb=cs&&cs.t!=='break';if(a>=60&&!ask('End this session? '+fd(a)+' of focus will be saved.'))return;closeS(false);run=false;el=0;ex=0;last=Date.now();saveT();if(a>=MINS)toast('Saved '+fd(a)+(sb?' of focus':' of break')+' to today');wake();draw()};
 $('#ext').onclick=()=>{if(mode==='stopwatch'||!blk())return;ex+=300;if(cs)cs.plan+=5;toast('Added 5 minutes');draw()};
 $('#mbtn').onclick=()=>{if(cur){stopMusic();sv('mon',{off:1,at:Date.now()})}else playAuto();draw()};
+ const musicCats=$('#musicCats');
+ function setMusicCategory(cat){
+   if(!musicCats)return;
+   musicCats.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.musicCat===cat));
+   $$('.music-online').forEach(e=>e.hidden=cat!=='online');
+   $$('.music-offline-intro,.music-offline').forEach(e=>e.hidden=cat!=='offline');
+ }
+ if(musicCats){musicCats.addEventListener('click',e=>{const b=e.target.closest('[data-music-cat]');if(b)setMusicCategory(b.dataset.musicCat)});setMusicCategory('offline')}
+ function stepMusicVolume(delta){
+   const slider=$('#vol');if(!slider)return;
+   slider.value=Math.max(+slider.min,Math.min(+slider.max,(+slider.value||0)+delta));
+   slider.dispatchEvent(new Event('input',{bubbles:true}));
+ }
+ $('#volup').onclick=()=>stepMusicVolume(5);
+ $('#voldown').onclick=()=>stepMusicVolume(-5);
+
 $('#modes').onclick=e=>{const k=e.target.dataset.k;if(k)setMode(k)};
 $('#qc').onclick=e=>{const q=e.target.dataset.q;if(q===undefined)return;let v=+q;if(!v){if(pip){toast('Set custom minutes in the main tab');return}v=Math.round(+prompt('How many minutes? (1–600)',qm)||0);if(!v)return}setQ(Math.max(1,Math.min(600,v)))};
 $('#bs').onclick=openSet;$('#bd').onclick=()=>{dash();$('#dd').showModal()};
