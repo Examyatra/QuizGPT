@@ -1,7 +1,7 @@
 {
  "name": "Study Timer",
  "short_name": "Timer",
- "start_url": "./timer.html",
+ "start_url": "./index.html",
  "scope": "./",
  "display": "standalone",
  "background_color": "#0b1226",
