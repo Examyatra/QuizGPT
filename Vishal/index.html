@@ -160,7 +160,7 @@ body.dock #mini small,body.pip #mini small{color:var(--mut);font-size:10.5px;tex
   <section class="sec"><h3>Add a block</h3><div class="add"><select id="nt"><option value="study">Study</option><option value="lecture">Lecture</option><option value="practice">Question practice</option><option value="break">Break</option></select><input id="nm" type="number" min="1" max="600" value="60" aria-label="Minutes"><button class="btn" id="add">+ Add</button></div></section>
   <button class="btn main" id="ss">Save and start</button></div>
  <div class="pane" data-p="mu">
-  <section class="sec"><h3>Lofi &amp; beats<small>The most popular Pomodoro style</small></h3><div class="mus" id="mus">
+  <section class="sec"><h3>Instrumental study background<small>All built-in tracks are generated instrumentals · no vocals or film songs</small></h3><div class="mus" id="mus">
    <button data-m="lofi"><b>Lofi Chill</b><small>74 bpm · keys, soft beat</small></button><button data-m="night"><b>Midnight Lofi</b><small>70 bpm · late-night study</small></button><button data-m="rlofi"><b>Rainy Lofi</b><small>68 bpm · rain + lofi</small></button>
    <button data-m="hop"><b>Chillhop Groove</b><small>88 bpm · boom-bap, kalimba</small></button><button data-m="jazz"><b>Jazz Cafe</b><small>82 bpm · swing, walking bass</small></button></div></section>
   <section class="sec"><h3>Piano &amp; acoustic</h3><div class="mus" id="mus2">
@@ -172,7 +172,14 @@ body.dock #mini small,body.pip #mini small{color:var(--mut);font-size:10.5px;tex
    <button data-m="alpha"><b>Alpha Waves</b><small>binaural + soft pulse</small></button><button data-m="forest"><b>Forest Morning</b><small>76 bpm · birds, kalimba</small></button>
    <button data-m="ocean"><b>Ocean Pulse</b><small>60 bpm · waves, pad</small></button><button data-m="raag"><b>Raag Bhupali</b><small>tanpura + bamboo flute</small></button><button data-m="zen"><b>Zen Bowls</b><small>singing bowls, stillness</small></button><button data-m="prain"><b>Piano + Rain</b><small>62 bpm · piano, rain</small></button><button data-m="rain"><b>Heavy Rain</b><small>steady rain, distant thunder</small></button><button data-m="brown"><b>Brown Noise</b><small>deep focus noise</small></button><button data-m="gamma"><b>Gamma 40Hz</b><small>binaural · headphones best</small></button><button data-m="tick"><b>Clock Tick Focus</b><small>60 bpm · classic Pomodoro tick</small></button></div></section>
   
-<section class="sec"><h3>Playback</h3><div class="tg"><span>Auto-rotate music</span><select id="mrot"><option value="0">Off</option><option value="10">Every 10 min</option><option value="15">Every 15 min</option><option value="20">Every 20 min</option><option value="30">Every 30 min</option></select></div><div class="tg"><span>Volume</span><input id="vol" type="range" min="0" max="100" value="45" style="flex:1;accent-color:var(--lamp)"></div><label class="tg">Auto-play music with the timer<input id="s_amu" type="checkbox"></label><div class="tg" style="border:0"><span>Track</span><span><button class="btn" id="mshuf">Shuffle</button> <button class="btn" id="mstop">Stop</button></span></div></section></div>
+<section class="sec"><h3>Hybrid music</h3>
+  <div class="tg"><span>Music mode</span><select id="hyMode"><option value="auto">Auto · Online first</option><option value="online">Online only</option><option value="offline">Offline only</option></select></div>
+  <div class="tg"><span>Online source</span><select id="hySource"><option value="audius">Audius · Study instrumentals</option><option value="archive">Internet Archive · Licensed instrumentals</option><option value="both">Both · Study instrumentals only</option></select></div>
+  <div class="tg"><span>Offline fallback</span><select id="hyFallback"><option value="brown">Brown Noise</option><option value="rain">Heavy Rain</option></select></div>
+  <div id="hyStatus" class="tip" role="status" aria-live="polite">Tap “Try online now” or start the timer to begin playback (browsers require a user gesture). Online search accepts only explicitly instrumental/no-vocals tracks with a declared Creative Commons/Public Domain licence, blocks vocal/pop/film-song terms and filters out fast BPM. Unclear metadata or missing licence is skipped; Auto mode falls back to Brown Noise or Heavy Rain.</div>
+  <div class="add" style="margin:8px 0 0"><button class="btn" id="hyNext">Next online track</button><button class="btn" id="hyTry">Try online now</button></div>
+ </section>
+ <section class="sec"><h3>Playback</h3><div class="tg"><span>Auto-rotate music</span><select id="mrot"><option value="0">Off</option><option value="10">Every 10 min</option><option value="15">Every 15 min</option><option value="20">Every 20 min</option><option value="30">Every 30 min</option></select></div><div class="tg"><span>Volume</span><input id="vol" type="range" min="0" max="100" value="45" style="flex:1;accent-color:var(--lamp)"></div><label class="tg">Auto-play music with the timer<input id="s_amu" type="checkbox"></label><div class="tg" style="border:0"><span>Track</span><span><button class="btn" id="mshuf">Shuffle</button> <button class="btn" id="mstop">Stop</button></span></div></section></div>
  <div class="pane" data-p="pf">
   <section class="sec"><h3>Timer</h3><label class="tg">Auto-start next block<input id="s_auto" type="checkbox"></label><label class="tg" style="border:0">Pause alert (min, 0 = off)<input id="s_pal" type="number" min="0" max="120"></label></section>
   <section class="sec"><h3>Alerts</h3><label class="tg">Sound when a block ends<input id="s_sound" type="checkbox"></label><label class="tg">Alert sound<span><select id="s_tone"><option value="chime">Chime</option><option value="bell">Bell</option><option value="soft">Soft</option><option value="beep">Beep</option></select> <button class="btn" id="tt">Test</button></span></label><label class="tg">Vibration<input id="s_vib" type="checkbox"></label><label class="tg" style="border:0">Notifications<input id="s_notif" type="checkbox"></label></section>
@@ -194,7 +201,7 @@ const mmss=s=>{s=Math.max(0,Math.ceil(s-1e-6));const h=Math.floor(s/3600),m=Math
 const tm=t=>new Date(t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
 const esc=s=>String(s).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';'),day0=n=>{const c=new Date();c.setHours(0,0,0,0);c.setDate(c.getDate()-n);return c.getTime()};
 let plan=ld('plan',[{t:'study',m:60},{t:'practice',m:30},{t:'break',m:10}]),dp=[],pat=ld('pat',0),idx=0,el=0,ex=0,run=false,last=0,cs=null,wl=null,n10=0,mode=ld('mode','plan'),qm=ld('qm',25),rgn=1,lastH='';
-let log=ld('log',[]),S=Object.assign({goal:6,auto:true,sound:true,notif:false,wake:true,amu:true,pal:10,music:'',tone:'chime',vib:true},ld('set',{}));
+let log=ld('log',[]),S=Object.assign({goal:6,auto:true,sound:true,notif:false,wake:true,amu:true,pal:10,music:'',tone:'chime',vib:true,hyMode:'auto',hySource:'both',hyFallback:'brown'},ld('set',{}));
 /* recover a session cut off by a closed tab; keep only the last 30 days */
 const sanLog=a=>(Array.isArray(a)?a:[]).filter(l=>l&&T[l.t]&&isFinite(l.s)&&isFinite(l.e)&&isFinite(l.act)).map(l=>({...l,pz:+l.pz||0,np:+l.np||0,plan:+l.plan||0,day:l.day||ymd(new Date(l.s))}));
 log=sanLog(log);plan=(Array.isArray(plan)?plan:[]).filter(p=>p&&T[p.t]&&p.m>0);if(!plan.length)plan=[{t:'study',m:60},{t:'practice',m:30},{t:'break',m:10}];if(!['plan','quick','stopwatch'].includes(mode))mode='plan';
@@ -223,7 +230,7 @@ function next(done){const nm=T[blk().t].n,a=cs?cs.act:0;closeS(done);el=0;ex=0;
  last=Date.now();wake();draw()}
 function flush(){const b=blk();if(run&&b&&cs){const n=Date.now(),d=Math.max(0,(n-last)/1000),add=Math.min(d,durS(b)-el);el+=add;cs.act+=add;cs.cur=(cs.cur||0)+add;if(cs.cur>(cs.mx||0))cs.mx=cs.cur;last=n}}
 function toggle(){if(!blk())return;if(blocked())return;flush();run=!run;last=Date.now();
- if(run){endP();if(!cs)openS();try{ac()}catch(e){}if(S.amu&&S.music&&!cur)play(S.music);if(mode==='plan'&&Date.now()>=pat&&idx===0&&el===0){pat=Date.now()+864e5;sv('pat',pat)}}
+ if(run){endP();if(!cs)openS();try{ac()}catch(e){}if(S.amu&&!cur&&!onlineAudio)hyStart();if(mode==='plan'&&Date.now()>=pat&&idx===0&&el===0){pat=Date.now()+864e5;sv('pat',pat)}}
  else if(cs){cs.ps=Date.now();cs.np++;cs.al=0;cs.cur=0}wake();draw()}
 function setMode(m){if(m===mode)return;closeS(false);run=false;el=0;ex=0;mode=m;sv('mode',m);wake();draw()}
 function setQ(v){if(run||el>0){toast('Reset the timer before changing the duration');return}qm=v;sv('qm',v);draw()}
@@ -315,11 +322,11 @@ function dlist(){const k=pkey();if(k==='cu'&&dp.length)sv('cplan',dp);
  $('#plt').innerHTML='Your plan<small>'+PN2[k]+' · '+(dp.length?dp.reduce((a,x)=>a+x.m,0)+' min':'empty')+'</small>';
  $('#dl').innerHTML=dp.map((p,i)=>`<div class="blk"><i class="dot" style="background:${T[p.t].c}"></i><span>${p.t==='practice'?'Practice':T[p.t].n} · ${p.m} min</span><button data-u="${i}" aria-label="Up">↑</button><button data-d="${i}" aria-label="Down">↓</button><button data-r="${i}" aria-label="Remove">✕</button></div>`).join('')||'<p class="tip">No blocks yet. Add one below.</p>'}
 const NK=['pal'],BK=['auto','sound','wake','notif','vib','amu'];
-function openSet(){dp=plan.map(x=>({...x}));dlist();NK.forEach(k=>$('#s_'+k).value=S[k]);BK.forEach(k=>$('#s_'+k).checked=S[k]);$('#s_tone').value=S.tone;$$('.mus button').forEach(b=>b.classList.toggle('on',!!cur&&b.dataset.m===S.music));$('#sd').showModal()}
+function openSet(){dp=plan.map(x=>({...x}));dlist();NK.forEach(k=>$('#s_'+k).value=S[k]);BK.forEach(k=>$('#s_'+k).checked=S[k]);$('#s_tone').value=S.tone;['hyMode','hySource','hyFallback'].forEach(id=>{const el=$('#'+id);if(el)el.value=S[id]||({hyMode:'auto',hySource:'both',hyFallback:'brown'}[id])});$$('.mus button').forEach(b=>b.classList.toggle('on',!!cur&&b.dataset.m===S.music));$('#sd').showModal()}
 $('#dl').onclick=e=>{const u=e.target.dataset.u,r=e.target.dataset.r;if(u!==undefined&&+u>0){const i=+u;[dp[i-1],dp[i]]=[dp[i],dp[i-1]]}const dn=e.target.dataset.d;if(dn!==undefined&&+dn<dp.length-1){const i=+dn;[dp[i+1],dp[i]]=[dp[i],dp[i+1]]}if(r!==undefined)dp.splice(+r,1);dlist()};
 $('#add').onclick=()=>{dp.push({t:$('#nt').value,m:Math.max(1,Math.min(600,+$('#nm').value||1))});dlist()};
 $('#pre').onclick=e=>{const b=e.target.closest('.pc');if(!b)return;const k=b.dataset.k;if(k==='cu'){if(pkey()==='cu')return;const c=ld('cplan',null);if(Array.isArray(c)&&c.length&&!same(c,PRE.p1)&&!same(c,PRE.p2)){dp=cpy(c.filter(x=>x&&T[x.t]&&x.m>0));dlist()}else{toast('Add or reorder blocks below to build your own plan');$('#nt').scrollIntoView({block:'center'})}return}dp=cpy(PRE[k]);dlist()};
-$('#ss').onclick=()=>{if(!dp.length)return;closeS(false);mode='plan';sv('mode',mode);plan=dp.map(x=>({...x}));sv('plan',plan);idx=0;el=0;ex=0;pat=Date.now()+864e5;sv('pat',pat);run=true;last=Date.now();if(S.amu&&S.music&&!cur)play(S.music);$('#sd').close();wake();draw()};
+$('#ss').onclick=()=>{if(!dp.length)return;closeS(false);mode='plan';sv('mode',mode);plan=dp.map(x=>({...x}));sv('plan',plan);idx=0;el=0;ex=0;pat=Date.now()+864e5;sv('pat',pat);run=true;last=Date.now();if(S.amu&&!cur&&!onlineAudio)hyStart();$('#sd').close();wake();draw()};
 $('#sd').onchange=async e=>{if(!e.target.id.startsWith('s_'))return;NK.forEach(k=>S[k]=+$('#s_'+k).value||0);BK.forEach(k=>S[k]=$('#s_'+k).checked);S.tone=$('#s_tone').value;if(S.goal<1)S.goal=1;
  if(S.notif&&window.Notification&&Notification.permission==='default'){const p=await Notification.requestPermission();if(p!=='granted'){S.notif=false;$('#s_notif').checked=false}}sv('set',S);wake();lastH='';draw()};
 $$('.tabs').forEach(t=>t.onclick=e=>{const k=e.target.dataset.t;if(!k)return;$$('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===k));$$('.pane').forEach(p=>p.classList.toggle('on',p.dataset.p===k))});
@@ -441,13 +448,88 @@ Object.assign(SONG,{
  brown(){tr(.9);noise('brown','lowpass',1000,.5,cur.bus);noise('brown','lowpass',250,.25,cur.bus)},
  gamma(){tr(.8);bin(200,240,.08);noise('brown','lowpass',500,.35,cur.bus);bars(8,(t,k)=>{const c=CH.K[(k>>1)%4];pd(t,[c.b+12,...c.n],8,.025)})}});
 function stopMusic(f=.4){if(cur){const c=cur;cur=null;c.t.forEach(x=>{try{x&&x.terminate?x.terminate():clearInterval(x)}catch(e){}});const g=c.out.gain,n=AC.currentTime;g.cancelScheduledValues(n);g.setValueAtTime(g.value,n);g.linearRampToValueAtTime(0,n+f);setTimeout(()=>{c.s.forEach(s=>{try{s.stop()}catch(e){}});c.out.disconnect()},f*1000+300)}$$('.mus button').forEach(b=>b.classList.remove('on'))}
-function play(name,xf){if(!SONG[name])return;ac();stopMusic(xf?4:.4);
+function play(name,xf){if(!SONG[name])return;hyStopOnline();ac();stopMusic(xf?4:.4);
  const bus=AC.createBiquadFilter(),trim=AC.createGain(),out=AC.createGain(),pad=AC.createGain(),snd=AC.createGain(),rv=AC.createConvolver(),t=AC.currentTime;
  bus.type='lowpass';bus.frequency.value=9000;rv.buffer=IR||(IR=irb());snd.gain.value=.45;
  out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(1,t+(xf?4:.25));
  bus.connect(trim);trim.connect(out);out.connect(master);pad.connect(bus);snd.connect(rv);rv.connect(bus);
  cur={bus,trim,out,pad,snd,s:[],t:[],k:catNow()};tStart=Date.now();wb=nbuf('white');S.music=name;sv('set',S);SONG[name]();
  const b=$(`.mus [data-m=${name}]`);if(b)b.classList.add('on')}
+
+/* ---------- hybrid online/offline music ---------- */
+let onlineAudio=null, onlineBusy=false, onlineQueue=[], onlineSeen=new Set(), onlineTrack=null, onlineRotateAt=0;
+const HY_APP='study_timer_pwa';
+function hyStatus(msg){const e=$('#hyStatus');if(e)e.textContent=msg}
+function hyStopOnline(){if(onlineAudio){try{onlineAudio.pause();onlineAudio.removeAttribute('src');onlineAudio.load()}catch(e){}onlineAudio=null}onlineBusy=false;onlineTrack=null}
+function hySources(){const s=S.hySource||'audius';return s==='both'?['audius','archive']:[s]}
+function hyPickFallback(){const k=S.hyFallback==='rain'?'rain':'brown';try{play(k);hyStatus('Offline fallback playing · '+(k==='rain'?'Heavy Rain':'Brown Noise'))}catch(e){hyStatus('Offline audio could not start. Tap a sound in Offline Music.')} }
+async function hyFetch(url,timeout=9000){const c=new AbortController(),t=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{signal:c.signal,cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(t)}}
+const HY_ALLOW=/\b(instrumental|no vocals?|without vocals?|vocal[- ]?free|piano solo|solo piano)\b/i;
+const HY_BLOCK=/\b(with vocals?|vocal version|singer|singing|lyrics?|rap|hip[- ]?hop|pop|bollywood|film song|soundtrack|remix|cover|karaoke|party|dance|club|edm|trap|drill|explicit|feat\.?|ft\.?)\b/i;
+function hyMetaText(x){const vals=[x.title,x.description,x.genre,x.mood,x.tags,x.tag_list,x.subject];return vals.flatMap(v=>Array.isArray(v)?v:[v||'']).join(' ').toLowerCase()}
+function hyStudySafe(x){const m=hyMetaText(x),d=Number(x.duration||0),b=Number(x.bpm||0);return !!m&&HY_ALLOW.test(m)&&!HY_BLOCK.test(m)&&(!d||(d>=45&&d<=900))&&(!b||(b>=45&&b<=110))}
+function hyLicenseSafe(x){return /creative\s*commons|public\s*domain|\bcc0\b|\bcc[- ]?by(?:[- ]?sa)?\b/i.test(String(x.license||x.licenseurl||''))}
+async function hyAudiusTrack(){
+ const hosts=['https://discoveryprovider.audius.co/v1','https://api.audius.co/v1'];
+ const queries=['instrumental study ambient','lofi instrumental no vocals','calm piano instrumental','ambient instrumental focus'];
+ for(const host of hosts){for(const query of queries){try{
+  const j=await hyFetch(host+'/tracks/search?query='+encodeURIComponent(query)+'&limit=50&app_name='+HY_APP);
+  const arr=(j.data||[]).filter(t=>t&&t.id&&t.is_streamable!==false&&t.title&&t.user&&t.user.name&&hyStudySafe(t)&&hyLicenseSafe(t));
+  const fresh=arr.filter(t=>!onlineSeen.has('a'+t.id));const pool=fresh.length?fresh:arr;
+  if(pool.length){const tr=pool[Math.floor(Math.random()*pool.length)];onlineSeen.add('a'+tr.id);return {title:tr.title,artist:tr.user.name,url:host+'/tracks/'+encodeURIComponent(tr.id)+'/stream?app_name='+HY_APP,source:'Audius · filtered study instrumental'}}
+ }catch(e){}}
+ }
+ throw Error('No verified study instrumental found on Audius');
+}
+async function hyArchiveTrack(){
+ const q='mediatype:audio AND (licenseurl:*creativecommons.org/licenses/by/* OR licenseurl:*creativecommons.org/publicdomain/zero/* OR licenseurl:*creativecommons.org/publicdomain/mark/*) AND (title:instrumental OR subject:instrumental OR description:instrumental OR title:ambient OR subject:ambient OR title:lofi OR subject:lofi OR title:piano)';
+ const u='https://archive.org/advancedsearch.php?q='+encodeURIComponent(q)+'&fl[]='+encodeURIComponent('identifier')+'&fl[]='+encodeURIComponent('title')+'&fl[]='+encodeURIComponent('creator')+'&fl[]='+encodeURIComponent('description')+'&fl[]='+encodeURIComponent('subject')+'&fl[]='+encodeURIComponent('licenseurl')+'&rows=60&page=1&output=json';
+ const j=await hyFetch(u,12000),docs=j.response&&j.response.docs||[];
+ const candidates=docs.filter(x=>x.identifier&&!onlineSeen.has('i'+x.identifier)&&hyStudySafe(x));
+ for(const item of candidates.sort(()=>Math.random()-.5).slice(0,15)){
+  try{
+   const meta=await hyFetch('https://archive.org/metadata/'+encodeURIComponent(item.identifier),10000);
+   const metadata=meta.metadata||{};const combined={...item,title:metadata.title||item.title,description:metadata.description||item.description,subject:metadata.subject||item.subject,licenseurl:metadata.licenseurl||item.licenseurl};
+   if(!hyStudySafe(combined)||!hyLicenseSafe(combined))continue;
+   const files=(meta.files||[]).filter(f=>f.name&&/\.(mp3|ogg|oga|wav)$/i.test(f.name)&&!f.name.includes('__ia_thumb')&&(!f.source||f.source==='original'));
+   if(!files.length)continue;
+   const f=files[Math.floor(Math.random()*files.length)];
+   onlineSeen.add('i'+item.identifier);
+   return {title:item.title||item.identifier,artist:Array.isArray(item.creator)?item.creator.join(', '):(item.creator||'Internet Archive contributor'),url:'https://archive.org/download/'+encodeURIComponent(item.identifier)+'/'+f.name.split('/').map(encodeURIComponent).join('/'),source:'Internet Archive · license-filtered instrumental'};
+  }catch(e){}
+ }
+ throw Error('No clearly described, openly licensed study instrumental found in Internet Archive');
+}
+async function hyGetTrack(){
+ const sources=hySources().sort(()=>Math.random()-.5);
+ let last;
+ for(const s of sources){try{return s==='archive'?await hyArchiveTrack():await hyAudiusTrack()}catch(e){last=e}}
+ throw last||Error('No online source available');
+}
+async function hyPlayOnline(track){
+ stopMusic(.25);hyStopOnline();
+ const a=new Audio();onlineAudio=a;a.preload='none';a.src=track.url;a.volume=Math.max(0,Math.min(1,(+$('#vol')?.value||45)/100));
+ onlineBusy=true;onlineTrack=track;
+ const failed=()=>{if(onlineAudio!==a)return;hyStopOnline();if((S.hyMode||'auto')==='auto'){hyStatus('Online playback failed · switching to offline');hyPickFallback()}else hyStatus('Online playback failed. Try another track or source.')};
+ a.addEventListener('error',failed,{once:true});
+ a.addEventListener('ended',()=>{if(onlineAudio===a){hyStatus('Track ended · loading another online track');hyStartOnline()}});
+ try{await a.play();if(onlineAudio!==a)return;S.music='online';sv('set',S);hyStatus('Online · '+track.source+' — '+track.title+' · '+track.artist);onlineBusy=false;onlineRotateAt=Date.now()}
+ catch(e){failed()}
+}
+async function hyStartOnline(){
+ if(onlineBusy)return;onlineBusy=true;hyStatus('Finding a free online track…');
+ try{const track=await hyGetTrack();await hyPlayOnline(track)}
+ catch(e){onlineBusy=false;if((S.hyMode||'auto')==='auto'){hyStatus('Online sources unavailable · starting offline fallback');hyPickFallback()}else hyStatus('Could not load online music. Check network or select Auto mode.')}
+}
+function hyStart(){
+ const mode=S.hyMode||'auto';
+ if(mode==='offline'){hyStopOnline();play(S.hyFallback==='rain'?'rain':'brown');hyStatus('Offline mode · '+(S.hyFallback==='rain'?'Heavy Rain':'Brown Noise'));return}
+ hyStartOnline();
+}
+['hyMode','hySource','hyFallback'].forEach(id=>{const el=$('#'+id);if(el)el.addEventListener('change',()=>{S[id]=el.value;sv('set',S);if(id==='hyMode'&&el.value==='offline'){hyStopOnline();play(S.hyFallback==='rain'?'rain':'brown');hyStatus('Offline mode selected')}else if(id==='hyMode'&&el.value==='online')hyStartOnline();else if(id==='hySource'&&onlineAudio)hyStartOnline();})});
+$('#hyNext').onclick=()=>{hyStopOnline();hyStartOnline()};
+$('#hyTry').onclick=()=>hyStartOnline();
+$('#vol').addEventListener('input',()=>{if(onlineAudio)onlineAudio.volume=Math.max(0,Math.min(1,(+$('#vol').value||0)/100))});
 $$('.mus').forEach(m=>m.onclick=e=>{const b=e.target.closest('[data-m]');if(b)play(b.dataset.m)});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)unlockAudio()});
 /* Chrome desktop keeps sound locked until the first click/key inside this window (also inside the floating window); resume then */
@@ -457,12 +539,12 @@ function wasMus(c){const m=ld('mon',0);return !!(m&&m.at&&!m.off&&Date.now()-m.a
 function musOff(){const m=ld('mon',0);return !!(m&&m.off&&cs&&m.at>=cs.s)}
 let hintAt=0;function audioHint(){if(AC&&cur&&AC.state!=='running'&&!document.hidden&&Date.now()-hintAt>7000){hintAt=Date.now();toast('\u266a Click anywhere to start the music')}}
 ['pointerdown','keydown','touchend'].forEach(ev=>addEventListener(ev,unlockAudio,true));
-$('#mshuf').onclick=()=>play(pick(catNow()),1);
-$('#mstop').onclick=()=>{stopMusic();sv('mon',{off:1,at:Date.now()});S.music='';sv('set',S)};
+$('#mshuf').onclick=()=>{if(S.hyMode!=='offline')hyStartOnline();else play(pick(catNow()),1)};
+$('#mstop').onclick=()=>{stopMusic();hyStopOnline();sv('mon',{off:1,at:Date.now()});S.music='';sv('set',S);hyStatus('Music stopped')};
 $('#vol').oninput=e=>{if(master)master.gain.setTargetAtTime(vg(e.target.value),AC.currentTime,.03)};
 if(S.rot===undefined)S.rot=15;$('#mrot').value=S.rot;$('#mrot').onchange=e=>{S.rot=+e.target.value;sv('set',S)};
 /* auto-rotate: new track every S.rot minutes (4s crossfade, no repeats until all played); study blocks -> focus tracks, break blocks -> calm tracks */
-wint(()=>{audioHint();if(!cur||!AC||AC.state!=='running'||!S.rot)return;const k=catNow();if(k!==cur.k||Date.now()-tStart>=S.rot*6e4){const n=pick(k);play(n,1);const b=$(`.mus [data-m=${n}] b`);if(b)toast('♪ '+b.textContent)}},3000);
+wint(()=>{audioHint();if(S.hyMode!=='offline'&&onlineAudio&&S.rot&&Date.now()-onlineRotateAt>=S.rot*6e4){hyStartOnline();return}if(!cur||!AC||AC.state!=='running'||!S.rot)return;const k=catNow();if(k!==cur.k||Date.now()-tStart>=S.rot*6e4){const n=pick(k);play(n,1);const b=$(`.mus [data-m=${n}] b`);if(b)toast('♪ '+b.textContent)}},3000);
 
 /* ---------- wiring ---------- */
 $('#go').onclick=toggle;
@@ -485,7 +567,7 @@ addEventListener('storage',e=>{
  if(e.key==='pt_log'){try{log=sanLog(JSON.parse(e.newValue||'[]'));lastH='';subs();draw();if(pv)drawPv()}catch(x){}}
  else if(e.key==='pt_agg'){try{agg=JSON.parse(e.newValue||'{}')||{};lastH='';draw();if(pv)drawPv()}catch(x){}}
  else if(e.key==='pt_take'){try{const t=JSON.parse(e.newValue||'null');if(t&&t.w!==WID&&!HAND&&!RO&&(cs||run))becomeRO()}catch(x){}}
- else if(e.key==='pt_set'){try{S=Object.assign({goal:6,auto:true,sound:true,notif:false,wake:true,amu:true,pal:10,music:'',tone:'chime',vib:true},JSON.parse(e.newValue||'{}'));fillGoal();lastH='';draw();if(pv)drawPv()}catch(x){}}
+ else if(e.key==='pt_set'){try{S=Object.assign({goal:6,auto:true,sound:true,notif:false,wake:true,amu:true,pal:10,music:'',tone:'chime',vib:true,hyMode:'auto',hySource:'both',hyFallback:'brown'},JSON.parse(e.newValue||'{}'));fillGoal();lastH='';draw();if(pv)drawPv()}catch(x){}}
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden)saveT();else{wl=null;wake()}});
 if(RES){try{mode=ts.mode;idx=ts.idx<plan.length?ts.idx:0;ex=ts.ex||0;el=ts.el;cs=lv;const b=blk();if(b){const gap=ts.run?Math.max(0,(Date.now()-ts.at)/1000):0,add=Math.min(gap,durS(b)-el);el+=add;cs.act+=add;cs.cur=(cs.cur||0)+add;run=!!ts.run;last=Date.now()}else cs=null}catch(x){cs=null}}
@@ -631,6 +713,6 @@ wint(guard,1500);['focus','pointerdown'].forEach(ev=>addEventListener(ev,guard,t
 function fillGoal(){const g=document.getElementById('gsel');if(!g)return;if(!(S.goal>=1))S.goal=6;const v=[];for(let i=1;i<=24;i++)v.push(i);if(!v.includes(S.goal))v.push(S.goal),v.sort((a,b)=>a-b);g.innerHTML=v.map(i=>`<option value="${i}">${i} ${i===1?'hour':'hours'}</option>`).join('');g.value=String(S.goal)}
 {const g=document.getElementById('gsel');g.onchange=()=>{S.goal=+g.value||6;sv('set',S);lastH='';draw()};fillGoal()}
 /* session resumed (app re-opened, side window, "Bring it back"): restart the music. Chrome needs one click/key first; unlockAudio() then starts the sound */
-if(!RO&&SONG[S.music]&&((RES&&run&&S.amu&&!musOff())||wasMus(1))){try{play(S.music);setTimeout(audioHint,700)}catch(e){}}
+if(!RO&&SONG[S.music]&&((RES&&run&&S.amu&&!musOff())||wasMus(1))&&(S.hyMode==='offline'||!S.hyMode)){try{play(S.music);setTimeout(audioHint,700)}catch(e){}}
 subs();draw();
 </script></body></html>
