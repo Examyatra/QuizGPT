@@ -342,7 +342,7 @@ const jt=()=>(Math.random()-.5)*.012,vg=v=>Math.pow(v/100,1.4)*1.1,tr=v=>{if(cur
 const CAT={f:['lofi','hop','jazz','synth','pulse','classic','guitar','alpha','piano','rlofi','tick','night','prain','raag','rain'],b:['amb','ocean','forest','sun','piano','rlofi','zen','raag','prain','rain']};
 const catNow=()=>{const b=blk();return b&&b.t==='break'?'b':'f'};
 function pick(k){if(!Q[k].length){Q[k]=CAT[k].slice().sort(()=>Math.random()-.5);if(Q[k][0]===S.music)Q[k].push(Q[k].shift())}return Q[k].shift()}
-function ac(){if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'playback'});master=AC.createGain();master.gain.value=vg($('#vol').value);
+function ac(){if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'playback'});master=AC.createGain();master.gain.value=vg($('#vol').value);AC.onstatechange=()=>{if(AC.state!=='running')unlockAudio()};
  const hp=AC.createBiquadFilter();hp.type='highpass';hp.frequency.value=30;
  const sh=AC.createBiquadFilter();sh.type='highshelf';sh.frequency.value=5500;sh.gain.value=-4;
  const cp=AC.createDynamicsCompressor();cp.threshold.value=-20;cp.knee.value=18;cp.ratio.value=3.5;cp.attack.value=.012;cp.release.value=.3;
@@ -369,13 +369,13 @@ function strum(t,ns,v,up){(up?ns.slice().reverse():ns).forEach((m,i)=>pk(t+i*.01
 /* drums, with kick-triggered sidechain duck on chords/pads */
 function kick(t,v){const o=AC.createOscillator(),g=env(t,.003,.3,v);o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(44,t+.15);o.connect(g);o.start(t);o.stop(t+.35);rt(g,0);
  if(cur.pad){const p=cur.pad.gain;p.setValueAtTime(1,t);p.linearRampToValueAtTime(.6,t+.025);p.linearRampToValueAtTime(1,t+.3)}}
-function nz(t,len,type,fr,v,w){const s=AC.createBufferSource();s.buffer=wb;const g=env(t,.003,len,v);s.connect(flt(type,fr,g));rt(g,w||0);s.start(t,Math.random()*4,len+.05)}
+function nz(t,len,type,fr,v,w,a){const s=AC.createBufferSource();s.buffer=wb;const g=env(t,a||.003,len,v);s.connect(flt(type,fr,g));rt(g,w||0);s.start(t,Math.random()*4,len+.05)}
 function snare(t,v){nz(t,.16,'bandpass',1900,v,.3);const g=env(t,.002,.1,v*.6),o=AC.createOscillator();o.frequency.value=185;o.connect(g);o.start(t);o.stop(t+.16);rt(g,.1)}
 function wd(t,v){nz(t,.035,'bandpass',2600,v,0);const g=env(t,.001,.06,v*.8),o=AC.createOscillator();o.frequency.value=950;o.connect(g);o.start(t);o.stop(t+.12);rt(g,.1)}
 function bird(t){const f=rnd([2600,3100,3600,4200]),g=env(t,.01,.18,.03),o=AC.createOscillator();o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*1.35,t+.07);o.frequency.exponentialRampToValueAtTime(f*.9,t+.16);o.connect(g);o.start(t);o.stop(t+.26);rt(g,.5)}
 function drums(t,bt,o){const sw=bt*(o.sw||0),n=o.n||8,h=()=>.9+Math.random()*.2;
  o.k.forEach(x=>kick(t+x*bt,o.kv*h()));(o.s||[]).forEach(x=>snare(t+x*bt+jt()*.4,o.sv*h()));(o.g||[]).forEach(x=>nz(t+x*bt,.07,'bandpass',2300,o.sv*.45,.2));
- if(o.h)for(let i=0;i<n;i++)if(Math.random()<.92)nz(t+i*bt*4/n+(i%2?sw:0)+jt()*.4,.045,'bandpass',7000,o.h*.7*(i%2?.6:1)*h())}
+ if(o.h)for(let i=0;i<n;i++)if(Math.random()<(i%2?.55:.92))nz(t+i*bt*4/n+(i%2?sw:0)+jt()*.4,.05,'bandpass',5200,o.h*.5*(i%2?.5:1)*h(),0,.012)}
 function crackle(){const b=AC.createBuffer(1,AC.sampleRate*3,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()<.0005?Math.random()*2-1:0;const s=AC.createBufferSource();s.buffer=b;s.loop=true;const g=AC.createGain();g.gain.value=.08;s.connect(flt('highpass',1800,g));g.connect(cur.bus);s.start();cur.s.push(s)}
 /* timer that runs in a Worker: Chrome desktop throttles normal timers when the window is minimized or behind another window, which starves the music scheduler */
 function wint(fn,ms){try{const w=new Worker(URL.createObjectURL(new Blob(['setInterval(function(){postMessage(0)},'+ms+')'],{type:'text/javascript'})));w.onmessage=()=>fn();return w}catch(e){return setInterval(fn,ms)}}
@@ -403,7 +403,7 @@ function gen(o){const bt=60/o.bpm,sc=o.sc||[72,74,76,79,81,84,86],L=sc.length,P=
   else if(o.cp==='arp'){const a=(o.ab?[c.b,...c.n]:c.n).map(m=>m+(o.ao||0)),n=o.as||8,st=bt*4/n;for(let i=0;i<n;i++)ci(t+i*st+jt()*.4,a[o.ix[i%o.ix.length]%a.length],st*4.5,o.cv*(i%(n/2)?.75:1),1)}
   else if(o.cp==='str')[[0,0],[1,0],[1.5,1],[2.5,1],[3,0],[3.5,1]].forEach(([x,u],j)=>strum(t+x*bt,c.n,j?o.cv*.8:o.cv,u));
   const bv=o.bv||.2;if(o.walk)[c.b,c.n[1]-12,c.n[2]-12,c.n[1]-12].forEach((m,i)=>bs(t+i*bt,m,bt*.9,bv));else(o.bp||[]).forEach(x=>bs(t+x*bt,c.b,bt*1.3,bv));
-  if(o.d){drums(t,bt,ph<2?{...o.d,k:[],s:[],g:[]}:o.d);if(ph===15&&(o.d.s||[]).length)[3,3.25,3.5,3.75].forEach((x,i)=>snare(t+x*bt,o.d.sv*(.4+i*.2)))}
+  if(o.d){drums(t,bt,ph<2?{...o.d,k:[],s:[],g:[],h:0}:o.d);if(ph===15&&(o.d.s||[]).length)[3,3.25,3.5,3.75].forEach((x,i)=>snare(t+x*bt,o.d.sv*(.4+i*.2)))}
   if(mi&&ph>=2&&ph<14&&k%4!==3)(k%4===1?vr:mo).forEach((x,i)=>{if(x>=0)mi(t+i*bt/2+jt(),sc[x],bt*1.8,o.mv||.05,1)});
   if(o.ex)o.ex(t,bt,k)})}
 const SONG={
@@ -418,10 +418,10 @@ const SONG={
  sun(){gen({bpm:96,a:'F',ci:pk,cp:'str',cv:.1,pad:.015,d:{k:[0,2],kv:.2,s:[1,3],sv:.05,h:.03,n:8},bp:[0,2],bv:.2,lp:8000,g:1.05})},
  synth(){gen({bpm:96,a:'K',ci:sy,cp:'arp',as:16,ao:12,ix:[0,1,2,3,2,1,2,3,0,1,2,3,2,1,2,1],cv:.05,pad:.03,d:{k:[0,1,2,3],kv:.26,s:[1,3],sv:.04,h:.04,n:8},bp:[.5,1.5,2.5,3.5],bv:.2,mi:sy,mv:.04,md:.5,lp:6500,g:1.1})},
  forest(){gen({bpm:76,a:'F',ci:kl,cp:'arp',ix:[0,2,1,3,2,3,1,2],ao:12,cv:.09,pad:.015,d:{k:[0,2],kv:.14,s:[],h:.02},bp:[0],bv:.14,mi:kl,mv:.06,lp:8000,fx:[['white','lowpass',700,.1,.07]],ex:(t,bt)=>{if(Math.random()<.7)for(let j=0;j<1+Math.floor(Math.random()*3);j++)bird(t+Math.random()*bt*3.5+j*.22)}})},
- amb(){tr(1);bars(4,(t,k)=>{const c=CH.M[(k>>1)%4];if(k%2===0)pd(t,[c.b,c.b+12,...c.n],8,.04);bs(t,c.b,3,.16);drums(t,1,{k:[0,2.5],kv:.17,s:[],h:.022});
+ amb(){tr(1);bars(4,(t,k)=>{const c=CH.M[(k>>1)%4];if(k%2===0)pd(t,[c.b,c.b+12,...c.n],8,.04);bs(t,c.b,3,.16);drums(t,1,{k:[0,2.5],kv:.17,s:[]});
    [1,2.5,3].forEach(x=>{if(Math.random()<.35)ep(t+x,rnd([72,74,76,79,81,84]),3,.04,1)})})},
  alpha(){tr(.8);[[200,-1],[210,1]].forEach(([fr,p])=>{const o=AC.createOscillator(),pr=AC.createStereoPanner(),g=AC.createGain();o.frequency.value=fr;pr.pan.value=p;g.gain.value=.1;o.connect(g);g.connect(pr);pr.connect(cur.bus);o.start();cur.s.push(o)});
-  noise('brown','lowpass',500,.45,cur.bus);bars(4,(t,k)=>{const c=CH.K[(k>>1)%4];if(k%2===0)pd(t,[c.b+12,...c.n],8,.03);bs(t,c.b,3,.12);drums(t,1,{k:[0,2],kv:.13,s:[],h:.015})})},
+  noise('brown','lowpass',500,.45,cur.bus);bars(4,(t,k)=>{const c=CH.K[(k>>1)%4];if(k%2===0)pd(t,[c.b+12,...c.n],8,.03);bs(t,c.b,3,.12);drums(t,1,{k:[0,2],kv:.13,s:[]})})},
  ocean(){noise('white','lowpass',900,.28,cur.bus,.1);noise('brown','lowpass',400,.45,cur.bus);SONG.amb();tr(.75)},
  tick(){tr(1.1);bars(4,(t,k)=>{const c=CH.P[(k>>1)%4];if(k%2===0)pd(t,[c.b+12,...c.n],8,.025);bs(t,c.b,3.4,.14);
    for(let i=0;i<4;i++)wd(t+i,i?.05:.08);[.5,2,3].forEach(x=>{if(Math.random()<.5)pn(t+x,rnd([...c.n.map(m=>m+12),c.n[0]+24]),2.5,.08,1)})})}};
@@ -452,13 +452,17 @@ $$('.mus').forEach(m=>m.onclick=e=>{const b=e.target.closest('[data-m]');if(b)pl
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)unlockAudio()});
 /* Chrome desktop keeps sound locked until the first click/key inside this window (also inside the floating window); resume then */
 function unlockAudio(){if(AC&&cur&&AC.state!=='running'){try{const r=AC.resume();if(r&&r.catch)r.catch(()=>{})}catch(e){}}}
+/* music memory: the playing window refreshes pt_mon every second (c:1 once the page is closing); the next window to own the timer, or the page after a reload, picks the music up from it */
+function wasMus(c){const m=ld('mon',0);return !!(m&&m.at&&!m.off&&Date.now()-m.at<30000&&(!c||m.c===1))}
+function musOff(){const m=ld('mon',0);return !!(m&&m.off&&cs&&m.at>=cs.s)}
+let hintAt=0;function audioHint(){if(AC&&cur&&AC.state!=='running'&&!document.hidden&&Date.now()-hintAt>7000){hintAt=Date.now();toast('\u266a Click anywhere to start the music')}}
 ['pointerdown','keydown','touchend'].forEach(ev=>addEventListener(ev,unlockAudio,true));
 $('#mshuf').onclick=()=>play(pick(catNow()),1);
-$('#mstop').onclick=()=>{stopMusic();S.music='';sv('set',S)};
-$('#vol').oninput=e=>{if(master)master.gain.value=vg(e.target.value)};
+$('#mstop').onclick=()=>{stopMusic();sv('mon',{off:1,at:Date.now()});S.music='';sv('set',S)};
+$('#vol').oninput=e=>{if(master)master.gain.setTargetAtTime(vg(e.target.value),AC.currentTime,.03)};
 if(S.rot===undefined)S.rot=15;$('#mrot').value=S.rot;$('#mrot').onchange=e=>{S.rot=+e.target.value;sv('set',S)};
 /* auto-rotate: new track every S.rot minutes (4s crossfade, no repeats until all played); study blocks -> focus tracks, break blocks -> calm tracks */
-wint(()=>{if(!cur||!AC||AC.state!=='running'||!S.rot)return;const k=catNow();if(k!==cur.k||Date.now()-tStart>=S.rot*6e4){const n=pick(k);play(n,1);const b=$(`.mus [data-m=${n}] b`);if(b)toast('♪ '+b.textContent)}},3000);
+wint(()=>{audioHint();if(!cur||!AC||AC.state!=='running'||!S.rot)return;const k=catNow();if(k!==cur.k||Date.now()-tStart>=S.rot*6e4){const n=pick(k);play(n,1);const b=$(`.mus [data-m=${n}] b`);if(b)toast('♪ '+b.textContent)}},3000);
 
 /* ---------- wiring ---------- */
 $('#go').onclick=toggle;
@@ -466,14 +470,14 @@ $('#skip').onclick=()=>{if(cs&&cs.act>=60&&mode!=='stopwatch'&&!ask('End this bl
 /* Reset = force stop: stop the timer, SAVE the time studied so far to today's log, then return to the start of the block */
 $('#rst').onclick=()=>{if(blocked())return;flush();const a=cs?cs.act:0,sb=cs&&cs.t!=='break';if(a>=60&&!ask('End this session? '+fd(a)+' of focus will be saved.'))return;closeS(false);run=false;el=0;ex=0;last=Date.now();saveT();if(a>=MINS)toast('Saved '+fd(a)+(sb?' of focus':' of break')+' to today');wake();draw()};
 $('#ext').onclick=()=>{if(mode==='stopwatch'||!blk())return;ex+=300;if(cs)cs.plan+=5;toast('Added 5 minutes');draw()};
-$('#mbtn').onclick=()=>{if(cur)stopMusic();else play(SONG[S.music]?S.music:'lofi');draw()};
+$('#mbtn').onclick=()=>{if(cur){stopMusic();sv('mon',{off:1,at:Date.now()})}else play(SONG[S.music]?S.music:'lofi');draw()};
 $('#modes').onclick=e=>{const k=e.target.dataset.k;if(k)setMode(k)};
 $('#qc').onclick=e=>{const q=e.target.dataset.q;if(q===undefined)return;let v=+q;if(!v){if(pip){toast('Set custom minutes in the main tab');return}v=Math.round(+prompt('How many minutes? (1–600)',qm)||0);if(!v)return}setQ(Math.max(1,Math.min(600,v)))};
 $('#bs').onclick=openSet;$('#bd').onclick=()=>{dash();$('#dd').showModal()};
 const kd=e=>{if(/INPUT|SELECT|BUTTON|TEXTAREA/.test(e.target.tagName)||D.querySelector('dialog[open]'))return;
  if(e.code==='Space'){e.preventDefault();toggle()}else if(e.code==='KeyN')$('#skip').click();else if(e.code==='KeyR')$('#rst').click()};document.addEventListener('keydown',kd);
 let closing=false;addEventListener('pagehide',()=>{closing=true;saveT()});addEventListener('pageshow',e=>{if(e.persisted){closing=false;saveT()}});
-function saveT(){if(RO||HAND)return;if(foreign()){if(cs||run)becomeRO();return}if(cs){cs.u=Date.now();cs.w=WID}sv('live',cs);sv('ts',{mode,idx,el,ex,run,at:Date.now(),c:closing?1:0})}
+function saveT(){if(RO||HAND)return;if(foreign()){if(cs||run)becomeRO();return}if(cur)sv('mon',{at:Date.now(),c:closing?1:0});if(cs){cs.u=Date.now();cs.w=WID}sv('live',cs);sv('ts',{mode,idx,el,ex,run,at:Date.now(),c:closing?1:0})}
 /* locked-out guard: if this page is read-only because it thought another tab was running, and that tab goes silent, take over automatically */
 function wkS(){const td=ymd(new Date()),v=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);const k=ymd(d);return[k===td,(agg[k]||0)+(k===td&&cs&&cs.t!=='break'?cs.act:0)]}),mx=Math.max(S.goal*3600,...v.map(x=>x[1]),1);return'<div class="wk" aria-hidden="true">'+v.map(([t,x])=>`<i class="${t?'t':''}" style="height:${Math.max(6,x/mx*100)}%"></i>`).join('')+'</div>'}
 $('#today').onclick=()=>$('#bd').click();
@@ -584,7 +588,7 @@ if(!ld('hint',0)&&!DOCK&&!RO){sv('hint',1);setTimeout(()=>toast(IOS&&STANDALONE?
 /* background-proof ticker: a worker is not throttled when this tab is hidden behind your lecture */
 try{const wk=new Worker(URL.createObjectURL(new Blob(['setInterval(function(){postMessage(0)},250)'],{type:'text/javascript'})));wk.onmessage=()=>tick()}catch(e){setInterval(tick,250)}
 /* offline support: when opened from a web link, cache the app so it works without internet next time */
-if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){try{[['manifest','manifest.webmanifest'],['apple-touch-icon','icon-192.png']].forEach(([r,h])=>{const l=document.createElement('link');l.rel=r;l.href=h;document.head.appendChild(l)});addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}catch(e){}}
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){try{[['manifest','manifest.webmanifest'],['apple-touch-icon','icon-192.png']].forEach(([r,h])=>{const l=document.createElement('link');l.rel=r;l.href=h;document.head.appendChild(l)});{const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had)window.updReady=1})}addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>{const up=()=>r.update().catch(()=>{});document.addEventListener('visibilitychange',()=>{if(!document.hidden)up()});setInterval(up,36e5)}).catch(()=>{}))}catch(e){}}
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 if(ld('cmp',0)){cmp=true;document.body.classList.add('pip')}
 if((MOB||!FINE)&&!(IOS&&STANDALONE))setTimeout(prepPv,800);
@@ -610,23 +614,23 @@ function adopt(user){
  if(!ok){cs=null;run=false;el=0;ex=0;const m=ld('mode',mode);if(m)mode=m;if(t&&t.idx<plan.length)idx=t.idx;if(idx>=plan.length)idx=0}
  last=Date.now();closing=false;sv('take',{w:WID,at:Date.now()});
  if(cs){cs.w=WID;cs.u=Date.now();sv('live',cs)}saveT();wake();lastH='';
- if(user&&run&&S.amu&&S.music&&!cur){try{play(S.music)}catch(e){}}
+ if(!cur&&SONG[S.music]&&((user&&run&&S.amu&&!musOff())||wasMus())){try{play(S.music)}catch(e){}}
  draw()}
 /* the very first touch in a window that is not the active one makes it the active one; that touch only brings the window up to date */
 function claim(e){if(HAND||!(RO||foreign()))return;const tg=e.target&&e.target.closest?e.target:null;adopt(true);
  if(e.type==='keydown'){if(['Space','KeyN','KeyR'].includes(e.code)&&!(tg&&/INPUT|SELECT|TEXTAREA/.test(tg.tagName))){e.stopPropagation();e.preventDefault();toast('Timer is now active in this window')}}
- else if(tg&&tg.closest('#go,#skip,#rst,#ext,#modes,#qc,#mbtn'))swallowUntil=Date.now()+800}
+ else if(tg&&tg.closest('#go,#skip,#rst,#ext,#modes,#qc,#mbtn')&&!(tg.closest('#mbtn')&&!cur))swallowUntil=Date.now()+800}
 ['pointerdown','keydown'].forEach(ev=>addEventListener(ev,claim,true));
 addEventListener('click',e=>{if(Date.now()<swallowUntil){swallowUntil=0;e.stopPropagation();e.preventDefault();toast('Timer is now active in this window')}},true);
 function blocked(){
  if(HAND){if(!dockW||dockW.closed){adopt(true);return true}toast('The timer is open in the side window. Use Bring it back here.');return true}
  if(RO||foreign()){adopt(true);toast('Timer is now active in this window');return true}
  return false}
-function guard(){if(HAND&&(!dockW||dockW.closed))adopt(true)}
+function guard(){if(HAND&&(!dockW||dockW.closed))adopt(true);if(window.updReady&&!run&&!HAND)location.reload()}
 wint(guard,1500);['focus','pointerdown'].forEach(ev=>addEventListener(ev,guard,true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)guard()});
 function fillGoal(){const g=document.getElementById('gsel');if(!g)return;if(!(S.goal>=1))S.goal=6;const v=[];for(let i=1;i<=24;i++)v.push(i);if(!v.includes(S.goal))v.push(S.goal),v.sort((a,b)=>a-b);g.innerHTML=v.map(i=>`<option value="${i}">${i} ${i===1?'hour':'hours'}</option>`).join('');g.value=String(S.goal)}
 {const g=document.getElementById('gsel');g.onchange=()=>{S.goal=+g.value||6;sv('set',S);lastH='';draw()};fillGoal()}
 /* session resumed (app re-opened, side window, "Bring it back"): restart the music. Chrome needs one click/key first; unlockAudio() then starts the sound */
-if(RES&&run&&S.amu&&S.music&&SONG[S.music]){try{play(S.music);setTimeout(()=>{if(AC&&cur&&AC.state!=='running')toast('\u266a Click anywhere to start the music')},700)}catch(e){}}
+if(!RO&&SONG[S.music]&&((RES&&run&&S.amu&&!musOff())||wasMus(1))){try{play(S.music);setTimeout(audioHint,700)}catch(e){}}
 subs();draw();
 </script></body></html>
