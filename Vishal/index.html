@@ -55,10 +55,10 @@ dialog::backdrop{background:#000b;backdrop-filter:blur(3px)}
 .db{padding:4px 16px 16px;overflow:auto}
 .pane{display:none}.pane.on{display:block}
 .blk{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:var(--glass);margin-bottom:6px}
-.dot{width:10px;height:10px;border-radius:50%;flex:none}.blk span{flex:1}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}.blk span{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .blk button{background:none;border:0;color:var(--mut);padding:4px 8px;font-size:16px}
-.add{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
-.pre{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}.pc{padding:10px 6px;border-radius:14px;border:1px solid var(--line);background:#1b2850;text-align:center;display:flex;flex-direction:column;gap:2px;line-height:1.25}.pc small{color:var(--mut);font-size:11px}.pc.on{background:var(--lamp);border-color:var(--lamp);color:#2a1a00}.pc.on small{color:#2a1a00b3}.pc.on b::before{content:"✓ "}
+.add{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}#nt{flex:1;min-width:0}#nm{width:62px}.add #add{padding:9px 12px;flex:none}.sec h3 small{white-space:nowrap}
+.pre{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:2px}.pc{padding:9px 2px;border-radius:12px;border:1px solid var(--line);background:#1b2850;text-align:center;font-size:13px;line-height:1.2;white-space:nowrap}.pc b{font-weight:600}.pc.on{background:var(--lamp);border-color:var(--lamp);color:#2a1a00}.pc.on b::before{content:"✓ "}
 select,input[type=number]{font:inherit;color:var(--ink);background:#1b2850;border:1px solid var(--line);border-radius:10px;padding:8px}
 .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:#1b2850}
 .btn.main{background:var(--lamp);color:#2a1a00;border-color:var(--lamp);font-weight:600;width:100%;padding:13px;margin-top:8px}
@@ -85,7 +85,7 @@ h3{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:600}
 .mus button{text-align:left;padding:12px}.mus b{display:block;font-size:14px}.mus small{color:var(--mut);font-size:12px}
 .play{background:linear-gradient(145deg,var(--lamp),#fff1);background-color:var(--lamp)}
 #today{padding:14px 16px}
-header{gap:8px}#sub{flex:1;min-width:0;height:44px;text-align:center;font:inherit;font-size:14px;color:var(--ink);background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:0 12px}#sub::placeholder{color:var(--mut)}
+header{gap:8px}.gsel{flex:1;min-width:0;height:44px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:var(--mut);background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:0 8px;white-space:nowrap}.gsel select{font:inherit;font-size:15px;font-weight:650;color:var(--ink);background:#1b2850;border:1px solid var(--line);border-radius:9px;padding:5px 4px;max-width:104px}
 #ringw{width:min(60vw,30dvh,280px)}.sm{width:46px;height:46px;font-size:17px}.row{gap:10px}.sm.on{border-color:var(--break);color:var(--break)}
 .seg{display:flex;gap:4px;background:#ffffff0f;border:1px solid var(--line);border-radius:14px;padding:3px}.seg button{border:0;background:none;border-radius:11px;padding:6px 12px;font-size:13px;color:var(--mut)}.seg button.on{background:var(--lamp);color:#2a1a00;font-weight:600}
 #qc{display:none;gap:6px;flex-wrap:wrap;justify-content:center}#qc button{padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:none;font-size:13px}#qc button.on{background:#ffffff1f;border-color:var(--lamp)}
@@ -116,11 +116,11 @@ h2,h3{text-wrap:balance}.tip,.ins li{text-wrap:pretty}.kt,.kv,.tiles,.hl{font-va
 .ses .s2{color:var(--c);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ses .s3{font-size:12px;color:var(--mut);margin-top:1px}
 .rw .bar{margin:6px 0 2px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-.blk button{min-width:40px;min-height:40px}#sc{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}#sc:empty{display:none}#sc button{padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:none;font-size:12px;color:var(--mut)}.wk{display:flex;gap:4px;align-items:flex-end;height:26px;margin:10px 0 0}.wk i{flex:1;background:#ffffff24;border-radius:3px}.wk i.t{background:var(--lamp)}#today{cursor:pointer}@media(max-height:700px){.wk{display:none}}
+.blk button{min-width:34px;min-height:38px;padding:4px 4px}#sc{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}#sc:empty{display:none}#sc button{padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:none;font-size:12px;color:var(--mut)}.wk{display:flex;gap:4px;align-items:flex-end;height:26px;margin:10px 0 0}.wk i{flex:1;background:#ffffff24;border-radius:3px}.wk i.t{background:var(--lamp)}#today{cursor:pointer}@media(max-height:700px){.wk{display:none}}
 
 /* ---- popup mode: side window (laptop) / floating mini window ---- */
 .ic svg{display:block;margin:auto}
-#home{grid-template-columns:minmax(0,1fr)}#sub{width:0}
+#home{grid-template-columns:minmax(0,1fr)}
 #pipnote{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;background:#0b1226;color:var(--mut)}#pipnote[hidden]{display:none}#pipnote p{margin:0}#pipnote .btn{width:auto;margin:0;padding:12px 20px}
 body.dock #home,body.pip #home{max-width:none}
 body.dock #pop{display:none}
@@ -135,16 +135,15 @@ body.dock #mini small,body.pip #mini small{color:var(--mut);font-size:10.5px;tex
 </style></head><body>
 <div id="bg"><i></i><i></i><i></i></div>
 <main id="home">
-<header><button class="ic" id="bs" aria-label="Settings">⚙</button><input id="sub" list="subs" placeholder="Subject (optional)" maxlength="30" aria-label="Subject"><datalist id="subs"></datalist><button class="ic" id="pop" aria-label="Popup mode" title="Popup mode"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><rect x="12" y="12" width="7" height="5" rx="1.5" fill="currentColor"/></svg></button><button class="ic" id="bd" aria-label="Detailed analytics">📊</button></header>
+<header><button class="ic" id="bs" aria-label="Settings">⚙</button><label class="gsel"><span>🎯 Study goal</span><select id="gsel" aria-label="Daily study goal in hours"></select></label><button class="ic" id="pop" aria-label="Popup mode" title="Popup mode"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><rect x="12" y="12" width="7" height="5" rx="1.5" fill="currentColor"/></svg></button><button class="ic" id="bd" aria-label="Detailed analytics">📊</button></header>
 <section id="stage">
  <div class="seg" id="modes"><button data-k="plan">Plan</button><button data-k="quick">Countdown</button><button data-k="stopwatch">Stopwatch</button></div>
- <div id="sc"></div>
- <div id="lbl"></div>
+  <div id="lbl"></div>
  <div id="ringw"><svg viewBox="0 0 200 200"><circle class="tr" cx="100" cy="100" r="90"/><circle id="rg" cx="100" cy="100" r="90" transform="rotate(-90 100 100)"/></svg><div id="tm"><b id="time">00:00</b><small id="nx"></small></div></div>
  <div id="qc"><button data-q="5">5</button><button data-q="10">10</button><button data-q="15">15</button><button data-q="25">25</button><button data-q="45">45</button><button data-q="60">60</button><button data-q="0" aria-label="Custom minutes">✎</button></div>
  <div id="pz"></div>
  <div id="mini" aria-hidden="true"></div>
- <div class="row"><button class="sm" id="rst" aria-label="Reset">↺</button><button class="sm" id="ext" aria-label="Add 5 minutes">+5</button><button class="play" id="go" aria-label="Start or pause">▶</button><button class="sm" id="skip" aria-label="Next or stop">⏭</button><button class="sm" id="mbtn" aria-label="Music">♪</button></div>
+ <div class="row"><button class="sm" id="rst" aria-label="End session and save" title="End session and save">↺</button><button class="sm" id="ext" aria-label="Add 5 minutes">+5</button><button class="play" id="go" aria-label="Start or pause">▶</button><button class="sm" id="skip" aria-label="Next or stop">⏭</button><button class="sm" id="mbtn" aria-label="Music">♪</button></div>
 </section>
 <section class="glass" id="today"></section>
 </main>
@@ -156,9 +155,9 @@ body.dock #mini small,body.pip #mini small{color:var(--mut);font-size:10.5px;tex
 <div class="tabs" data-for="sd"><button class="on" data-t="tm">Timer</button><button data-t="mu">Music</button><button data-t="pf">Preferences</button></div>
 <div class="db">
  <div class="pane on" data-p="tm">
-  <section class="sec"><h3>Choose a plan</h3><div class="pre" id="pre" role="group" aria-label="Plan presets"><button class="pc" data-k="p1" aria-pressed="false"><b>60 / 30 / Break</b><small>Study · Practice · 10 min break</small></button><button class="pc" data-k="p2" aria-pressed="false"><b>Pomodoro 50/10</b><small>50 min study · 10 min break</small></button><button class="pc" data-k="cu" aria-pressed="false"><b>Custom</b><small>Your own blocks</small></button></div></section>
-  <section class="sec"><h3 id="plt">Your plan<small>Blocks run one after another</small></h3><div id="dl"></div></section>
-  <section class="sec"><h3>Customize<small>Add a block to make your own plan</small></h3><div class="add"><select id="nt"><option value="study">Study</option><option value="lecture">Lecture</option><option value="practice">Question practice</option><option value="break">Break</option></select><input id="nm" type="number" min="1" max="600" value="60" aria-label="Minutes"><button class="btn" id="add">Add block</button></div></section>
+  <section class="sec"><h3>Choose a plan</h3><div class="pre" id="pre" role="group" aria-label="Plan presets"><button class="pc" data-k="p1" aria-pressed="false"><b>60 · 30 · 10</b></button><button class="pc" data-k="p2" aria-pressed="false"><b>Pomodoro</b></button><button class="pc" data-k="cu" aria-pressed="false"><b>Custom</b></button></div></section>
+  <section class="sec"><h3 id="plt">Your plan</h3><div id="dl"></div></section>
+  <section class="sec"><h3>Add a block</h3><div class="add"><select id="nt"><option value="study">Study</option><option value="lecture">Lecture</option><option value="practice">Question practice</option><option value="break">Break</option></select><input id="nm" type="number" min="1" max="600" value="60" aria-label="Minutes"><button class="btn" id="add">+ Add</button></div></section>
   <button class="btn main" id="ss">Save and start</button></div>
  <div class="pane" data-p="mu">
   <section class="sec"><h3>Lofi &amp; beats<small>The most popular Pomodoro style</small></h3><div class="mus" id="mus">
@@ -175,7 +174,7 @@ body.dock #mini small,body.pip #mini small{color:var(--mut);font-size:10.5px;tex
   
 <section class="sec"><h3>Playback</h3><div class="tg"><span>Auto-rotate music</span><select id="mrot"><option value="0">Off</option><option value="10">Every 10 min</option><option value="15">Every 15 min</option><option value="20">Every 20 min</option><option value="30">Every 30 min</option></select></div><div class="tg"><span>Volume</span><input id="vol" type="range" min="0" max="100" value="45" style="flex:1;accent-color:var(--lamp)"></div><label class="tg">Auto-play music with the timer<input id="s_amu" type="checkbox"></label><div class="tg" style="border:0"><span>Track</span><span><button class="btn" id="mshuf">Shuffle</button> <button class="btn" id="mstop">Stop</button></span></div></section></div>
  <div class="pane" data-p="pf">
-  <section class="sec"><h3>Timer</h3><label class="tg">Daily goal (hours)<input id="s_goal" type="number" min="1" max="20" step=".5"></label><label class="tg">Auto-start next block<input id="s_auto" type="checkbox"></label><label class="tg" style="border:0">Pause alert (min, 0 = off)<input id="s_pal" type="number" min="0" max="120"></label></section>
+  <section class="sec"><h3>Timer</h3><label class="tg">Auto-start next block<input id="s_auto" type="checkbox"></label><label class="tg" style="border:0">Pause alert (min, 0 = off)<input id="s_pal" type="number" min="0" max="120"></label></section>
   <section class="sec"><h3>Alerts</h3><label class="tg">Sound when a block ends<input id="s_sound" type="checkbox"></label><label class="tg">Alert sound<span><select id="s_tone"><option value="chime">Chime</option><option value="bell">Bell</option><option value="soft">Soft</option><option value="beep">Beep</option></select> <button class="btn" id="tt">Test</button></span></label><label class="tg">Vibration<input id="s_vib" type="checkbox"></label><label class="tg" style="border:0">Notifications<input id="s_notif" type="checkbox"></label></section>
   <section class="sec"><h3>Screen</h3><label class="tg">Keep screen on while running<input id="s_wake" type="checkbox"></label><div class="tg"><span>Side window (30% of screen)</span><button class="btn" id="sw">Open</button></div><div class="tg" style="border:0"><span>Fullscreen focus</span><button class="btn" id="fs">Fullscreen</button></div><p class="tip" style="margin:6px 0 0">Shortcuts: Space start/pause · N next · R reset. Use +5 to extend the current block.</p></section>
   <section class="sec"><h3>Data<small>Last 30 days of history only</small></h3><div class="add" style="margin:0"><button class="btn" id="csv">Export CSV</button><button class="btn" id="bk">Backup</button><button class="btn" id="rs">Restore</button><button class="btn" id="clr">Clear history</button></div><input type="file" id="rsf" accept=".json" hidden></section></div>
@@ -187,6 +186,7 @@ body.dock #mini small,body.pip #mini small{color:var(--mut);font-size:10.5px;tex
 <script>
 let D=document;const $=s=>D.querySelector(s),$$=s=>[...D.querySelectorAll(s)];
 const T={study:{n:'Study',c:'#ffb454'},lecture:{n:'Lecture',c:'#b79cf2'},practice:{n:'Question practice',c:'#5ec8f2'},break:{n:'Break',c:'#6ee7b7'}};
+const MINS=1; /* any session with at least 1s of focus is saved; nothing the user studied is thrown away */
 let svT=0;const ld=(k,d)=>{try{const v=localStorage.getItem('pt_'+k);return v?JSON.parse(v):d}catch(e){return d}},sv=(k,v)=>{try{localStorage.setItem('pt_'+k,JSON.stringify(v));return true}catch(e){if(Date.now()-svT>6e4){svT=Date.now();try{toast('⚠ Could not save. Storage is full or blocked.')}catch(x){}}return false}};
 const p2=n=>String(n).padStart(2,'0'),ymd=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const fd=s=>{s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+'h '+p2(m)+'m':m?m+'m':s+'s'};
@@ -199,18 +199,18 @@ let log=ld('log',[]),S=Object.assign({goal:6,auto:true,sound:true,notif:false,wa
 const sanLog=a=>(Array.isArray(a)?a:[]).filter(l=>l&&T[l.t]&&isFinite(l.s)&&isFinite(l.e)&&isFinite(l.act)).map(l=>({...l,pz:+l.pz||0,np:+l.np||0,plan:+l.plan||0,day:l.day||ymd(new Date(l.s))}));
 log=sanLog(log);plan=(Array.isArray(plan)?plan:[]).filter(p=>p&&T[p.t]&&p.m>0);if(!plan.length)plan=[{t:'study',m:60},{t:'practice',m:30},{t:'break',m:10}];if(!['plan','quick','stopwatch'].includes(mode))mode='plan';
 let agg=ld('agg',null);if(!agg||typeof agg!=='object'){agg={};log.forEach(l=>{if(l.t!=='break')agg[l.day]=(agg[l.day]||0)+l.act});sv('agg',agg)}
-const lv=ld('live',null),ts=ld('ts',null);let RO=false,RES=false,HAND=false,pip=null,pv=null,pvc=null;const QS=location.search,TAKE=/[?&]take=1/.test(QS),DOCK=/[?&]dock=1/.test(QS);if(TAKE){try{history.replaceState(null,'',location.pathname+(DOCK?'?dock=1':''))}catch(e){}}
-if(lv&&T[lv.t]){if(!TAKE&&Date.now()-(lv.u||0)<15000&&ts&&ts.run)RO=true;else if(ts&&(ts.el>0||TAKE)&&Date.now()-ts.at<432e5&&ts.mode===mode)RES=true;
- else if(lv.act>=30){lv.e=lv.u||Date.now();lv.done=false;lv.pz=+lv.pz||0;lv.np=+lv.np||0;delete lv.ps;delete lv.al;delete lv.cur;log.push(lv);if(lv.t!=='break')agg[lv.day]=(agg[lv.day]||0)+lv.act;sv('agg',agg)}}
+const WID=Math.random().toString(36).slice(2),lv=ld('live',null),ts=ld('ts',null);let dockW=null,armAt=0,RO=false,RES=false,HAND=false,pip=null,pv=null,pvc=null;const QS=location.search,TAKE=/[?&]take=1/.test(QS),DOCK=/[?&]dock=1/.test(QS);if(TAKE){try{history.replaceState(null,'',location.pathname+(DOCK?'?dock=1':''))}catch(e){}sv('take',{w:WID,at:Date.now()})}
+if(lv&&T[lv.t]){if(!TAKE&&Date.now()-(lv.u||0)<15000&&ts&&!ts.c)RO=true;else if(ts&&(ts.el>0||TAKE)&&Date.now()-ts.at<432e5&&ts.mode===mode)RES=true;
+ else if(lv.act>=MINS){lv.e=lv.u||Date.now();lv.done=false;lv.pz=+lv.pz||0;lv.np=+lv.np||0;delete lv.ps;delete lv.al;delete lv.cur;delete lv.w;log.push(lv);if(lv.t!=='break')agg[lv.day]=(agg[lv.day]||0)+lv.act;sv('agg',agg)}}
 const prune=()=>{log=log.filter(l=>l.s>=day0(29));sv('log',log)};prune();if(!RES&&!RO)sv('live',null);
 try{Object.keys(localStorage).filter(k=>k.startsWith('pt_day_')).forEach(k=>localStorage.removeItem(k))}catch(e){}
-const subs=()=>{chips();$('#subs').innerHTML=[...new Set(log.map(l=>l.sub).filter(Boolean))].map(x=>`<option value="${esc(x)}">`).join('')};
+const subs=()=>{};
 
 /* ---------- session engine ---------- */
 const blk=()=>mode==='plan'?plan[idx]:mode==='quick'?{t:'study',m:qm}:{t:'study',m:0},durS=b=>b.m?b.m*60+ex:Infinity;
-function openS(){const b=blk();cs={day:ymd(new Date()),t:b.t,plan:b.m?b.m+ex/60:0,sub:$('#sub').value.trim(),s:Date.now(),act:0,pz:0,np:0,ps:null}}
+function openS(){const b=blk();cs={day:ymd(new Date()),t:b.t,plan:b.m?b.m+ex/60:0,sub:'',s:Date.now(),act:0,pz:0,np:0,ps:null}}
 function endP(){if(cs&&cs.ps){cs.pz+=Math.min(10800,(Date.now()-cs.ps)/1000);cs.ps=null}}
-function closeS(done){if(!cs)return;endP();if(cs.act>=30){cs.e=Date.now();cs.done=!!done;delete cs.ps;delete cs.al;delete cs.u;delete cs.cur;log.push(cs);if(cs.t!=='break'){agg[cs.day]=(agg[cs.day]||0)+cs.act;sv('agg',agg)}prune();subs()}cs=null;sv('live',null)}
+function closeS(done){if(!cs)return;flush();endP();if(cs.act>=MINS){cs.e=Date.now();cs.done=!!done;delete cs.ps;delete cs.al;delete cs.u;delete cs.cur;delete cs.w;log.push(cs);if(cs.t!=='break'){agg[cs.day]=(agg[cs.day]||0)+cs.act;sv('agg',agg)}prune();subs()}cs=null;sv('live',null)}
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3500)}
 function chime(k){try{const a=ac(),P={chime:[[784,0],[988,.22],[1319,.44]],beep:[[880,0],[880,.3],[880,.6]],bell:[[523,0],[784,.01],[1047,.02]],soft:[[392,0],[523,.3],[659,.6]]}[k]||[[784,0]],L=k==='bell'?1.6:.35;
  P.forEach(([f,d])=>{const o=a.createOscillator(),g=a.createGain();o.type=k==='beep'?'square':'sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,a.currentTime+d);g.gain.exponentialRampToValueAtTime(k==='beep'?.1:.22,a.currentTime+d+.02);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d+L);o.connect(g);g.connect(a.destination);o.start(a.currentTime+d);o.stop(a.currentTime+d+L+.05)})}catch(e){}}
@@ -221,18 +221,20 @@ function next(done){const nm=T[blk().t].n,a=cs?cs.act:0;closeS(done);el=0;ex=0;
   if(done){notify(end?'Plan complete. '+nm+' complete':nm+' complete. Next: '+T[plan[idx].t].n);toast(nm+' done'+(a?' · focus '+fd(a):''))}}
  else{run=false;if(done){notify(nm+' complete');toast(nm+' done'+(a?' · focus '+fd(a):''))}}
  last=Date.now();wake();draw()}
-function toggle(){if(!blk())return;if(RO||HAND){toast('Timer is open in another window');return}run=!run;last=Date.now();
+function flush(){const b=blk();if(run&&b&&cs){const n=Date.now(),d=Math.max(0,(n-last)/1000),add=Math.min(d,durS(b)-el);el+=add;cs.act+=add;cs.cur=(cs.cur||0)+add;if(cs.cur>(cs.mx||0))cs.mx=cs.cur;last=n}}
+function toggle(){if(!blk())return;if(blocked())return;flush();run=!run;last=Date.now();
  if(run){endP();if(!cs)openS();try{ac()}catch(e){}if(S.amu&&S.music&&!cur)play(S.music);if(mode==='plan'&&Date.now()>=pat&&idx===0&&el===0){pat=Date.now()+864e5;sv('pat',pat)}}
  else if(cs){cs.ps=Date.now();cs.np++;cs.al=0;cs.cur=0}wake();draw()}
 function setMode(m){if(m===mode)return;closeS(false);run=false;el=0;ex=0;mode=m;sv('mode',m);wake();draw()}
 function setQ(v){if(run||el>0){toast('Reset the timer before changing the duration');return}qm=v;sv('qm',v);draw()}
 function tick(){
- if(++n10%4===0)saveT();
+ if(RO){if(++n10%4===0)mirror();draw(1);return}
+ if(++n10%4===0){saveT();if(!RO&&!cs&&!run&&!HAND&&foreign())becomeRO()}
  if(cs&&cs.ps&&S.pal&&!cs.al&&Date.now()-cs.ps>S.pal*6e4){cs.al=1;beep();notify('You have been paused for over '+S.pal+' min. Resume when you are ready.')}
  const b=blk();if(run&&b){const n=Date.now(),d=Math.max(0,(n-last)/1000);last=n;const dur=durS(b),add=Math.min(d,dur-el);if(!cs)openS();el+=add;cs.act+=add;cs.cur=(cs.cur||0)+add;if(cs.cur>(cs.mx||0))cs.mx=cs.cur;if(el>=dur-.001){beep();next(true)}}
 
  draw(1)}
-async function wake(){try{if(S.wake&&run&&!wl){wl=await navigator.wakeLock.request('screen');wl.onrelease=()=>wl=null}else if(!(S.wake&&run)&&wl){await wl.release()}}catch(e){}}
+async function wake(){try{if(S.wake&&run&&!RO&&!wl){wl=await navigator.wakeLock.request('screen');wl.onrelease=()=>wl=null}else if(!(S.wake&&run&&!RO)&&wl){await wl.release()}}catch(e){}}
 
 /* ---------- analytics ---------- */
 function sess(n,off=0){const from=day0(n+off-1),to=off?day0(off-1):Infinity;let L=log.filter(l=>l.s>=from&&l.s<to);
@@ -242,7 +244,7 @@ function M(L){const F=L.filter(l=>l.t!=='break').sort((a,b)=>a.s-b.s),B=L.filter
  return{k:F.length,F,B,brk:B.reduce((a,l)=>a+l.act,0),tk:P.length,dn:P.filter(l=>l.done).length,plan:P.reduce((a,l)=>a+l.plan*60,0),pdone:P.reduce((a,l)=>a+Math.min(l.act,l.plan*60),0),act,sit,pz,idle:Math.max(0,sit-act-pz),np:s('np'),mx:Math.max(0,...F.map(l=>l.mx||0)),days,ad:Object.values(days).filter(v=>v>=1500).length,hr,eff:sit?Math.round(act/sit*100):0}}
 const eff=l=>Math.round(l.act/Math.max(1,(l.e-l.s)/1000)*100);
 const line=l=>`<span class="t">${tm(l.s)} – ${tm(l.e)}</span><span class="n">${T[l.t].n}${l.sub?' · '+esc(l.sub):''}</span><span class="v">${fd(l.act)} · ${eff(l)}%</span>`;
-function streak(g){g=g||S.goal*3600;const by=Object.assign({},agg);if(cs&&cs.t!=='break'&&cs.act>=30)by[cs.day]=(by[cs.day]||0)+cs.act;let n=0,d=new Date();if((by[ymd(d)]||0)<g)d.setDate(d.getDate()-1);while((by[ymd(d)]||0)>=g){n++;d.setDate(d.getDate()-1)}return n}
+function streak(g){g=g||S.goal*3600;const by=Object.assign({},agg);if(cs&&cs.t!=='break'&&cs.act>=MINS)by[cs.day]=(by[cs.day]||0)+cs.act;let n=0,d=new Date();if((by[ymd(d)]||0)<g)d.setDate(d.getDate()-1);while((by[ymd(d)]||0)>=g){n++;d.setDate(d.getDate()-1)}return n}
 
 /* ---------- home ---------- */
 let stAt=0;function draw(th){
@@ -257,6 +259,7 @@ let stAt=0;function draw(th){
   $('#nx').textContent=mode==='plan'?'Block '+(idx+1)+'/'+plan.length+' · Next: '+T[nb.t].n+' '+nb.m+' min':sw?'Counting up':'Quick countdown';
   document.title=(run?mmss(rem)+' · ':'')+(sw?'Stopwatch':T[b.t].n)}
  else{$('#lbl').textContent='Your plan is empty';$('#time').textContent='00:00';$('#nx').textContent='Add blocks in Settings';$('#rg').style.strokeDashoffset=565.49}
+ if(RO&&b)$('#nx').textContent='Live view \u00b7 tap anything to use it here';
  $('#go').textContent=run?'⏸':'▶';
  $('#pz').textContent=cs&&(cs.np||cs.ps)?'This session: '+cs.np+' pause(s) · '+fd(cs.pz+(cs.ps?(Date.now()-cs.ps)/1000:0))+' paused':'';
  if(th&&Date.now()-stAt>=0&&Date.now()-stAt<1000){if(pv)drawPv();return}stAt=Date.now();
@@ -305,13 +308,13 @@ function dash(re){
  put(kp+sm+ts+chart+cs2+ql+hs+bt+(rgn>1?sec('Daily breakdown','Focus vs goal',days.join('')):'')+lg)}
 
 /* ---------- settings ---------- */
-const PRE={p1:[{t:'study',m:60},{t:'practice',m:30},{t:'break',m:10}],p2:[{t:'study',m:50},{t:'break',m:10}]},PN2={p1:'60 / 30 / Break',p2:'Pomodoro 50/10',cu:'Custom'},cpy=a=>a.map(x=>({...x})),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+const PRE={p1:[{t:'study',m:60},{t:'practice',m:30},{t:'break',m:10}],p2:[{t:'study',m:50},{t:'break',m:10}]},PN2={p1:'60·30·10',p2:'Pomodoro 50/10',cu:'Custom'},cpy=a=>a.map(x=>({...x})),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const pkey=()=>same(dp,PRE.p1)?'p1':same(dp,PRE.p2)?'p2':'cu';
 function dlist(){const k=pkey();if(k==='cu'&&dp.length)sv('cplan',dp);
  $$('#pre .pc').forEach(b=>{const on=b.dataset.k===k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
- $('#plt').innerHTML='Your plan · '+PN2[k]+'<small>'+(dp.length?dp.reduce((a,x)=>a+x.m,0)+' min in total':'Blocks run one after another')+'</small>';
- $('#dl').innerHTML=dp.map((p,i)=>`<div class="blk"><i class="dot" style="background:${T[p.t].c}"></i><span>${T[p.t].n} · ${p.m} min</span><button data-u="${i}" aria-label="Up">↑</button><button data-d="${i}" aria-label="Down">↓</button><button data-r="${i}" aria-label="Remove">✕</button></div>`).join('')||'<p class="tip">No blocks yet. Add one below.</p>'}
-const NK=['goal','pal'],BK=['auto','sound','wake','notif','vib','amu'];
+ $('#plt').innerHTML='Your plan<small>'+PN2[k]+' · '+(dp.length?dp.reduce((a,x)=>a+x.m,0)+' min':'empty')+'</small>';
+ $('#dl').innerHTML=dp.map((p,i)=>`<div class="blk"><i class="dot" style="background:${T[p.t].c}"></i><span>${p.t==='practice'?'Practice':T[p.t].n} · ${p.m} min</span><button data-u="${i}" aria-label="Up">↑</button><button data-d="${i}" aria-label="Down">↓</button><button data-r="${i}" aria-label="Remove">✕</button></div>`).join('')||'<p class="tip">No blocks yet. Add one below.</p>'}
+const NK=['pal'],BK=['auto','sound','wake','notif','vib','amu'];
 function openSet(){dp=plan.map(x=>({...x}));dlist();NK.forEach(k=>$('#s_'+k).value=S[k]);BK.forEach(k=>$('#s_'+k).checked=S[k]);$('#s_tone').value=S.tone;$$('.mus button').forEach(b=>b.classList.toggle('on',!!cur&&b.dataset.m===S.music));$('#sd').showModal()}
 $('#dl').onclick=e=>{const u=e.target.dataset.u,r=e.target.dataset.r;if(u!==undefined&&+u>0){const i=+u;[dp[i-1],dp[i]]=[dp[i],dp[i-1]]}const dn=e.target.dataset.d;if(dn!==undefined&&+dn<dp.length-1){const i=+dn;[dp[i+1],dp[i]]=[dp[i],dp[i+1]]}if(r!==undefined)dp.splice(+r,1);dlist()};
 $('#add').onclick=()=>{dp.push({t:$('#nt').value,m:Math.max(1,Math.min(600,+$('#nm').value||1))});dlist()};
@@ -374,7 +377,9 @@ function drums(t,bt,o){const sw=bt*(o.sw||0),n=o.n||8,h=()=>.9+Math.random()*.2;
  o.k.forEach(x=>kick(t+x*bt,o.kv*h()));(o.s||[]).forEach(x=>snare(t+x*bt+jt()*.4,o.sv*h()));(o.g||[]).forEach(x=>nz(t+x*bt,.07,'bandpass',2300,o.sv*.45,.2));
  if(o.h)for(let i=0;i<n;i++)if(Math.random()<.92)nz(t+i*bt*4/n+(i%2?sw:0)+jt()*.4,.045,'bandpass',7000,o.h*.7*(i%2?.6:1)*h())}
 function crackle(){const b=AC.createBuffer(1,AC.sampleRate*3,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()<.0005?Math.random()*2-1:0;const s=AC.createBufferSource();s.buffer=b;s.loop=true;const g=AC.createGain();g.gain.value=.08;s.connect(flt('highpass',1800,g));g.connect(cur.bus);s.start();cur.s.push(s)}
-function bars(bl,fn){cur.nt=AC.currentTime+.2;cur.k=cur.k||0;let k=0;const go=()=>{if(cur&&cur.nt<AC.currentTime){const m=Math.ceil((AC.currentTime+.1-cur.nt)/bl);cur.nt+=m*bl;k+=m}while(cur&&cur.nt<AC.currentTime+6){fn(cur.nt,k++);cur.nt+=bl}};go();cur.t.push(setInterval(go,800))}
+/* timer that runs in a Worker: Chrome desktop throttles normal timers when the window is minimized or behind another window, which starves the music scheduler */
+function wint(fn,ms){try{const w=new Worker(URL.createObjectURL(new Blob(['setInterval(function(){postMessage(0)},'+ms+')'],{type:'text/javascript'})));w.onmessage=()=>fn();return w}catch(e){return setInterval(fn,ms)}}
+function bars(bl,fn){cur.nt=AC.currentTime+.2;cur.k=cur.k||0;let k=0;const go=()=>{if(cur&&cur.nt<AC.currentTime){const m=Math.ceil((AC.currentTime+.1-cur.nt)/bl);cur.nt+=m*bl;k+=m}while(cur&&cur.nt<AC.currentTime+6){fn(cur.nt,k++);cur.nt+=bl}};go();cur.t.push(wint(go,400))}
 const CH={
  A:[{b:36,n:[60,64,67,71]},{b:33,n:[57,60,64,67]},{b:38,n:[57,60,65,69]},{b:31,n:[59,62,65,67]}],
  B:[{b:41,n:[57,60,64,69]},{b:40,n:[55,59,62,67]},{b:38,n:[53,57,60,64]},{b:36,n:[55,59,64,67]}],
@@ -435,7 +440,7 @@ Object.assign(SONG,{
  rain(){tr(.85);noise('white','lowpass',3500,.2,cur.bus);noise('white','highpass',900,.07,cur.bus);noise('brown','lowpass',350,.25,cur.bus);bars(8,t=>{if(Math.random()<.15)rumble(t+Math.random()*6)})},
  brown(){tr(.9);noise('brown','lowpass',1000,.5,cur.bus);noise('brown','lowpass',250,.25,cur.bus)},
  gamma(){tr(.8);bin(200,240,.08);noise('brown','lowpass',500,.35,cur.bus);bars(8,(t,k)=>{const c=CH.K[(k>>1)%4];pd(t,[c.b+12,...c.n],8,.025)})}});
-function stopMusic(f=.4){if(cur){const c=cur;cur=null;c.t.forEach(clearInterval);const g=c.out.gain,n=AC.currentTime;g.cancelScheduledValues(n);g.setValueAtTime(g.value,n);g.linearRampToValueAtTime(0,n+f);setTimeout(()=>{c.s.forEach(s=>{try{s.stop()}catch(e){}});c.out.disconnect()},f*1000+300)}$$('.mus button').forEach(b=>b.classList.remove('on'))}
+function stopMusic(f=.4){if(cur){const c=cur;cur=null;c.t.forEach(x=>{try{x&&x.terminate?x.terminate():clearInterval(x)}catch(e){}});const g=c.out.gain,n=AC.currentTime;g.cancelScheduledValues(n);g.setValueAtTime(g.value,n);g.linearRampToValueAtTime(0,n+f);setTimeout(()=>{c.s.forEach(s=>{try{s.stop()}catch(e){}});c.out.disconnect()},f*1000+300)}$$('.mus button').forEach(b=>b.classList.remove('on'))}
 function play(name,xf){if(!SONG[name])return;ac();stopMusic(xf?4:.4);
  const bus=AC.createBiquadFilter(),trim=AC.createGain(),out=AC.createGain(),pad=AC.createGain(),snd=AC.createGain(),rv=AC.createConvolver(),t=AC.currentTime;
  bus.type='lowpass';bus.frequency.value=9000;rv.buffer=IR||(IR=irb());snd.gain.value=.45;
@@ -444,18 +449,22 @@ function play(name,xf){if(!SONG[name])return;ac();stopMusic(xf?4:.4);
  cur={bus,trim,out,pad,snd,s:[],t:[],k:catNow()};tStart=Date.now();wb=nbuf('white');S.music=name;sv('set',S);SONG[name]();
  const b=$(`.mus [data-m=${name}]`);if(b)b.classList.add('on')}
 $$('.mus').forEach(m=>m.onclick=e=>{const b=e.target.closest('[data-m]');if(b)play(b.dataset.m)});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&AC&&cur&&AC.state!=='running')AC.resume()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)unlockAudio()});
+/* Chrome desktop keeps sound locked until the first click/key inside this window (also inside the floating window); resume then */
+function unlockAudio(){if(AC&&cur&&AC.state!=='running'){try{const r=AC.resume();if(r&&r.catch)r.catch(()=>{})}catch(e){}}}
+['pointerdown','keydown','touchend'].forEach(ev=>addEventListener(ev,unlockAudio,true));
 $('#mshuf').onclick=()=>play(pick(catNow()),1);
 $('#mstop').onclick=()=>{stopMusic();S.music='';sv('set',S)};
 $('#vol').oninput=e=>{if(master)master.gain.value=vg(e.target.value)};
 if(S.rot===undefined)S.rot=15;$('#mrot').value=S.rot;$('#mrot').onchange=e=>{S.rot=+e.target.value;sv('set',S)};
 /* auto-rotate: new track every S.rot minutes (4s crossfade, no repeats until all played); study blocks -> focus tracks, break blocks -> calm tracks */
-setInterval(()=>{if(!cur||!AC||AC.state!=='running'||!S.rot)return;const k=catNow();if(k!==cur.k||Date.now()-tStart>=S.rot*6e4){const n=pick(k);play(n,1);const b=$(`.mus [data-m=${n}] b`);if(b)toast('♪ '+b.textContent)}},3000);
+wint(()=>{if(!cur||!AC||AC.state!=='running'||!S.rot)return;const k=catNow();if(k!==cur.k||Date.now()-tStart>=S.rot*6e4){const n=pick(k);play(n,1);const b=$(`.mus [data-m=${n}] b`);if(b)toast('♪ '+b.textContent)}},3000);
 
 /* ---------- wiring ---------- */
 $('#go').onclick=toggle;
 $('#skip').onclick=()=>{if(cs&&cs.act>=60&&mode!=='stopwatch'&&!ask('End this block now?'))return;if(blk())next(mode==='stopwatch')};
-$('#rst').onclick=()=>{if(cs&&cs.act>=60&&!ask('Reset and end this session?'))return;closeS(false);el=0;ex=0;last=Date.now();draw()};
+/* Reset = force stop: stop the timer, SAVE the time studied so far to today's log, then return to the start of the block */
+$('#rst').onclick=()=>{if(blocked())return;flush();const a=cs?cs.act:0,sb=cs&&cs.t!=='break';if(a>=60&&!ask('End this session? '+fd(a)+' of focus will be saved.'))return;closeS(false);run=false;el=0;ex=0;last=Date.now();saveT();if(a>=MINS)toast('Saved '+fd(a)+(sb?' of focus':' of break')+' to today');wake();draw()};
 $('#ext').onclick=()=>{if(mode==='stopwatch'||!blk())return;ex+=300;if(cs)cs.plan+=5;toast('Added 5 minutes');draw()};
 $('#mbtn').onclick=()=>{if(cur)stopMusic();else play(SONG[S.music]?S.music:'lofi');draw()};
 $('#modes').onclick=e=>{const k=e.target.dataset.k;if(k)setMode(k)};
@@ -463,20 +472,21 @@ $('#qc').onclick=e=>{const q=e.target.dataset.q;if(q===undefined)return;let v=+q
 $('#bs').onclick=openSet;$('#bd').onclick=()=>{dash();$('#dd').showModal()};
 const kd=e=>{if(/INPUT|SELECT|BUTTON|TEXTAREA/.test(e.target.tagName)||D.querySelector('dialog[open]'))return;
  if(e.code==='Space'){e.preventDefault();toggle()}else if(e.code==='KeyN')$('#skip').click();else if(e.code==='KeyR')$('#rst').click()};document.addEventListener('keydown',kd);
-addEventListener('pagehide',saveT);
-function saveT(){if(RO||HAND)return;if(cs)cs.u=Date.now();sv('live',cs);sv('ts',{mode,idx,el,ex,run,at:Date.now()})}
+let closing=false;addEventListener('pagehide',()=>{closing=true;saveT()});addEventListener('pageshow',e=>{if(e.persisted){closing=false;saveT()}});
+function saveT(){if(RO||HAND)return;if(foreign()){if(cs||run)becomeRO();return}if(cs){cs.u=Date.now();cs.w=WID}sv('live',cs);sv('ts',{mode,idx,el,ex,run,at:Date.now(),c:closing?1:0})}
+/* locked-out guard: if this page is read-only because it thought another tab was running, and that tab goes silent, take over automatically */
 function wkS(){const td=ymd(new Date()),v=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);const k=ymd(d);return[k===td,(agg[k]||0)+(k===td&&cs&&cs.t!=='break'?cs.act:0)]}),mx=Math.max(S.goal*3600,...v.map(x=>x[1]),1);return'<div class="wk" aria-hidden="true">'+v.map(([t,x])=>`<i class="${t?'t':''}" style="height:${Math.max(6,x/mx*100)}%"></i>`).join('')+'</div>'}
-function chips(){const c={};log.forEach(l=>{if(l.sub)c[l.sub]=(c[l.sub]||0)+1});$('#sc').innerHTML=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k])=>`<button data-s="${esc(k)}">${esc(k)}</button>`).join('')}
-$('#sc').onclick=e=>{const k=e.target.dataset.s;if(k!==undefined){$('#sub').value=k;sv('sub',k)}};$('#sub').oninput=e=>sv('sub',e.target.value);$('#sub').value=ld('sub','');
 $('#today').onclick=()=>$('#bd').click();
 addEventListener('storage',e=>{
  if(e.key==='pt_log'){try{log=sanLog(JSON.parse(e.newValue||'[]'));lastH='';subs();draw();if(pv)drawPv()}catch(x){}}
  else if(e.key==='pt_agg'){try{agg=JSON.parse(e.newValue||'{}')||{};lastH='';draw();if(pv)drawPv()}catch(x){}}
- else if(e.key==='pt_set'){try{S=Object.assign({goal:6,auto:true,sound:true,notif:false,wake:true,amu:true,pal:10,music:'',tone:'chime',vib:true},JSON.parse(e.newValue||'{}'));lastH='';draw();if(pv)drawPv()}catch(x){}}
+ else if(e.key==='pt_take'){try{const t=JSON.parse(e.newValue||'null');if(t&&t.w!==WID&&!HAND&&!RO&&(cs||run))becomeRO()}catch(x){}}
+ else if(e.key==='pt_set'){try{S=Object.assign({goal:6,auto:true,sound:true,notif:false,wake:true,amu:true,pal:10,music:'',tone:'chime',vib:true},JSON.parse(e.newValue||'{}'));fillGoal();lastH='';draw();if(pv)drawPv()}catch(x){}}
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden)saveT();else{wl=null;wake()}});
 if(RES){try{mode=ts.mode;idx=ts.idx<plan.length?ts.idx:0;ex=ts.ex||0;el=ts.el;cs=lv;const b=blk();if(b){const gap=ts.run?Math.max(0,(Date.now()-ts.at)/1000):0,add=Math.min(gap,durS(b)-el);el+=add;cs.act+=add;cs.cur=(cs.cur||0)+add;run=!!ts.run;last=Date.now()}else cs=null}catch(x){cs=null}}
-if(RO)toast('Timer is already open in another tab. Close it to avoid data loss.');
+if(RES&&cs){cs.w=WID;cs.u=Date.now();sv('live',cs)}
+if(RO)mirror();
 /* ---------- popup mode ----------
    laptop : Chrome/Edge -> always-on-top mini window (Document PiP); other browsers -> normal window snapped to the right 30% of the screen
    phone  : floating mini timer (video Picture-in-Picture) that stays over other apps */
@@ -486,15 +496,15 @@ function note(msg,btn,fn,x){PN.querySelector('p').textContent=msg;const b=PN.que
 async function docPip(){
  const aw=screen.availWidth,ah=screen.availHeight,w=await documentPictureInPicture.requestWindow({width:clamp(Math.round(aw*.3),320,640),height:clamp(Math.round(ah*.85),420,1000)}),d=w.document;
  document.querySelectorAll('style').forEach(x=>d.head.appendChild(x.cloneNode(true)));d.title='Study Timer';d.body.classList.add('pip');
- MV.forEach(q=>d.body.appendChild(document.querySelector(q)));pip=w;D=d;d.addEventListener('keydown',kd);
+ MV.forEach(q=>d.body.appendChild(document.querySelector(q)));pip=w;D=d;d.addEventListener('keydown',kd);['pointerdown','keydown','touchend'].forEach(ev=>d.addEventListener(ev,unlockAudio,true));
  note('The timer is running in the floating window.','Bring it back',()=>w.close());
  w.addEventListener('pagehide',()=>{MV.forEach(q=>document.body.appendChild(d.querySelector(q)));D=document;pip=null;PN.hidden=true;lastH='';draw()});
  draw()}
 function sidePop(){
  saveT();const aw=screen.availWidth,w=window.open(BASE+'?dock=1&take=1','padhai_dock','popup=yes,width='+Math.round(aw*.3)+',height='+screen.availHeight+',left='+((screen.availLeft||0)+Math.round(aw*.7))+',top='+(screen.availTop||0));
  if(!w){toast('Popup blocked. Allow popups for this site and try again');return}
- HAND=true;run=false;cs=null;stopMusic();wake();draw();
- const back=()=>location.replace(BASE+'?take=1');
+ dockW=w;HAND=true;run=false;cs=null;stopMusic();wake();draw();
+ const back=()=>adopt(true);
  note('The timer is open in the side window.','Bring it back here',()=>{try{w.close()}catch(e){}setTimeout(back,450)});
  const iv=setInterval(()=>{if(w.closed){clearInterval(iv);back()}},700)}
 let eS={t:0,cur:null,prev:null};
@@ -564,11 +574,11 @@ function popup(){
  if(pip){pip.close();return}
  if(pv){try{document.pictureInPictureElement?document.exitPictureInPicture():pv.webkitSetPresentationMode('inline')}catch(e){}endPv();return}
  if(cmp){setCmp(false);return}
- if(DOCK||HAND)return;
+ if(HAND){if(!dockW||dockW.closed)adopt(true);else toast('The timer is open in the side window');return}if(DOCK)return;
  if(!MOB){if(window.documentPictureInPicture)docPip().catch(()=>{toast('Floating window failed \u2014 opening a side window instead.');sidePop()});else if(FINE)sidePop();else vidPip()}
  else vidPip()}
 $('#pop').onclick=popup;
-$('#sw').onclick=()=>{if(DOCK||pip||pv||HAND){toast('Close the current popup first');return}$('#sd').close();sidePop()};
+$('#sw').onclick=()=>{if(HAND&&(!dockW||dockW.closed)){adopt(true);return}if(DOCK||pip||pv||HAND){toast('Close the current popup first');return}$('#sd').close();sidePop()};
 if(DOCK){document.body.classList.add('dock');document.title='Study Timer';try{const aw=screen.availWidth,w=Math.round(aw*.3);resizeTo(w,screen.availHeight);moveTo((screen.availLeft||0)+aw-outerWidth,screen.availTop||0)}catch(e){}}
 if(!ld('hint',0)&&!DOCK&&!RO){sv('hint',1);setTimeout(()=>toast(IOS&&STANDALONE?'Tip: the window button switches to a compact timer view':FINE?'Tip: the window button opens a floating timer so your lecture keeps the rest of the screen':'Tip: the window button opens a floating mini timer'),1800)}
 /* background-proof ticker: a worker is not throttled when this tab is hidden behind your lecture */
@@ -578,5 +588,45 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){try{[['man
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 if(ld('cmp',0)){cmp=true;document.body.classList.add('pip')}
 if((MOB||!FINE)&&!(IOS&&STANDALONE))setTimeout(prepPv,800);
+/* ---------- one timer, owned by the window you are using ----------
+   Whatever window you touch becomes the active one automatically: it loads the live session, the other windows turn into a read-only live view,
+   the music moves with you, and nothing ever shows an error. */
+let swallowUntil=0;
+const foreign=()=>{const l=ld('live',null);return !!(l&&l.w&&l.w!==WID&&Date.now()-(l.u||0)<15000)};
+function mirror(){const l=ld('live',null),t=ld('ts',null);
+ if(!l||!t||!T[l.t]||Date.now()-(l.u||0)>15000){adopt(false);return}
+ const pl=ld('plan',plan);if(Array.isArray(pl)&&pl.length)plan=pl;
+ mode=t.mode||mode;idx=t.idx<plan.length?t.idx:0;ex=t.ex||0;cs=l;run=!!t.run;const b=blk();if(!b){cs=null;return}
+ el=Math.min(durS(b),(t.el||0)+(t.run?Math.max(0,(Date.now()-t.at)/1000):0));last=Date.now()}
+function becomeRO(){if(RO)return;RO=true;stopMusic();wake();lastH='';mirror();draw()}
+function adopt(user){
+ const l=ld('live',null),t=ld('ts',null);
+ if(HAND){HAND=false;try{if(dockW&&!dockW.closed)dockW.close()}catch(e){}dockW=null;try{PN.hidden=true}catch(e){}}
+ RO=false;
+ try{const pl=ld('plan',plan);if(Array.isArray(pl)&&pl.length)plan=pl;qm=ld('qm',qm);pat=ld('pat',pat);log=sanLog(ld('log',[]));agg=ld('agg',{})||{}}catch(e){}
+ let ok=false;
+ if(l&&T[l.t]&&t){mode=t.mode||mode;idx=t.idx<plan.length?t.idx:0;ex=t.ex||0;el=t.el||0;cs=l;const b=blk();
+  if(b){const gap=t.run?Math.max(0,Math.min(432e5,Date.now()-t.at)/1000):0,add=Math.min(gap,Math.max(0,durS(b)-el));el+=add;cs.act+=add;cs.cur=(cs.cur||0)+add;run=!!t.run;ok=true}else cs=null}
+ if(!ok){cs=null;run=false;el=0;ex=0;const m=ld('mode',mode);if(m)mode=m;if(t&&t.idx<plan.length)idx=t.idx;if(idx>=plan.length)idx=0}
+ last=Date.now();closing=false;sv('take',{w:WID,at:Date.now()});
+ if(cs){cs.w=WID;cs.u=Date.now();sv('live',cs)}saveT();wake();lastH='';
+ if(user&&run&&S.amu&&S.music&&!cur){try{play(S.music)}catch(e){}}
+ draw()}
+/* the very first touch in a window that is not the active one makes it the active one; that touch only brings the window up to date */
+function claim(e){if(HAND||!(RO||foreign()))return;const tg=e.target&&e.target.closest?e.target:null;adopt(true);
+ if(e.type==='keydown'){if(['Space','KeyN','KeyR'].includes(e.code)&&!(tg&&/INPUT|SELECT|TEXTAREA/.test(tg.tagName))){e.stopPropagation();e.preventDefault();toast('Timer is now active in this window')}}
+ else if(tg&&tg.closest('#go,#skip,#rst,#ext,#modes,#qc,#mbtn'))swallowUntil=Date.now()+800}
+['pointerdown','keydown'].forEach(ev=>addEventListener(ev,claim,true));
+addEventListener('click',e=>{if(Date.now()<swallowUntil){swallowUntil=0;e.stopPropagation();e.preventDefault();toast('Timer is now active in this window')}},true);
+function blocked(){
+ if(HAND){if(!dockW||dockW.closed){adopt(true);return true}toast('The timer is open in the side window. Use Bring it back here.');return true}
+ if(RO||foreign()){adopt(true);toast('Timer is now active in this window');return true}
+ return false}
+function guard(){if(HAND&&(!dockW||dockW.closed))adopt(true)}
+wint(guard,1500);['focus','pointerdown'].forEach(ev=>addEventListener(ev,guard,true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)guard()});
+function fillGoal(){const g=document.getElementById('gsel');if(!g)return;if(!(S.goal>=1))S.goal=6;const v=[];for(let i=1;i<=24;i++)v.push(i);if(!v.includes(S.goal))v.push(S.goal),v.sort((a,b)=>a-b);g.innerHTML=v.map(i=>`<option value="${i}">${i} ${i===1?'hour':'hours'}</option>`).join('');g.value=String(S.goal)}
+{const g=document.getElementById('gsel');g.onchange=()=>{S.goal=+g.value||6;sv('set',S);lastH='';draw()};fillGoal()}
+/* session resumed (app re-opened, side window, "Bring it back"): restart the music. Chrome needs one click/key first; unlockAudio() then starts the sound */
+if(RES&&run&&S.amu&&S.music&&SONG[S.music]){try{play(S.music);setTimeout(()=>{if(AC&&cur&&AC.state!=='running')toast('\u266a Click anywhere to start the music')},700)}catch(e){}}
 subs();draw();
 </script></body></html>
