@@ -7603,6 +7603,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
   // Only 3 languages: English, Hindi, Sanskrit (+ Auto)
   const LANGS = [['auto', 'Auto'], ['en', 'English'], ['hi', '\u0939\u093F\u0928\u094D\u0926\u0940'], ['sa', '\u0938\u0902\u0938\u094D\u0915\u0943\u0924\u092E\u094D']];
   const cache = new Map();
+  const MAX_WORDS = 60, MAX_CHARS = 500;   // selection limit (long text can be selected; [Meaning] is offered only up to 3 words, [Google] works for all)
   let pick = null, anchor = null, dragging = false, pushed = false, openedAt = 0, cur = null, chipTerm = '', chipT = null, suppressUntil = 0, lpT = null, lpX = 0, lpY = 0, reqId = 0;
 
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
@@ -7678,7 +7679,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
     let n = range.commonAncestorContainer; if (n.nodeType === 3) n = n.parentElement;
     if (!n || !n.closest || !n.closest(SEL_ROOT) || n.closest('.katex, input, textarea')) return null;
     const term = cleanTerm(sel.toString());
-    if (!term || term.length > 100 || term.split(' ').length > 5 || !/\p{L}/u.test(term)) return null;
+    if (!term || term.length > MAX_CHARS || term.split(' ').length > MAX_WORDS || !/\p{L}/u.test(term)) return null;
     return { term, range };
   }
   function hideChip() { chip.style.display = 'none'; chipTerm = ''; }
@@ -7693,6 +7694,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
     let hi = false; try { hi = typeof currentLang !== 'undefined' && currentLang === 'hi'; } catch (e) {}
     mBtn.textContent = hi ? '\u0905\u0930\u094D\u0925 / Meaning' : 'Meaning';
     gBtn.href = googleUrl(s.term);
+    mBtn.style.display = s.term.split(' ').length > 3 ? 'none' : '';   // dictionary lookup only for up to 3 words
     chip.style.display = 'flex';
     const rs = s.range.getClientRects(), r = rs.length ? rs[rs.length - 1] : s.range.getBoundingClientRect();
     const w = chip.offsetWidth || 100, h = chip.offsetHeight || 36;
@@ -7716,7 +7718,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
   const WORD = /[\p{L}\p{M}\p{N}'\u2019-]+/gu;
   function setPick(range) {
     const term = cleanTerm(range.toString());
-    if (!term || term.length > 100 || term.split(' ').length > 5 || !/\p{L}/u.test(term)) return false;
+    if (!term || term.length > MAX_CHARS || term.split(' ').length > MAX_WORDS || !/\p{L}/u.test(term)) return false;
     pick = { term, range };
     try { CSS.highlights.set('yai-dict', new Highlight(range)); } catch (e) {}
     placeHandles();
