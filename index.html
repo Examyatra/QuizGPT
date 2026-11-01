@@ -1551,28 +1551,6 @@ footer{color:var(--ink-dim);font-size:.78rem}
   </div>
 </header>
 
-<!-- AI Settings Modal (Agnes AI — multiple API keys, rotated automatically) -->
-<div class="modal-backdrop" id="keyModal">
-  <div class="modal-box">
-    <h3 id="keyModalTitle" data-i18n="keyModalTitle">Configure Agnes AI</h3>
-    <label data-i18n="modelNameLabel">Model name</label>
-    <input type="text" id="modelNameInput">
-
-    <label data-i18n="keyListLabel">Saved API keys (used one after another)</label>
-    <div class="key-list" id="keyList"></div>
-
-    <div class="add-key-row">
-      <input type="password" id="newKeyInput" data-i18n-placeholder="newKeyPlaceholder" placeholder="Paste another API key...">
-      <button class="btn-sm primary" id="addKeyBtn" data-i18n="addKeyBtn">+ Add</button>
-    </div>
-
-    <div class="modal-note" data-i18n="keyModalNote">Keys are saved only on this device (browser local storage) — never uploaded anywhere. Each quiz generation rotates to the next saved key automatically.</div>
-    <div class="modal-actions">
-      <button class="btn-sm primary" onclick="closeKeyModal()" data-i18n="doneBtn">Done</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-backdrop" id="savedQuizzesModal">
   <div class="modal-box sq-box">
     <div class="menu-head">
@@ -1820,16 +1798,6 @@ footer{color:var(--ink-dim);font-size:.78rem}
     <!-- AUTO detail -->
     <div class="method-detail" id="autoDetail">
       <div class="ai-proceed-block" style="border-top:none; margin-top:16px; padding-top:0;">
-        <div class="provider-row">
-          <div class="p-left">
-            <span class="p-dot" id="dotAgnes" style="background:var(--coral)"></span>
-            <div>
-              <div class="p-name">Agnes AI</div>
-              <div class="p-status" id="providerStatusNote"></div>
-            </div>
-          </div>
-          <button class="gear-btn" title="Configure Agnes AI API key" onclick="openKeyModal('agnes');">⚙️</button>
-        </div>
         <div class="row">
           <div class="field">
             <label data-i18n="numQLabel">Number of questions</label>
@@ -1853,10 +1821,6 @@ footer{color:var(--ink-dim);font-size:.78rem}
             </select>
           </div>
         </div>
-        <div class="mode-caption exam" data-i18n="modeCapExam">🎯 Exam level — tricky, integrated exam-style questions that make you think</div>
-        <button class="btn-main" id="proceedAiBtn">🤖 <span data-i18n="proceedAiBtn">Generate quiz</span></button>
-        <div class="mode-caption rev" data-i18n="modeCapRev">📖 Revision level — the most important facts of your notes, as direct exam-level recall questions</div>
-        <button class="btn-main ghost" id="proceedAiRevBtn">📖 <span data-i18n="proceedAiRevBtn">Generate revision quiz</span></button>
       </div>
     </div>
 
@@ -1868,6 +1832,12 @@ footer{color:var(--ink-dim);font-size:.78rem}
         <button class="site-pick site-btn active" data-url="https://gemini.google.com/app"><span class="dot" style="background:#4285f4"></span>Gemini</button>
         <button class="site-pick site-btn" data-url="https://chatgpt.com/"><span class="dot" style="background:#10a37f"></span>ChatGPT</button>
         <button class="site-pick site-btn" data-url="https://claude.ai/new"><span class="dot" style="background:#d97757"></span>Claude</button>
+        <button class="site-pick site-btn" id="eyPick" data-ey="1"><span class="dot" style="background:#a855f7"></span>Exam Yatri</button>
+      </div>
+      <div id="eyModelRow" style="display:none; margin:6px 0 12px;">
+        <div style="font-size:0.8rem; opacity:0.8; margin-bottom:6px;" data-i18n="eyModelLabel">AI Model</div>
+        <div class="site-pick-row" id="eyModelList"></div>
+        <div id="eyModelNote" style="font-size:0.78rem; opacity:0.8; margin-top:8px; line-height:1.5;"></div>
       </div>
       <div class="row">
         <div class="field">
@@ -1902,8 +1872,10 @@ footer{color:var(--ink-dim);font-size:.78rem}
       </div>
       <div class="mode-caption exam" data-i18n="modeCapExam">🎯 Exam level — tricky, integrated exam-style questions that make you think</div>
       <button class="btn-main ghost" id="openAiBtn">🚀 <span data-i18n="copyOpenBtn">Copy prompt &amp; open site</span></button>
+      <button class="btn-main" id="eyStartBtn" style="display:none">▶️ <span data-i18n="eyStartBtn">Start Quiz</span></button>
       <div class="mode-caption rev" data-i18n="modeCapRev">📖 Revision level — the most important facts of your notes, as direct exam-level recall questions</div>
       <button class="btn-main ghost" id="openAiRevBtn">📖 <span data-i18n="copyOpenRevBtn">Copy revision prompt &amp; open site</span></button>
+      <button class="btn-main ghost" id="eyStartRevBtn" style="display:none">▶️ <span data-i18n="eyStartBtn">Start Quiz</span></button>
       <div class="note" data-i18n="pasteNote">This copies the extracted text plus quiz instructions, then opens the chosen site in a new tab — press Ctrl+V (Cmd+V on Mac) there to paste. Browsers don't allow auto-pasting across sites, so this one manual step is required.</div>
     </div>
   </div>
@@ -2037,8 +2009,9 @@ const I18N = {
     langBilingual: "English + Hindi",
     langEnglish: "English only",
     langHindi: "Hindi only",
-    proceedAiBtn: "Generate quiz",
     copyOpenBtn: "Copy prompt & open site",
+    eyStartBtn: "Start Quiz",
+    eyModelLabel: "AI Model",
     pasteNote: "This copies the extracted text plus quiz instructions, then opens the chosen site in a new tab — press Ctrl+V (Cmd+V on Mac) there to paste. Browsers don't allow auto-pasting across sites, so this one manual step is required.",
     footerText: "Quiz play runs entirely in your browser. Images and scanned PDF pages go to OCR.space only when “Online OCR” is ticked; PDF text and Sanskrit OCR always stay on your device.",
     onlyPdf: "Only PDF files are allowed",
@@ -2070,17 +2043,13 @@ const I18N = {
     parsing: "Reading the quiz...",
     parseOk: "Quiz loaded! Starting...",
     parseEmpty: "Couldn't find any questions yet — paste the AI's full response.",
-    keyModalTitle: "Configure Agnes AI",
     modelNameLabel: "Model name",
     keyListLabel: "Saved API keys (used one after another)",
     newKeyPlaceholder: "Paste another API key...",
-    addKeyBtn: "+ Add",
-    keyModalNote: "Keys are saved only on this device (browser local storage) — never uploaded anywhere. Each quiz generation rotates to the next saved key automatically.",
     doneBtn: "Done",
     modeCapExam: "🎯 Exam level — tricky, integrated exam-style questions that make you think",
     modeCapRev: "📖 Revision level — the most important facts of your notes, as direct exam-level recall questions",
     copyOpenRevBtn: "Copy revision prompt & open site",
-    proceedAiRevBtn: "Generate revision quiz",
     sqTitle: "My saved",
     sqNote: "Quizzes you practise and texts you extract are saved on this device. Old items are removed automatically after the chosen days.",
     sqEmpty: "No saved quizzes yet. Start a quiz and it will appear here.",
@@ -2161,8 +2130,9 @@ const I18N = {
     langBilingual: "English + Hindi",
     langEnglish: "सिर्फ़ English",
     langHindi: "सिर्फ़ Hindi",
-    proceedAiBtn: "क्विज़ बनाएं",
     copyOpenBtn: "प्रॉम्प्ट कॉपी करें और साइट खोलें",
+    eyStartBtn: "क्विज़ शुरू करें",
+    eyModelLabel: "AI मॉडल",
     pasteNote: "यह निकाला गया टेक्स्ट और क्विज़ इंस्ट्रक्शन कॉपी करके चुनी हुई साइट नए टैब में खोल देगा — वहाँ Ctrl+V (Mac पर Cmd+V) दबाकर पेस्ट करें। ब्राउज़र किसी साइट को दूसरी साइट में अपने आप पेस्ट नहीं करने देते, इसलिए यह एक मैनुअल स्टेप ज़रूरी है।",
     footerText: "क्विज़ पूरी तरह आपके ब्राउज़र में चलता है। इमेज और स्कैन किए PDF पेज सिर्फ़ तब OCR.space को भेजे जाते हैं जब “Online OCR” चुना हो; PDF का टेक्स्ट और संस्कृत OCR हमेशा आपके डिवाइस पर रहते हैं।",
     onlyPdf: "सिर्फ PDF फाइल की अनुमति है",
@@ -2194,17 +2164,13 @@ const I18N = {
     parsing: "क्विज़ पढ़ी जा रही है...",
     parseOk: "क्विज़ लोड हो गई! शुरू हो रहा है...",
     parseEmpty: "अभी कोई क्वेश्चन नहीं मिला — AI का पूरा रिस्पॉन्स पेस्ट करें।",
-    keyModalTitle: "Agnes AI सेटिंग",
     modelNameLabel: "मॉडल नाम",
     keyListLabel: "सेव की गई API keys (बारी-बारी इस्तेमाल होंगी)",
     newKeyPlaceholder: "एक और API की पेस्ट करें...",
-    addKeyBtn: "+ जोड़ें",
-    keyModalNote: "Keys सिर्फ इसी डिवाइस पर सेव होती हैं — कहीं अपलोड नहीं होतीं। हर क्विज़ जनरेशन में अपने आप अगली सेव की गई key इस्तेमाल होती है।",
     doneBtn: "हो गया",
     modeCapExam: "🎯 एग्ज़ाम लेवल — exam जैसे घुमा-फिराकर, कई टॉपिक जोड़कर सोचने वाले क्वेश्चन",
     modeCapRev: "📖 रिवीज़न लेवल — आपके नोट्स के सबसे इम्पॉर्टेंट फैक्ट्स पर सीधे exam-लेवल रिकॉल क्वेश्चन",
     copyOpenRevBtn: "रिवीज़न प्रॉम्प्ट कॉपी करें और साइट खोलें",
-    proceedAiRevBtn: "रिवीज़न क्विज़ बनाएं",
     sqTitle: "मेरा सेव किया हुआ",
     sqNote: "आपके प्रैक्टिस क्विज़ और एक्सट्रैक्ट किए टेक्स्ट इसी डिवाइस पर सेव होते हैं। चुने हुए दिनों से पुराने अपने आप हट जाते हैं।",
     sqEmpty: "अभी कोई सेव क्विज़ नहीं है। क्विज़ शुरू करें, वह यहाँ दिखेगा।",
@@ -2284,8 +2250,6 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => { applyLanguage(btn.dataset.lang); try { setUiMode(localStorage.getItem('yai_mode2') === 'exam' ? 'exam' : 'revision'); } catch (e) {} });
   });
   applyLanguage(currentLang);
-  refreshProviderDots();
-  updateProviderStatusNote();
 });
 </script>
 <script>
@@ -2344,15 +2308,7 @@ function openAiSite(url) {
 }
 let selectedMethod = null; // 'auto' | 'manual' — nothing is active until the user picks one
 
-/* =====================================================================
-   AI PROVIDER: Agnes AI, multiple API keys saved locally, rotated
-   round-robin on every generation so no single key gets exhausted.
-   ===================================================================== */
-const AGNES_MODEL_STORAGE = 'AGNES_MODEL';
-const AGNES_DEFAULT_MODEL = 'agnes-2.5-flash';
-const AGNES_KEYS_STORAGE = 'AGNES_API_KEYS';
 const QUIZ_LANG_STORAGE = 'QUIZ_LANGUAGE_PREF';
-const PROVIDER_DEFAULTS = { agnes: { label: 'Agnes AI' } };
 
 function getQuizLangPref() {
   let v = String(localStorage.getItem(QUIZ_LANG_STORAGE) || '').trim();
@@ -2378,72 +2334,6 @@ function getQuizTypesPref() { return _quizTypesPref; }
 function setQuizTypesPref(v) { _quizTypesPref = (v === 'mixed') ? 'mixed' : 'mcq'; }
 function setQuizLangPref(v) { localStorage.setItem(QUIZ_LANG_STORAGE, v); }
 
-function getAgnesModel() { return localStorage.getItem(AGNES_MODEL_STORAGE) || AGNES_DEFAULT_MODEL; }
-function getAgnesKeys() {
-  try {
-    const raw = localStorage.getItem(AGNES_KEYS_STORAGE);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr.filter(k => typeof k === 'string' && k.trim()) : [];
-  } catch (e) { return []; }
-}
-function setAgnesKeys(keys) { localStorage.setItem(AGNES_KEYS_STORAGE, JSON.stringify(keys)); }
-function maskKey(key) {
-  if (key.length <= 8) return key[0] + '••••' + key.slice(-2);
-  return key.slice(0, 5) + '••••••••' + key.slice(-4);
-}
-function getNextAgnesKey() {
-  // Pure random pick each time — every saved key has equal probability of being
-  // tried first. No stored rotation index, so it never gets stuck favoring one key.
-  const keys = getAgnesKeys();
-  if (!keys.length) return '';
-  const idx = Math.floor(Math.random() * keys.length);
-  return keys[idx];
-}
-
-function refreshProviderDots() {
-  document.getElementById('dotAgnes').style.background = getAgnesKeys().length ? 'var(--teal)' : 'var(--coral)';
-}
-function updateProviderStatusNote() {
-  const note = document.getElementById('providerStatusNote');
-  const n = getAgnesKeys().length;
-  if (n === 0) note.textContent = t('keyMissing') + ' — tap ⚙️ to add one';
-  else note.textContent = t('keyReady') + ' · ' + n + ' ' + t('keysSavedSuffix');
-}
-
-function renderKeyList() {
-  const listEl = document.getElementById('keyList');
-  const keys = getAgnesKeys();
-  listEl.innerHTML = '';
-  if (!keys.length) {
-    listEl.innerHTML = `<div class="key-empty-note" data-i18n="noKeysYet">${t('noKeysYet')}</div>`;
-    return;
-  }
-  // No fixed "active" key anymore — each generation picks randomly among all
-  // saved keys with equal probability, so every key is shown the same way.
-  keys.forEach((key, i) => {
-    const row = document.createElement('div');
-    row.className = 'key-item';
-    row.innerHTML = `<span class="key-num">${i + 1}</span><span class="key-masked">${maskKey(key)}</span><button class="key-remove" title="Remove">✕</button>`;
-    row.querySelector('.key-remove').addEventListener('click', () => {
-      const updated = getAgnesKeys();
-      updated.splice(i, 1);
-      setAgnesKeys(updated);
-      renderKeyList(); refreshProviderDots(); updateProviderStatusNote();
-    });
-    listEl.appendChild(row);
-  });
-}
-
-function openKeyModal(provider) {
-  document.getElementById('modelNameInput').value = getAgnesModel();
-  document.getElementById('newKeyInput').value = '';
-  renderKeyList();
-  document.getElementById('keyModal').classList.add('show');
-}
-function closeKeyModal() { document.getElementById('keyModal').classList.remove('show'); }
-document.getElementById('modelNameInput').addEventListener('input', (e) => {
-  localStorage.setItem(AGNES_MODEL_STORAGE, e.target.value.trim() || AGNES_DEFAULT_MODEL);
-});
 const quizLangEl = document.getElementById('quizLanguage');
 const quizLangManualEl = document.getElementById('quizLanguageManual');
 function initQuizLangSelectors() {
@@ -2470,22 +2360,6 @@ quizTypesEl.value = quizTypesManualEl.value = getQuizTypesPref();
 quizTypesEl.addEventListener('change', () => { setQuizTypesPref(quizTypesEl.value); quizTypesManualEl.value = quizTypesEl.value; });
 quizTypesManualEl.addEventListener('change', () => { setQuizTypesPref(quizTypesManualEl.value); quizTypesEl.value = quizTypesManualEl.value; });
 
-document.getElementById('addKeyBtn').addEventListener('click', addAgnesKey);
-document.getElementById('newKeyInput').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { e.preventDefault(); addAgnesKey(); }
-});
-function addAgnesKey() {
-  const input = document.getElementById('newKeyInput');
-  const key = input.value.trim();
-  if (!key) return;
-  const keys = getAgnesKeys();
-  if (keys.includes(key)) { input.value = ''; return; }
-  keys.push(key);
-  setAgnesKeys(keys);
-  input.value = '';
-  renderKeyList(); refreshProviderDots(); updateProviderStatusNote();
-}
-
 /* ---------- Method fork: exactly one of the two can be active ---------- */
 const methodCardAuto = document.getElementById('methodCardAuto');
 const methodCardManual = document.getElementById('methodCardManual');
@@ -2503,57 +2377,16 @@ methodCardAuto.addEventListener('click', () => selectMethod('auto'));
 methodCardManual.addEventListener('click', () => selectMethod('manual'));
 selectMethod('manual');   // only the AI-website method is offered
 
-// --- Website AI selector (Gemini / ChatGPT / Claude — manual copy+open flow) ---
+// --- Website AI selector (Gemini / ChatGPT / Claude = manual copy+open flow; Exam Yatri = direct API via Val Town) ---
 document.querySelectorAll('.site-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.site-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    if (btn.dataset.ey) { eySetActive(true); return; }
     selectedAiUrl = btn.dataset.url;
+    eySetActive(false);
   });
 });
-
-// --- Direct API call (Agnes AI) ---
-async function callAgnesOnce(apiKey, model, prompt, signal) {
-  let res;
-  try {
-    res = await fetch('https://apihub.agnes-ai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-      body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }] }),
-      signal
-    });
-  } catch (networkErr) {
-    if (networkErr.name === 'AbortError') throw networkErr;
-    throw new Error(`Network error (${networkErr.message}) — check your internet connection`);
-  }
-  if (!res.ok) {
-    const errData = await res.json().catch(() => ({}));
-    const msg = errData.error?.message || errData.message || `HTTP ${res.status}`;
-    // Tag the error with the status so the caller can tell rate-limit vs invalid-key vs other.
-    const err = new Error(msg);
-    err.status = res.status;
-    throw err;
-  }
-  const data = await res.json();
-  const text = data.choices?.[0]?.message?.content || '';
-  if (!text) throw new Error('Empty response from Agnes AI');
-  return text;
-}
-
-async function callAgnesAPI(apiKey, model, prompt, signal) {
-  for (let a = 0; a < 2; a++) {
-    const ctl = new AbortController(), onAbort = () => ctl.abort();
-    if (signal) signal.addEventListener('abort', onAbort);
-    const to = setTimeout(() => ctl.abort(), 100000);
-    try { return await callAgnesOnce(apiKey, model, prompt, ctl.signal); }
-    catch (e) {
-      if (signal && signal.aborted) throw e;
-      if (e.name === 'AbortError') e = new Error('Timeout (100s)');
-      if (a === 0 && (e.status === 429 || e.status >= 500 || /Timeout|Network/.test(e.message))) { await new Promise(r => setTimeout(r, 2500)); continue; }
-      throw e;
-    } finally { clearTimeout(to); if (signal) signal.removeEventListener('abort', onAbort); }
-  }
-}
 
 /* ---------- Upload: one box, PDF or Image(s) (auto-detected) ---------- */
 let uploadMode = 'pdf'; // 'pdf' | 'img' (set automatically from the picked file)
@@ -2943,7 +2776,6 @@ async function runExtractionImages() {
   resultStepLabel.style.display = 'flex';
   methodCard.style.display = 'block';
   methodStepLabel.style.display = 'flex';
-  updateProviderStatusNote();
   resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
   extractBtn.disabled = false;
   setTimeout(() => { progressWrap.style.display = 'none'; }, 1500);
@@ -4043,7 +3875,6 @@ async function runExtractionInner() {
   resultStepLabel.style.display = 'flex';
   methodCard.style.display = 'block';
   methodStepLabel.style.display = 'flex';
-  updateProviderStatusNote();
   resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
   extractBtn.disabled = false;
 
@@ -5775,7 +5606,7 @@ const aiGenLabel = document.getElementById('aiGenLabel');
 const aiGenSub = document.getElementById('aiGenSub');
 let aiAbortController = null;
 
-function showGeneratingStep(numQ) {
+function showGeneratingStep(numQ, modelLabel) {
   resultCard.style.display = 'none';
   resultStepLabel.style.display = 'none';
   methodCard.style.display = 'none';
@@ -5784,7 +5615,7 @@ function showGeneratingStep(numQ) {
   closeQuizCard();
   resultScreenCard.style.display = 'none';
   generatingCard.style.display = 'block';
-  aiGenLabel.textContent = `${t('genLabelPrefix')} ${numQ} ${t('genLabelSuffix')} ${PROVIDER_DEFAULTS.agnes.label}...`;
+  aiGenLabel.textContent = `${t('genLabelPrefix')} ${numQ} ${t('genLabelSuffix')} ${modelLabel || 'Exam Yatri'}...`;
   aiGenSub.textContent = t('genSub');
   generatingCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -5800,68 +5631,126 @@ function backFromGenerating() {
 }
 document.getElementById('cancelAiBtn').addEventListener('click', backFromGenerating);
 
-async function generateQuizWithAI(mode) {
+/* =====================================================================
+   EXAM YATRI — direct AI generation through the Val Town gateway.
+   All company API keys / endpoints / models live ONLY in Val Town env vars
+   (AI_<ID>_KEY, AI_<ID>_ENDPOINT, AI_<ID>_MODELS). This page just asks the
+   gateway for the model list (GET /models) and sends prompts (POST /generate).
+   Add a new company in Val Town -> it shows up here automatically.
+   ===================================================================== */
+const EY_API_URL = 'https://vishalyadav--ac9af586d5c311f1ac7a1607ee4eb77e.web.val.run';   // <- paste your examyatri-ai val's public URL here (no trailing slash)
+let eyActive = false, eyModels = null, eyLoading = false;
+let eyModel = ''; try { eyModel = localStorage.getItem('yai_ey_model') || ''; } catch (e) {}
+
+function eySetActive(on) {
+  eyActive = !!on;
+  document.getElementById('eyModelRow').style.display = eyActive ? '' : 'none';
+  const gt = document.getElementById('genToggle'), gf = gt && gt.closest('.field');
+  if (gf) gf.style.display = eyActive ? 'none' : '';      // Auto/Self does not apply to Exam Yatri
+  try { setUiMode(localStorage.getItem('yai_mode2') === 'exam' ? 'exam' : 'revision'); } catch (e) {}
+  if (eyActive) eyLoadModels(false);
+}
+function eyRenderModels() {
+  const list = document.getElementById('eyModelList'), note = document.getElementById('eyModelNote');
+  list.innerHTML = ''; note.textContent = '';
+  if (!eyModels || !eyModels.some(m => m.id === eyModel)) eyModel = eyModels && eyModels[0] ? eyModels[0].id : '';
+  eyModels.forEach(m => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'site-pick' + (m.id === eyModel ? ' active' : '');
+    b.textContent = m.label || m.id; b.title = (m.provider ? m.provider + ' \u00B7 ' : '') + m.id;
+    b.addEventListener('click', () => {
+      eyModel = m.id; try { localStorage.setItem('yai_ey_model', eyModel); } catch (e) {}
+      list.querySelectorAll('.site-pick').forEach(x => x.classList.remove('active')); b.classList.add('active');
+    });
+    list.appendChild(b);
+  });
+  try { if (eyModel) localStorage.setItem('yai_ey_model', eyModel); } catch (e) {}
+}
+async function eyLoadModels(force) {
+  if (eyModels && !force) { eyRenderModels(); return; }
+  if (eyLoading) return;
+  eyLoading = true;
+  const list = document.getElementById('eyModelList'), note = document.getElementById('eyModelNote');
+  list.innerHTML = ''; note.textContent = 'Models load ho rahe hain...';
+  try {
+    if (!/^https:\/\//.test(EY_API_URL) || /REPLACE_WITH/.test(EY_API_URL)) throw new Error('EY_API_URL set nahi hai (index.html me apna Val Town URL daalo)');
+    const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 15000);
+    let r; try { r = await fetch(EY_API_URL + '/models', { signal: ctl.signal }); } finally { clearTimeout(tm); }
+    if (!r.ok) throw new Error('Gateway error HTTP ' + r.status);
+    const d = await r.json();
+    eyModels = Array.isArray(d.models) ? d.models.filter(m => m && m.id) : [];
+    if (!eyModels.length) throw new Error('Val Town me abhi koi AI model add nahi hai');
+    eyRenderModels();
+  } catch (e) {
+    eyModels = null; list.innerHTML = '';
+    note.textContent = '\u26A0\uFE0F ' + (e.name === 'AbortError' ? 'Gateway ne jawab nahi diya (timeout)' : e.message) + ' ';
+    const rb = document.createElement('button'); rb.type = 'button'; rb.className = 'site-pick'; rb.textContent = '\uD83D\uDD01 Retry';
+    rb.addEventListener('click', () => eyLoadModels(true)); note.appendChild(rb);
+  } finally { eyLoading = false; }
+}
+
+async function eyAsk(prompt, signal) {
+  for (let a = 0; a < 2; a++) {
+    try {
+      let r;
+      try {
+        r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: eyModel, prompt }), signal });
+      } catch (ne) {
+        if (ne.name === 'AbortError') throw ne;
+        throw new Error('Network error (' + ne.message + ') \u2014 internet check karo');
+      }
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { const err = new Error(d.error || ('HTTP ' + r.status)); err.status = r.status; throw err; }
+      if (!d.text) throw new Error('AI ne khaali jawab diya');
+      return d.text;
+    } catch (e) {
+      if (e.name === 'AbortError' || (signal && signal.aborted)) throw e;
+      if (a === 0 && (!e.status || e.status === 429 || e.status >= 500)) { await new Promise(res => setTimeout(res, 2500)); continue; }
+      throw e;
+    }
+  }
+}
+
+function eyParsedList() { const p = lenientParse(collectedRaw); return p ? normalizeQuiz(p) : []; }
+
+// Same prompts as the copy-paste flow (getManualPromptText / buildTopupPrompt), but sent by the app itself.
+async function generateQuizWithEY(mode) {
   mode = (mode === 'revision') ? 'revision' : 'exam';
   lastQuizMode = mode;
-  if (!rawExtractedText) return;
-  const numQEl = document.getElementById('numQuestions');
-  const numQ = Math.max(1, Math.min(15, parseInt(numQEl.value) || 10));
-  const allKeys = getAgnesKeys();
-  if (!allKeys.length) { openKeyModal('agnes'); return; }
-  const model = getAgnesModel();
+  if (!(resultText.value || rawExtractedText || '').trim()) { showToast('Pehle text extract karo'); return; }
+  if (!eyModels) { await eyLoadModels(true); }
+  const mdl = eyModels && eyModels.find(x => x.id === eyModel);
+  if (!mdl) { showToast('Pehle ek AI model chuno'); return; }
 
-  showGeneratingStep(numQ);
+  resetPromptState();                                   // clean slate (collectedRaw, parts plan)
+  const first = getManualPromptText(mode, 1);           // also plans the parts and sets lastRequestedCount
+  const P = manualPartsPlan.length || 1;
+  showGeneratingStep(lastRequestedCount, mdl.label || mdl.id);
   aiAbortController = new AbortController();
-
+  const sig = aiAbortController.signal;
   try {
-const fullText = (resultText.value || rawExtractedText).trim();
-    const size = Math.max(14000, Math.ceil(fullText.length / numQ));
-    const chunks = []; let cur = '';
-    for (const p of fullText.split(/(?=--- Page \d+ ---)/).filter(Boolean)) { if (cur && cur.length + p.length > size) { chunks.push(cur); cur = ''; } cur += p; }
-    if (cur) chunks.push(cur);
-    const keyErrors = [];
-    const askAI = async (prompt) => {
-      const startKey = getNextAgnesKey();
-      for (const key of [startKey, ...allKeys.filter(k => k !== startKey)]) {
-        try { return await callAgnesAPI(key, model, prompt, aiAbortController.signal); }
-        catch (err) { if (err.name === 'AbortError') throw err; keyErrors.push(`Key ${maskKey(key)}: ${err.message}`); }
-      }
-      return null;
-    };
-    const rawAll = []; let done = 0;
-    // Spread exactly numQ questions evenly over the parts (no overshoot, no part skipped by position)
-    // Share is proportional to each part's text length (largest-remainder), so a short last part is not forced to give as many questions as a full one.
-    const totalLen = chunks.reduce((a, c) => a + c.length, 0) || 1;
-    const exact = chunks.map(c => c.length / totalLen * numQ);
-    const alloc = exact.map(Math.floor);
-    let left = numQ - alloc.reduce((a, b) => a + b, 0);
-    exact.map((v, i) => ({ i, r: v - Math.floor(v) })).sort((a, b) => b.r - a.r).forEach(o => { if (left > 0) { alloc[o.i]++; left--; } });
-    for (let ci = 0; ci < chunks.length; ci++) {
-      const ch = chunks[ci]; const per = Math.min(15, alloc[ci]);
-      ++done;
-      if (per < 1) continue;
-      aiGenSub.textContent = `Part ${done} / ${chunks.length}...`;
-      const _en = getExamName(false); if (!isUnnamedExam(_en)) localStorage.setItem('yai_examName', _en);
-      const resp = await askAI(ch + '\n' + buildQuizInstruction(per, 15, mode, ch, null, null, _en));
-      if (resp === null) continue;
-      const pr = lenientParse(resp);
-      if (pr) rawAll.push(...(Array.isArray(pr) ? pr : (pr.questions || pr.quiz || [])));
+    for (let k = 1; k <= P; k++) {
+      aiGenSub.textContent = P > 1 ? `Part ${k} / ${P}...` : t('genSub');
+      const reply = await eyAsk(k === 1 ? first : getManualPromptText(mode, k), sig);
+      collectedRaw += (collectedRaw ? '\n' : '') + reply;
     }
-    if (!rawAll.length) throw new Error(keyErrors.length ? 'All keys failed:\n' + keyErrors.slice(0, 4).join('\n') : t('aiParseError'));
-    const normalized = normalizeQuiz(rawAll);
-    if (!normalized.length) throw new Error(t('aiParseError'));
-
-    notifyParseQuality(normalized);
-  quizData = normalized;
-    userAnswers = new Array(quizData.length).fill(-1);
-    currentQ = 0;
-    createQuizRecord();
+    // Top-up rounds (same rule as the manual flow) if the AI returned fewer questions than asked
+    let list = eyParsedList();
+    while (list.length < lastRequestedCount && manualRound < MANUAL_MAX_ROUNDS) {
+      aiGenSub.textContent = `Top-up: ${list.length} / ${lastRequestedCount}...`;
+      const reply = await eyAsk(buildTopupPrompt(list, mode), sig);
+      manualRound++;
+      collectedRaw += '\n' + reply;
+      const nl = eyParsedList();
+      if (nl.length <= list.length) break;
+      list = nl;
+    }
+    pasteBox.value = '';
+    if (!attemptStartQuiz(true)) throw new Error(t('aiParseError'));
     generatingCard.style.display = 'none';
-    openQuizCard();
-    startQuizTimer();
-    renderQuestion();
   } catch (err) {
-    if (err.name === 'AbortError') return;
+    if (err.name === 'AbortError') { resetPromptState(); return; }
+    resetPromptState();
     generatingCard.style.display = 'none';
     resultCard.style.display = 'block';
     resultStepLabel.style.display = 'flex';
@@ -5873,9 +5762,8 @@ const fullText = (resultText.value || rawExtractedText).trim();
     aiAbortController = null;
   }
 }
-
-document.getElementById('proceedAiBtn').addEventListener('click', () => generateQuizWithAI('exam'));
-document.getElementById('proceedAiRevBtn').addEventListener('click', () => generateQuizWithAI('revision'));
+document.getElementById('eyStartBtn').addEventListener('click', () => generateQuizWithEY('exam'));
+document.getElementById('eyStartRevBtn').addEventListener('click', () => generateQuizWithEY('revision'));
 
 pasteBox.addEventListener('paste', () => {
   clearTimeout(autoStartTimer);
@@ -7324,7 +7212,6 @@ function openSavedText(id) {
   rec.updatedAt = Date.now(); writeSavedTexts(list);
   resultCard.style.display = 'block'; resultStepLabel.style.display = 'flex';
   methodCard.style.display = 'block'; methodStepLabel.style.display = 'flex';
-  updateProviderStatusNote();
   showToast('\uD83D\uDCC4 ' + rec.name);
   setTimeout(() => methodStepLabel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
 }
@@ -7527,9 +7414,11 @@ function setUiMode(m) {
   document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('active', b.dataset.m === m));
   const hint = document.getElementById('modeHint');
   hint.textContent = t(m === 'exam' ? 'modeCapExam' : 'modeCapRev'); hint.className = 'mode-hint ' + m;
-  const show = { exam: ['proceedAiBtn', 'openAiBtn'], revision: ['proceedAiRevBtn', 'openAiRevBtn'] };
-  ['proceedAiBtn', 'openAiBtn', 'proceedAiRevBtn', 'openAiRevBtn'].forEach(id => {
-    const el = document.getElementById(id), on = show[m].includes(id);
+  const show = { exam: ['openAiBtn', 'eyStartBtn'], revision: ['openAiRevBtn', 'eyStartRevBtn'] };
+  ['openAiBtn', 'openAiRevBtn', 'eyStartBtn', 'eyStartRevBtn'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    const isEy = id.indexOf('eyStart') === 0;
+    const on = show[m].includes(id) && (isEy === !!(typeof eyActive !== 'undefined' && eyActive));
     el.style.display = on ? '' : 'none'; el.classList.toggle('ghost', !on);
   });
   localStorage.setItem('yai_mode2', m);
