@@ -3704,7 +3704,7 @@ function planManualParts(srcText, N) {
   // Exam Yatri (direct API): smaller, evenly sized parts => better question quality and no cut-off replies
   // (20 per part; 15 when the quiz is bilingual/multilingual because every question is then twice as long). 100 questions -> 5 (or 7) parts.
   const ey = (typeof eyActive !== 'undefined' && eyActive);
-  const capQ = ey ? ((lang === 'english' || lang === 'hindi') ? 20 : 15) : 25;   // copy-paste flow keeps 25 per reply
+  const capQ = ey ? ((lang === 'english' || lang === 'hindi') ? EY_PART_Q : Math.max(4, EY_PART_Q - 2)) : 25;   // copy-paste flow keeps 25 per reply
   const evenSplit = (N, P) => { const b = Math.floor(N / P), x = N - b * P; return Array.from({ length: P }, (_, k) => b + (k < x ? 1 : 0)); };
   const splitQ = (N, P) => ey ? evenSplit(N, P) : splitCounts(N, P, capQ);
   // Exam Yatri: a SMALL first part (EY_FIRST_Q questions) so the quiz can start in a few seconds;
@@ -5803,10 +5803,13 @@ document.getElementById('cancelAiBtn').addEventListener('click', backFromGenerat
    Add a new company in Val Town -> it shows up here automatically.
    ===================================================================== */
 const EY_MAX_Q = 100;   // max questions per Exam Yatri quiz
+const EY_PART_Q = 10;   // questions per background part: short replies finish in ~15-20s, never get cut off, and many run in parallel
 const EY_FIRST_Q = 5;   // quiz starts as soon as this many questions are ready; the rest is generated in the background
 const EY_SLICE_NOTES = true;   // token saver: each part is sent ONLY the notes segments assigned to it (before: the whole notes in every part). false = old behaviour
-const EY_EFFORT = { exam: 'high', revision: 'medium' };   // reasoning depth sent to the gateway per quiz mode (instant | low | medium | high). Only models that support it use it (see main.ts)
+const EY_EFFORT = { exam: 'medium', revision: 'medium' };   // reasoning depth sent to the gateway per quiz mode (instant | low | medium | high). Only models that support it use it (see main.ts)
 let eyEffort = '';   // set at the start of every quiz run
+const EY_FIRST_EFFORT = 'medium';   // part 1 (first 5 questions): same medium reasoning (small part, so it is still fast)
+const EY_PARALLEL = 5;   // background parts generated at the same time (1 = old one-by-one)
 const EY_LEAN_PROMPT = true;   // token saver + fewer contradictions: Exam Yatri-only wording trims in the prompt (copy-paste AI sites never see them). false = old wording
 // Appended to every Exam Yatri request: a short self-check that raises question quality without changing the app's own prompt.
 const EY_GATE = '\n\nFINAL QUALITY GATE (silent; the output format stays exactly as specified above, nothing added): (1) Re-solve every question from its EV line only; if that evidence does not prove the marked answer, or two options can be defended, rewrite the question. (2) Drop any question that is trivial, trick-worded, or about page numbers/headings. (3) If space runs short, shorten CON - never drop questions - and finish the output completely.';
@@ -5926,12 +5929,12 @@ async function eyLoadModels(force, quiet) {
   } finally { eyLoading = false; }
 }
 
-async function eyAsk(prompt, signal) {
-  for (let a = 0; a < 2; a++) {
+async function eyAsk(prompt, signal, effortOverride) {
+  for (let a = 0; a < 3; a++) {
     try {
       let r;
       try {
-        r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: eyModel, prompt: prompt + EY_GATE, effort: eyEffort }), signal });
+        r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: eyModel, prompt: prompt + EY_GATE, effort: effortOverride || eyEffort }), signal });
       } catch (ne) {
         if (ne.name === 'AbortError') throw ne;
         throw new Error('Network error');
@@ -5942,7 +5945,7 @@ async function eyAsk(prompt, signal) {
       return d.text;
     } catch (e) {
       if (e.name === 'AbortError' || (signal && signal.aborted)) throw e;
-      if (a === 0 && (!e.status || e.status === 429 || e.status >= 500)) { await new Promise(res => setTimeout(res, 2500)); continue; }
+      if (a < 2 && (!e.status || e.status === 429 || e.status >= 500)) { await new Promise(res => setTimeout(res, 800 + a * 1200)); continue; }
       throw e;
     }
   }
@@ -6031,16 +6034,34 @@ async function eyRunBackground(run) {
   run.running = true;
   const sig = run.ctl.signal, live = () => eyBg === run && !run.stopped;
   try {
-    // 1) remaining parts, strictly in order: each one is told which questions already exist (no repeats)
-    while (run.k <= run.parts.length) {
-      if (!live()) return;
-      lastRequestedCount = run.N; manualPartsPlan = run.parts; manualPartsExpected = run.parts.length;
-      const reply = await eyAsk(getManualPromptText(run.mode, run.k, run.frozen), sig);
-      if (!live()) return;
-      collectedRaw += (collectedRaw ? '\n' : '') + reply;
-      eyAppendQuestions(eyParseNew(reply));
-      run.k++;
-    }
+    // 1) remaining parts: up to EY_PARALLEL at the same time; replies are appended in part order
+    run.res = run.res || {};
+    const todo = []; for (let i = run.k; i <= run.parts.length; i++) if (!(i in run.res)) todo.push(i);
+    let firstErr = null, ti = 0;
+    const flush = () => {
+      while (run.k <= run.parts.length && (run.k in run.res)) {
+        const reply = run.res[run.k]; delete run.res[run.k];
+        collectedRaw += (collectedRaw ? '\n' : '') + reply;
+        eyAppendQuestions(eyParseNew(reply));
+        run.k++;
+      }
+    };
+    const worker = async () => {
+      while (!firstErr && live()) {
+        const i = todo[ti++]; if (i === undefined) return;
+        try {
+          lastRequestedCount = run.N; manualPartsPlan = run.parts; manualPartsExpected = run.parts.length;
+          // part 2 shares pages with part 1 (starter split) and must see its questions: it is built after part 1 is in collectedRaw
+          const reply = await eyAsk(getManualPromptText(run.mode, i, run.frozen), sig);
+          if (!live()) return;
+          run.res[i] = reply; flush();
+        } catch (e) { if (!firstErr) firstErr = e; }
+      }
+    };
+    await Promise.all(Array.from({ length: Math.max(1, Math.min(EY_PARALLEL, todo.length)) }, worker));
+    if (!live()) return;
+    if (firstErr) throw firstErr;
+    flush();
     // 2) top-up rounds (same rule as before) if the AI gave fewer questions than asked
     while (quizData.length < run.N && run.round < MANUAL_MAX_ROUNDS) {
       if (!live()) return;
@@ -6102,7 +6123,7 @@ async function generateQuizWithEY(mode) {
   const sig = aiAbortController.signal;
   try {
     aiGenSub.textContent = P > 1 ? `Part 1 / ${P} (pehle ${frozen.parts[0].q} sawal)...` : t('genSub');
-    const reply1 = await eyAsk(first, sig);
+    const reply1 = await eyAsk(first, sig, EY_FIRST_EFFORT);
     collectedRaw += (collectedRaw ? '\n' : '') + reply1;
 
     if (P > 1) {
