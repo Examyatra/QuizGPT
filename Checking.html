@@ -115,6 +115,25 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 .tag{font-size:12px;font-weight:600;border-radius:20px;padding:2px 9px;background:var(--surface2);color:var(--mut);white-space:nowrap}
 .tag.ok{background:var(--ok-bg);color:var(--ok)}.tag.bad{background:var(--bad-bg);color:var(--bad)}
 .note{margin:0 2px 10px;font-size:12.5px;color:var(--warn)}
+/* v5: per-company colour, key buttons, gateway cards */
+.cohead{border-left:4px solid var(--c,var(--acc));padding-left:10px}
+.chip.on{border-color:var(--c,var(--acc))}
+.send[data-s=ok]{background:var(--ok)}.send[data-s=bad]{background:var(--bad)}.send[data-s=load]{background:var(--warn)}
+.send.kb{min-width:44px;padding:7px 10px}
+.outs .out{margin-top:8px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:0 0 12px}
+.card{text-align:left;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--c);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:2px}
+.card.on{outline:2px solid var(--c)}
+.card b{font-size:14px}.card span{font-size:12px;color:var(--mut)}
+.kpills{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.kpills i{font-style:normal;font-size:11px;font-weight:600;border-radius:20px;padding:1px 7px;background:var(--ok-bg);color:var(--ok)}
+.kpills i.bad{background:var(--bad-bg);color:var(--bad)}
+.cob{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:8px;color:#fff;background:var(--c);vertical-align:1px}
+.bar{height:4px;border-radius:4px;background:var(--surface2);margin:5px 0 3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--c)}
+.tag.warn{background:#fff3df;color:var(--warn)}
+.gerr{font-size:12px;color:var(--bad);overflow-wrap:anywhere}
+.chips.tiers .chip{padding:5px 10px;font-size:12.5px}
 </style>
 </head>
 <body>
@@ -149,7 +168,7 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
       <button class="pri" id="co" disabled>Test shown models</button>
       <button class="sec" id="all" disabled>Test all ★ models</button>
     </div>
-    <div class="hint">★ = gateway ke chune hue (pool) models. Har model ke saamne apna Send button bhi hai. Test me jo key chip chuna hai wahi key use hoti hai.</div>
+    <div class="hint">★ = gateway ke chune hue (pool) models. Har model ke saamne har key ka alag button (K1, K2…) hai. Test ke natije gateway ki rating me bhi jud jaate hain, to naya model (jaise Mercury) test karte hi leaderboard me upar aa sakta hai.</div>
   </div>
 </div>
 
@@ -161,6 +180,7 @@ const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) 
 let provs = [];          // /admin/models : company -> keys -> models each key can see
 let board = [];          // /status : gateway leaderboard (real traffic ratings)
 let dbOn = null;
+let gwCo = '', gwTier = '', keyState = {};   // gateway tab filters + per-company key rest state
 const res = {};          // rid -> 'ok' | 'bad'
 const outs = {};         // rid -> {kind, head, text, right}
 const refs = {};         // rid -> {row, out}  (only for rows currently on screen)
@@ -195,17 +215,43 @@ function summary() {
   });
 }
 
+/* ---------- helpers ---------- */
+const coColor = (id) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 360; return 'hsl(' + h + ' 62% 48%)'; };
+const fmtRest = (s) => s < 90 ? s + 's' : s < 5400 ? Math.round(s / 60) + ' min' : s < 172800 ? (Math.round(s / 360) / 10) + ' ghante' : Math.round(s / 86400) + ' din';
+function rowState(pid, m) {
+  let st = 'idle';
+  for (const r0 in outs) {
+    if (!r0.startsWith(pid + ':' + m + '|')) continue;
+    const kd = outs[r0].kind;
+    if (kd === 'load') return 'load';
+    if (kd === 'ok') st = 'ok'; else if (kd === 'bad' && st !== 'ok') st = 'bad';
+  }
+  return st;
+}
+
 /* ---------- output box under a row ---------- */
 function paintOut(r0) {
   const f = refs[r0]; if (!f) return;
   const r = outs[r0];
-  f.row.dataset.s = r ? r.kind : 'idle';
+  if (f.kb) f.kb.dataset.s = r ? r.kind : '';
+  f.row.dataset.s = rowState(f.row.dataset.p, f.row.dataset.m);
   if (!r) { f.out.hidden = true; return; }
   f.out.hidden = false; f.out.className = 'out ' + r.kind; f.out.innerHTML = '';
   const h = el('div', 'oh'); h.appendChild(el('span', '', r.head)); if (r.right) h.appendChild(el('span', '', r.right));
   f.out.appendChild(h); f.out.appendChild(el('div', 'ob', r.text));
 }
 function setOut(r0, kind, head, text, right) { outs[r0] = { kind, head, text, right }; paintOut(r0); }
+
+let rt = null;   // after tests the gateway ratings changed: quietly re-read /status
+function softRefresh() {
+  clearTimeout(rt);
+  rt = setTimeout(async () => {
+    try {
+      const { j } = await getJson('/status');
+      if (j && Array.isArray(j.leaderboard)) { board = j.leaderboard; dbOn = j.db; keyState = j.keyState || {}; if (cur === '@gw') render(); }
+    } catch (e) {}
+  }, 1500);
+}
 
 /* ---------- rendering ---------- */
 function render() {
@@ -234,26 +280,27 @@ function render() {
 }
 
 function renderCompany(box, p) {
-  const ki = Math.min(curKey[p.id] ?? 0, p.keys.length - 1); curKey[p.id] = ki;
-  const k = p.keys[ki];
-  const head = el('div', 'cohead'); head.appendChild(el('h2', '', p.label));
+  let ki = curKey[p.id] ?? -1; if (ki >= p.keys.length) ki = -1; curKey[p.id] = ki;
+  const sel = ki < 0 ? p.keys : [p.keys[ki]];
+  const col = coColor(p.id);
+  const bm = {}; board.forEach((b) => { bm[b.id] = b; });
+  const head = el('div', 'cohead'); head.style.setProperty('--c', col); head.appendChild(el('h2', '', p.label));
   head.appendChild(el('span', '', [p.host, p.format, p.keys.length + ' key', p.auto ? 'auto discovery' : 'forced models'].filter(Boolean).join(' · ')));
   box.appendChild(head);
 
-  const chips = el('div', 'chips');
-  p.keys.forEach((kk, i) => {
-    const c = el('button', 'chip' + (i === ki ? ' on' : '') + (kk.ok ? '' : ' bad'), 'Key ' + kk.n + (kk.ok ? ' ✅ ' + kk.chat.length : ' ❌ ' + (kk.status || 'err')));
-    c.onclick = () => { curKey[p.id] = i; render(); };
-    chips.appendChild(c);
-  });
+  const chips = el('div', 'chips'); chips.style.setProperty('--c', col);
+  const mk = (txt, on, bad, fn) => { const c = el('button', 'chip' + (on ? ' on' : '') + (bad ? ' bad' : ''), txt); c.onclick = fn; chips.appendChild(c); };
+  if (p.keys.length > 1) mk('Sab keys (' + p.keys.length + ')', ki < 0, false, () => { curKey[p.id] = -1; render(); });
+  p.keys.forEach((kk, i) => mk('Key ' + kk.n + (kk.ok ? ' ✅ ' + kk.chat.length : ' ❌ ' + (kk.status || 'err')), p.keys.length === 1 || ki === i, !kk.ok, () => { curKey[p.id] = i; render(); }));
   box.appendChild(chips);
 
-  if (!k.ok) {
-    box.appendChild(el('div', 'kerr', 'Is key se model list nahi mili (HTTP ' + (k.status || 'network') + ', ' + k.ms + 'ms)\n' + (k.error || 'no details')));
-    if (p.forced.length) box.appendChild(el('div', 'note', 'Forced models (AI_' + p.id + '_MODELS) neeche test ke liye diye hain.'));
-  } else {
-    box.appendChild(el('div', 'kinfo', k.chat.length + ' chat models' + (k.other ? ' (+' + k.other + ' non-chat chhupe: embedding/audio/image…)' : '') + ' · list ' + k.ms + 'ms · ★ ' + p.pool.length + ' gateway pool me'));
-  }
+  sel.filter((k) => !k.ok).forEach((k) => box.appendChild(el('div', 'kerr', 'Key ' + k.n + ': model list nahi mili (HTTP ' + (k.status || 'network') + ', ' + k.ms + 'ms)\n' + (k.error || 'no details'))));
+  if (sel.some((k) => !k.ok) && p.forced.length) box.appendChild(el('div', 'note', 'Forced models (AI_' + p.id + '_MODELS) neeche test ke liye diye hain.'));
+
+  const sets = sel.map((k) => new Set(modelsFor(p, k)));
+  const order = [...new Set(sel.flatMap((k) => modelsFor(p, k)))];
+  const names = [...p.pool.filter((m) => order.includes(m)), ...order.filter((m) => !p.pool.includes(m)).sort()];
+  box.appendChild(el('div', 'kinfo', names.length + ' models' + (sel.length > 1 ? ' (sab keys milakar, har model ke saamne K1/K2… alag test)' : '') + ' · ★ ' + p.pool.length + ' gateway pool me'));
 
   const filt = el('div', 'filt');
   const si = el('input'); si.type = 'search'; si.placeholder = 'Model dhundo…'; si.value = q; si.setAttribute('aria-label', 'Model dhundo');
@@ -263,22 +310,32 @@ function renderCompany(box, p) {
   const draw = () => {
     for (const r0 in refs) delete refs[r0];
     listHost.innerHTML = '';
-    const ms = modelsFor(p, k).filter((m) => (!starOnly || isStar(p, m)) && (!q || m.toLowerCase().includes(q.toLowerCase())));
-    shown = ms.map((m) => ({ p, k, m }));
-    if (!ms.length) { listHost.appendChild(el('div', 'empty', 'Is key ke liye koi model nahi dikh raha.')); updateButtons(); return; }
+    const ms = names.filter((m) => (!starOnly || isStar(p, m)) && (!q || m.toLowerCase().includes(q.toLowerCase())));
+    shown = [];
+    if (!ms.length) { listHost.appendChild(el('div', 'empty', 'Koi model nahi dikh raha.')); updateButtons(); return; }
     const list = el('div', 'list');
     ms.forEach((m) => {
-      const r0 = rid(p, k, m);
-      const d = el('div', 'm');
+      const ks = sel.filter((k, i) => sets[i].has(m));
+      const d = el('div', 'm'); d.dataset.p = p.id; d.dataset.m = m; d.style.setProperty('--c', col);
       const top = el('div', 'top'); top.appendChild(el('span', 'dot'));
       const info = el('div', 'info'); const nm = el('div', 'name', m); if (isStar(p, m)) nm.appendChild(el('span', 'star', '★'));
-      info.appendChild(nm); info.appendChild(el('div', 'meta', 'Key ' + k.n + (k.ok && k.chat.includes(m) ? ' pe available' : ' (forced list)'))); top.appendChild(info);
-      const ctl = el('div', 'ctl'); const b = el('button', 'send', 'Send'); b.onclick = () => testOne(p, k, m, b); ctl.appendChild(b); top.appendChild(ctl); d.appendChild(top);
-      const out = el('div', 'out'); out.hidden = true; d.appendChild(out);
-      list.appendChild(d); refs[r0] = { row: d, out };
+      info.appendChild(nm);
+      const b0 = bm[p.id + ':' + m];
+      info.appendChild(el('div', 'meta', 'Key ' + ks.map((k) => k.n).join(', ') + ' pe available · ' + (b0 ? 'gateway: rating ' + b0.rating + (b0.avgSec != null ? ' · ' + b0.avgSec + 's' : '') + ' · ' + (b0.tier || '') : 'gateway pool ke bahar')));
+      top.appendChild(info);
+      const ctl = el('div', 'ctl'); const outs2 = el('div', 'outs');
+      ks.forEach((k) => {
+        const r0 = rid(p, k, m);
+        const b = el('button', 'send kb', ks.length > 1 ? 'K' + k.n : 'Send'); b.title = 'Key ' + k.n + ' se test karo';
+        b.onclick = () => testOne(p, k, m, b); ctl.appendChild(b);
+        const out = el('div', 'out'); out.hidden = true; outs2.appendChild(out);
+        refs[r0] = { row: d, out, kb: b }; shown.push({ p, k, m });
+      });
+      top.appendChild(ctl); d.appendChild(top); d.appendChild(outs2);
+      list.appendChild(d);
     });
     listHost.appendChild(list);
-    ms.forEach((m) => paintOut(rid(p, k, m)));
+    ms.forEach((m) => sel.forEach((k) => paintOut(rid(p, k, m))));
     updateButtons();
   };
   si.addEventListener('input', () => { q = si.value; draw(); });
@@ -286,21 +343,65 @@ function renderCompany(box, p) {
   draw();
 }
 
+const TIERS = { elite: ['⭐ Elite', 'ok'], ok: ['✓ Theek', 'ok'], new: ['🆕 Naya', ''], slow: ['🐢 Slow', 'warn'], resting: ['⛔ Block', 'bad'] };
 function renderGateway(box) {
+  const rows = board.map((b) => ({
+    ...b,
+    prov: b.provider || b.id.split(':')[0],
+    mdl: b.model || b.id.slice(b.id.indexOf(':') + 1),
+    tier: b.tier || (String(b.state).startsWith('resting') ? 'resting' : b.elite ? 'elite' : (b.ok + b.fail > 0 ? 'ok' : 'new')),
+    rest: b.restSec != null ? b.restSec : (parseInt(String(b.state).replace(/\D/g, '')) || 0),
+  }));
   const head = el('div', 'cohead'); head.appendChild(el('h2', '', 'Gateway leaderboard'));
-  head.appendChild(el('span', '', 'asli requests ki rating, best pehle')); box.appendChild(head);
+  head.appendChild(el('span', '', 'asli requests + tester ki rating, best pehle')); box.appendChild(head);
   if (dbOn === false) box.appendChild(el('div', 'note', 'SQLite nahi mila: ratings sirf memory me hain (val restart pe reset).'));
+
+  // one card per company: how many models work / are new / are blocked, avg speed, key rest state. Tap = filter.
+  const co = {};
+  rows.forEach((r) => {
+    const c = co[r.prov] || (co[r.prov] = { label: r.label || r.prov, n: 0, live: 0, fresh: 0, rest: 0, sec: [] });
+    c.n++;
+    if (r.tier === 'resting') c.rest++; else if (r.tier === 'new') c.fresh++; else c.live++;
+    if (r.avgSec != null && r.tier !== 'resting') c.sec.push(r.avgSec);
+  });
+  const cards = el('div', 'cards');
+  Object.keys(co).sort().forEach((id) => {
+    const c = co[id]; const d = el('button', 'card' + (gwCo === id ? ' on' : '')); d.style.setProperty('--c', coColor(id));
+    d.appendChild(el('b', '', c.label));
+    d.appendChild(el('span', '', c.live + ' chal · ' + c.fresh + ' naye · ' + c.rest + ' block'));
+    d.appendChild(el('span', '', c.sec.length ? '⚡ avg ' + (c.sec.reduce((a, b) => a + b, 0) / c.sec.length).toFixed(1) + 's' : 'speed abhi pata nahi'));
+    const ks = keyState[id] || [];
+    if (ks.length) { const kp = el('div', 'kpills'); ks.forEach((k) => kp.appendChild(el('i', k.restSec > 0 ? 'bad' : '', 'K' + k.n + (k.restSec > 0 ? ' ⏸ ' + fmtRest(k.restSec) : ' ✓')))); d.appendChild(kp); }
+    d.onclick = () => { gwCo = gwCo === id ? '' : id; render(); };
+    cards.appendChild(d);
+  });
+  box.appendChild(cards);
+
+  const base = rows.filter((r) => !gwCo || r.prov === gwCo);
+  const tc = el('div', 'chips tiers');
+  [['', 'Sab'], ['elite', '⭐ Elite'], ['ok', '✓ Theek'], ['new', '🆕 Naye'], ['slow', '🐢 Slow'], ['resting', '⛔ Block']].forEach(([k, l]) => {
+    const n = k ? base.filter((r) => r.tier === k).length : base.length;
+    const c = el('button', 'chip' + (gwTier === k ? ' on' : ''), l + ' ' + n); c.onclick = () => { gwTier = k; render(); }; tc.appendChild(c);
+  });
+  box.appendChild(tc);
+
   const list = el('div', 'list');
-  board.forEach((b) => {
-    const d = el('div', 'm'); const top = el('div', 'top');
-    const resting = String(b.state).startsWith('resting');
-    const seen = b.ok + b.fail > 0;
-    d.dataset.s = resting ? 'bad' : (b.ok > 0 ? 'ok' : 'idle');
+  const vis = base.filter((r) => !gwTier || r.tier === gwTier);
+  if (!vis.length) list.appendChild(el('div', 'empty', 'Is filter me koi model nahi.'));
+  vis.forEach((r) => {
+    const d = el('div', 'm'); d.style.setProperty('--c', coColor(r.prov)); const top = el('div', 'top');
+    d.dataset.s = r.tier === 'resting' ? 'bad' : (r.ok > 0 ? 'ok' : 'idle');
     top.appendChild(el('span', 'dot'));
-    const info = el('div', 'info'); const nm = el('div', 'name', b.rank + '. ' + b.id); if (b.elite) nm.appendChild(el('span', 'star', '★'));
-    info.appendChild(nm);
-    info.appendChild(el('div', 'meta', 'rating ' + b.rating + ' · ok ' + b.ok + ' / fail ' + b.fail + ' · avg ' + (b.avgSec == null ? '-' : b.avgSec + 's') + ' · last ' + b.last + ' · ' + b.keys + ' key' + (seen ? '' : ' · abhi tak test nahi hua')));
-    top.appendChild(info); top.appendChild(el('span', 'tag ' + (resting ? 'bad' : (b.ok > 0 ? 'ok' : '')), resting ? b.state : (b.ok > 0 ? 'chal raha' : 'naya')));
+    const info = el('div', 'info'); const nm = el('div', 'name', r.rank + '. ' + r.mdl);
+    if (r.elite) nm.appendChild(el('span', 'star', '★'));
+    nm.appendChild(el('span', 'cob', r.label || r.prov)); info.appendChild(nm);
+    const bar = el('div', 'bar'); const f = el('i'); f.style.width = Math.max(2, Math.min(100, r.rating)) + '%'; bar.appendChild(f); info.appendChild(bar);
+    const sp = r.avgSec == null ? 'speed ?' : (r.avgSec <= 6 ? '⚡ ' : r.avgSec >= 20 ? '🐢 ' : '') + r.avgSec + 's';
+    info.appendChild(el('div', 'meta', 'rating ' + r.rating + ' · ok ' + r.ok + ' / fail ' + r.fail + ' · ' + sp + ' · last ' + r.last + ' · ' + r.keys + ' key' + (r.ok + r.fail ? '' : ' · abhi tak test nahi hua')));
+    if (r.tier === 'resting') info.appendChild(el('div', 'gerr', '⛔ ' + fmtRest(r.rest) + ' tak band (lagatar ' + (r.consec || 1) + ' fail)' + (r.lastErr ? ' — ' + r.lastErr : '')));
+    else if (r.lastErr && r.consec) info.appendChild(el('div', 'gerr', 'pichhli galti: ' + r.lastErr));
+    top.appendChild(info);
+    const t = TIERS[r.tier] || TIERS.ok; top.appendChild(el('span', 'tag ' + t[1], t[0]));
     d.appendChild(top); list.appendChild(d);
   });
   box.appendChild(list);
@@ -320,8 +421,8 @@ async function load() {
   $('msg').textContent = 'Load ho raha hai (har key ki model list mangi ja rahi hai)…'; $('load').disabled = true; $('connNote').textContent = '';
   const [rm, rs] = await Promise.allSettled([getJson('/admin/models'), getJson('/status')]);
   Object.keys(res).forEach((k) => delete res[k]); Object.keys(outs).forEach((k) => delete outs[k]);
-  provs = []; board = []; dbOn = null;
-  if (rs.status === 'fulfilled' && rs.value.j && Array.isArray(rs.value.j.leaderboard)) { board = rs.value.j.leaderboard; dbOn = rs.value.j.db; }
+  provs = []; board = []; dbOn = null; keyState = {};
+  if (rs.status === 'fulfilled' && rs.value.j && Array.isArray(rs.value.j.leaderboard)) { board = rs.value.j.leaderboard; dbOn = rs.value.j.db; keyState = rs.value.j.keyState || {}; }
   let err = '';
   if (rm.status === 'rejected') err = '❌ Val se connect nahi hua: URL check karo (ya network / CORS).';
   else if (rm.value.status === 401 || rm.value.status === 403) err = '🔒 Ye page apni website ke origin se khula hona chahiye (jo Val Town env AI_ALLOWED_ORIGINS me hai). Is file ko wahi hosting par daalo, file se ya kisi aur site se nahi chalega.';
@@ -353,7 +454,7 @@ async function testOne(p, k, m, btn) {
   }
   clearTimeout(tm);
   if (btn) btn.disabled = false;
-  summary();
+  summary(); softRefresh();
 }
 
 async function runAll(items) {
