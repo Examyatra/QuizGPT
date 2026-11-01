@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b1226"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Timer"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><title>Study Timer</title>
+<meta name="app-version" content="2026.11.01.1"><meta name="theme-color" content="#0b1226"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Timer"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><title>Study Timer</title>
 <style>
 :root{color-scheme:dark;--ink:#eef1f8;--mut:#9aa6c2;--lamp:#ffb454;--glass:#ffffff12;--line:#ffffff1f;--study:#ffb454;--lecture:#b79cf2;--practice:#5ec8f2;--break:#6ee7b7}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -232,7 +232,7 @@ body.sw .mus{grid-template-columns:1fr}
   <section class="sec"><h3>Alerts</h3><label class="tg">Sound when a block ends<input id="s_sound" type="checkbox"></label><label class="tg">Alert sound<span><select id="s_tone"><option value="chime">Chime</option><option value="bell">Bell</option><option value="soft">Soft</option><option value="beep">Beep</option></select> <button class="btn" id="tt">Test</button></span></label><label class="tg">Vibration<input id="s_vib" type="checkbox"></label><label class="tg" style="border:0">Notifications<input id="s_notif" type="checkbox"></label></section>
   <section class="sec"><h3>Screen</h3><label class="tg">Keep screen on while running<input id="s_wake" type="checkbox"></label><div class="tg"><span>Side window (30% of screen)</span><button class="btn" id="sw">Open</button></div><div class="tg" style="border:0"><span>Fullscreen focus</span><button class="btn" id="fs">Fullscreen</button></div><details class="info-fold"><summary>Info</summary><div class="info-body"><p>Keyboard shortcuts: Space to start or pause, N for next, R to reset. Use +5 to extend the current block.</p></div></details></section>
   <section class="sec"><h3>Background &amp; windows</h3><label class="tg">Background-running support<input id="s_bg" type="checkbox"></label><label class="tg" style="border:0">Runtime diagnostics<input id="s_diag" type="checkbox"></label><pre id="dg" hidden></pre><details class="info-fold"><summary>Info</summary><div class="info-body"><p>iPhone and iPad can freeze any web app that is not on screen, and no website can prevent that. With this option on, the timer plays an inaudible audio track while it runs, sets the audio session to playback, and sends music through the system media player. That is the only way Safari lets a web app keep running or keep its sound in the background, and it is best effort, not a guarantee. It shows the timer in Control Center and on the lock screen, and it pauses audio from other apps. Time is always calculated from the clock, so the timer stays correct even if the app was frozen; sounds and alerts can only play while iOS lets the app run. Use Diagnostics to see what your device is doing. Only used on iPhone and iPad.</p></div></details></section>
-  <section class="sec"><h3>Data</h3><details class="info-fold"><summary>Info</summary><div class="info-body"><p>Only the last 30 days of history are kept. Older data is removed automatically.</p></div></details><div class="add" style="margin:0"><button class="btn" id="csv">Export CSV</button><button class="btn" id="bk">Backup</button><button class="btn" id="rs">Restore</button><button class="btn" id="clr">Clear history</button></div><input type="file" id="rsf" accept=".json" hidden></section></div>
+  <section class="sec"><h3>Data<small id="verl"></small></h3><details class="info-fold"><summary>Info</summary><div class="info-body"><p>Only the last 30 days of history are kept. Older data is removed automatically.</p></div></details><div class="add" style="margin:0"><button class="btn" id="csv">Export CSV</button><button class="btn" id="bk">Backup</button><button class="btn" id="rs">Restore</button><button class="btn" id="clr">Clear history</button></div><input type="file" id="rsf" accept=".json" hidden></section></div>
 </div></dialog>
 
 <dialog id="dd"><div class="dh"><h2>Detailed analytics</h2><button class="x" data-c="dd" aria-label="Close">✕</button></div>
@@ -242,7 +242,11 @@ body.sw .mus{grid-template-columns:1fr}
 let D=document;const $=s=>D.querySelector(s),$$=s=>[...D.querySelectorAll(s)];
 const T={study:{n:'Study',c:'#ffb454'},lecture:{n:'Lecture',c:'#b79cf2'},practice:{n:'Question practice',c:'#5ec8f2'},break:{n:'Break',c:'#6ee7b7'}};
 const MINS=1; /* any session with at least 1s of focus is saved; nothing the user studied is thrown away */
-let svT=0;const ld=(k,d)=>{try{const v=localStorage.getItem('pt_'+k);return v?JSON.parse(v):d}catch(e){return d}},sv=(k,v)=>{try{localStorage.setItem('pt_'+k,JSON.stringify(v));return true}catch(e){if(Date.now()-svT>6e4){svT=Date.now();try{toast('⚠ Could not save. Storage is full or blocked.')}catch(x){}}return false}};
+/* ---------- build + data version ----------
+   APP_VER  : changes with every release (must match sw.js). Shown in Settings so every device can be checked at a glance.
+   SCHEMA   : version of the saved-data layout. Old data is migrated once, automatically, never thrown away. */
+const APP_VER='2026.11.01.1',SCHEMA=3,RAW={};
+let svT=0;const ld=(k,d)=>{try{const v=localStorage.getItem('pt_'+k);return v?JSON.parse(v):d}catch(e){return d}},sv=(k,v)=>{try{const s=JSON.stringify(v);localStorage.setItem('pt_'+k,s);RAW[k]=s;return true}catch(e){if(Date.now()-svT>6e4){svT=Date.now();try{toast('⚠ Could not save. Storage is full or blocked.')}catch(x){}}return false}};
 const p2=n=>String(n).padStart(2,'0'),ymd=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const fd=s=>{s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+'h '+p2(m)+'m':m?m+'m':s+'s'};
 const mmss=s=>{s=Math.max(0,Math.ceil(s-1e-6));const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return(h?h+':'+p2(m):p2(m))+':'+p2(s%60)};
@@ -255,21 +259,43 @@ let log=ld('log',[]),S=Object.assign({},SDEF,ld('set',{}));
 let LM=null,alBus=null,ALM=null,MSK='';const BG={route:'',out:null,msd:null,retry:0},KA={el:null,blocked:0,url:''},DG={log:[],gaps:0,maxGap:0,last:Date.now(),rec:0};
 function dg(m){DG.log.push(new Date().toLocaleTimeString([],{hour12:false})+' '+m);if(DG.log.length>40)DG.log.shift()}
 /* recover a session cut off by a closed tab; keep only the last 30 days */
-const sanLog=a=>(Array.isArray(a)?a:[]).filter(l=>l&&T[l.t]&&isFinite(l.s)&&isFinite(l.e)&&isFinite(l.act)).map(l=>({...l,pz:+l.pz||0,np:+l.np||0,plan:+l.plan||0,day:l.day||ymd(new Date(l.s))}));
+const uid=()=>Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),legacyId=l=>'L'+Math.round(l.s).toString(36)+'-'+l.t;
+/* every session has one permanent id. A list is always de-duplicated by id (the fuller record wins), so a session can never be counted twice or lost by a merge. */
+function sanLog(a){const mp=new Map();(Array.isArray(a)?a:[]).forEach(l=>{if(!(l&&T[l.t]&&isFinite(l.s)&&isFinite(l.e)&&isFinite(l.act)&&l.act>=0))return;
+ const x={...l,pz:+l.pz||0,np:+l.np||0,plan:+l.plan||0,day:l.day||ymd(new Date(l.s))};x.id=x.id||legacyId(x);const o=mp.get(x.id);if(!o||x.act>o.act||(x.act===o.act&&x.e>o.e))mp.set(x.id,x)});
+ return[...mp.values()].sort((a,b)=>a.s-b.s)}
 log=sanLog(log);plan=(Array.isArray(plan)?plan:[]).filter(p=>p&&T[p.t]&&p.m>0);if(!plan.length)plan=[{t:'study',m:60},{t:'practice',m:30},{t:'break',m:10}];if(!['plan','quick','stopwatch'].includes(mode))mode='plan';
 let agg=ld('agg',null);if(!agg||typeof agg!=='object'){agg={};log.forEach(l=>{if(l.t!=='break')agg[l.day]=(agg[l.day]||0)+l.act});sv('agg',agg)}
 const WID=Math.random().toString(36).slice(2),lv=ld('live',null),ts=ld('ts',null);let dockW=null,armAt=0,RO=false,RES=false,HAND=false,pip=null,pv=null,pvc=null;const QS=location.search,TAKE=/[?&]take=1/.test(QS),DOCK=/[?&]dock=1/.test(QS);if(TAKE){try{history.replaceState(null,'',location.pathname+(DOCK?'?dock=1':''))}catch(e){}sv('take',{w:WID,at:Date.now()})}
+if(lv&&T[lv.t]&&!lv.id)lv.id=legacyId(lv);
 if(lv&&T[lv.t]){if(!TAKE&&Date.now()-(lv.u||0)<15000&&ts&&!ts.c)RO=true;else if(ts&&(ts.el>0||TAKE)&&Date.now()-ts.at<432e5&&ts.mode===mode)RES=true;
- else if(lv.act>=MINS){lv.e=lv.u||Date.now();lv.done=false;lv.pz=+lv.pz||0;lv.np=+lv.np||0;delete lv.ps;delete lv.al;delete lv.cur;delete lv.w;log.push(lv);if(lv.t!=='break')agg[lv.day]=(agg[lv.day]||0)+lv.act;sv('agg',agg)}}
-const prune=()=>{log=log.filter(l=>l.s>=day0(29));sv('log',log)};prune();if(!RES&&!RO)sv('live',null);
+ else if(lv.act>=MINS){lv.e=lv.u||Date.now();lv.done=false;lv.pz=+lv.pz||0;lv.np=+lv.np||0;delete lv.ps;delete lv.al;delete lv.cur;delete lv.w;lv.id=lv.id||legacyId(lv);commitSession(lv)}}
+/* ---------- shared store: the ONLY code that writes history ----------
+   Rule 1: never write the in-memory copy back. Re-read the stored log, merge, then write (no window can overwrite another window's newer data).
+   Rule 2: per-day totals (agg) are always rebuilt from the log, so Sessions, Focus rate, Paused, Breaks, streak and the week bars can never disagree.
+   Rule 3: every window re-reads shared data whenever storage changes, and again whenever it returns to the screen. */
+let REV=0,SNAP=null;function bump(){REV++;SNAP=null}
+const keepFrom=()=>day0(29);
+function rebuildAgg(){const old=ld('agg',{})||{},from=ymd(new Date(keepFrom())),cut=ymd(new Date(day0(400))),out={};
+ Object.keys(old).forEach(k=>{if(k<from&&k>=cut&&isFinite(old[k])&&old[k]>0)out[k]=old[k]});
+ log.forEach(l=>{if(l.t!=='break'&&l.day>=from)out[l.day]=(out[l.day]||0)+l.act});agg=out;sv('agg',agg)}
+function commitSession(s){const fresh=sanLog(ld('log',[]).concat(s?[s]:[]));log=fresh.filter(l=>l.s>=keepFrom());sv('log',log);rebuildAgg();bump()}
+const prune=()=>{commitSession(null)};
+function migrate(){const v=+ld('schema',0)||0;if(v<SCHEMA||ld('ver','')!==APP_VER){log=sanLog(log);sv('log',log);rebuildAgg();sv('schema',SCHEMA);sv('ver',APP_VER)}}
+/* watch the three shared keys: apply a change only when the stored text really differs from what this window last saw or wrote */
+function syncShared(){let ch=false;
+ try{['log','agg','set'].forEach(k=>{const r=localStorage.getItem('pt_'+k);if(r===null||r===RAW[k])return;RAW[k]=r;let v;try{v=JSON.parse(r)}catch(e){return}
+  if(k==='log')log=sanLog(v);else if(k==='agg'){if(v&&typeof v==='object')agg=v}else if(k==='set'&&v&&typeof v==='object'){S=Object.assign({},SDEF,v);try{fillGoal()}catch(e){}}ch=true})}catch(e){}
+ if(ch){bump();try{draw();if(pv)drawPv()}catch(e){}}return ch}
+migrate();prune();try{RAW.set=localStorage.getItem('pt_set')}catch(e){}if(!RES&&!RO)sv('live',null);
 try{Object.keys(localStorage).filter(k=>k.startsWith('pt_day_')).forEach(k=>localStorage.removeItem(k))}catch(e){}
 const subs=()=>{};
 
 /* ---------- session engine ---------- */
 const blk=()=>mode==='plan'?plan[idx]:mode==='quick'?{t:'study',m:qm}:{t:'study',m:0},durS=b=>b.m?b.m*60+ex:Infinity;
-function openS(s0){const b=blk(),s=s0||Date.now();cs={day:ymd(new Date(s)),t:b.t,plan:b.m?b.m+ex/60:0,sub:'',s,act:0,pz:0,np:0,ps:null}}
+function openS(s0){const b=blk(),s=s0||Date.now();cs={id:uid(),day:ymd(new Date(s)),t:b.t,plan:b.m?b.m+ex/60:0,sub:'',s,act:0,pz:0,np:0,ps:null}}
 function endP(){if(cs&&cs.ps){cs.pz+=Math.min(10800,(Date.now()-cs.ps)/1000);cs.ps=null}}
-function closeS(done,et){if(!cs)return;flush();endP();if(cs.act>=MINS){cs.e=et||Date.now();cs.done=!!done;delete cs.ps;delete cs.al;delete cs.u;delete cs.cur;delete cs.w;log.push(cs);if(cs.t!=='break'){agg[cs.day]=(agg[cs.day]||0)+cs.act;sv('agg',agg)}prune();subs()}cs=null;sv('live',null)}
+function closeS(done,et){if(!cs)return;flush();endP();if(cs.act>=MINS){cs.e=et||Date.now();cs.done=!!done;delete cs.ps;delete cs.al;delete cs.u;delete cs.cur;delete cs.w;cs.id=cs.id||uid();commitSession(cs)}cs=null;bump();sv('live',null)}
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3500)}
 function chime(k,at,dst){try{const a=ac(),t0=at==null?a.currentTime:at,out=dst||alBus||a.destination,P={chime:[[784,0],[988,.22],[1319,.44]],beep:[[880,0],[880,.3],[880,.6]],bell:[[523,0],[784,.01],[1047,.02]],soft:[[392,0],[523,.3],[659,.6]]}[k]||[[784,0]],L=k==='bell'?1.6:.35;
  P.forEach(([f,d])=>{const o=a.createOscillator(),g=a.createGain();o.type=k==='beep'?'square':'sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t0+d);g.gain.exponentialRampToValueAtTime(k==='beep'?.1:.22,t0+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t0+d+L);o.connect(g);g.connect(out);o.start(t0+d);o.stop(t0+d+L+.05)})}catch(e){}}
@@ -293,8 +319,8 @@ function setMode(m){if(m===mode)return;closeS(false);run=false;el=0;ex=0;mode=m;
 function setQ(v){if(run||el>0){toast('Reset the timer before changing the duration');return}qm=v;sv('qm',v);draw()}
 function tick(){
  {const w=Date.now(),g=w-DG.last;DG.last=w;if(g>2500){DG.gaps++;if(g>DG.maxGap)DG.maxGap=g;dg('timer was frozen '+(g/1000).toFixed(1)+'s ('+(document.hidden?'hidden':'visible')+'), caught up from the clock')}}
- if(RO){if(++n10%4===0)mirror();draw(1);return}
- if(++n10%4===0){saveT();if(!RO&&!cs&&!run&&!HAND&&foreign())becomeRO();rearm();bgTick()}
+ if(RO){if(++n10%4===0){syncShared();mirror()}draw(1);return}
+ if(++n10%4===0){syncShared();saveT();if(!RO&&!cs&&!run&&!HAND&&foreign())becomeRO();rearm();bgTick()}
  if(cs&&cs.ps&&S.pal&&!cs.al&&Date.now()-cs.ps>S.pal*6e4){cs.al=1;beep();notify('You have been paused for over '+S.pal+' min. Resume when you are ready.')}
  const b=blk();if(run&&b){const n=Date.now(),d=Math.max(0,(n-last)/1000);last=n;const dur=durS(b),add=Math.min(d,dur-el);if(!cs)openS();el+=add;cs.act+=add;cs.cur=(cs.cur||0)+add;if(cs.cur>(cs.mx||0))cs.mx=cs.cur;if(el>=dur-.001){const over=d-add,t0=n-over*1000;beep();next(true,t0);carry(over,t0)}}
 
@@ -305,16 +331,21 @@ async function wake(){try{if(S.wake&&run&&!RO&&!wl){wl=await navigator.wakeLock.
 
 /* ---------- analytics ---------- */
 function sess(n,off=0){const from=day0(n+off-1),to=off?day0(off-1):Infinity;let L=log.filter(l=>l.s>=from&&l.s<to);
- if(!off&&cs&&cs.act>=1&&cs.s>=from)L=L.concat(Object.assign({},cs,{e:Date.now(),done:false,pz:cs.pz+(cs.ps?(Date.now()-cs.ps)/1000:0)}));return L}
+ if(!off&&cs&&cs.act>=1&&cs.s>=from){L=L.filter(l=>l.id!==cs.id);L=L.concat(Object.assign({},cs,{e:Date.now(),done:false,pz:cs.pz+(cs.ps?(Date.now()-cs.ps)/1000:0)}))}return L}
 function M(L){const F=L.filter(l=>l.t!=='break').sort((a,b)=>a.s-b.s),B=L.filter(l=>l.t==='break'),sp=l=>Math.max(1,(l.e-l.s)/1000),s=k=>F.reduce((a,l)=>a+(l[k]||0),0),sit=F.reduce((a,l)=>a+sp(l),0),P=F.filter(l=>l.plan>0),act=s('act'),pz=s('pz'),days={},hr=Array(24).fill(0);
  F.forEach(l=>{days[l.day]=(days[l.day]||0)+l.act;const d=sp(l);for(let t=l.s;t<l.e;){const h=new Date(t),n=Math.min(l.e,new Date(h.getFullYear(),h.getMonth(),h.getDate(),h.getHours()+1).getTime());hr[h.getHours()]+=l.act*(n-t)/1000/d;t=n}});
  return{k:F.length,F,B,brk:B.reduce((a,l)=>a+l.act,0),tk:P.length,dn:P.filter(l=>l.done).length,plan:P.reduce((a,l)=>a+l.plan*60,0),pdone:P.reduce((a,l)=>a+Math.min(l.act,l.plan*60),0),act,sit,pz,idle:Math.max(0,sit-act-pz),np:s('np'),mx:Math.max(0,...F.map(l=>l.mx||0)),days,ad:Object.values(days).filter(v=>v>=1500).length,hr,eff:sit?Math.round(act/sit*100):0}}
 const eff=l=>Math.round(l.act/Math.max(1,(l.e-l.s)/1000)*100);
 const line=l=>`<span class="t">${tm(l.s)} – ${tm(l.e)}</span><span class="n">${T[l.t].n}${l.sub?' · '+esc(l.sub):''}</span><span class="v">${fd(l.act)} · ${eff(l)}%</span>`;
+/* one consistent snapshot of today: every tile, the mini view and the floating window read THIS, computed once per change (or at most every 0.5 s while the clock runs) */
+function sigNow(){return REV+'|'+log.length+'|'+(cs?cs.id+'|'+cs.np+'|'+(cs.ps?1:0):'-')+'|'+run+'|'+mode+'|'+idx+'|'+ymd(new Date())+'|'+S.goal+'|'+(RO?1:0)}
+function snap(){const n=Date.now(),sg=sigNow();if(SNAP&&SNAP.sg===sg&&n-SNAP.at<500)return SNAP;
+ const m=M(sess(1));let st=0,wk='';try{st=streak(1500)}catch(e){dg('streak: '+e.message)}try{wk=wkS()}catch(e){dg('week: '+e.message)}
+ return SNAP={sg,at:n,m,L:m.F.slice(-3).reverse(),st,wk,gp:S.goal?pc(m.act,S.goal*3600):0}}
 function streak(g){g=g||S.goal*3600;const by=Object.assign({},agg);if(cs&&cs.t!=='break'&&cs.act>=MINS)by[cs.day]=(by[cs.day]||0)+cs.act;let n=0,d=new Date();if((by[ymd(d)]||0)<g)d.setDate(d.getDate()-1);while((by[ymd(d)]||0)>=g){n++;d.setDate(d.getDate()-1)}return n}
 
 /* ---------- home ---------- */
-let stAt=0;function draw(th){
+let stAt=0,SIGD='';function draw(th){
  const b=blk(),sw=mode==='stopwatch';D.body.classList.toggle('run',run);D.documentElement.style.setProperty('--lamp',T[b?b.t:'study'].c);
  $$('#modes button').forEach(x=>x.classList.toggle('on',x.dataset.k===mode));
  $('#qc').style.display=mode==='quick'?'flex':'none';$$('#qc button').forEach(x=>x.classList.toggle('on',+x.dataset.q===qm));
@@ -329,14 +360,16 @@ let stAt=0;function draw(th){
  if(RO&&b)$('#nx').textContent='Live view \u00b7 tap anything to use it here';
  $('#go').textContent=run?'⏸':'▶';
  $('#pz').textContent=cs&&(cs.np||cs.ps)?'This session: '+cs.np+' pause(s) · '+fd(cs.pz+(cs.ps?(Date.now()-cs.ps)/1000:0))+' paused':'';
- if(th&&Date.now()-stAt>=0&&Date.now()-stAt<1000){if(pv)drawPv();return}stAt=Date.now();
- {const dd=$('#dd');if(dd&&dd.open){const x=dd,y=dd.querySelector('.db'),t1=x.scrollTop,t2=y?y.scrollTop:0;dash(1);x.scrollTop=t1;if(y)y.scrollTop=t2}}
- const wkHtml=wkS(),m=M(sess(1)),L=m.F.slice(-3).reverse(),st=streak(1500),gp=S.goal?pc(m.act,S.goal*3600):0;
- if(D.getElementById('mini'))D.getElementById('mini').innerHTML=`<div><b>${m.k?m.eff+'%'+eTrend(m.eff):'\u2013'}</b><small>Efficiency</small></div><div><b>${fd(m.act)}</b><small>Today</small></div>`
- const h=`<h2><span>Today</span>${st?`<em class="stk">🔥 ${st}-day streak</em>`:''}</h2><div class="hl"><b>${fd(m.act)}</b><span>focused · ${gp}% of ${S.goal}h goal</span></div><div id="gb"><i style="width:${gp}%"></i></div>
+ const sg=sigNow();if(th&&sg===SIGD&&Date.now()-stAt<1000){if(pv)drawPv();return}SIGD=sg;stAt=Date.now();
+ {const dd=$('#dd');if(dd&&dd.open){try{const x=dd,y=dd.querySelector('.db'),t1=x.scrollTop,t2=y?y.scrollTop:0;dash(1);x.scrollTop=t1;if(y)y.scrollTop=t2}catch(e){dg('analytics: '+e.message)}}}
+ let sn=null;try{sn=snap()}catch(e){dg('stats: '+e.message)}
+ if(sn){const m=sn.m;
+  try{const mi=D.getElementById('mini');if(mi){const h=`<div><b>${m.k?m.eff+'%'+eTrend(m.eff):'\u2013'}</b><small>Efficiency</small></div><div><b>${fd(m.act)}</b><small>Today</small></div>`;if(mi.__h!==h){mi.innerHTML=h;mi.__h=h}}}catch(e){dg('mini: '+e.message)}
+  try{const td=$('#today');if(td){const h=`<h2><span>Today</span>${sn.st?`<em class="stk">🔥 ${sn.st}-day streak</em>`:''}</h2><div class="hl"><b>${fd(m.act)}</b><span>focused · ${sn.gp}% of ${S.goal}h goal</span></div><div id="gb"><i style="width:${sn.gp}%"></i></div>
  <div class="tiles"><div><b>${m.k}</b><small>Sessions</small></div><div><b>${m.k?m.eff+'%':'–'}</b><small>Focus rate</small></div><div><b>${m.pz?fd(m.pz):'–'}</b><small>Paused</small></div><div><b>${m.brk?fd(m.brk):'–'}</b><small>Breaks</small></div></div>
- ${wkHtml}<ul id="rec">${L.map(l=>'<li>'+line(l)+'</li>').join('')||'<li><span class="n">Start the timer to see your sessions here.</span></li>'}</ul>`;
- if(h!==lastH){$('#today').innerHTML=h;lastH=h}if(pv)drawPv()}
+ ${sn.wk}<ul id="rec">${sn.L.map(l=>'<li>'+line(l)+'</li>').join('')||'<li><span class="n">Start the timer to see your sessions here.</span></li>'}</ul>`;
+  if(td.__h!==h||!td.firstChild){td.innerHTML=h;td.__h=h}}}catch(e){dg('today: '+e.message)}}
+ try{if(pv)drawPv()}catch(e){dg('float: '+e.message)}}
 
 /* ---------- details ---------- */
 const pc=(a,b)=>b?Math.min(100,Math.round(a/b*100)):0;
@@ -344,7 +377,7 @@ const sec=(t,s,b)=>`<section class="sec"><h3>${t}${s?`<small>${s}</small>`:''}</
 const kv=(k,v)=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`;
 const rows=(o,mx,c)=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>`<div class="rw" style="--c:${c(k)}"><div><b>${esc(T[k]?T[k].n:k)}</b><span>${fd(v)}</span></div><div class="bar"><i style="width:${pc(v,mx)}%"></i></div></div>`).join('');
 const h12=h=>{h=(h+24)%24;return(h%12||12)+(h<12?' AM':' PM')};
-let lastDv='';const put=h=>{if(h!==lastDv){$('#dv').innerHTML=h;lastDv=h}};
+let lastDv='';const put=h=>{const e=$('#dv');if(h!==lastDv||!e.firstChild){e.innerHTML=h;lastDv=h}};
 function dash(re){
  if(!re)$('#rg2').innerHTML=[[1,'Today'],[2,'2 days'],[3,'3 days'],[4,'4 days'],[7,'7 days'],[30,'30 days']].map(([n,t])=>`<button class="chip ${n===rgn?'on':''}" data-n="${n}">${t}</button>`).join('');
  const L=sess(rgn),m=M(L),gl=S.goal*3600,td=ymd(new Date()),gt=gl*rgn,gp=pc(m.act,gt),by={};
@@ -382,7 +415,7 @@ function dlist(){const k=pkey();if(k==='cu'&&dp.length)sv('cplan',dp);
  $('#plt').innerHTML='Your plan<small>'+PN2[k]+' · '+(dp.length?dp.reduce((a,x)=>a+x.m,0)+' min':'empty')+'</small>';
  $('#dl').innerHTML=dp.map((p,i)=>`<div class="blk"><i class="dot" style="background:${T[p.t].c}"></i><span>${p.t==='practice'?'Practice':T[p.t].n} · ${p.m} min</span><button data-u="${i}" aria-label="Up">↑</button><button data-d="${i}" aria-label="Down">↓</button><button data-r="${i}" aria-label="Remove">✕</button></div>`).join('')||'<p class="tip">No blocks yet. Add one below.</p>'}
 const NK=['pal'],BK=['auto','sound','wake','notif','vib','amu','bg','diag'];
-function openSet(){dp=plan.map(x=>({...x}));dlist();NK.forEach(k=>$('#s_'+k).value=S[k]);BK.forEach(k=>$('#s_'+k).checked=S[k]);$('#s_tone').value=S.tone;$$('.mus button').forEach(b=>b.classList.toggle('on',!!cur&&b.dataset.m===S.music));dgShow();$('#sd').showModal()}
+function openSet(){try{$('#verl').textContent='v'+APP_VER}catch(e){}dp=plan.map(x=>({...x}));dlist();NK.forEach(k=>$('#s_'+k).value=S[k]);BK.forEach(k=>$('#s_'+k).checked=S[k]);$('#s_tone').value=S.tone;$$('.mus button').forEach(b=>b.classList.toggle('on',!!cur&&b.dataset.m===S.music));dgShow();$('#sd').showModal()}
 $('#dl').onclick=e=>{const u=e.target.dataset.u,r=e.target.dataset.r;if(u!==undefined&&+u>0){const i=+u;[dp[i-1],dp[i]]=[dp[i],dp[i-1]]}const dn=e.target.dataset.d;if(dn!==undefined&&+dn<dp.length-1){const i=+dn;[dp[i+1],dp[i]]=[dp[i],dp[i+1]]}if(r!==undefined)dp.splice(+r,1);dlist()};
 $('#add').onclick=()=>{dp.push({t:$('#nt').value,m:Math.max(1,Math.min(600,+$('#nm').value||1))});dlist()};
 $('#pre').onclick=e=>{const b=e.target.closest('.pc');if(!b)return;const k=b.dataset.k;if(k==='cu'){if(pkey()==='cu')return;const c=ld('cplan',null);if(Array.isArray(c)&&c.length&&!same(c,PRE.p1)&&!same(c,PRE.p2)){dp=cpy(c.filter(x=>x&&T[x.t]&&x.m>0));dlist()}else{toast('Add or reorder blocks below to build your own plan');$('#nt').scrollIntoView({block:'center'})}return}dp=cpy(PRE[k]);dlist()};
@@ -397,8 +430,12 @@ const dl_=(n,t,type)=>{const a=document.createElement('a');a.href=URL.createObje
 $('#csv').onclick=()=>dl_('padhai-history.csv',[['date','start','end','type','subject','plan_min','focus_sec','pause_sec','pauses','completed']].concat(log.map(l=>[l.day,new Date(l.s).toISOString(),new Date(l.e).toISOString(),l.t,'"'+(l.sub||'').replace(/"/g,'""')+'"',l.plan,Math.round(l.act),Math.round(l.pz),l.np,l.done?1:0])).map(x=>x.join(',')).join('\n'),'text/csv');
 $('#bk').onclick=()=>{const o={};Object.keys(localStorage).filter(k=>k.startsWith('pt_')).forEach(k=>o[k]=localStorage.getItem(k));dl_('padhai-backup.json',JSON.stringify(o),'application/json')};
 $('#rs').onclick=()=>$('#rsf').click();
-$('#rsf').onchange=async e=>{try{const o=JSON.parse(await e.target.files[0].text());Object.keys(o).filter(k=>k.startsWith('pt_')).forEach(k=>localStorage.setItem(k,o[k]));location.reload()}catch(x){toast('This backup file is not valid')}};
-$('#clr').onclick=()=>{if(ask('Delete all history? This cannot be undone.')){log=[];sv('log',log);agg={};sv('agg',agg);lastH='';draw()}};
+$('#rsf').onchange=async e=>{try{const o=JSON.parse(await e.target.files[0].text()),SKIP=['pt_log','pt_agg','pt_live','pt_ts','pt_take','pt_mon','pt_schema','pt_ver'];
+ const inc=sanLog(o.pt_log?JSON.parse(o.pt_log):[]),oa=o.pt_agg?JSON.parse(o.pt_agg):{};
+ Object.keys(o).filter(k=>k.startsWith('pt_')&&!SKIP.includes(k)).forEach(k=>localStorage.setItem(k,o[k]));
+ const from=ymd(new Date(keepFrom())),ca=ld('agg',{})||{};Object.keys(oa).forEach(k=>{if(k<from&&isFinite(oa[k]))ca[k]=Math.max(ca[k]||0,oa[k])});sv('agg',ca);
+ log=sanLog(ld('log',[]).concat(inc));sv('log',log);rebuildAgg();toast('Backup merged. '+inc.length+' sessions checked, no duplicates.');setTimeout(()=>location.reload(),900)}catch(x){toast('This backup file is not valid')}};
+$('#clr').onclick=()=>{if(ask('Delete all history? This cannot be undone.')){log=[];sv('log',log);agg={};sv('agg',agg);bump();lastH='';draw()}};
 $('#tt').onclick=()=>chime($('#s_tone').value);
 $('#fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}};
 $('#rg2').onclick=e=>{const n=+e.target.dataset.n;if(n){rgn=n;dash()}};
@@ -637,12 +674,10 @@ function saveT(){if(RO||HAND)return;if(foreign()){if(cs||run)becomeRO();return}i
 function wkS(){const td=ymd(new Date()),v=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);const k=ymd(d);return[k===td,(agg[k]||0)+(k===td&&cs&&cs.t!=='break'?cs.act:0)]}),mx=Math.max(S.goal*3600,...v.map(x=>x[1]),1);return'<div class="wk" aria-hidden="true">'+v.map(([t,x])=>`<i class="${t?'t':''}" style="height:${Math.max(6,x/mx*100)}%"></i>`).join('')+'</div>'}
 $('#today').onclick=()=>$('#bd').click();
 addEventListener('storage',e=>{
- if(e.key==='pt_log'){try{log=sanLog(JSON.parse(e.newValue||'[]'));lastH='';subs();draw();if(pv)drawPv()}catch(x){}}
- else if(e.key==='pt_agg'){try{agg=JSON.parse(e.newValue||'{}')||{};lastH='';draw();if(pv)drawPv()}catch(x){}}
+ if(e.key==='pt_log'||e.key==='pt_agg'||e.key==='pt_set'||e.key===null)syncShared();
  else if(e.key==='pt_take'){try{const t=JSON.parse(e.newValue||'null');if(t&&t.w!==WID&&!HAND&&!RO&&(cs||run))becomeRO()}catch(x){}}
- else if(e.key==='pt_set'){try{S=Object.assign({},SDEF,JSON.parse(e.newValue||'{}'));fillGoal();lastH='';draw();if(pv)drawPv()}catch(x){}}
 });
-document.addEventListener('visibilitychange',()=>{if(document.hidden)saveT();else{wl=null;wake()}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)saveT();else{wl=null;wake();syncShared();bump();draw()}});
 if(RES){try{mode=ts.mode;idx=ts.idx<plan.length?ts.idx:0;ex=ts.ex||0;el=ts.el;cs=lv;const b=blk();if(b){const gap=ts.run?Math.max(0,(Date.now()-ts.at)/1000):0,add=Math.min(gap,durS(b)-el);el+=add;cs.act+=add;cs.cur=(cs.cur||0)+add;run=!!ts.run;last=Date.now()}else cs=null}catch(x){cs=null}}
 if(RES&&cs){cs.w=WID;cs.u=Date.now();sv('live',cs)}
 if(RO)mirror();
@@ -669,7 +704,7 @@ function sidePop(){
 let eS={t:0,cur:null,prev:null};
 function eTrend(v){if(v==null)return'';const n=Date.now();if(eS.cur===null)eS={t:n,cur:v,prev:v};else if(n-eS.t>=30000)eS={t:n,cur:v,prev:eS.cur};return v>eS.prev?' \u25B2':v<eS.prev?' \u25BC':''}
 function drawPv(){const c=pvc;if(!c)return;const g=c.getContext('2d'),b=blk(),sw=mode==='stopwatch',dur=b?durS(b):1,rem=b?(sw?Math.floor(el):dur-el):0,col=b?T[b.t].c:'#ffb454',f=b?(sw?(el%60)/60:el/dur):0,lb=b?(sw?'Stopwatch':T[b.t].n):'Plan empty',P2=Math.PI*2;
- const m=M(sess(1)),hasEff=m.k>0,tr=eTrend(hasEff?m.eff:null);
+ const m=snap().m,hasEff=m.k>0,tr=eTrend(hasEff?m.eff:null);
  const W=640,H=360,LX=0,RX=330,RW=W-RX; /* left: ring+time, right: stat chips */
  g.clearRect(0,0,W,H);g.fillStyle='#0b1226';g.fillRect(0,0,W,H);
  /* divider */
@@ -745,7 +780,12 @@ if(!ld('hint',0)&&!DOCK&&!RO){sv('hint',1);setTimeout(()=>toast(IOS&&STANDALONE?
 /* background-proof ticker: a worker is not throttled when this tab is hidden behind your lecture */
 try{const wk=new Worker(URL.createObjectURL(new Blob(['setInterval(function(){postMessage(0)},250)'],{type:'text/javascript'})));wk.onmessage=()=>tick()}catch(e){setInterval(tick,250)}
 /* offline support: when opened from a web link, cache the app so it works without internet next time */
-if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){try{[['manifest','manifest.webmanifest'],['apple-touch-icon','icon-192.png']].forEach(([r,h])=>{const l=document.createElement('link');l.rel=r;l.href=h;document.head.appendChild(l)});{const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had)window.updReady=1})}addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>{const up=()=>r.update().catch(()=>{});document.addEventListener('visibilitychange',()=>{if(!document.hidden)up()});setInterval(up,36e5)}).catch(()=>{}))}catch(e){}}
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){try{[['manifest','manifest.webmanifest'],['apple-touch-icon','icon-192.png']].forEach(([r,h])=>{const l=document.createElement('link');l.rel=r;l.href=h;document.head.appendChild(l)});{const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had)window.updReady=1})}addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{const up=()=>r.update().catch(()=>{});document.addEventListener('visibilitychange',()=>{if(!document.hidden)up()});setInterval(up,36e5)}).catch(()=>{}))}catch(e){}}
+/* version check: compare the running build with the one on the server; reload when idle so every device converges on the same code */
+let vcAt=0;async function checkVer(){try{if(!/^https?:$/.test(location.protocol)||!navigator.onLine||Date.now()-vcAt<6e4)return;vcAt=Date.now();
+ const r=await fetch(location.pathname+'?_v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text(),m=t.match(/name="app-version" content="([^"]+)"/);
+ if(m&&m[1]!==APP_VER){window.updReady=1;if(run||cs)toast('New version '+m[1]+' ready. It installs when the timer is idle.');else location.reload()}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkVer()});setTimeout(checkVer,4000);setInterval(checkVer,18e5);
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 if(ld('cmp',0)){cmp=true;document.body.classList.add('pip')}
 if((MOB||!FINE)&&!(IOS&&STANDALONE))setTimeout(prepPv,800);
@@ -764,7 +804,7 @@ function adopt(user){
  const l=ld('live',null),t=ld('ts',null);
  if(HAND){HAND=false;try{if(dockW&&!dockW.closed)dockW.close()}catch(e){}dockW=null;try{PN.hidden=true}catch(e){}}
  RO=false;
- try{const pl=ld('plan',plan);if(Array.isArray(pl)&&pl.length)plan=pl;qm=ld('qm',qm);pat=ld('pat',pat);log=sanLog(ld('log',[]));agg=ld('agg',{})||{}}catch(e){}
+ try{const pl=ld('plan',plan);if(Array.isArray(pl)&&pl.length)plan=pl;qm=ld('qm',qm);pat=ld('pat',pat);log=sanLog(ld('log',[]));agg=ld('agg',{})||{};S=Object.assign({},SDEF,ld('set',{}));bump()}catch(e){}
  let ok=false;
  if(l&&T[l.t]&&t){mode=t.mode||mode;idx=t.idx<plan.length?t.idx:0;ex=t.ex||0;el=t.el||0;cs=l;const b=blk();
   if(b){const gap=t.run?Math.max(0,Math.min(432e5,Date.now()-t.at)/1000):0,add=Math.min(gap,Math.max(0,durS(b)-el));el+=add;cs.act+=add;cs.cur=(cs.cur||0)+add;run=!!t.run;ok=true}else cs=null}
@@ -824,7 +864,7 @@ function rearm(){const b=blk();
  cancelAlarm();const g=AC.createGain();g.connect(alBus);const at=AC.currentTime+rem;chime(S.tone,at,g);ALM={g,at,ctx:AC,tone:S.tone}}
 function bgTick(){bgSync(false);if(S.diag&&$('#sd')&&$('#sd').open)dgRender()}
 /* back on screen / refocused / resumed: catch the timer up from the clock and revive audio */
-function recover(why){const n=Date.now();if(n-DG.rec<300)return;DG.rec=n;dg('recover: '+why);
+function recover(why){const n=Date.now();if(n-DG.rec<300)return;DG.rec=n;dg('recover: '+why);try{syncShared();bump()}catch(e){}
  try{if(AC&&(cur||run)&&AC.state!=='running'){const r=AC.resume();if(r&&r.catch)r.catch(()=>{});setTimeout(()=>{if(AC&&(cur||run)&&AC.state!=='running'){try{AC.resume().catch(()=>{})}catch(e){}}},1500)}}catch(e){}
  try{if(BG.route==='stream'&&BG.out&&BG.out.paused){const r=BG.out.play();if(r&&r.catch)r.catch(()=>{})}}catch(e){}
  try{if(cur&&cur.on&&ON.a&&ON.a.paused&&!ON.pend){const r=ON.a.play();if(r&&r.catch)r.catch(()=>{ON.pend=1})}}catch(e){}
@@ -839,7 +879,7 @@ function dgRender(){const p=$('#dg');if(!p||p.hidden)return;const y=v=>v?'yes':'
  o.push('Device: '+(IOS?'iPhone/iPad':MOB?'mobile':'desktop')+' · Home Screen app: '+y(STANDALONE));
  o.push('Page: '+(document.hidden?'hidden':'visible')+' · focused: '+y(document.hasFocus()));
  o.push('Window: '+innerWidth+'×'+innerHeight+' · compact layout: '+y(document.body.classList.contains('sw')));
- o.push('Timer: '+(run?'running':'stopped')+' · clock-based catch-up: on');
+ o.push('Version: '+APP_VER+' · data v'+SCHEMA+' · rev '+REV+' · sessions stored: '+log.length);o.push('Timer: '+(run?'running':'stopped')+' · clock-based catch-up: on');
  o.push('Audio engine: '+(AC?AC.state:'not started')+' · output: '+(BG.route||'-')+' · session: '+as);
  o.push('Keep-alive track: '+(KA.el?(KA.el.paused?'paused':'playing'):'off')+(KA.blocked?' (needs a tap)':''));
  o.push('Online stream: '+(cur&&cur.on&&ON.a?(ON.a.paused?'paused':'playing'):'off'));
