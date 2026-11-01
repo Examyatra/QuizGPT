@@ -40,7 +40,7 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 .status{font-size:13px;color:var(--mut)}
 
 /* stats */
-.stats{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);margin-bottom:16px}
 .stat{padding:12px 14px;border-left:1px solid var(--line)}
 .stat:first-child{border-left:0}
 .stat b{display:block;font-size:22px;line-height:1.1;font-weight:700;font-variant-numeric:tabular-nums}
@@ -87,20 +87,6 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 .ob{padding:10px 12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:320px;overflow:auto}
 .empty{padding:36px 16px;text-align:center;color:var(--mut)}
 
-/* tools */
-.set{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:12px}
-.set input,.set select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:14px}
-.chk{display:flex;align-items:center;gap:8px;font-size:13.5px;margin-top:12px}
-.note{font-size:12px;color:var(--mut);margin-top:8px}
-.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-.search{flex:1 1 180px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px}
-.chips{display:flex;gap:6px}
-.chip{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--mut)}
-.chip.on{background:var(--acc);border-color:var(--acc);color:var(--acc-tx)}
-.acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.acts .iconbtn{padding:6px 10px}
-.cp{background:none;border:1px solid currentColor;border-radius:6px;font-size:11.5px;padding:0 7px;color:inherit;opacity:.85}
-.live{color:var(--ok);font-weight:600}
 /* composer */
 .composer{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
   padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
@@ -112,7 +98,7 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 .crow .sec{background:var(--surface2);border:1px solid var(--line)}
 .crow button:disabled{opacity:.5;cursor:default}
 .hint{font-size:12px;color:var(--mut);margin-top:6px}
-@media (max-width:480px){.stat{padding:8px}.stat span{font-size:11px}.stat b{font-size:17px}.out{margin-left:0}.top{flex-wrap:wrap}.ctl{margin-left:22px}}
+@media (max-width:480px){.stat{padding:10px}.stat b{font-size:19px}.out{margin-left:0}.top{flex-wrap:wrap}.ctl{margin-left:22px}}
 </style>
 </head>
 <body>
@@ -128,13 +114,6 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
   <section class="conn" id="conn" hidden>
     <label class="lbl" for="url">Val Town URL</label>
     <input id="url" placeholder="https://xxxx.web.val.run" autocomplete="off">
-    <div class="set">
-      <div><label class="lbl" for="cfgTimeout">Timeout (sec)</label><input id="cfgTimeout" type="number" min="5" max="120" value="50"></div>
-      <div><label class="lbl" for="cfgPar">Ek saath kitne tests</label><select id="cfgPar"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></div>
-      <div><label class="lbl" for="cfgAuto">Auto health check</label><select id="cfgAuto"><option value="0">Off</option><option value="1">Har 1 min</option><option value="5">Har 5 min</option><option value="15">Har 15 min</option></select></div>
-    </div>
-    <label class="chk"><input type="checkbox" id="cfgKeys"> Bulk test mein multi-key models ki saari keys test karo</label>
-    <div class="note">Auto check har baar real API call karta hai, to quota kharch hota hai. Chhota message (Hi) rakhna better hai.</div>
     <div class="actions">
       <button class="iconbtn" id="load">🔄 Status reload karo</button>
     </div>
@@ -142,17 +121,6 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 
   <div class="stats" id="sum"></div>
   <nav class="tabs" id="tabs" aria-label="Companies"></nav>
-  <div class="tools">
-    <input class="search" id="q" type="search" placeholder="Model dhundho…" aria-label="Model search">
-    <div class="chips" id="chips">
-      <button class="chip on" data-f="all">All</button><button class="chip" data-f="ok">Working</button><button class="chip" data-f="bad">Failed</button><button class="chip" data-f="new">Untested</button>
-    </div>
-  </div>
-  <div class="acts">
-    <button class="iconbtn" id="retry" disabled>↻ Sirf failed dobara test karo</button>
-    <button class="iconbtn" id="expJ" disabled>⬇ JSON</button>
-    <button class="iconbtn" id="expC" disabled>⬇ CSV</button>
-  </div>
   <div id="list"></div>
 </div>
 
@@ -180,52 +148,24 @@ try { $('url').value = localStorage.getItem('ey_test_url') || DEFAULT_URL; } cat
 const base = () => $('url').value.trim().replace(/\/+$/, '');
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 
-const info = {};            // id -> {at, msg, ok, results[]}
-const cfg = { timeout: 50, par: 2, auto: 0, allKeys: false };
-let filter = 'all', q = '', timer = null, running = false;
-const st = (m) => res[m.id] || (m.state === 'ok' ? 'new' : 'skip');
-const sec = (ms) => (ms / 1000).toFixed(1) + 's';
-const clock = (t) => new Date(t || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-const avgMs = (i) => { const r = i.results.filter((x) => x.ok); return r.length ? r.reduce((a, x) => a + x.ms, 0) / r.length : 0; };
-
-function hint(r) {
-  if (r.ok) return '';
-  if (r.timeout) return 'Model bahut slow hai ya down hai. Timeout badha ke dekho.';
-  if (r.net) return 'Server tak request nahi pahunchi: URL, internet ya CORS check karo.';
-  const c = r.status;
-  if (c === 401 || c === 403) return 'API key galat, expire ya is model ke liye allowed nahi hai.';
-  if (c === 404) return 'Model ka naam galat hai ya provider ne model hata diya hai.';
-  if (c === 429) return 'Rate limit ya free quota khatam. Thodi der baad ya doosri key se try karo.';
-  if (c >= 500) return 'Provider ki taraf se problem hai. Thodi der baad dobara try karo.';
-  if (c === 400) return 'Request galat hai: model naam ya message format check karo.';
-  return '';
-}
-
 function summary() {
   const total = models.length;
   const ok = Object.values(res).filter((v) => v === 'ok').length;
   const bad = Object.values(res).filter((v) => v === 'bad').length;
-  const t = Object.values(info).filter((i) => i.ok).map(avgMs);
-  const avg = t.length ? sec(t.reduce((a, x) => a + x, 0) / t.length) : '–';
   const box = $('sum'); box.innerHTML = '';
-  [['Total', total, ''], ['Working', ok, 'ok'], ['Failed', bad, 'bad'], ['Pending', total - ok - bad, ''], ['Avg time', avg, '']].forEach(([l, n, c]) => {
-    const d = el('div', 'stat ' + c); d.appendChild(el('b', '', n)); d.appendChild(el('span', '', l)); box.appendChild(d);
+  [['Total', total, ''], ['Working', ok, 'ok'], ['Failed', bad, 'bad'], ['Pending', total - ok - bad, '']].forEach(([l, n, c]) => {
+    const s = el('div', 'stat ' + c); s.appendChild(el('b', '', n)); s.appendChild(el('span', '', l)); box.appendChild(s);
   });
-  $('retry').disabled = !bad || running; $('expJ').disabled = $('expC').disabled = !Object.keys(info).length;
 }
 
 function paintOut(id) {
   const o = $('o_' + id), row = $('m_' + id); if (!o || !row) return;
-  const r = outs[id], m = models.find((x) => x.id === id), i = info[id];
+  const r = outs[id], m = models.find((x) => x.id === id);
   row.dataset.s = r ? r.kind : (m && m.state === 'ok' ? 'idle' : 'skip');
-  const mt = $('mt_' + id);
-  if (mt && m && i) mt.textContent = (i.ok ? 'Working' : 'Failed') + ' · ' + clock(i.at) + (i.ok ? ' · ' + sec(avgMs(i)) : '');
   if (!r) { o.hidden = true; return; }
   o.hidden = false; o.className = 'out ' + r.kind; o.innerHTML = '';
-  const h = el('div', 'oh'); h.appendChild(el('span', '', r.head));
-  const rt = el('span', '', r.right ? r.right + ' ' : '');
-  if (r.kind !== 'load') { const c = el('button', 'cp', 'Copy'); c.onclick = () => { try { navigator.clipboard.writeText(r.text); c.textContent = 'Copied'; } catch (e) { c.textContent = 'Copy fail'; } }; rt.appendChild(c); }
-  h.appendChild(rt); o.appendChild(h); o.appendChild(el('div', 'ob', r.text));
+  const h = el('div', 'oh'); h.appendChild(el('span', '', r.head)); if (r.right) h.appendChild(el('span', '', r.right));
+  o.appendChild(h); o.appendChild(el('div', 'ob', r.text));
 }
 function setOut(id, kind, head, text, right) { outs[id] = { kind, head, text, right }; paintOut(id); }
 
@@ -245,20 +185,18 @@ function render() {
 
   const box = $('list'); box.innerHTML = '';
   if (!cur) { box.appendChild(el('div', 'empty', 'Koi model nahi mila. Connection check karo ya env vars dekho.')); summary(); return; }
-  const all = groups[cur];
-  const g = all.filter((m) => (!q || (m.company + ' ' + m.model).toLowerCase().includes(q)) && (filter === 'all' || st(m) === filter));
+  const g = groups[cur];
   const head = el('div', 'cohead'); head.appendChild(el('h2', '', cur));
-  head.appendChild(el('span', '', all.length + ' models · ' + all[0].keys + ' key')); box.appendChild(head);
+  head.appendChild(el('span', '', g.length + ' models · ' + g[0].keys + ' key')); box.appendChild(head);
   const list = el('div', 'list');
-  if (!g.length) list.appendChild(el('div', 'empty', 'Is filter mein koi model nahi hai.'));
   g.forEach((m) => {
     const d = el('div', 'm'); d.id = 'm_' + m.id;
     const top = el('div', 'top'); top.appendChild(el('span', 'dot'));
-    const inf = el('div', 'info'); inf.appendChild(el('div', 'name', m.model));
-    const mt = el('div', 'meta', m.state === 'ok' ? 'Ready, abhi test nahi hua' : 'Skipped (' + m.state + ')'); mt.id = 'mt_' + m.id; inf.appendChild(mt); top.appendChild(inf);
+    const info = el('div', 'info'); info.appendChild(el('div', 'name', m.model));
+    info.appendChild(el('div', 'meta', m.state === 'ok' ? 'Ready' : 'Skipped (' + m.state + ')')); top.appendChild(info);
     const ctl = el('div', 'ctl'); let sel = null;
-    if (m.keys > 1) { sel = el('select'); for (let i = 0; i < m.keys; i++) { const o = el('option', '', 'Key ' + (i + 1)); o.value = i; sel.appendChild(o); } const oa = el('option', '', 'All keys'); oa.value = 'all'; sel.appendChild(oa); ctl.appendChild(sel); }
-    const b = el('button', 'send', 'Send'); b.onclick = () => runModel(m, b, sel ? sel.value : 0);
+    if (m.keys > 1) { sel = el('select'); for (let i = 0; i < m.keys; i++) { const o = el('option', '', 'Key ' + (i + 1)); o.value = i; sel.appendChild(o); } ctl.appendChild(sel); }
+    const b = el('button', 'send', 'Send'); b.onclick = () => testOne(m, b, sel ? sel.value : 0);
     ctl.appendChild(b); top.appendChild(ctl); d.appendChild(top);
     const out = el('div', 'out'); out.id = 'o_' + m.id; out.hidden = true; d.appendChild(out);
     list.appendChild(d);
@@ -280,7 +218,7 @@ async function load() {
       return { id: x.id, company: x.id.slice(0, i), model: x.id.slice(i + 1), keys: x.keys, state: x.state };
     });
     Object.keys(res).forEach((k) => delete res[k]);
-    Object.keys(outs).forEach((k) => delete outs[k]); Object.keys(info).forEach((k) => delete info[k]);
+    Object.keys(outs).forEach((k) => delete outs[k]);
     const cn = new Set(models.map((m) => m.company)).size;
     $('msg').textContent = models.length ? models.length + ' models · ' + cn + ' companies' : '⚠️ Koi model set nahi hai. Env vars check karo.';
     $('all').disabled = $('co').disabled = !models.length;
@@ -293,75 +231,43 @@ async function load() {
   $('load').disabled = false;
 }
 
-async function callOne(m, key, msg) {
-  const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), cfg.timeout * 1000); const t0 = Date.now();
-  try {
-    const r = await fetch(base() + '/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target: m.id, key, prompt: msg }), signal: ctl.signal });
-    const j = await r.json();
-    return j.ok ? { ok: true, ms: j.ms || Date.now() - t0, text: j.text, key: j.key || key + 1 }
-      : { ok: false, ms: Date.now() - t0, status: j.status, error: j.error || 'unknown', key: j.key || key + 1 };
-  } catch (e) {
-    const to = e.name === 'AbortError';
-    return { ok: false, ms: Date.now() - t0, error: to ? 'Timeout: ' + cfg.timeout + 's mein response nahi aaya.' : e.message, timeout: to, net: !to, key: key + 1 };
-  } finally { clearTimeout(tm); }
-}
-
-async function runModel(m, btn, key) {
-  const msg = $('prompt').value.trim() || 'Hi';
-  const keys = key === 'all' ? [...Array(m.keys).keys()] : [parseInt(key) || 0];
+async function testOne(m, btn, key) {
+  const msgText = $('prompt').value.trim() || 'Hi';
   setOut(m.id, 'load', 'Response aa raha hai…', '');
   if (btn) btn.disabled = true;
-  const rs = []; for (const k of keys) rs.push(await callOne(m, k, msg));
-  const ok = rs.every((r) => r.ok), bad = rs.find((r) => !r.ok);
-  info[m.id] = { at: Date.now(), msg, ok, results: rs }; res[m.id] = ok ? 'ok' : 'bad';
-  const fmt = (r) => r.ok ? r.text : r.error + (hint(r) ? '\n→ ' + hint(r) : '');
-  const text = rs.length > 1 ? rs.map((r) => 'Key ' + r.key + ' · ' + (r.ok ? '✅ ' + sec(r.ms) : '❌') + '\n' + fmt(r)).join('\n\n') : fmt(rs[0]);
-  setOut(m.id, ok ? 'ok' : 'bad', ok ? 'Working' : 'Failed' + (bad.status ? ' · HTTP ' + bad.status : ''), text, ok ? sec(avgMs(info[m.id])) : '');
+  const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 50000);
+  try {
+    const r = await fetch(base() + '/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target: m.id, key: parseInt(key) || 0, prompt: msgText }), signal: ctl.signal });
+    const j = await r.json();
+    if (j.ok) {
+      res[m.id] = 'ok';
+      setOut(m.id, 'ok', 'Working', j.text, (j.ms / 1000).toFixed(1) + 's' + (m.keys > 1 ? ' · key ' + j.key : ''));
+    } else {
+      res[m.id] = 'bad';
+      setOut(m.id, 'bad', 'Failed' + (j.status ? ' · HTTP ' + j.status : '') + (m.keys > 1 && j.key ? ' · key ' + j.key : ''), j.error || 'unknown');
+    }
+  } catch (e) {
+    res[m.id] = 'bad';
+    setOut(m.id, 'bad', 'Failed', e.name === 'AbortError' ? 'Timeout: 50s mein response nahi aaya.' : e.message);
+  }
+  clearTimeout(tm);
   if (btn) btn.disabled = false;
   summary();
 }
 
 async function testAll(list) {
-  if (running || !list.length) return;
-  running = true; $('all').disabled = $('co').disabled = $('load').disabled = true; summary();
+  $('all').disabled = $('co').disabled = $('load').disabled = true;
   const queue = list.slice();
-  const worker = async () => { while (queue.length) { const m = queue.shift(); await runModel(m, null, cfg.allKeys && m.keys > 1 ? 'all' : 0); } };
-  await Promise.all(Array.from({ length: cfg.par }, worker));
-  running = false; $('msg').textContent = 'Last run: ' + clock() + (cfg.auto ? ' · auto-check har ' + cfg.auto + ' min' : '');
-  $('all').disabled = $('co').disabled = $('load').disabled = false; summary();
+  const worker = async () => { while (queue.length) { const m = queue.shift(); await testOne(m, null, 0); } };
+  await Promise.all([worker(), worker()]);
+  $('msg').textContent = 'Sab responses aa gaye.';
+  $('all').disabled = $('co').disabled = $('load').disabled = false;
 }
-
-function exportData(kind) {
-  const rows = models.map((m) => {
-    const i = info[m.id], b = i && i.results.find((r) => !r.ok);
-    return { company: m.company, model: m.model, state: m.state, result: i ? (i.ok ? 'ok' : 'failed') : 'untested', avg_ms: i && i.ok ? Math.round(avgMs(i)) : '', http_status: (b && b.status) || '', error: b ? b.error : '', tested_at: i ? new Date(i.at).toISOString() : '', prompt: i ? i.msg : '' };
-  });
-  const csv = [Object.keys(rows[0]).join(',')].concat(rows.map((r) => Object.values(r).map((v) => '"' + String(v).replace(/"/g, '""') + '"').join(','))).join('\n');
-  const blob = new Blob([kind === 'json' ? JSON.stringify(rows, null, 2) : csv], { type: kind === 'json' ? 'application/json' : 'text/csv' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'ai-test-' + new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '') + '.' + kind; a.click(); URL.revokeObjectURL(a.href);
-}
-
-function applyCfg() {
-  cfg.timeout = Math.min(120, Math.max(5, parseInt($('cfgTimeout').value) || 50));
-  cfg.par = parseInt($('cfgPar').value) || 2; cfg.auto = parseInt($('cfgAuto').value) || 0; cfg.allKeys = $('cfgKeys').checked;
-  try { localStorage.setItem('ey_cfg', JSON.stringify(cfg)); } catch (e) {}
-  clearInterval(timer); timer = null;
-  if (cfg.auto) timer = setInterval(() => testAll(models.filter((m) => m.state === 'ok')), cfg.auto * 60000);
-  $('msg').textContent = cfg.auto ? 'Auto-check on: har ' + cfg.auto + ' min' : $('msg').textContent;
-}
-try { const c = JSON.parse(localStorage.getItem('ey_cfg') || 'null'); if (c) { $('cfgTimeout').value = c.timeout; $('cfgPar').value = c.par; $('cfgAuto').value = c.auto; $('cfgKeys').checked = c.allKeys; } } catch (e) {}
-['cfgTimeout', 'cfgPar', 'cfgAuto', 'cfgKeys'].forEach((id) => $(id).addEventListener('change', applyCfg));
-applyCfg();
-$('q').addEventListener('input', (e) => { q = e.target.value.trim().toLowerCase(); render(); });
-$('chips').addEventListener('click', (e) => { const f = e.target.dataset.f; if (!f) return; filter = f; document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('on', c.dataset.f === f)); render(); });
-$('retry').onclick = () => testAll(models.filter((m) => res[m.id] === 'bad'));
-$('expJ').onclick = () => exportData('json'); $('expC').onclick = () => exportData('csv');
 
 $('load').onclick = load;
 $('gear').onclick = () => { const h = !$('conn').hidden; $('conn').hidden = h; $('gear').setAttribute('aria-expanded', String(!h)); };
-$('all').onclick = () => testAll(models.filter((m) => m.state === 'ok'));
-$('co').onclick = () => testAll(models.filter((m) => m.company === cur && m.state === 'ok'));
+$('all').onclick = () => testAll(models);
+$('co').onclick = () => testAll(models.filter((m) => m.company === cur));
 $('prompt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !$('co').disabled) $('co').click(); });
 $('prompt').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 140) + 'px'; });
 summary();
