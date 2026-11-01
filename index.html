@@ -1072,6 +1072,7 @@ button,.icon-btn,.drop{-webkit-tap-highlight-color:transparent}
 .mode-caption,.m-desc,#manualDetail .note{display:none!important}
   /* ===== Collapsed instructions (tap to read) ===== */
   details.cx { margin: 8px 0; }
+  details.cx { display: none !important; }   /* every "ℹ️ Info" button is hidden for a cleaner page (the text stays in the page; delete this line to bring them back) */
   details.cx > summary { cursor: pointer; list-style: none; font-size: 0.74rem; color: var(--ink-faint); padding: 4px 0; user-select: none; -webkit-tap-highlight-color: transparent; }
   details.cx > summary::-webkit-details-marker { display: none; }
   details.cx > summary::after { content: " ▸"; }
@@ -1606,6 +1607,10 @@ body::before{content:"";position:fixed;inset:-15% -10%;z-index:-1;pointer-events
 .ey-opt-k{width:20px;text-align:center;font-weight:800;color:var(--g5);opacity:0}
 .ey-opt.on .ey-opt-k{opacity:1}
 
+/* ---- Background generation status line (inside the quiz header) ---- */
+.ey-bg{margin:4px 2px 0;padding:5px 10px;border-radius:10px;font-size:.74rem;font-weight:700;line-height:1.3;color:var(--ink-dim);background:color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
+.ey-bg[hidden]{display:none}
+.ey-bg.bad{color:var(--coral);border-color:var(--coral);cursor:pointer}
 /* ---- Popup ---- */
 .ey-pop{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,4,20,.62);backdrop-filter:blur(6px)}
 .ey-pop[hidden]{display:none}
@@ -3101,7 +3106,8 @@ function autoSetQuestionCount() {
   try {
     const pages = countExtractedPages(rawExtractedText || (resultText && resultText.value));
     if (!pages) return;
-    const q = Math.max(1, pages * 10);
+    let q = Math.max(1, pages * 10);
+    if (typeof eyActive !== 'undefined' && eyActive && typeof EY_MAX_Q !== 'undefined') q = Math.min(q, EY_MAX_Q);   // Exam Yatri: never auto-fill above the cap
     const el = document.getElementById('numQuestionsManual');
     if (el) el.value = q;
   } catch (e) {}
@@ -3171,6 +3177,7 @@ function buildExamResearchBlock(examName, mode) {
 The student did not name an exam. So first read the notes and decide: (a) the subject, (b) the academic level (school / board / college / entrance / postgraduate / government job / professional), (c) the standard question style of a typical competitive exam on that subject at that level. Then write every question in that style and at that level.
 `;
   }
+  if (typeof eyActive !== 'undefined' && eyActive && EY_LEAN_PROMPT) return `STEP 0 - EXAM PROFILE (silent; never print it): the student's exam is "${examName}" (the name may include year, stage, paper or subject; use all of it). From your own knowledge recall its real (1) paper pattern and question formats, (2) how real previous-year questions are worded (stem length, traps, distractor style, skills tested), (3) latest trend and syllabus shifts, (4) real difficulty level, (5) repeatedly tested high-yield topics. Write EVERY question to MATCH that pattern, wording and level, using ONLY the topics of the source text${rev ? ' (in this SIMPLE mode keep stems short and direct, but the facts and level still come from the exam profile)' : ''}. Never invent past questions, years, marks or statistics, and never copy a real question word for word. If you do not know the exam well, infer level and style from its name and the notes. The source text still decides WHAT is tested and the correct answer.\n`;
   return `STEP 0 - EXAM ANALYSIS (do this silently BEFORE writing any question; never print it in your reply):
 The student's exam is "${examName}" (the name may include a year, stage, paper or subject, e.g. "NEET UG 2025", "JEE Main Physics", "CBSE Class 10 Maths"; use all of it). Use your own knowledge of this exam. Work out these 5 points first:
  1. PATTERN: paper structure, sections/subjects, question formats it really uses (single-correct MCQ, multi-correct, numerical/integer type, statement-based, assertion-reason, match-the-following, passage/case/data based), usual length and wording of the question stem, number of options.
@@ -3189,6 +3196,7 @@ ANALYSIS RULES:
 
 function buildQuizInstruction(n, maxCap, mode, srcText, tier, startNum, examName) {
   examName = (examName && examName.trim()) ? examName.trim() : DEFAULT_EXAM_NAME;
+  const eyLean = typeof eyActive !== 'undefined' && eyActive && EY_LEAN_PROMPT;   // Exam Yatri only: copy-paste AI sites keep the full wording
   mode = (mode === 'revision') ? 'revision' : 'exam';
   const cap = maxCap || 15;
   const count = Math.max(1, Math.min(cap, parseInt(n) || 10));
@@ -3375,7 +3383,8 @@ LEVEL: every question must match the difficulty and style of ${examName} exam. N
     // Default fallback — generic academic MCQ
     return `EXAM STYLE: Write well-framed single-best-answer MCQs appropriate to the academic level of "${name}". Stems should be concise and test understanding, not rote memorisation. All four options must be plausible. Mix direct-recall, application, and exception-type questions proportionally.`;
   }
-  const examStyleProfile = rev ? '' : `\nEXAM-SPECIFIC STYLE HINT (a rough guide from the app; if it differs from the real latest pattern of ${examName} that you found in STEP 0, FOLLOW THE REAL PATTERN):\n${isUnnamedExam(examName) ? 'EXAM STYLE: standard single-best-answer MCQs of the subject and level found in the notes.' : getExamStyleProfile(examName)}\n`;
+  const eyProf = x => eyLean ? x.replace(/\s*Difficulty: \d+% easy, \d+% medium, \d+% hard\./, '').replace(/\s*\d+% hard, \d+% medium, \d+% easy\./, '') : x;   // the task below already fixes the easy/medium/hard mix
+  const examStyleProfile = rev ? '' : `\nEXAM-SPECIFIC STYLE HINT (a rough guide from the app; if it differs from the real latest pattern of ${examName} that you found in STEP 0, FOLLOW THE REAL PATTERN):\n${isUnnamedExam(examName) ? 'EXAM STYLE: standard single-best-answer MCQs of the subject and level found in the notes.' : eyProf(getExamStyleProfile(examName))}\n`;
 
   const examTask = `ROLE: You are a senior ${examName} paper-setter and subject-matter expert. Write ${count} COMPLEX questions that feel like real previous-year ${examName} questions (same pattern, wording style, level and latest trend as found in STEP 0).
 
@@ -3399,9 +3408,9 @@ HOW TO WRITE EACH QUESTION:
 6. One question per concept set; the concept sets come from the most important topics of the WHOLE text (see the SELECTION / COVERAGE RULE above), not from the first pages only; no near-duplicates; never plain recall like "X is seen in?".
 6b. VARIETY: include a good share of reasoning patterns that ${examName} really asks (for example: cause and effect, method selection, exception to a rule, application of a formula or principle, data/figure interpretation; for medical exams also diagnosis from findings, next best step, mechanism, drug choice with its adverse effect, complication), plus "all EXCEPT" and differentiating two look-alike items. Do not repeat the same pattern in a row.
 7. "source_evidence": an ARRAY with ONE short exact phrase (max 15 words) per concept used, copied EXACTLY as written in the source (not translated, not reworded). If you cannot find supporting text for a concept, do not use it. The app works out page numbers itself.
-8. Explanation: 3-5 sentences - why the correct answer is right and why the most tempting wrong option is wrong${count > 30 ? ' (for this long quiz keep it to 2-3 sentences so the whole reply fits in one message)' : ''}.
+8. Explanation: ${eyLean ? '2-3' : '3-5'} sentences - why the correct answer is right and why the most tempting wrong option is wrong${(count > 30 && !eyLean) ? ' (for this long quiz keep it to 2-3 sentences so the whole reply fits in one message)' : ''}.
 `;
-  const revExamStyle = getExamStyleProfile(examName).replace(/^EXAM-SPECIFIC STYLE INSTRUCTIONS:\n/, '');
+  const revExamStyle = eyProf(getExamStyleProfile(examName)).replace(/^EXAM-SPECIFIC STYLE INSTRUCTIONS:\n/, '');
   const revisionTask = `ROLE: You are a revision-quiz maker. Write ${count} quick-revision questions that together revise EVERY part of the notes (important parts get more questions) at ${examName} level.
 
 EXAM CONTEXT (rough hint; the real pattern from STEP 0 wins): ${isUnnamedExam(examName) ? 'standard single-best-answer MCQs of the subject and level found in the notes.' : revExamStyle}
@@ -3539,7 +3548,7 @@ STYLE REFERENCE (shows the layout, style and difficulty only - do not reuse its 
 ${yaiQExamples}
 
 OUTPUT FORMAT - CRITICAL:
-Think through each question carefully BEFORE writing it. Then write your reply as PLAIN TEXT in exactly the layout below: no JSON, no code block, no markdown (no bold, no # headings, no bullets, no tables), no intro, no closing remarks. Write ALL ${count} questions one after another directly in chat. Do NOT use Canvas / Docs / a file or download / an attachment / a tool, and never delete, hide or replace your reply after writing it.
+Think through each question carefully BEFORE writing it. Then write your reply as PLAIN TEXT in exactly the layout below: no JSON, no code block, no markdown (no bold, no # headings, no bullets, no tables), no intro, no closing remarks. Write ALL ${count} questions one after another${eyLean ? '.' : ' directly in chat. Do NOT use Canvas / Docs / a file or download / an attachment / a tool, and never delete, hide or replace your reply after writing it.'}
 
 Each question is a block. Every field sits on its OWN line and starts with its tag, a colon and a space. A field is ONE line. The only structural closing marker is the single standalone line =END, which MUST appear after the final question. Do not use any other closing symbols. The header line =Q<number> is REQUIRED for every question (numbers run from ${startN} to ${endN}). The lines A-D exist for MCQ only. Copy this skeleton:
 
@@ -3550,7 +3559,7 @@ B: option B text
 C: option C text
 D: option D text
 ANS: correct answer - one letter A-D for MCQ, True or False for true/false, the answer text for fill-in-blank
-CON: 2-4 short sentences in SIMPLE language, from YOUR OWN knowledge: the concept, logic and understanding behind this question, and why the closest wrong option is wrong, so a student who reads it fully understands the topic (never copy EV)
+CON: ${eyLean ? '2-3' : '2-4'} short sentences in SIMPLE language, from YOUR OWN knowledge: the concept, logic and understanding behind this question, and why the closest wrong option is wrong, so a student who reads it fully understands the topic (never copy EV)
 EV: exact phrase (max 15 words) copied EXACTLY from the source text, untranslated
 PG: page number from the --- Page N --- / [S.. | p.N] marker (several pages: 12,45) - never guess
 LV: easy or medium${rev ? '' : ' or hard'}
@@ -3664,7 +3673,7 @@ function segSelectionRule(tier, count, examName, mode) {
   const rev = mode === 'revision';
   return `SEGMENT PLAN (PART ${tier.k} of ${tier.P}): the notes are cut into numbered segments; each starts with a marker like [S12 | p.5]. The app decided WHICH segments this part covers and a STARTING number of questions for each. Its HIGH/MEDIUM/LOW tags are only a ROUGH guess from keywords - the app cannot judge exam relevance, YOU can. All other segments are covered by other parts, so every corner of the notes is revised.
 ${list}
-1. Write exactly the number of questions listed for each segment (total ${count}). Do not skip a listed segment and do not use unlisted segments${rev ? '' : ' as the main topic (a question may pull ONE related fact from any other segment to make a mixed-topic question)'}.
+1. Write exactly the number of questions listed for each segment (total ${count}). Do not skip a listed segment and do not use unlisted segments${(rev || tier.slim) ? '' : ' as the main topic (a question may pull ONE related fact from any other segment to make a mixed-topic question)'}.
 2. If a segment has x2 or x3, the questions must test DIFFERENT lines/facts of that segment. NEVER ask the same line or fact twice, not even from another angle.
 3. If a segment has fewer distinct testable facts than its quota, write only what it has and give the extra questions to unused facts of other listed segments (total stays ${count}). A segment with nothing testable (blank, figure-only, index) is replaced the same way.
 4. In every question set "seg" = the ID(s) of the segment(s) holding the tested facts and "page" = the page in that segment's marker (copy it, never guess). "source_evidence" must be copied from inside those segments.
@@ -3685,6 +3694,11 @@ function coverageOfQuiz(list) {
   const miss = sp.segs.filter(s => !hit.has(s.id));
   return { done: hit.size, S: sp.S, pages: [...new Set(miss.map(s => s.page).filter(Boolean))].sort((a, b) => a - b), highMiss: miss.filter(s => s.w === 3).length };
 }
+// Exam Yatri: notes text of ONLY the given segment ids, same marker format as planSegments' sp.marked (so PG / SEG / EV rules still hold)
+function eyMarkedFor(sp, ids) {
+  const want = new Set((ids || []).map(o => o.id)); let lastPg = null;
+  return sp.segs.filter(sg => want.has(sg.id)).map(sg => (sg.page && sg.page !== lastPg ? (lastPg = sg.page, '--- Page ' + sg.page + ' ---\n') : '') + '[' + sg.id + (sg.page ? ' | p.' + sg.page : '') + ']\n' + sg.text).join('\n\n');
+}
 function planManualParts(srcText, N) {
   const lang = quizLangKind(getQuizLangPref());
   // Exam Yatri (direct API): smaller, evenly sized parts => better question quality and no cut-off replies
@@ -3693,11 +3707,16 @@ function planManualParts(srcText, N) {
   const capQ = ey ? ((lang === 'english' || lang === 'hindi') ? 20 : 15) : 25;   // copy-paste flow keeps 25 per reply
   const evenSplit = (N, P) => { const b = Math.floor(N / P), x = N - b * P; return Array.from({ length: P }, (_, k) => b + (k < x ? 1 : 0)); };
   const splitQ = (N, P) => ey ? evenSplit(N, P) : splitCounts(N, P, capQ);
+  // Exam Yatri: a SMALL first part (EY_FIRST_Q questions) so the quiz can start in a few seconds;
+  // the remaining parts are generated in the background while the student already plays.
+  const eyHead = (ey && N > EY_FIRST_Q + 2) ? EY_FIRST_Q : 0;
   if (String(srcText || '').length <= MANUAL_MAX_TEXT) {
-    const P = Math.max(1, Math.ceil(N / capQ));
-    const counts = splitQ(N, P);
+    const counts = eyHead
+      ? [eyHead, ...evenSplit(N - eyHead, Math.max(1, Math.ceil((N - eyHead) / capQ)))]
+      : splitQ(N, Math.max(1, Math.ceil(N / capQ)));
+    const P = counts.length;
     const sp = planSegments(String(srcText || ''), N, counts);
-    return counts.map((q, k) => ({ tier: P > 1, text: srcText, q, from: '', to: '', i: k + 1, P, label: 'mixed pages', nPages: sp.S, must: [], segs: sp.parts[k], marked: sp.marked }));
+    return counts.map((q, k) => ({ tier: P > 1, text: srcText, q, from: '', to: '', i: k + 1, P, label: 'mixed pages', nPages: sp.S, must: [], segs: sp.parts[k], marked: (ey && EY_SLICE_NOTES && sp.parts[k].length) ? eyMarkedFor(sp, sp.parts[k]) : sp.marked }));
   }
   const pages = splitPagesText(srcText);
   const P = Math.min(pages.length, Math.max(1, Math.ceil(String(srcText || '').length / MANUAL_MAX_TEXT), Math.ceil(N / capQ)));
@@ -3714,12 +3733,19 @@ function planManualParts(srcText, N) {
   if (cur.length) groups.push(cur);
   const G = groups.length;
   const counts = splitQ(N, G);
-  return groups.map((g, idx) => {
+  const outParts = [];
+  groups.forEach((g, idx) => {
     const q = counts[idx];
     const first = (g[0].match(/--- Page (\d+) ---/) || [])[1] || '';
     const last = (g[g.length - 1].match(/--- Page (\d+) ---/) || [])[1] || '';
-    return { text: g.join(''), q, from: first, to: last, i: idx + 1, P: G };
+    const txt = g.join('');
+    if (idx === 0 && eyHead && q > eyHead) {   // split group 1: small starter part + the rest of its quota
+      outParts.push({ text: txt, q: eyHead, from: first, to: last });
+      outParts.push({ text: txt, q: q - eyHead, from: first, to: last });
+    } else outParts.push({ text: txt, q, from: first, to: last });
   });
+  outParts.forEach((o, k) => { o.i = k + 1; o.P = outParts.length; });
+  return outParts;
 }
 // Exact source lines already used by earlier parts (from each question's verified source_evidence),
 // so a later part can be told precisely which lines are off-limits — not just "don't repeat this question"
@@ -3732,20 +3758,23 @@ function usedLinesOf(prev) {
 function buildTierPrompt(pt, prev, srcText, mode, examName) {
   examName = (examName && examName.trim()) ? examName.trim() : DEFAULT_EXAM_NAME;
   const excl = prev.slice(-100).map(q => '- ' + String(q.question).replace(/\s+/g, ' ').slice(0, 70)).join('\n');
-  const usedLines = usedLinesOf(prev);
+  const eySlim = typeof eyActive !== 'undefined' && eyActive && EY_SLICE_NOTES && pt.segs && pt.segs.length;   // Exam Yatri: parts own DISJOINT segments, so earlier lines can never come back
+  const usedLines = eySlim ? [] : usedLinesOf(prev);
   let head = 'TASK: PART ' + pt.i + ' of ' + pt.P + ' (mixed pages). Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from the study notes below. The whole quiz of ' + lastRequestedCount + ' questions is written in ' + pt.P + ' parts. EVERY part samples the WHOLE notes (random pages, important topics a little more often) and together the parts cover every page. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.';
-  if (pt.P > 1) head += '\n\nIf more parts follow in this chat, they will arrive as short messages later: in THIS reply write ONLY part ' + pt.i + '.';
+  if (eySlim) head = 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from the study-note segments below (the segments chosen for this part; the other parts cover the rest of the notes). The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.';
+  else if (pt.P > 1) head += '\n\nIf more parts follow in this chat, they will arrive as short messages later: in THIS reply write ONLY part ' + pt.i + '.';
   if (excl) head += '\n\nQUESTIONS ALREADY MADE (do NOT repeat these or their concepts):\n' + excl;
   if (usedLines.length) head += '\n\nSOURCE LINES ALREADY USED BY EARLIER PARTS (these exact lines already gave a question \u2014 this part MUST pick DIFFERENT lines/facts; do not build a new question from any line below, even with a different angle):\n' + usedLines.slice(-150).map(e => '- ' + e).join('\n');
-  return head + '\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (pt.marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 1000000, mode || 'exam', srcText, { k: pt.i, P: pt.P, must: pt.must, nPages: pt.nPages, usedLines, segs: pt.segs }, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
+  return head + '\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (pt.marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 1000000, mode || 'exam', srcText, { k: pt.i, P: pt.P, must: pt.must, nPages: pt.nPages, usedLines, segs: pt.segs, slim: !!eySlim }, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
 }
-function getManualPromptText(mode, partIdx) {
-  const n = document.getElementById('numQuestionsManual').value;
-  const srcText = (resultText.value || rawExtractedText).trim();
+function getManualPromptText(mode, partIdx, frozen) {
+  // frozen (Exam Yatri background run) = { parts, N, src }: the plan made for part 1 is reused as-is, never re-planned
+  const n = frozen ? String(frozen.N) : document.getElementById('numQuestionsManual').value;
+  const srcText = frozen ? frozen.src : (resultText.value || rawExtractedText).trim();
   const qn = Math.max(1, parseInt(n) || 10);
   const examName = getExamName(true);
   if (!isUnnamedExam(examName)) localStorage.setItem('yai_examName', examName);
-  const parts = planManualParts(srcText, qn);
+  const parts = frozen ? frozen.parts : planManualParts(srcText, qn);
   manualPartsExpected = parts.length; manualPartsPlan = parts; lastRequestedCount = qn;
   try { localStorage.setItem('yai_pending', JSON.stringify({ n: qn, ts: Date.now() })); } catch (e) {}
   if (parts.length === 1) {
@@ -3756,7 +3785,12 @@ function getManualPromptText(mode, partIdx) {
     const prev = (collectedRaw && pt.i > 1) ? normalizeQuiz(lenientParse(collectedRaw) || []) : [];
     return buildTierPrompt(pt, prev, srcText, mode, examName);
   }
-  return 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from ONLY the study notes below (pages ' + pt.from + '-' + pt.to + '). The other pages are handled in other parts, so cover THIS text completely: every important topic of these pages must be represented. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES PART ' + pt.i + '/' + pt.P + ' (OCR-extracted) ===\n' + pt.text.trim() + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 1000000, mode || 'exam', pt.text, null, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
+  let exclBlock = '';
+  if (frozen && collectedRaw && pt.i > 1) {   // Exam Yatri: earlier parts may share these pages (starter split) => tell the AI what already exists
+    const prevL = normalizeQuiz(lenientParse(collectedRaw) || []);
+    if (prevL.length) exclBlock = '\n\nQUESTIONS ALREADY MADE (do NOT repeat these or their concepts):\n' + prevL.slice(-100).map(q => '- ' + String(q.question).replace(/\s+/g, ' ').slice(0, 70)).join('\n');
+  }
+  return 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from ONLY the study notes below (pages ' + pt.from + '-' + pt.to + '). The other pages are handled in other parts, so cover THIS text completely: every important topic of these pages must be represented. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.' + exclBlock + '\n\n=== STUDY NOTES PART ' + pt.i + '/' + pt.P + ' (OCR-extracted) ===\n' + pt.text.trim() + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 1000000, mode || 'exam', pt.text, null, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
 }
 // ---- Mixed parts: every part samples the WHOLE notes. The app deals random "must-cover" pages to the parts, so the union covers all pages. ----
 let _mustCache = { key: '', order: [] };
@@ -4292,6 +4326,7 @@ function resumeSavedQuiz(id) {
   if (!Array.isArray(rec.quizData) || !rec.quizData.length || !Array.isArray(rec.userAnswers)) { showToast('Ye saved quiz kharab hai \u2014 delete kar do'); return; }
   closeSavedQuizzesModal();
   if (aiAbortController) aiAbortController.abort();
+  try { eyBgStop(); } catch (e) {}
   quizData = rec.quizData;
   userAnswers = rec.userAnswers;
   currentQ = Math.min(rec.currentQ || 0, quizData.length - 1);
@@ -5289,6 +5324,26 @@ function fuzzyIncludes(haystack, needle) {
   }
   return false;
 }
+// Exam Yatri page accuracy: the page comes from the notes' own "--- Page N ---" markers (and the [S.. | p.N] segment markers), never from the AI's typed PG alone.
+// hint = pages of the segments the AI says it used + the AI's own PG numbers, but ONLY numbers that really exist in the notes.
+function eyPageHint(raw, claim, sp) {
+  const real = new Set((_srcIdx || []).map(p => String(p.n)));
+  const segPages = (sp && claim.length) ? sp.segs.filter(sg => claim.some(c => c.toUpperCase() === sg.id)).map(sg => String(sg.page || '')).filter(Boolean) : [];
+  const aiPages = (String(raw.source_page || raw.page || '').match(/\d+/g) || []).filter(n => real.has(n));
+  return { segPages: [...new Set(segPages)], aiPages: [...new Set(aiPages)] };
+}
+// Same search as verifyEvidence, but when the phrase sits on several pages it takes ALL hits and prefers the segment's page, then the AI's PG (verifyEvidence blindly took the first page).
+function eyVerifyEv(ev, hint) {
+  if (!_srcIdx || !_srcIdx.length) return { state: 'na' };
+  const e = flatTxt(ev);
+  if (e.length < 8) return { state: 'no' };
+  const pick = hits => { const h = hits.find(p => hint.segPages.includes(String(p.n))) || hits.find(p => hint.aiPages.includes(String(p.n))) || hits[0]; return { state: 'yes', page: h.n }; };
+  let hits = _srcIdx.filter(p => p.t.includes(e));
+  if (!hits.length && e.length > 24) { const part = e.slice(0, Math.floor(e.length * 0.7)); hits = _srcIdx.filter(p => p.t.includes(part)); }
+  return hits.length ? pick(hits) : verifyEvidence(ev);   // OCR-typo case: the existing fuzzy search
+}
+// Evidence not found anywhere: show only a page that really exists (claimed segment's page, else the AI's PG if it is a real page), otherwise none.
+function eyFallbackPage(hint) { return hint.segPages.length ? hint.segPages.join(', ') : hint.aiPages.join(', '); }
 function verifyEvidence(ev) {
   if (!_srcIdx || !_srcIdx.length) return { state: 'na' };
   const e = flatTxt(ev);
@@ -5451,6 +5506,7 @@ function normalizeQuiz(parsed) {
       else if (a0 !== undefined && a0 !== null && String(a0).trim() && !/^\s*\(?[A-Fa-f]\)?\s*$/.test(String(a0))) { type = 'fill'; lastDrop.fixed++; }
     }
     const _claim = String(raw.seg || '').match(/S\d+/gi) || [], _sp = _segCache.plan;
+    const eyPg = typeof eyActive !== 'undefined' && eyActive, _hint = eyPg ? eyPageHint(raw, _claim, _sp) : null;   // Exam Yatri: app-decided pages
     const vers = [].concat(raw.source_evidence).map(ev => {   // page from the segment the AI claimed first (exact), else search the whole text
       const f = flatTxt(ev);
       if (_sp && _claim.length && f.length >= 8) {
@@ -5458,11 +5514,12 @@ function normalizeQuiz(parsed) {
         const h = cs.find(sg => sg.flat.includes(f)) || (f.length > 24 ? cs.find(sg => sg.flat.includes(f.slice(0, Math.floor(f.length * 0.7)))) : null);
         if (h && h.page) return { state: 'yes', page: h.page };
       }
-      return verifyEvidence(ev);
+      return eyPg ? eyVerifyEv(ev, _hint) : verifyEvidence(ev);
     });
     const pgs = [...new Set(vers.map(v => v.page).filter(Boolean))];
     const ver = vers.some(v => v.state === 'no') ? { state: 'no' } : vers.every(v => v.state === 'na') ? { state: 'na' } : { state: 'yes', page: pgs.join(', '), n: pgs.length };
     if (ver.page) raw.source_page = ver.page;   // real page from the text, not the AI's guess
+    else if (eyPg) raw.source_page = raw.page = eyFallbackPage(_hint);   // Exam Yatri: evidence not found -> never show a page number that does not exist in the notes
     const diffRaw = String(raw.difficulty || '').toLowerCase().trim();
     const base = {
       question, type,
@@ -5592,6 +5649,7 @@ let partsImported = 0;
 let manualRound = 1;
 const MANUAL_MAX_ROUNDS = 3;
 function resetPromptState() {
+  try { eyBgStop(); } catch (e) {}   // a new quiz / reset must never keep generating into the old one
   _segCache = { key: '', plan: null };   // forget everything about the previous prompt/parts so a new paste starts clean
   resetRounds(); manualPartsExpected = 1; manualPartsPlan = []; lastRequestedCount = 0;
   ['partsBar', 'topupBar'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
@@ -5745,8 +5803,13 @@ document.getElementById('cancelAiBtn').addEventListener('click', backFromGenerat
    Add a new company in Val Town -> it shows up here automatically.
    ===================================================================== */
 const EY_MAX_Q = 100;   // max questions per Exam Yatri quiz
+const EY_FIRST_Q = 5;   // quiz starts as soon as this many questions are ready; the rest is generated in the background
+const EY_SLICE_NOTES = true;   // token saver: each part is sent ONLY the notes segments assigned to it (before: the whole notes in every part). false = old behaviour
+const EY_EFFORT = { exam: 'high', revision: 'medium' };   // reasoning depth sent to the gateway per quiz mode (instant | low | medium | high). Only models that support it use it (see main.ts)
+let eyEffort = '';   // set at the start of every quiz run
+const EY_LEAN_PROMPT = true;   // token saver + fewer contradictions: Exam Yatri-only wording trims in the prompt (copy-paste AI sites never see them). false = old wording
 // Appended to every Exam Yatri request: a short self-check that raises question quality without changing the app's own prompt.
-const EY_GATE = '\n\nFINAL QUALITY GATE (do this silently BEFORE you answer; the output format stays exactly as specified above, with nothing added): (1) Re-solve every question using ONLY its source_evidence; if the evidence does not prove the marked answer, or two options could be defended, rewrite or replace that question. (2) Remove any question that is trivial, ambiguous, trick-wording, or about page numbers/headings. (3) Check every question is at the real exam level and the difficulty mix asked above is respected; distractors must be plausible and from the same category. (4) Never repeat a fact or concept already used in this reply or in the lists above. (5) If space is running short, shorten explanations rather than dropping questions, and finish the output completely.';
+const EY_GATE = '\n\nFINAL QUALITY GATE (silent; the output format stays exactly as specified above, nothing added): (1) Re-solve every question from its EV line only; if that evidence does not prove the marked answer, or two options can be defended, rewrite the question. (2) Drop any question that is trivial, trick-worded, or about page numbers/headings. (3) If space runs short, shorten CON - never drop questions - and finish the output completely.';
 const EY_API_URL = 'https://vishalyadav--ac9af586d5c311f1ac7a1607ee4eb77e.web.val.run';   // examyatri-ai val's public URL (no trailing slash)
 let eyActive = false, eyModels = null, eyLoading = false;
 let eyModel = ''; try { eyModel = localStorage.getItem('yai_ey_model') || ''; } catch (e) {}
@@ -5780,6 +5843,17 @@ function eyFriendly(e) {
   return m || 'Kuch gadbad ho gayi. Dobara try karo.';
 }
 
+/* ---- Question cap: one popup (not a silent clamp) whenever a student asks Exam Yatri for more than EY_MAX_Q ---- */
+let eyCapAt = 0;   // when the cap popup last opened: a Start tap that races the field's blur must not start a quiz under the popup
+function eyEnforceCap(el) {
+  if (!el || !eyActive) return false;
+  const v = parseInt(el.value, 10);
+  if (!(v > EY_MAX_Q)) return false;
+  el.value = EY_MAX_Q; eyCapAt = Date.now();
+  eyPopup('Max ' + EY_MAX_Q + ' questions', 'Ek quiz me ' + EY_MAX_Q + ' se zyada questions nahi ban sakte (aapne ' + v + ' likha tha). Number ' + EY_MAX_Q + ' kar diya hai. Zyada chahiye to pehle ' + EY_MAX_Q + ' ka quiz banao, phir dusra.');
+  return true;
+}
+
 /* ---- Picker: Exam Yatri chip + model menu (menu appears only when more than one model exists) ---- */
 function eyCloseMenu() {
   const m = document.getElementById('eyMenu'), p = document.getElementById('eyPick'); if (!m) return;
@@ -5797,7 +5871,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') eyCloseMenu(
 
 function eySetActive(on, noLoad) {
   eyActive = !!on;
-  const nq = document.getElementById('numQuestionsManual'); if (nq) { if (eyActive) nq.max = EY_MAX_Q; else nq.removeAttribute('max'); }
+  const nq = document.getElementById('numQuestionsManual'); if (nq) { if (eyActive) { nq.max = EY_MAX_Q; eyEnforceCap(nq); } else nq.removeAttribute('max'); }
   const gt = document.getElementById('genToggle'), gf = gt && gt.closest('.field');
   if (gf) gf.style.display = eyActive ? 'none' : '';      // Auto/Self does not apply to Exam Yatri
   try { setUiMode(localStorage.getItem('yai_mode2') === 'exam' ? 'exam' : 'revision'); } catch (e) {}
@@ -5857,7 +5931,7 @@ async function eyAsk(prompt, signal) {
     try {
       let r;
       try {
-        r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: eyModel, prompt: prompt + EY_GATE }), signal });
+        r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: eyModel, prompt: prompt + EY_GATE, effort: eyEffort }), signal });
       } catch (ne) {
         if (ne.name === 'AbortError') throw ne;
         throw new Error('Network error');
@@ -5876,30 +5950,174 @@ async function eyAsk(prompt, signal) {
 
 function eyParsedList() { const p = lenientParse(collectedRaw); return p ? normalizeQuiz(p) : []; }
 
+/* ---------- Background generation: quiz starts after the first small part, the rest streams in while the student plays ---------- */
+let eyBg = null;          // the running background job (null = nothing running)
+let eyWantNext = false;   // student pressed Next on the last READY question and is waiting for more
+const eyBgActive = () => !!(eyBg && !eyBg.stopped && !eyBg.failed && !eyBg.done);
+const eyQKey = q => String(q.question || '').toLowerCase().replace(/\s+/g, ' ').trim() + '||' + String((q.answers && q.answers[0]) || (q.options && q.options[q.correctIndex] && q.options[q.correctIndex].text) || '').toLowerCase().trim();
+function eyParseNew(reply) { const p = lenientParse(reply); return p ? normalizeQuiz(p) : []; }
+function eyProgressText() { return 'Q ' + (currentQ + 1) + ' / ' + quizData.length + (eyBgActive() ? ' \u23F3' : ''); }
+function eyBarPct() { const den = eyBgActive() ? Math.max(quizData.length, eyBg.total) : quizData.length; return (currentQ / (den || 1)) * 100; }
+
+function eyPaintStatus() {
+  let el = document.getElementById('eyBgStatus');
+  const show = !!(eyBg && !eyBg.stopped && !eyBg.done);
+  if (!show) { if (el) el.hidden = true; return; }
+  if (!el) {
+    el = document.createElement('div'); el.id = 'eyBgStatus'; el.className = 'ey-bg';
+    const top = document.querySelector('#quizCard .quiz-fixed-top'); if (!top) return;
+    top.appendChild(el);
+    el.addEventListener('click', () => { if (eyBg && eyBg.failed) eyRetryBg(); });
+  }
+  el.hidden = false;
+  el.classList.toggle('bad', !!eyBg.failed);
+  el.textContent = eyBg.failed
+    ? '\u26A0\uFE0F ' + quizData.length + '/' + eyBg.total + ' ready \u2014 baaki sawal nahi ban paye. Tap karke dobara try karo'
+    : '\u23F3 Baaki sawal ban rahe hain\u2026 ' + quizData.length + '/' + eyBg.total + ' ready';
+}
+function eyRefreshChrome() {
+  if (quizCard.style.display === 'none' || !quizData.length) return;
+  quizProgressText.textContent = eyProgressText();
+  quizBarFill.style.width = eyBarPct() + '%';
+  if (!eyWantNext) nextQBtn.querySelector('span').textContent = (currentQ === quizData.length - 1 && !eyBgActive()) ? t('finishBtn') : t('nextBtn');
+  try { renderDots(); } catch (e) {}
+}
+function eyUnwait() {
+  if (!eyWantNext && !nextQBtn.disabled) return;
+  eyWantNext = false; nextQBtn.disabled = false;
+}
+function eyWaitForNext() {
+  eyWantNext = true; nextQBtn.disabled = true;
+  nextQBtn.querySelector('span').textContent = '\u23F3 ' + t('nextBtn');
+  showToast('\u23F3 Agle sawal ban rahe hain \u2014 bas thoda ruko, apne-aap aa jayenge');
+}
+// Adds freshly generated questions to the RUNNING quiz without disturbing the question on screen.
+function eyAppendQuestions(list) {
+  const have = new Set(quizData.map(eyQKey));
+  const fresh = (list || []).filter(q => { const k = eyQKey(q); if (have.has(k)) return false; have.add(k); return true; });   // only exact repeats are dropped
+  if (!fresh.length) return 0;
+  const add = fresh;   // every generated question is kept (same rule as the rest of the app)
+  quizData.push(...add);
+  userAnswers.push(...add.map(() => -1));
+  saveQuizProgress();
+  eyPaintStatus();
+  if (eyWantNext && currentQ < quizData.length - 1) { eyUnwait(); currentQ++; renderQuestion(); }   // student was waiting: continue
+  else eyRefreshChrome();
+  return add.length;
+}
+function eyBgStop() {
+  const run = eyBg; if (!run) return;
+  run.stopped = true; eyBg = null;
+  try { run.ctl.abort(); } catch (e) {}
+  eyWantNext = false; nextQBtn.disabled = false;
+  const el = document.getElementById('eyBgStatus'); if (el) el.hidden = true;
+}
+function eyBgFinish(run) {
+  run.done = true; if (eyBg === run) eyBg = null;
+  const waiting = eyWantNext && currentQ === quizData.length - 1;
+  eyWantNext = false; nextQBtn.disabled = false;
+  const el = document.getElementById('eyBgStatus'); if (el) el.hidden = true;
+  eyRefreshChrome();
+  showToast((waiting ? 'Ye last sawal tha \u2014 ab Finish dabao. ' : '') + '\u2705 ' + quizData.length + (quizData.length < run.N ? '/' + run.N : '') + ' sawal ready');
+  try { const cv = coverageOfQuiz(quizData); if (cv && cv.done) setTimeout(() => showToast('\uD83D\uDCDA Coverage: ' + cv.done + '/' + cv.S + ' segments' + (cv.pages.length ? ' \u00B7 chhoote pages: ' + cv.pages.slice(0, 12).join(', ') + (cv.highMiss ? ' (' + cv.highMiss + ' important)' : '') : ' \u00B7 poora notes cover \u2705')), 2800); } catch (e) {}
+}
+function eyRetryBg() {
+  const run = eyBg; if (!run || !run.failed) return;
+  run.failed = false; eyPaintStatus(); eyRefreshChrome();
+  eyRunBackground(run);
+}
+async function eyRunBackground(run) {
+  if (run.running) return;
+  run.running = true;
+  const sig = run.ctl.signal, live = () => eyBg === run && !run.stopped;
+  try {
+    // 1) remaining parts, strictly in order: each one is told which questions already exist (no repeats)
+    while (run.k <= run.parts.length) {
+      if (!live()) return;
+      lastRequestedCount = run.N; manualPartsPlan = run.parts; manualPartsExpected = run.parts.length;
+      const reply = await eyAsk(getManualPromptText(run.mode, run.k, run.frozen), sig);
+      if (!live()) return;
+      collectedRaw += (collectedRaw ? '\n' : '') + reply;
+      eyAppendQuestions(eyParseNew(reply));
+      run.k++;
+    }
+    // 2) top-up rounds (same rule as before) if the AI gave fewer questions than asked
+    while (quizData.length < run.N && run.round < MANUAL_MAX_ROUNDS) {
+      if (!live()) return;
+      lastRequestedCount = run.N; manualRound = run.round;
+      const reply = await eyAsk(buildTopupPrompt(quizData.slice(), run.mode), sig);
+      if (!live()) return;
+      run.round++;
+      collectedRaw += '\n' + reply;
+      if (!eyAppendQuestions(eyParseNew(reply))) break;
+    }
+    if (live()) eyBgFinish(run);
+  } catch (err) {
+    if (!live() || (err && err.name === 'AbortError')) return;
+    run.failed = true; eyUnwait();
+    eyPaintStatus(); eyRefreshChrome();
+    eyPopup('Baaki sawal nahi ban paye', eyFriendly(err) + '  (' + quizData.length + '/' + run.N + ' sawal ready hain \u2014 quiz chalta rahega.)', () => eyRetryBg());
+  } finally { run.running = false; }
+}
+// Starts the quiz with the first small batch. (attemptStartQuiz is NOT used: it would reset the parts plan the background run needs.)
+function eyBeginQuiz(list, run) {
+  _startLockTs = Date.now();
+  lastRequestedCount = 0; try { notifyParseQuality(list); } catch (e) {} lastRequestedCount = run.N;   // "N asked, 5 got" would be misleading here
+  try { localStorage.removeItem('yai_inbox'); localStorage.removeItem('yai_wait'); } catch (e) {}
+  quizData = list;
+  userAnswers = new Array(quizData.length).fill(-1);
+  currentQ = 0;
+  createQuizRecord();
+  showParseStatus('ok', t('parseOk'));
+  eyPaintStatus();
+  setTimeout(() => {
+    pasteCard.style.display = 'none';
+    resultScreenCard.style.display = 'none';
+    openQuizCard();
+    startQuizTimer();
+    renderQuestion();
+    eyPaintStatus();
+  }, 250);
+}
+
 // Same prompts as the copy-paste flow (getManualPromptText / buildTopupPrompt), but sent by the app itself.
 async function generateQuizWithEY(mode) {
   mode = (mode === 'revision') ? 'revision' : 'exam';
   lastQuizMode = mode;
+  eyEffort = EY_EFFORT[mode] || '';
   if (!(resultText.value || rawExtractedText || '').trim()) { showToast('Pehle text extract karo'); return; }
   const nEl = document.getElementById('numQuestionsManual');
-  if ((parseInt(nEl.value) || 0) > EY_MAX_Q) { nEl.value = EY_MAX_Q; showToast('Exam Yatri me ek quiz me max ' + EY_MAX_Q + ' questions \u2014 ' + EY_MAX_Q + ' bana rahe hain'); }
+  if (Date.now() - eyCapAt < 800) return;   // cap popup just opened (Start tap raced the field's blur): wait for the student
+  if (eyEnforceCap(nEl)) return;            // over the cap: popup + number set to EY_MAX_Q; the student taps Start again
   if (!eyModels) { await eyLoadModels(true, false); }
   const mdl = eyModels && eyModels.find(x => x.id === eyModel);
   if (!mdl) { if (eyModels && eyModels.length > 1) eyOpenMenu(); return; }
 
-  resetPromptState();                                   // clean slate (collectedRaw, parts plan)
+  resetPromptState();                                   // clean slate (collectedRaw, parts plan) + stops any older background run
   const first = getManualPromptText(mode, 1);           // also plans the parts and sets lastRequestedCount
   const P = manualPartsPlan.length || 1;
+  const frozen = { parts: manualPartsPlan.slice(), N: lastRequestedCount, src: (resultText.value || rawExtractedText).trim() };
   showGeneratingStep(lastRequestedCount, mdl.label || mdl.id);
   aiAbortController = new AbortController();
   const sig = aiAbortController.signal;
   try {
-    for (let k = 1; k <= P; k++) {
-      aiGenSub.textContent = P > 1 ? `Part ${k} / ${P}...` : t('genSub');
-      const reply = await eyAsk(k === 1 ? first : getManualPromptText(mode, k), sig);
-      collectedRaw += (collectedRaw ? '\n' : '') + reply;
+    aiGenSub.textContent = P > 1 ? `Part 1 / ${P} (pehle ${frozen.parts[0].q} sawal)...` : t('genSub');
+    const reply1 = await eyAsk(first, sig);
+    collectedRaw += (collectedRaw ? '\n' : '') + reply1;
+
+    if (P > 1) {
+      // FAST PATH: play as soon as the first small part is ready; the other parts keep generating in the background
+      const list1 = eyParseNew(reply1);
+      if (!list1.length) throw new Error(t('aiParseError'));
+      const run = { mode, frozen, parts: frozen.parts, N: frozen.N, total: frozen.N, k: 2, round: manualRound, ctl: new AbortController(), stopped: false, failed: false, done: false, running: false };
+      eyBg = run;
+      generatingCard.style.display = 'none';
+      eyBeginQuiz(list1, run);
+      eyRunBackground(run);                             // intentionally not awaited
+      return;
     }
-    // Top-up rounds (same rule as the manual flow) if the AI returned fewer questions than asked
+
+    // single part (small quiz): same as before, top-up first, then start
     let list = eyParsedList();
     while (list.length < lastRequestedCount && manualRound < MANUAL_MAX_ROUNDS) {
       aiGenSub.textContent = `Top-up: ${list.length} / ${lastRequestedCount}...`;
@@ -5927,6 +6145,7 @@ async function generateQuizWithEY(mode) {
     aiAbortController = null;
   }
 }
+document.getElementById('numQuestionsManual').addEventListener('change', e => eyEnforceCap(e.target));
 document.getElementById('eyStartBtn').addEventListener('click', () => generateQuizWithEY('exam'));
 document.getElementById('eyStartRevBtn').addEventListener('click', () => generateQuizWithEY('revision'));
 
@@ -6099,11 +6318,12 @@ function applyQuizPalette(qIndex) {
 }
 
 function renderQuestion() {
+  eyUnwait();
   const q = quizData[currentQ];
   const ty = q.type || 'mcq';
   applyQuizPalette(currentQ);
-  quizProgressText.textContent = `Q ${currentQ + 1} / ${quizData.length}`;
-  quizBarFill.style.width = `${((currentQ) / quizData.length) * 100}%`;
+  quizProgressText.textContent = eyProgressText();
+  quizBarFill.style.width = eyBarPct() + '%';
   quizQuestionText.textContent = '';
   const qPrefix = document.createElement('span');
   qPrefix.textContent = 'Q' + (currentQ + 1) + '. ';
@@ -6151,7 +6371,7 @@ function renderQuestion() {
   if (answered) applyAnswerState();
 
   prevQBtn.disabled = currentQ === 0;
-  nextQBtn.querySelector('span').textContent = (currentQ === quizData.length - 1) ? t('finishBtn') : t('nextBtn');
+  nextQBtn.querySelector('span').textContent = (currentQ === quizData.length - 1 && !eyBgActive()) ? t('finishBtn') : t('nextBtn');
 
   document.querySelector('.quiz-body').scrollTop = 0;
   saveQuizProgress();
@@ -6258,21 +6478,22 @@ explToggleBtn.addEventListener('click', () => {
 
 prevQBtn.addEventListener('click', () => { if (currentQ > 0) { currentQ--; renderQuestion(); } });
 
-nextQBtn.addEventListener('click', () => {
+function goNextOrFinish() {
   if (currentQ < quizData.length - 1) { currentQ++; renderQuestion(); }
+  else if (eyBgActive()) { eyWaitForNext(); }   // more questions are still being generated: wait, then continue automatically
   else { finishWithCheck(); }
-});
-
-skipQBtn.addEventListener('click', () => {
-  if (currentQ < quizData.length - 1) { currentQ++; renderQuestion(); }
-  else { finishWithCheck(); }
-});
+}
+nextQBtn.addEventListener('click', goNextOrFinish);
+skipQBtn.addEventListener('click', goNextOrFinish);
 
 backToPasteBtn.addEventListener('click', () => openNewQuizChoiceModal());
 restartQuizBtn.addEventListener('click', () => openNewQuizChoiceModal());
 function finishWithCheck() {
   const un = userAnswers.filter(a => a === -1).length;
-  if (un && !confirm(un + ' sawal unanswered hain / प्रश्न बाकी हैं. Phir bhi submit karein?')) return;
+  if (eyBgActive()) {
+    if (!confirm('Abhi bhi sawal ban rahe hain (' + quizData.length + '/' + eyBg.total + ' ready). Abhi submit karoge to sirf ye ' + quizData.length + ' sawal count honge. Phir bhi submit karein?')) return;
+    eyBgStop();
+  } else if (un && !confirm(un + ' sawal unanswered hain / प्रश्न बाकी हैं. Phir bhi submit karein?')) return;
   showResultScreen();
 }
 document.getElementById('submitQuizBtn').addEventListener('click', () => finishWithCheck());
@@ -6345,6 +6566,7 @@ function startFreshWithNewPdf() {
 }
 
 function showResultScreen() {
+  try { eyBgStop(); } catch (e) {}
   stopQuizTimer();
   quizFinished = true;
   markQuizSubmitted();
