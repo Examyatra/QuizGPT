@@ -1528,6 +1528,98 @@ footer{color:var(--ink-dim);font-size:.78rem}
 .btn-main{background:linear-gradient(135deg,#6d7bff 0%,#c24bff 52%,#ff4f9a 100%);box-shadow:0 12px 30px rgba(200,75,255,.62),inset 0 1px 0 rgba(255,255,255,.35)}
 .step-label .num{background:linear-gradient(135deg,#6d7bff,#c24bff 55%,#ff4f9a);box-shadow:0 0 0 4px rgba(200,75,255,.24),0 4px 16px rgba(200,75,255,.7)}
 </style>
+
+<style id="yaiPolish3">
+/* ===== Y ai — polish v3: drifting background shade, boxes that pop, clean AI picker, popup ===== */
+:root{--yp-delay:0s}
+body{background:var(--bg) !important}
+body::before{content:"";position:fixed;inset:-15% -10%;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(760px 520px at 8% 0%, rgba(120,100,255,.40), transparent 62%),
+    radial-gradient(700px 480px at 100% 12%, rgba(255,70,150,.30), transparent 62%),
+    radial-gradient(760px 520px at 55% 108%, rgba(0,220,190,.26), transparent 62%),
+    radial-gradient(520px 340px at 92% 58%, rgba(255,170,40,.14), transparent 62%);
+  animation:ypDrift 54s ease-in-out infinite alternate;animation-delay:var(--yp-delay);will-change:filter,transform}
+[data-theme="light"] body::before{opacity:.5}
+@keyframes ypDrift{
+  0%{filter:hue-rotate(-34deg);transform:translate3d(0,0,0) scale(1)}
+  50%{filter:hue-rotate(6deg);transform:translate3d(2.5%,1.5%,0) scale(1.07)}
+  100%{filter:hue-rotate(46deg);transform:translate3d(-2.5%,-1.5%,0) scale(1.03)}}
+
+/* cards: lift off the background */
+.card:not(#quizCard){box-shadow:0 18px 44px rgba(10,6,40,.55),0 0 0 1px rgba(255,255,255,.05),inset 0 1px 0 rgba(255,255,255,.10)}
+[data-theme="light"] .card:not(#quizCard){box-shadow:0 14px 34px rgba(64,60,160,.20),0 0 0 1px rgba(64,80,224,.10)}
+
+/* fields: labels clear, inputs clearly boxed */
+.field label{font-size:.8rem;font-weight:700;letter-spacing:.2px;color:var(--ink);opacity:.92}
+.field input[type=number],.field input[type=text],.field select,.fill-input{
+  background:color-mix(in srgb,var(--accent) 12%,var(--panel-raised)) !important;
+  border:1.5px solid color-mix(in srgb,var(--accent) 52%,transparent) !important;
+  border-radius:12px !important;color:var(--ink) !important;
+  box-shadow:0 4px 14px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.07) !important;
+  transition:border-color .15s,box-shadow .15s,transform .15s}
+[data-theme="light"] .field input[type=number],[data-theme="light"] .field input[type=text],[data-theme="light"] .field select{
+  background:#fff !important;box-shadow:0 4px 12px rgba(64,80,224,.16),inset 0 1px 0 #fff !important}
+.field input[type=number]:focus,.field input[type=text]:focus,.field select:focus{
+  outline:none;border-color:var(--g2) !important;
+  box-shadow:0 0 0 3px rgba(192,75,255,.28),0 6px 18px rgba(0,0,0,.3) !important}
+
+/* all secondary buttons / chips / tabs pop */
+.site-pick,.upload-tab,.btn-sm,.mode-seg{box-shadow:0 4px 14px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.07)}
+.btn-sm:not(.primary),.upload-tab:not(.active){border-color:color-mix(in srgb,var(--accent) 38%,var(--line))}
+.upload-tab.active,.mode-seg button.active{box-shadow:0 6px 18px rgba(124,92,255,.4)}
+
+/* ---- AI picker: 3 sites on one line, Exam Yatri below ---- */
+.ai-picker{margin-top:6px}
+.ai-row3{flex-wrap:nowrap;gap:8px;margin-top:0}
+.ai-row3 .site-pick{flex:1 1 0;min-width:0;padding:12px 6px;border-radius:14px;font-weight:600;font-size:.84rem;
+  border:1.5px solid color-mix(in srgb,var(--c,#7b8fff) 45%,var(--line));
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c,#7b8fff) 10%,var(--panel-raised)),var(--panel-raised));
+  transition:transform .15s,box-shadow .15s,border-color .15s}
+.ai-row3 .site-pick:active{transform:scale(.97)}
+.ai-row3 .site-pick.active{color:var(--ink);border-color:var(--c);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 30%,var(--panel-raised)),color-mix(in srgb,var(--c) 12%,var(--panel-raised)));
+  box-shadow:0 6px 18px color-mix(in srgb,var(--c) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.14)}
+.ey-wrap{position:relative;margin-top:10px}
+.ey-main{width:100%;flex:none;padding:14px 16px;border-radius:16px;font-size:.98rem;font-weight:800;letter-spacing:.2px;color:var(--ink);
+  border:1.5px solid transparent;
+  background:linear-gradient(var(--panel-raised),var(--panel-raised)) padding-box,var(--grad-main) border-box;
+  box-shadow:0 6px 20px rgba(160,80,255,.28);transition:transform .15s,box-shadow .2s}
+.ey-main:active{transform:scale(.98)}
+.ey-main.active{color:#fff;background:var(--grad-main) padding-box,var(--grad-main) border-box;box-shadow:0 10px 28px rgba(192,75,255,.55),inset 0 1px 0 rgba(255,255,255,.3)}
+.ey-main .dot{background:#fff !important;box-shadow:0 0 8px rgba(255,255,255,.8)}
+.ey-main:not(.active) .dot{background:#a855f7 !important;box-shadow:none}
+.ey-cur{margin-left:6px;padding:3px 10px;border-radius:999px;font-size:.74rem;font-weight:700;background:rgba(255,255,255,.2);max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ey-main:not(.active) .ey-cur{background:color-mix(in srgb,var(--accent) 20%,transparent)}
+.ey-chev{font-size:.95rem;line-height:1;margin-left:2px;transition:transform .2s}
+.ey-main[aria-expanded="true"] .ey-chev{transform:rotate(180deg)}
+.ey-menu{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:40;max-height:min(320px,55vh);overflow-y:auto;padding:6px;border-radius:16px;
+  background:color-mix(in srgb,var(--accent) 8%,var(--panel-raised));border:1.5px solid color-mix(in srgb,var(--accent) 55%,transparent);
+  box-shadow:0 18px 44px rgba(0,0,0,.55);animation:ypPop .16s ease}
+.ey-menu[hidden]{display:none}
+@keyframes ypPop{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+.ey-opt{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:10px 12px;border:0;border-radius:11px;background:transparent;color:var(--ink);font:600 .92rem var(--sans);text-align:left;cursor:pointer}
+.ey-opt:hover,.ey-opt:focus-visible{background:color-mix(in srgb,var(--accent) 18%,transparent);outline:none}
+.ey-opt.on{background:color-mix(in srgb,var(--g2) 22%,transparent)}
+.ey-opt-l{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ey-opt-p{font-size:.72rem;font-weight:600;color:var(--ink-dim)}
+.ey-opt-k{width:20px;text-align:center;font-weight:800;color:var(--g5);opacity:0}
+.ey-opt.on .ey-opt-k{opacity:1}
+
+/* ---- Popup ---- */
+.ey-pop{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,4,20,.62);backdrop-filter:blur(6px)}
+.ey-pop[hidden]{display:none}
+.ey-pop-card{width:100%;max-width:360px;padding:24px 20px 18px;border-radius:22px;text-align:center;color:var(--ink);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 14%,var(--panel)),var(--panel));
+  border:1.5px solid color-mix(in srgb,var(--accent) 55%,transparent);box-shadow:0 24px 60px rgba(0,0,0,.6);animation:ypPop .18s ease}
+.ey-pop-ico{font-size:2rem;margin-bottom:6px}
+.ey-pop-t{font-size:1.05rem;font-weight:800;margin-bottom:8px}
+.ey-pop-m{font-size:.9rem;line-height:1.55;color:var(--ink-dim);margin-bottom:18px}
+.ey-pop-b{display:flex;gap:10px}
+.ey-pop-b button{flex:1;min-height:46px;border-radius:14px;font:700 .92rem var(--sans);cursor:pointer;border:1.5px solid color-mix(in srgb,var(--accent) 50%,transparent);background:var(--panel-raised);color:var(--ink)}
+.ey-pop-b .ey-pop-r{border:0;color:#fff;background:var(--grad-main);box-shadow:0 8px 22px rgba(192,75,255,.5)}
+@media (prefers-reduced-motion:reduce){body::before{animation:none}}
+</style>
 </head>
 <body>
 
@@ -1828,16 +1920,18 @@ footer{color:var(--ink-dim);font-size:.78rem}
 
     <!-- MANUAL detail -->
     <div class="method-detail" id="manualDetail">
-      <div class="site-pick-row" id="siteAiBar">
-        <button class="site-pick site-btn active" data-url="https://gemini.google.com/app"><span class="dot" style="background:#4285f4"></span>Gemini</button>
-        <button class="site-pick site-btn" data-url="https://chatgpt.com/"><span class="dot" style="background:#10a37f"></span>ChatGPT</button>
-        <button class="site-pick site-btn" data-url="https://claude.ai/new"><span class="dot" style="background:#d97757"></span>Claude</button>
-        <button class="site-pick site-btn" id="eyPick" data-ey="1"><span class="dot" style="background:#a855f7"></span>Exam Yatri</button>
-      </div>
-      <div id="eyModelRow" style="display:none; margin:6px 0 12px;">
-        <div style="font-size:0.8rem; opacity:0.8; margin-bottom:6px;" data-i18n="eyModelLabel">AI Model</div>
-        <div class="site-pick-row" id="eyModelList"></div>
-        <div id="eyModelNote" style="font-size:0.78rem; opacity:0.8; margin-top:8px; line-height:1.5;"></div>
+      <div class="ai-picker">
+        <div class="site-pick-row ai-row3" id="siteAiBar">
+          <button type="button" class="site-pick site-btn" style="--c:#4285f4" data-url="https://gemini.google.com/app"><span class="dot" style="background:#4285f4"></span>Gemini</button>
+          <button type="button" class="site-pick site-btn" style="--c:#10a37f" data-url="https://chatgpt.com/"><span class="dot" style="background:#10a37f"></span>ChatGPT</button>
+          <button type="button" class="site-pick site-btn" style="--c:#d97757" data-url="https://claude.ai/new"><span class="dot" style="background:#d97757"></span>Claude</button>
+        </div>
+        <div class="ey-wrap" id="eyWrap">
+          <button type="button" class="site-pick site-btn ey-main active" id="eyPick" data-ey="1" aria-haspopup="listbox" aria-expanded="false">
+            <span class="dot" style="background:#a855f7"></span><span class="ey-name">Exam Yatri</span><span class="ey-cur" id="eyCur" hidden></span><span class="ey-chev" id="eyChev" aria-hidden="true" hidden>▾</span>
+          </button>
+          <div class="ey-menu" id="eyMenu" role="listbox" aria-label="AI model" hidden></div>
+        </div>
       </div>
       <div class="row">
         <div class="field">
@@ -2380,11 +2474,18 @@ selectMethod('manual');   // only the AI-website method is offered
 // --- Website AI selector (Gemini / ChatGPT / Claude = manual copy+open flow; Exam Yatri = direct API via Val Town) ---
 document.querySelectorAll('.site-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    const wasEy = eyActive;
     document.querySelectorAll('.site-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    if (btn.dataset.ey) { eySetActive(true); return; }
+    if (btn.dataset.ey) {
+      eySetActive(true, true);
+      if (eyModels && eyModels.length > 1) { wasEy ? eyToggleMenu() : eyOpenMenu(); }
+      else if (!eyModels) { eyLoadModels(true, false).then(ok => { if (ok && eyModels && eyModels.length > 1) eyOpenMenu(); }); }
+      return;
+    }
+    eyCloseMenu();
     selectedAiUrl = btn.dataset.url;
-    eySetActive(false);
+    eySetActive(false, true);
   });
 });
 
@@ -3586,10 +3687,15 @@ function coverageOfQuiz(list) {
 }
 function planManualParts(srcText, N) {
   const lang = quizLangKind(getQuizLangPref());
-  const capQ = 25;   // questions per AI reply: 25 each => better quality; 50 -> 2 parts, 100 -> 4 parts (script chains them)
+  // Exam Yatri (direct API): smaller, evenly sized parts => better question quality and no cut-off replies
+  // (20 per part; 15 when the quiz is bilingual/multilingual because every question is then twice as long). 100 questions -> 5 (or 7) parts.
+  const ey = (typeof eyActive !== 'undefined' && eyActive);
+  const capQ = ey ? ((lang === 'english' || lang === 'hindi') ? 20 : 15) : 25;   // copy-paste flow keeps 25 per reply
+  const evenSplit = (N, P) => { const b = Math.floor(N / P), x = N - b * P; return Array.from({ length: P }, (_, k) => b + (k < x ? 1 : 0)); };
+  const splitQ = (N, P) => ey ? evenSplit(N, P) : splitCounts(N, P, capQ);
   if (String(srcText || '').length <= MANUAL_MAX_TEXT) {
     const P = Math.max(1, Math.ceil(N / capQ));
-    const counts = splitCounts(N, P, capQ);
+    const counts = splitQ(N, P);
     const sp = planSegments(String(srcText || ''), N, counts);
     return counts.map((q, k) => ({ tier: P > 1, text: srcText, q, from: '', to: '', i: k + 1, P, label: 'mixed pages', nPages: sp.S, must: [], segs: sp.parts[k], marked: sp.marked }));
   }
@@ -3607,7 +3713,7 @@ function planManualParts(srcText, N) {
   }
   if (cur.length) groups.push(cur);
   const G = groups.length;
-  const counts = splitCounts(N, G, capQ);
+  const counts = splitQ(N, G);
   return groups.map((g, idx) => {
     const q = counts[idx];
     const first = (g[0].match(/--- Page (\d+) ---/) || [])[1] || '';
@@ -5638,54 +5744,111 @@ document.getElementById('cancelAiBtn').addEventListener('click', backFromGenerat
    gateway for the model list (GET /models) and sends prompts (POST /generate).
    Add a new company in Val Town -> it shows up here automatically.
    ===================================================================== */
-const EY_API_URL = 'https://vishalyadav--ac9af586d5c311f1ac7a1607ee4eb77e.web.val.run';   // <- paste your examyatri-ai val's public URL here (no trailing slash)
+const EY_MAX_Q = 100;   // max questions per Exam Yatri quiz
+// Appended to every Exam Yatri request: a short self-check that raises question quality without changing the app's own prompt.
+const EY_GATE = '\n\nFINAL QUALITY GATE (do this silently BEFORE you answer; the output format stays exactly as specified above, with nothing added): (1) Re-solve every question using ONLY its source_evidence; if the evidence does not prove the marked answer, or two options could be defended, rewrite or replace that question. (2) Remove any question that is trivial, ambiguous, trick-wording, or about page numbers/headings. (3) Check every question is at the real exam level and the difficulty mix asked above is respected; distractors must be plausible and from the same category. (4) Never repeat a fact or concept already used in this reply or in the lists above. (5) If space is running short, shorten explanations rather than dropping questions, and finish the output completely.';
+const EY_API_URL = 'https://vishalyadav--ac9af586d5c311f1ac7a1607ee4eb77e.web.val.run';   // examyatri-ai val's public URL (no trailing slash)
 let eyActive = false, eyModels = null, eyLoading = false;
 let eyModel = ''; try { eyModel = localStorage.getItem('yai_ey_model') || ''; } catch (e) {}
+try { const c = JSON.parse(localStorage.getItem('yai_ey_models') || 'null'); if (Array.isArray(c) && c.length) eyModels = c.filter(m => m && m.id); } catch (e) {}   // last known list: picker is ready instantly, refreshed in background
 
-function eySetActive(on) {
+/* ---- Popup (replaces inline red text): one reliable dialog for every Exam Yatri failure ---- */
+function eyPopup(title, msg, onRetry) {
+  let ov = document.getElementById('eyPop');
+  if (!ov) {
+    ov = document.createElement('div'); ov.id = 'eyPop'; ov.className = 'ey-pop'; ov.hidden = true;
+    ov.innerHTML = '<div class="ey-pop-card" role="alertdialog" aria-modal="true" aria-labelledby="eyPopT" aria-describedby="eyPopM"><div class="ey-pop-ico">\u26A0\uFE0F</div><div class="ey-pop-t" id="eyPopT"></div><div class="ey-pop-m" id="eyPopM"></div><div class="ey-pop-b"><button type="button" class="ey-pop-x">OK</button><button type="button" class="ey-pop-r">Dobara try karo</button></div></div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', e => { if (e.target === ov) ov.hidden = true; });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !ov.hidden) ov.hidden = true; });
+    ov.querySelector('.ey-pop-x').addEventListener('click', () => { ov.hidden = true; });
+  }
+  ov.querySelector('#eyPopT').textContent = title;
+  ov.querySelector('#eyPopM').textContent = msg;
+  const rb = ov.querySelector('.ey-pop-r'), fresh = rb.cloneNode(true);
+  rb.parentNode.replaceChild(fresh, rb);
+  fresh.style.display = onRetry ? '' : 'none';
+  fresh.addEventListener('click', () => { ov.hidden = true; if (onRetry) onRetry(); });
+  ov.hidden = false;
+  (onRetry ? fresh : ov.querySelector('.ey-pop-x')).focus();
+}
+function eyFriendly(e) {
+  const m = (e && e.message) || '';
+  if (e && e.name === 'AbortError') return 'Server ne time par jawab nahi diya. Internet check karke dobara try karo.';
+  if (/NetworkError|Failed to fetch|Load failed|Network error/i.test(m)) return 'Server se connect nahi ho paya. Internet check karke dobara try karo.';
+  if (/HTTP 403|Origin not allowed/i.test(m)) return 'Server ne request allow nahi ki. Thodi der baad try karo ya admin ko batao.';
+  return m || 'Kuch gadbad ho gayi. Dobara try karo.';
+}
+
+/* ---- Picker: Exam Yatri chip + model menu (menu appears only when more than one model exists) ---- */
+function eyCloseMenu() {
+  const m = document.getElementById('eyMenu'), p = document.getElementById('eyPick'); if (!m) return;
+  m.hidden = true; if (p) p.setAttribute('aria-expanded', 'false');
+}
+function eyOpenMenu() {
+  const m = document.getElementById('eyMenu'), p = document.getElementById('eyPick');
+  if (!m || !eyModels || eyModels.length < 2) return;
+  m.hidden = false; p.setAttribute('aria-expanded', 'true');
+  const on = m.querySelector('.ey-opt.on'); if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest' });
+}
+function eyToggleMenu() { const m = document.getElementById('eyMenu'); if (m && m.hidden) eyOpenMenu(); else eyCloseMenu(); }
+document.addEventListener('click', e => { if (!e.target.closest || !e.target.closest('#eyWrap')) eyCloseMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') eyCloseMenu(); });
+
+function eySetActive(on, noLoad) {
   eyActive = !!on;
-  document.getElementById('eyModelRow').style.display = eyActive ? '' : 'none';
+  const nq = document.getElementById('numQuestionsManual'); if (nq) { if (eyActive) nq.max = EY_MAX_Q; else nq.removeAttribute('max'); }
   const gt = document.getElementById('genToggle'), gf = gt && gt.closest('.field');
   if (gf) gf.style.display = eyActive ? 'none' : '';      // Auto/Self does not apply to Exam Yatri
   try { setUiMode(localStorage.getItem('yai_mode2') === 'exam' ? 'exam' : 'revision'); } catch (e) {}
-  if (eyActive) eyLoadModels(false);
+  if (eyActive && !noLoad) eyLoadModels(false, true);
 }
 function eyRenderModels() {
-  const list = document.getElementById('eyModelList'), note = document.getElementById('eyModelNote');
-  list.innerHTML = ''; note.textContent = '';
-  if (!eyModels || !eyModels.some(m => m.id === eyModel)) eyModel = eyModels && eyModels[0] ? eyModels[0].id : '';
+  const menu = document.getElementById('eyMenu'), chev = document.getElementById('eyChev'), cur = document.getElementById('eyCur');
+  menu.innerHTML = '';
+  if (!eyModels || !eyModels.length) { chev.hidden = true; cur.hidden = true; eyCloseMenu(); return; }
+  if (!eyModels.some(m => m.id === eyModel)) eyModel = eyModels[0].id;
+  const multi = eyModels.length > 1, sel = eyModels.find(m => m.id === eyModel);
+  chev.hidden = !multi; cur.hidden = !multi;
+  cur.textContent = multi && sel ? (sel.label || sel.id) : '';
+  if (!multi) eyCloseMenu();
   eyModels.forEach(m => {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'site-pick' + (m.id === eyModel ? ' active' : '');
-    b.textContent = m.label || m.id; b.title = (m.provider ? m.provider + ' \u00B7 ' : '') + m.id;
+    b.type = 'button'; b.className = 'ey-opt' + (m.id === eyModel ? ' on' : '');
+    b.setAttribute('role', 'option'); b.setAttribute('aria-selected', m.id === eyModel ? 'true' : 'false');
+    const l = document.createElement('span'); l.className = 'ey-opt-l'; l.textContent = m.label || m.id;
+    b.appendChild(l);
+    if (m.provider && m.provider !== (m.label || m.id)) { const p = document.createElement('span'); p.className = 'ey-opt-p'; p.textContent = m.provider; b.appendChild(p); }
+    const k = document.createElement('span'); k.className = 'ey-opt-k'; k.textContent = '\u2713'; b.appendChild(k);
     b.addEventListener('click', () => {
       eyModel = m.id; try { localStorage.setItem('yai_ey_model', eyModel); } catch (e) {}
-      list.querySelectorAll('.site-pick').forEach(x => x.classList.remove('active')); b.classList.add('active');
+      eyRenderModels(); eyCloseMenu();
     });
-    list.appendChild(b);
+    menu.appendChild(b);
   });
   try { if (eyModel) localStorage.setItem('yai_ey_model', eyModel); } catch (e) {}
 }
-async function eyLoadModels(force) {
-  if (eyModels && !force) { eyRenderModels(); return; }
-  if (eyLoading) return;
+// quiet = true: never popup (background refresh). Returns true when a usable model list exists.
+async function eyLoadModels(force, quiet) {
+  if (eyModels && !force) { eyRenderModels(); return true; }
+  if (eyLoading) return !!eyModels;
   eyLoading = true;
-  const list = document.getElementById('eyModelList'), note = document.getElementById('eyModelNote');
-  list.innerHTML = ''; note.textContent = 'Models load ho rahe hain...';
   try {
-    if (!/^https:\/\//.test(EY_API_URL) || /REPLACE_WITH/.test(EY_API_URL)) throw new Error('EY_API_URL set nahi hai (index.html me apna Val Town URL daalo)');
+    if (!/^https:\/\//.test(EY_API_URL) || /REPLACE_WITH/.test(EY_API_URL)) throw new Error('Exam Yatri abhi set nahi hai (admin ko batao).');
     const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 15000);
     let r; try { r = await fetch(EY_API_URL + '/models', { signal: ctl.signal }); } finally { clearTimeout(tm); }
     if (!r.ok) throw new Error('Gateway error HTTP ' + r.status);
     const d = await r.json();
-    eyModels = Array.isArray(d.models) ? d.models.filter(m => m && m.id) : [];
-    if (!eyModels.length) throw new Error('Val Town me abhi koi AI model add nahi hai');
+    const list = Array.isArray(d.models) ? d.models.filter(m => m && m.id) : [];
+    if (!list.length) throw new Error('Abhi koi AI model available nahi hai.');
+    eyModels = list;
+    try { localStorage.setItem('yai_ey_models', JSON.stringify(list)); } catch (e) {}
     eyRenderModels();
+    return true;
   } catch (e) {
-    eyModels = null; list.innerHTML = '';
-    note.textContent = '\u26A0\uFE0F ' + (e.name === 'AbortError' ? 'Gateway ne jawab nahi diya (timeout)' : e.message) + ' ';
-    const rb = document.createElement('button'); rb.type = 'button'; rb.className = 'site-pick'; rb.textContent = '\uD83D\uDD01 Retry';
-    rb.addEventListener('click', () => eyLoadModels(true)); note.appendChild(rb);
+    eyRenderModels();   // keeps the last known list (if any) usable
+    if (!quiet) eyPopup('Exam Yatri connect nahi hua', eyFriendly(e), () => { eyLoadModels(true, false); });
+    return !!eyModels;
   } finally { eyLoading = false; }
 }
 
@@ -5694,10 +5857,10 @@ async function eyAsk(prompt, signal) {
     try {
       let r;
       try {
-        r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: eyModel, prompt }), signal });
+        r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: eyModel, prompt: prompt + EY_GATE }), signal });
       } catch (ne) {
         if (ne.name === 'AbortError') throw ne;
-        throw new Error('Network error (' + ne.message + ') \u2014 internet check karo');
+        throw new Error('Network error');
       }
       const d = await r.json().catch(() => ({}));
       if (!r.ok) { const err = new Error(d.error || ('HTTP ' + r.status)); err.status = r.status; throw err; }
@@ -5718,9 +5881,11 @@ async function generateQuizWithEY(mode) {
   mode = (mode === 'revision') ? 'revision' : 'exam';
   lastQuizMode = mode;
   if (!(resultText.value || rawExtractedText || '').trim()) { showToast('Pehle text extract karo'); return; }
-  if (!eyModels) { await eyLoadModels(true); }
+  const nEl = document.getElementById('numQuestionsManual');
+  if ((parseInt(nEl.value) || 0) > EY_MAX_Q) { nEl.value = EY_MAX_Q; showToast('Exam Yatri me ek quiz me max ' + EY_MAX_Q + ' questions \u2014 ' + EY_MAX_Q + ' bana rahe hain'); }
+  if (!eyModels) { await eyLoadModels(true, false); }
   const mdl = eyModels && eyModels.find(x => x.id === eyModel);
-  if (!mdl) { showToast('Pehle ek AI model chuno'); return; }
+  if (!mdl) { if (eyModels && eyModels.length > 1) eyOpenMenu(); return; }
 
   resetPromptState();                                   // clean slate (collectedRaw, parts plan)
   const first = getManualPromptText(mode, 1);           // also plans the parts and sets lastRequestedCount
@@ -5756,7 +5921,7 @@ async function generateQuizWithEY(mode) {
     resultStepLabel.style.display = 'flex';
     methodCard.style.display = 'block';
     methodStepLabel.style.display = 'flex';
-    showToast(t('aiErrorPrefix') + err.message);
+    eyPopup('Quiz nahi ban paya', eyFriendly(err), () => generateQuizWithEY(mode));
     resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } finally {
     aiAbortController = null;
@@ -7425,6 +7590,9 @@ function setUiMode(m) {
 }
 document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => setUiMode(b.dataset.m)));
 setUiMode(localStorage.getItem('yai_mode2') === 'exam' ? 'exam' : 'revision');
+eySetActive(true, true);   // Exam Yatri is the default AI
+eyRenderModels(); eyLoadModels(true, true);   // cached list shows instantly; fresh list loads silently
+try { document.documentElement.style.setProperty('--yp-delay', '-' + (Math.random() * 60).toFixed(1) + 's'); } catch (e) {}   // different background shade on every visit
 const _sr = showResultScreen;
 showResultScreen = function () { _sr(); decorateResult(); };
 </script>
