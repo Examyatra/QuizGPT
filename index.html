@@ -3194,6 +3194,10 @@ ANALYSIS RULES:
 `;
 }
 
+// Output contract placed at the VERY TOP of every prompt that goes to an AI site: tells the model to start
+// directly with the first =Q header (no intro / analysis / thinking aloud). The detailed format comes at the end.
+const YAI_HEAD = 'OUTPUT CONTRACT (read this first): your reply is ONLY plain-text quiz questions in the tag format shown at the END of this message. Your reply must START DIRECTLY with the first question header line (=Q followed by its number): no intro, no analysis, no plan, no thinking aloud, no title, no markdown, no code block, and never Canvas / a file / a tool. Plan silently in your head. Every field is ONE line.\n\n';
+
 function buildQuizInstruction(n, maxCap, mode, srcText, tier, startNum, examName) {
   examName = (examName && examName.trim()) ? examName.trim() : DEFAULT_EXAM_NAME;
   const eyLean = typeof eyActive !== 'undefined' && eyActive && EY_LEAN_PROMPT;   // Exam Yatri only: copy-paste AI sites keep the full wording
@@ -3291,9 +3295,9 @@ function buildQuizInstruction(n, maxCap, mode, srcText, tier, startNum, examName
       ? `"true_false": one statement that stays very close to a line of the notes. "correct_answer" is "True" or "False" exactly as the plan says. A FALSE statement = the real line with one key word/number/side swapped. NO "options" key. The explanation states the correct fact.`
       : `"true_false": one precise exam-style statement (1-2 lines) built from the source text. "correct_answer" is "True" or "False" exactly as the plan says. A FALSE statement must be a plausible near-miss of a real fact in the text (changed qualifier, number, side, name, stage or an exception) — never absurd. NO "options" key. The explanation states the correct fact.`,
     fill_blank: `"fill_blank": a stem with exactly ONE blank written as _____ (in bilingual mode put the blank in both halves). The answer is ONE key term, number or short phrase (max 4 words) from the source text, with only one sensible answer — never a blank where many answers would fit. "correct_answer" = the canonical answer; "accepted_answers" = array of other valid forms (abbreviations, synonyms, spelling variants, e.g. ["TB","tuberculosis"]; may be []). The answer is always in English/Roman script (technical term or numeral), even in Hindi mode. NO "options" key.`,
-    statement: `"statement": the Q field = ONE short context line, then 3 or 4 numbered statements, each on its OWN line starting "1. ", "2. ", "3. ", "4. " (a dot, no tag at the start of these lines), then a LAST line "Which of the above statements is/are correct?" that ends with a question mark. Exactly 4 options made only of statement numbers/combinations (e.g. "1 and 2 only", "2 and 3 only", "1, 2 and 3", "1 only") in natural ascending order. At least one statement must be subtly false.`,
-    match: `"match": the Q field = a first line "Match Column I with Column II:", then the line "Column I", then the items "A. ...", "B. ...", "C. ...", "D. ..." each on its own line, then the line "Column II", then "1. ...", "2. ...", "3. ...", "4. ..." each on its own line, then a LAST line "Which of the following is the correct match?" ending with a question mark. Inside the stem always write the item markers with a DOT ("A." and "1."), never "A)" or "A:" (those are option tags). Exactly 4 options, each a full pairing like "A-2, B-4, C-1, D-3"; wrong options differ from the right one by swapping two pairs.`,
-    assertion_reason: `"assertion_reason": the Q field = a line "Assertion (A): ..." and the next line "Reason (R): ..." (no tag at the start of the second line, and no question after them). The 4 options MUST be exactly these, in this order: "Both A and R are true and R is the correct explanation of A", "Both A and R are true but R is not the correct explanation of A", "A is true but R is false", "A is false but R is true" (translated per the LANGUAGE RULE).`
+    statement: `"statement": the Q field is ONE single line made of these parts separated by " // ": a short context line, then 3 or 4 numbered statements starting "1. ", "2. ", "3. ", "4. ", then the LAST part "Which of the above statements is/are correct?" ending with a question mark. Exactly 4 options made only of statement numbers/combinations (e.g. "1 and 2 only", "2 and 3 only", "1, 2 and 3", "1 only") in natural ascending order. At least one statement must be subtly false.`,
+    match: `"match": the Q field is ONE single line made of these parts separated by " // ": "Match Column I with Column II:", then "Column I", then the items "A. ...", "B. ...", "C. ...", "D. ...", then "Column II", then "1. ...", "2. ...", "3. ...", "4. ...", then the LAST part "Which of the following is the correct match?" ending with a question mark. Inside the stem always write the item markers with a DOT ("A." and "1."), never "A)" or "A:" (those are option tags). Exactly 4 options, each a full pairing like "A-2, B-4, C-1, D-3"; wrong options differ from the right one by swapping two pairs.`,
+    assertion_reason: `"assertion_reason": the Q field is ONE single line: "Assertion (A): ..." then " // " then "Reason (R): ..." (no question after them). The 4 options MUST be exactly these, in this order: "Both A and R are true and R is the correct explanation of A", "Both A and R are true but R is not the correct explanation of A", "A is true but R is false", "A is false but R is true" (translated per the LANGUAGE RULE).`
   };
   let typeBlock;
   if (plan) {
@@ -3477,11 +3481,7 @@ PG: 12
 LV: medium`;
 
   const exStmtYaiQ = `=Q${startN + 3}
-Q: Consider the following statements about a series circuit:
-1. The same current flows through every resistor.
-2. The voltage is the same across every resistor.
-3. The total resistance is the sum of the individual resistances.
-Which of the above statements is/are correct?
+Q: Consider the following statements about a series circuit: // 1. The same current flows through every resistor. // 2. The voltage is the same across every resistor. // 3. The total resistance is the sum of the individual resistances. // Which of the above statements is/are correct?
 A: 1 only
 B: 1 and 3 only
 C: 2 and 3 only
@@ -3493,18 +3493,7 @@ PG: 12
 LV: medium`;
 
   const exMatchYaiQ = `=Q${startN + 4}
-Q: Match Column I with Column II:
-Column I
-A. Ammeter
-B. Voltmeter
-C. Ohmmeter
-D. Wattmeter
-Column II
-1. Measures power
-2. Measures resistance
-3. Measures current
-4. Measures potential difference
-Which of the following is the correct match?
+Q: Match Column I with Column II: // Column I // A. Ammeter // B. Voltmeter // C. Ohmmeter // D. Wattmeter // Column II // 1. Measures power // 2. Measures resistance // 3. Measures current // 4. Measures potential difference // Which of the following is the correct match?
 A: A-3, B-4, C-2, D-1
 B: A-4, B-3, C-2, D-1
 C: A-3, B-4, C-1, D-2
@@ -3516,8 +3505,7 @@ PG: 12
 LV: medium`;
 
   const exAssertYaiQ = `=Q${startN + 5}
-Q: Assertion (A): In a series circuit the current is the same through every resistor.
-Reason (R): A series circuit gives the charge only one path to flow.
+Q: Assertion (A): In a series circuit the current is the same through every resistor. // Reason (R): A series circuit gives the charge only one path to flow.
 A: Both A and R are true and R is the correct explanation of A
 B: Both A and R are true but R is not the correct explanation of A
 C: A is true but R is false
@@ -3547,10 +3535,10 @@ ${taskBlock}
 STYLE REFERENCE (shows the layout, style and difficulty only - do not reuse its topic unless the source covers it; ${langPref === 'custom' ? 'it is written in English as a layout sample only, so write YOUR questions in ' + outputLangNote : 'it is already in the required output language: ' + outputLangNote}):
 ${yaiQExamples}
 
-OUTPUT FORMAT - CRITICAL:
-Think through each question carefully BEFORE writing it. Then write your reply as PLAIN TEXT in exactly the layout below: no JSON, no code block, no markdown (no bold, no # headings, no bullets, no tables), no intro, no closing remarks. Write ALL ${count} questions one after another${eyLean ? '.' : ' directly in chat. Do NOT use Canvas / Docs / a file or download / an attachment / a tool, and never delete, hide or replace your reply after writing it.'}
+OUTPUT FORMAT (follow exactly):
+Reply with PLAIN TEXT only. Your very first line is =Q${startN}. No intro, no analysis, no plan, no title, no JSON, no code block, no markdown (no bold, no # headings, no bullets, no tables). Do all thinking silently; write nothing except the questions. Write ALL ${count} questions one after another${eyLean ? '.' : ' directly in chat (never in Canvas / Docs / a file / a tool), and never delete, hide or replace your reply after writing it.'}
 
-Each question is a block. Every field sits on its OWN line and starts with its tag, a colon and a space. A field is ONE line. The only structural closing marker is the single standalone line =END, which MUST appear after the final question. Do not use any other closing symbols. The header line =Q<number> is REQUIRED for every question (numbers run from ${startN} to ${endN}). The lines A-D exist for MCQ only. Copy this skeleton:
+Each question is one block. Every field is ONE line that starts with its tag, a colon and a space. The header line =Q<number> sits alone on its own line and is REQUIRED for every question (numbers run from ${startN} to ${endN}, in order). The lines A-D exist for MCQ only. Copy this skeleton:
 
 =Q${startN}
 Q: question text
@@ -3565,8 +3553,7 @@ PG: page number from the --- Page N --- / [S.. | p.N] marker (several pages: 12,
 LV: easy or medium${rev ? '' : ' or hard'}
 ${hasSegMarkers ? 'SEG: segment id from the [S..] marker\n' : ''}TYPE: tf or fill - ONLY for true/false or fill-in-blank questions (then write NO A-D lines; fill may add the line ALT: other accepted answers separated by |)
 
-After the last question write the single line =END
-=END must be alone on its own line and be the very LAST thing in your reply: no sign-off, no closing remark, no punctuation, no bold, nothing after it.
+Do NOT write any closing line or marker after the last question (the app finds the end by counting the =Q numbers; "=END" is not needed).
 
 The field names used in the rules above map to these tags: type = TYPE, correct_answer = ANS, explanation and concept = the single CON field (there is no separate explanation line), source_evidence = EV, difficulty = LV.
 
@@ -3575,12 +3562,14 @@ FORMAT RULES:
 - PG is REQUIRED and never empty. Copy it from the marker of the page the answer is on. Never guess.
 - The app reshuffles MCQ options after import, so NEVER refer to option letters (A/B/C/D) inside the question, the options or CON - refer to options by their content. Do NOT use "All of the above", "None of the above" or "Both A and B" style options (standard assertion-reason options are the only exception).
 - If the source text already contains an answer key or explanation, do NOT copy it into the question or options; use it only for ANS and CON.
-- Keep every field on one line. Only the Q field of a statement / match / assertion-reason question may continue on the next lines (one statement or item per line, no tag at the start of those lines). Never use the characters @@ or %% or a line made only of dashes.
+- ONE LINE PER FIELD: never break a field over several lines. For statement, match-the-following and assertion-reason questions write the WHOLE Q field on ONE line and separate its parts with " // " (space, two slashes, space), for example: Q: Consider the following statements: // 1. first statement // 2. second statement // 3. third statement // Which of the above statements is/are correct?
+- ANS: for MCQ write ONLY the letter A, B, C or D (never the option text); True or False for true/false; the answer text for fill-in-blank.
+- Never use the characters @@ or %%, a line made only of dashes, or bold / italic marks (no ** or *) anywhere.
 - QUESTION-MARK RULE: when a question is asked as a question, the Q field ends with a question mark "?" as its very LAST character. NOTHING comes after that "?": no "(1 mark)", no year or exam tag, no page or source, no citation or footnote mark, no explanation, no "=END", no extra symbols and no bold marks. A fill-in-the-blank or true/false statement that is not a question ends with its normal full stop instead.
-- NO EXTRA TEXT: write nothing before the first =Q line and nothing after =END (no title, no intro, no "Here are your questions", no closing sentence, no citations, no source links, no footnote marks). "=END" is only the standalone last line; never put "=END" or the word END at the end of a question, an option or any other field.
+- NO EXTRA TEXT: write nothing before the first =Q line and nothing after the last question (no title, no intro, no "Here are your questions", no closing sentence, no citations, no source links, no footnote marks). Never put "=END" or the word END inside a question, an option or any other field.
 ${plan ? '- Follow the question type plan stated above.\n' : ''}- CON is REQUIRED for every question: it teaches the idea in simple words. Never leave it empty and never copy EV into it.
 
-FINAL REMINDER: exactly ${count} questions, =Q${startN} to =Q${endN}, then =END; output language = ${outputLangNote}. Begin with =Q${startN} now.
+FINAL REMINDER: exactly ${count} questions, =Q${startN} to =Q${endN}; output language = ${outputLangNote}. Your reply must start directly with the line =Q${startN} - begin now.
 =====================================================`;
 }
 
@@ -3760,8 +3749,8 @@ function buildTierPrompt(pt, prev, srcText, mode, examName) {
   const excl = prev.slice(-100).map(q => '- ' + String(q.question).replace(/\s+/g, ' ').slice(0, 70)).join('\n');
   const eySlim = typeof eyActive !== 'undefined' && eyActive && EY_SLICE_NOTES && pt.segs && pt.segs.length;   // Exam Yatri: parts own DISJOINT segments, so earlier lines can never come back
   const usedLines = eySlim ? [] : usedLinesOf(prev);
-  let head = 'TASK: PART ' + pt.i + ' of ' + pt.P + ' (mixed pages). Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from the study notes below. The whole quiz of ' + lastRequestedCount + ' questions is written in ' + pt.P + ' parts. EVERY part samples the WHOLE notes (random pages, important topics a little more often) and together the parts cover every page. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.';
-  if (eySlim) head = 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from the study-note segments below (the segments chosen for this part; the other parts cover the rest of the notes). The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.';
+  let head = YAI_HEAD + 'TASK: PART ' + pt.i + ' of ' + pt.P + ' (mixed pages). Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from the study notes below. The whole quiz of ' + lastRequestedCount + ' questions is written in ' + pt.P + ' parts. EVERY part samples the WHOLE notes (random pages, important topics a little more often) and together the parts cover every page. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.';
+  if (eySlim) head = YAI_HEAD + 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from the study-note segments below (the segments chosen for this part; the other parts cover the rest of the notes). The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.';
   else if (pt.P > 1) head += '\n\nIf more parts follow in this chat, they will arrive as short messages later: in THIS reply write ONLY part ' + pt.i + '.';
   if (excl) head += '\n\nQUESTIONS ALREADY MADE (do NOT repeat these or their concepts):\n' + excl;
   if (usedLines.length) head += '\n\nSOURCE LINES ALREADY USED BY EARLIER PARTS (these exact lines already gave a question \u2014 this part MUST pick DIFFERENT lines/facts; do not build a new question from any line below, even with a different angle):\n' + usedLines.slice(-150).map(e => '- ' + e).join('\n');
@@ -3778,7 +3767,7 @@ function getManualPromptText(mode, partIdx, frozen) {
   manualPartsExpected = parts.length; manualPartsPlan = parts; lastRequestedCount = qn;
   try { localStorage.setItem('yai_pending', JSON.stringify({ n: qn, ts: Date.now() })); } catch (e) {}
   if (parts.length === 1) {
-    return 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (parts[0].marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 1000000, mode || 'exam', srcText, (parts[0].segs && parts[0].segs.length) ? { k: 1, P: 1, segs: parts[0].segs } : null, 1, examName);
+    return YAI_HEAD + 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (parts[0].marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 1000000, mode || 'exam', srcText, (parts[0].segs && parts[0].segs.length) ? { k: 1, P: 1, segs: parts[0].segs } : null, 1, examName);
   }
   const pt = parts[Math.min(Math.max(partIdx || 1, 1), parts.length) - 1];
   if (pt.tier) {
@@ -3790,7 +3779,7 @@ function getManualPromptText(mode, partIdx, frozen) {
     const prevL = normalizeQuiz(lenientParse(collectedRaw) || []);
     if (prevL.length) exclBlock = '\n\nQUESTIONS ALREADY MADE (do NOT repeat these or their concepts):\n' + prevL.slice(-100).map(q => '- ' + String(q.question).replace(/\s+/g, ' ').slice(0, 70)).join('\n');
   }
-  return 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from ONLY the study notes below (pages ' + pt.from + '-' + pt.to + '). The other pages are handled in other parts, so cover THIS text completely: every important topic of these pages must be represented. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.' + exclBlock + '\n\n=== STUDY NOTES PART ' + pt.i + '/' + pt.P + ' (OCR-extracted) ===\n' + pt.text.trim() + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 1000000, mode || 'exam', pt.text, null, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
+  return YAI_HEAD + 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from ONLY the study notes below (pages ' + pt.from + '-' + pt.to + '). The other pages are handled in other parts, so cover THIS text completely: every important topic of these pages must be represented. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.' + exclBlock + '\n\n=== STUDY NOTES PART ' + pt.i + '/' + pt.P + ' (OCR-extracted) ===\n' + pt.text.trim() + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 1000000, mode || 'exam', pt.text, null, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
 }
 // ---- Mixed parts: every part samples the WHOLE notes. The app deals random "must-cover" pages to the parts, so the union covers all pages. ----
 let _mustCache = { key: '', order: [] };
@@ -3827,14 +3816,14 @@ function buildContinuePrompt(pt, startN, mode) {
   const typeLine = plan
     ? 'QUESTION TYPES - MANDATORY TYPE PLAN (follow it exactly and set "type" in every question; type definitions as in my first message): ' + plan.map((x, i) => 'Q' + (i + 1) + ': ' + x.type + (x.truth ? ' (statement must be ' + x.truth.toUpperCase() + ')' : '')).join(', ') + '\n'
     : 'QUESTION TYPES: every question is type "mcq" with exactly 4 options.\n';
-  return 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Continue the SAME quiz in THIS chat: same study notes (from my first message), same output language, same level and style, and the same YAI-Q OUTPUT FORMAT as in my first message.\n'
+  return YAI_HEAD + 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Continue the SAME quiz in THIS chat: same study notes (from my first message), same output language, same level and style, and the same YAI-Q OUTPUT FORMAT as in my first message.\n'
     + 'STYLE RECAP: ' + (mode === 'revision' ? 'SIMPLE quick-revision: direct line-based questions with a light twist, short stems, no long scenarios, at the real level of the exam you analysed in my first message.' : 'COMPLEX exam-level: mix 2-3 related topics of the notes per question, in the real pattern, level and latest trend of the exam you analysed in my first message, every option must need thought, all solvable from the notes alone.') + ' Keep ALL rules and language of my first message.' + '\n' + 'Create EXACTLY ' + count + ' NEW questions, numbered =Q' + startN + ' through =Q' + endN + '. Never stop early and never ask whether to continue.\n\n'
     + ((pt.segs && pt.segs.length) ? segSelectionRule({ k: pt.i, P: pt.P, segs: pt.segs }, count, localStorage.getItem('yai_examName') || DEFAULT_EXAM_NAME, mode) : mixSelectionRule({ k: pt.i, P: pt.P, must: pt.must, nPages: pt.nPages }, count, localStorage.getItem('yai_examName') || DEFAULT_EXAM_NAME)) + '\n'
     + typeLine + '\n'
     + 'LINE-LEVEL EXCLUSION (hard rule): before writing each question, scroll back up to your own earlier reply(ies) in THIS chat and note every exact source line/fact you already tested (look at the EV: line of each earlier question). For every new question in this part, pick a source line that is NOT one of those — do not reuse the same line even to ask it differently. Different parts must revise different portions of the notes; never let two parts both draw from the same line.\n'
     + 'EXAM ANALYSIS: keep using the same exam analysis (pattern, previous-year level, latest trend, difficulty) of the exam named in my first message; do not lower or raise the level in this part.\n'
     + 'Do NOT repeat or rephrase any question or concept you already wrote earlier in this chat.\n\n'
-    + 'OUTPUT: write PLAIN TEXT directly in chat in the same tag format as my first message: a =Q{n} header line, then one field per line (Q: question, A: B: C: D: options, ANS:, CON: (simple-language concept and logic, 2-4 sentences), EV:, PG:, LV:, SEG: if the notes have [S..] markers, TYPE: tf or fill where the plan says so), and the line =END after the last question. No JSON, no code blocks, no markdown, no intro. PG is required (from the [S.. | p.N] marker, never guessed) and EV is an exact phrase from the notes, untranslated. Every answer must be solvable from the notes alone.\n'    + 'FINAL REMINDER: exactly ' + count + ' questions, =Q' + startN + ' to =Q' + endN + ', then =END. Begin with =Q' + startN + ' now.';
+    + 'OUTPUT: write PLAIN TEXT directly in chat in the same tag format as my first message: a =Q{n} header line, then one field per line (Q: question, A: B: C: D: options, ANS:, CON: (simple-language concept and logic, 2-4 sentences), EV:, PG:, LV:, SEG: if the notes have [S..] markers, TYPE: tf or fill where the plan says so), and optionally the line =END after the last question. No JSON, no code blocks, no markdown, no intro. Every field is ONE line (for statement / match / assertion-reason questions put the whole Q on one line and separate its parts with " // "); for MCQ the ANS line is only the letter A-D. PG is required (from the [S.. | p.N] marker, never guessed) and EV is an exact phrase from the notes, untranslated. Every answer must be solvable from the notes alone.\n'    + 'FINAL REMINDER: exactly ' + count + ' questions, =Q' + startN + ' to =Q' + endN + '. Your reply must start directly with the line =Q' + startN + '.';
 }
 function buildChatBundle(mode) {
   const first = getManualPromptText(mode, 1);   // also refreshes manualPartsPlan / manualPartsExpected / lastRequestedCount
@@ -4045,7 +4034,7 @@ function getSelfPromptText(mode) {
   lastRequestedCount = qn;
   try { localStorage.setItem('yai_pending', JSON.stringify({ n: qn, ts: Date.now() })); } catch (e) {}
   // Always treat as single part — Self mode user handles token limits themselves
-  return 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + srcText + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 1000000, mode || 'exam', srcText, null, 1, examName);
+  return YAI_HEAD + 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + srcText + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 1000000, mode || 'exam', srcText, null, 1, examName);
 }
 
 /* ========== Self mode: paste card opened from header button — no auto-start ========== */
@@ -4757,16 +4746,18 @@ function yaiTagToLegacy(raw) {
   // Q.1, Q-1, Question 1, Question No. 1, #Q1#, ## Q 1 ##, markdown wrappers,
   // and an optional question statement on the same line. Only line-leading header-like
   // patterns are normalized, so ordinary mentions such as "Q1 is common" inside prose stay intact.
-  const headerLine = /^[ \t>*_`~\-[(]*(?:=+[ \t]*)?(?:#{1,3}[ \t]*)?(?:question(?:[ \t]*(?:number|no\.?|#))?[ \t]*[:#._\/-]?[ \t]*|q[ \t]*[:#._\/-]?[ \t]*[(]?[ \t]*)(\d+)(?:[ \t]*[)\]}]+)?(?:[ \t]*#{1,3})?(?:[ \t]*[:.)\-–—][ \t]*(.*)|[ \t]+(.+))?[ \t]*[*_`~\])}]*$/i;
+  const headerLine = /^[ \t>*_`~\-[(]*(?:=+[ \t]*)?(?:#{1,3}[ \t]*)?(?:(?:question|ques|que|qn|\u092A\u094D\u0930\u0936\u094D\u0928)(?:[ \t]*(?:number|num\.?|no\.?|#))?[ \t]*[:#._\/-]?[ \t]*|q(?:[ \t]*(?:number|num\.?|no\.?))?[ \t]*[:#._\/-]?[ \t]*[(]?[ \t]*)([0-9\u0966-\u096F]+)(?:[ \t]*(?:\/|of)[ \t]*[0-9\u0966-\u096F]+)?(?:[ \t]*[)\]}]+)?(?:[ \t]*#{1,3})?(?:[ \t]*[:.)\-–—][ \t]*(.*)|[ \t]+(.+))?[ \t]*[*_`~\])}]*$/i;
   s = s.split('\n').map(line => {
     const trimmed = line.trim();
     // Preserve the established ##Qn## format; canonicalize all other recognized header styles.
     if (/^[ \t>*_`]*##[ \t]*Q[ \t]*\d+[ \t]*##(?:[ \t]+.*)?$/i.test(line)) {
       return line.replace(/^([ \t>*_`]*##)[ \t]*Q[ \t]*(\d+)[ \t]*##/i, '$1Q$2##');
     }
+    // "Q: 5 moles of gas ..." / "Question: 3 patients ..." is a FIELD whose text starts with a number, not a new header
+    if (/^[ \t>*_`~\-[(]*(?:question|q)[ \t]*[*_`]*[:\uFF1A][ \t]*[*_`]*(?!\d+[ \t]*[.)\]*_`~]*$)\S/i.test(line)) return line;
     const m = trimmed.match(headerLine);
     if (!m) return line;
-    const n = m[1];
+    const n = String(m[1]).replace(/[\u0966-\u096F]/g, d => String(d.charCodeAt(0) - 0x0966));   // Devanagari digits १२३ -> 123
     const rest = (m[2] || m[3] || '').trim();
     return '=Q' + n + (rest ? '\n' + rest : '');
   }).join('\n');
@@ -4790,13 +4781,15 @@ function yaiTagToLegacy(raw) {
 
   const HDR = /^[ \t>*_`]*=[ \t]*Q[ \t]*(\d+)[ \t*_`]*(.*)$/i;
   const END = /^[ \t>*_`]*=[ \t]*END\b/i;
-  const TAG = /^[ \t>*_`]*(ANS|EXP|CON|EV|PG|SEG|LV|DIFF|TYPE|ALT|Q|A|B|C|D|E|F)[ \t]*[*_`]*[ \t]*[:：)][ \t]*[*_`]*[ \t]*(.*)$/i;
+  const TAG = /^[ \t>*_`]*(ANSWER|CORRECT|EXPLANATION|CONCEPT|EVIDENCE|LEVEL|DIFFICULTY|PAGE|SEGMENT|QUESTION|ANS|EXP|CON|EV|PG|SEG|LV|DIFF|TYPE|ALT|Q|A|B|C|D|E|F)[ \t]*[*_`]*[ \t]*[:：)][ \t]*[*_`]*[ \t]*(.*)$/i;
+  // tolerated spellings of the tags (a model sometimes writes Level / Page / Answer ...): mapped to the canonical tag
+    const YAI_ALIAS = { ANSWER: 'ANS', CORRECT: 'ANS', EXPLANATION: 'EXP', CONCEPT: 'CON', EVIDENCE: 'EV', LEVEL: 'LV', DIFFICULTY: 'LV', PAGE: 'PG', SEGMENT: 'SEG', QUESTION: 'Q' };
   const TEXT_KEYS = { Q: 1, A: 1, B: 1, C: 1, D: 1, E: 1, F: 1, EXP: 1, CON: 1, EV: 1 };
   const clean = v => stripAiNoise(v).replace(/[*_`]+$/g, '').replace(/%%/g, '%').replace(/@@/g, '@').replace(/\s*-{3,}\s*/g, ' - ').replace(/\s+/g, ' ').trim();
 
   const emit = b => {
     const f = b.f, L = ['##Q' + b.n + '##'];
-    if (f.Q) L.push(clean(f.Q));
+    if (f.Q) L.push(clean(f.Q).replace(/\s\/\/\s*/g, STEM_NL));   // " // " = line break inside a one-line stem (statements / match / assertion-reason)
     let hasOpt = false;
     ['A', 'B', 'C', 'D', 'E', 'F'].forEach(k => { if (f[k]) { L.push(k + ') ' + clean(f[k])); hasOpt = true; } });
     let typ = clean(f.TYPE).toLowerCase().replace(/[^a-z]/g, '');
@@ -4833,7 +4826,7 @@ function yaiTagToLegacy(raw) {
     if (!t) continue;
     const m = line.match(TAG);
     if (m) {
-      const raw = m[1], key = raw.toUpperCase();
+      const raw = m[1], key0 = raw.toUpperCase(), key = YAI_ALIAS[key0] || key0;
       if (raw.length > 1 || raw === key) {
         cur.f[key] = (cur.f[key] ? cur.f[key] + ' ' : '') + m[2].trim();
         cur.last = key; cur.dead = false; continue;
@@ -5670,7 +5663,7 @@ function buildTopupPrompt(list, mode) {
   if (text.length > MANUAL_MAX_TEXT) text = text.slice(0, MANUAL_MAX_TEXT);
   const excl = list.slice(-80).map(q => '- ' + String(q.question).replace(/\s+/g, ' ').slice(0, 70)).join('\n');
   const examNameTopup = getExamName(true);
-  return 'TASK: ROUND ' + (manualRound + 1) + ' (top-up). I already have ' + got + ' of ' + N + ' questions. Create EXACTLY ' + remaining + ' NEW ' + examNameTopup + '-level quiz questions from the study notes below. '
+  return YAI_HEAD + 'TASK: ROUND ' + (manualRound + 1) + ' (top-up). I already have ' + got + ' of ' + N + ' questions. Create EXACTLY ' + remaining + ' NEW ' + examNameTopup + '-level quiz questions from the study notes below. '
     + (focusUncovered ? 'These pages still have NO questions: cover them first and spread the questions over ALL of them. ' : 'Cover high-yield points that are not asked yet, from new angles. ')
     + 'Do NOT repeat any of these already-made questions or their concepts:\n' + excl + '\n\n=== STUDY NOTES (OCR-extracted) ===\n' + text + '\n=== END OF NOTES ===' + buildQuizInstruction(remaining, 1000000, mode || 'exam', text, null, Math.max(got, ...list.map(q => Number.isFinite(q.num) ? q.num : 0)) + 1, examNameTopup);
 }
@@ -5720,7 +5713,7 @@ function evaluatePaste() {
   const N = lastRequestedCount || list.length;
   if (list.length >= N || manualRound >= MANUAL_MAX_ROUNDS) {
     const isNewTagReply = /(?:^|\n)[ \t>*_`]*=[ \t]*Q[ \t]*\d+/i.test(combined);
-    if (isNewTagReply && !hasYaiEndMarker(combined)) showToast('=END marker nahi mila. Questions parse ho gaye hain; manual mode me quiz start ho raha hai. Auto mode me marker missing ho to system use repair karega.');
+    // =END is optional: the app counts questions, it never complains about a missing marker
     attemptStartQuiz(true); return;
   }
   collectedRaw = combined; pasteBox.value = '';
@@ -8274,7 +8267,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
 // ==UserScript==
 // @name         Quiz Auto Bridge
 // @namespace    quiz-auto-bridge
-// @version      3.7
+// @version      4.0
 // @description  Quiz app ke prompt parts AI site me auto-paste + auto-send. Persistent watcher: signup/consent/popup hone par bhi input box aane tak khud rukta hai.
 // @match        __APP_ORIGIN__/*
 // @match        https://gemini.google.com/*
@@ -8292,7 +8285,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
 (function () {
   'use strict';
   const APP_ORIGIN = '__APP_ORIGIN__';
-  const K_BUNDLE = 'qz_bundle', K_RESULT = 'qz_result', K_POS = 'qz_pos', K_MIN = 'qz_min', K_AT = 'qz_result_at', K_TAKEN = 'qz_result_taken', K_ALIVE = 'qz_app_alive', K_CLAIM = 'qz_claim', K_RUN = 'qz_run', BRIDGE_V = '15', TAB = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  const K_BUNDLE = 'qz_bundle', K_RESULT = 'qz_result', K_POS = 'qz_pos', K_MIN = 'qz_min', K_AT = 'qz_result_at', K_TAKEN = 'qz_result_taken', K_ALIVE = 'qz_app_alive', K_CLAIM = 'qz_claim', K_RUN = 'qz_run', BRIDGE_V = '18', TAB = Math.random().toString(36).slice(2) + Date.now().toString(36);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   /* ------------------------------------------------------------------ app page side */
@@ -8683,15 +8676,21 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
     let s = String(raw == null ? '' : raw).replace(/\r\n?/g, '\n');
     // Same flexible header normalization as the main app: all supported variants become =Qn,
     // then the existing parser emits canonical ##Qn## markers for the bridge to search.
-    const headerLine = /^[ \t>*_`~\-[(]*(?:=+[ \t]*)?(?:#{1,3}[ \t]*)?(?:question(?:[ \t]*(?:number|no\.?|#))?[ \t]*[:#._\/-]?[ \t]*|q[ \t]*[:#._\/-]?[ \t]*[(]?[ \t]*)(\d+)(?:[ \t]*[)\]}]+)?(?:[ \t]*#{1,3})?(?:[ \t]*[:.)\-–—][ \t]*(.*)|[ \t]+(.+))?[ \t]*[*_`~\])}]*$/i;
-    s = s.split('\n').map(line => {
+    const headerLine = /^[ \t>*_`~\-[(]*(?:=+[ \t]*)?(?:#{1,3}[ \t]*)?(?:(?:question|ques|que|qn|\u092A\u094D\u0930\u0936\u094D\u0928)(?:[ \t]*(?:number|num\.?|no\.?|#))?[ \t]*[:#._\/-]?[ \t]*|q(?:[ \t]*[.]?[ \t]*(?:number|num\.?|no\.?))?[ \t]*[:#._\/-]?[ \t]*[(]?[ \t]*)([0-9\u0966-\u096F]+)(?:[ \t]*(?:\/|of)[ \t]*[0-9\u0966-\u096F]+)?(?:[ \t]*[)\]}]+)?(?:[ \t]*#{1,3})?(?:[ \t]*[:.)\-–—][ \t]*(.*)|[ \t]+(.+))?[ \t]*[*_`~\])}]*$/i;
+    // Leading decoration the chat page / model may put before an explicit "=Q<n>" header: markdown #, bullets, emoji, "1." list number
+    const DECOR_LEAD = /^[ \t]*(?:[#>*_`~\-\u2013\u2014\u2022\u25CF\u25AA\u25A0\u25C6\u25E6\u00B7\u25B6\u25BA\u27A4\u2192\u2705\u2611\u2714\u2713\u2753\u2B50\uFE0F\u200D]|\p{Extended_Pictographic}|\d{1,3}[.)](?=[ \t]*=[ \t]*Q[ \t]*\d))[ \t]*/u;
+    s = s.split('\n').map((line, li, allLines) => {
+      { let l2 = line; for (let g = 0; g < 8; g++) { const dm = l2.match(DECOR_LEAD); if (!dm || !dm[0]) break; l2 = l2.slice(dm[0].length); } if (l2 !== line && /^=[ \t]*Q[ \t]*[0-9\u0966-\u096F]/i.test(l2)) line = l2; }   // "### =Q1" / "• =Q1" / "1. =Q1" -> "=Q1"
+      { const bn = line.match(/^[ \t>*_`#]*(\d{1,3})[.)][ \t*_`]*$/); if (bn) { let j = li + 1; while (j < allLines.length && !allLines[j].trim()) j++; if (j < allLines.length && /^[ \t>*_`]*(?:Q|Question)[ \t*_`]*[:\uFF1A]/i.test(allLines[j])) return '=Q' + bn[1]; } }   // bare "1." line right above a "Q:" field = header written as a list number
       if (/^[ \t>*_`]*##[ \t]*Q[ \t]*\d+[ \t]*##(?:[ \t]+.*)?$/i.test(line)) {
         return line.replace(/^([ \t>*_`]*##)[ \t]*Q[ \t]*(\d+)[ \t]*##/i, '$1Q$2##');
       }
+      // "Q: 5 moles of gas ..." / "Question: 3 patients ..." is a FIELD whose text starts with a number, not a new header
+      if (/^[ \t>*_`~\-[(]*(?:question|q)[ \t]*[*_`]*[:\uFF1A][ \t]*[*_`]*(?!\d+[ \t]*[.)\]*_`~]*$)\S/i.test(line)) return line;
       const m = line.trim().match(headerLine);
       if (!m) return line;
       const rest = (m[2] || m[3] || '').trim();
-      return '=Q' + m[1] + (rest ? '\n' + rest : '');
+      return '=Q' + String(m[1]).replace(/[\u0966-\u096F]/g, d => String(d.charCodeAt(0) - 0x0966)) + (rest ? '\n' + rest : '');   // Devanagari digits -> 123
     }).join('\n');
     if (!/(?:^|\n)[ \t>*_`]*=[ \t]*Q[ \t]*\d+/i.test(s)) return s;
     s = s.replace(/[\u00A0\uFEFF\u200B\u200C\u200D\u2060]/g, ' ');
@@ -8713,13 +8712,15 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
   
     const HDR = /^[ \t>*_`]*=[ \t]*Q[ \t]*(\d+)[ \t*_`]*(.*)$/i;
     const END = /^[ \t>*_`]*=[ \t]*END\b/i;
-    const TAG = /^[ \t>*_`]*(ANS|EXP|CON|EV|PG|SEG|LV|DIFF|TYPE|ALT|Q|A|B|C|D|E|F)[ \t]*[*_`]*[ \t]*[:：)][ \t]*[*_`]*[ \t]*(.*)$/i;
+    const TAG = /^[ \t>*_`]*(ANSWER|CORRECT|EXPLANATION|CONCEPT|EVIDENCE|LEVEL|DIFFICULTY|PAGE|SEGMENT|QUESTION|ANS|EXP|CON|EV|PG|SEG|LV|DIFF|TYPE|ALT|Q|A|B|C|D|E|F)[ \t]*[*_`]*[ \t]*[:：)][ \t]*[*_`]*[ \t]*(.*)$/i;
+    // tolerated spellings of the tags (a model sometimes writes Level / Page / Answer ...): mapped to the canonical tag
+    const YAI_ALIAS = { ANSWER: 'ANS', CORRECT: 'ANS', EXPLANATION: 'EXP', CONCEPT: 'CON', EVIDENCE: 'EV', LEVEL: 'LV', DIFFICULTY: 'LV', PAGE: 'PG', SEGMENT: 'SEG', QUESTION: 'Q' };
     const TEXT_KEYS = { Q: 1, A: 1, B: 1, C: 1, D: 1, E: 1, F: 1, EXP: 1, CON: 1, EV: 1 };
     const clean = v => stripAiNoise(v).replace(/[*_`]+$/g, '').replace(/%%/g, '%').replace(/@@/g, '@').replace(/\s*-{3,}\s*/g, ' - ').replace(/\s+/g, ' ').trim();
   
     const emit = b => {
       const f = b.f, L = ['##Q' + b.n + '##'];
-      if (f.Q) L.push(clean(f.Q));
+      if (f.Q) L.push(clean(f.Q).replace(/\s\/\/\s*/g, STEM_NL));   // " // " = line break inside a one-line stem (statements / match / assertion-reason)
       let hasOpt = false;
       ['A', 'B', 'C', 'D', 'E', 'F'].forEach(k => { if (f[k]) { L.push(k + ') ' + clean(f[k])); hasOpt = true; } });
       let typ = clean(f.TYPE).toLowerCase().replace(/[^a-z]/g, '');
@@ -8756,7 +8757,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
       if (!t) continue;
       const m = line.match(TAG);
       if (m) {
-        const raw = m[1], key = raw.toUpperCase();
+        const raw = m[1], key0 = raw.toUpperCase(), key = YAI_ALIAS[key0] || key0;
         if (raw.length > 1 || raw === key) {
           cur.f[key] = (cur.f[key] ? cur.f[key] + ' ' : '') + m[2].trim();
           cur.last = key; cur.dead = false; continue;
@@ -8853,12 +8854,13 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
   function trimJson(t) {
     // Preserve canonical plain-text tags for end-marker detection and strict field validation.
     const rawReply = String(t || '').replace(/\r\n?/g, '\n');
-    const tagStart = rawReply.search(/^[ \t>*_`]*=[ \t]*Q[ \t]*\d+/im);
+    const tagStart = rawReply.search(/^[^\p{L}\p{N}\n]*(?:\d{1,3}[.)][ \t]*)?=[ \t]*Q[ \t]*\d+/imu);   // also "### =Q1", "• =Q1", "1. =Q1"
     if (tagStart >= 0) {
       let tagged = rawReply.slice(tagStart).trim();
-      const endRe = /^[ \t>*_`]*=[ \t]*END[ \t*_`]*$/im;
-      const endMatch = endRe.exec(tagged);
-      if (endMatch) tagged = tagged.slice(0, endMatch.index + endMatch[0].length).trim();
+      // cut chatter only after the LAST =END, and only if no question header follows it
+      // (a model may write =END after every question: the first one must never truncate the rest)
+      const endAll = [...tagged.matchAll(/^[ \t>*_`]*=[ \t]*END[ \t*_`]*$/gim)], lastEnd = endAll[endAll.length - 1];
+      if (lastEnd && !/^[^\p{L}\p{N}\n]*(?:\d{1,3}[.)][ \t]*)?=[ \t]*Q[ \t]*\d+/imu.test(tagged.slice(lastEnd.index + lastEnd[0].length))) tagged = tagged.slice(0, lastEnd.index + lastEnd[0].length).trim();
       return tagged;
     }
     // An END-only repair reply must remain visible to getBlocks/bestOf; it has no question header by design.
@@ -8932,24 +8934,57 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
     }
     const ordered = [...byId.keys()].sort((a,b) => a-b).map(n => byId.get(n));
     if (!ordered.length) return '';
-    // Locate the last in-range question header in the ORIGINAL text, tolerating spaces,
-    // Markdown wrappers and both supported header styles. An older part's =END must not
-    // be mistaken for the current part's terminator.
-    const headerRe = /^[ \t>*_`]*=\s*Q\s*(\d+)\b.*$|^[ \t>*_`]*##\s*Q\s*(\d+)\s*##.*$/gim;
-    let lastHeader = -1, hm;
-    while ((hm = headerRe.exec(source))) {
-      const n = Number(hm[1] || hm[2]);
-      if (n >= startN && n <= endN) lastHeader = hm.index;
+    // Completion never depends on an =END marker: the caller only checks that every requested =Q number is present.
+    return ordered.join('\n');
+  }
+  /* ---- renumbering rescue ----
+     A model often restarts numbering in a later part (Part 2 comes back as =Q1..=Q25 instead of =Q26..=Q50) or in a repair reply
+     (asked for =Q27, writes =Q1). Requested IDs are always looked up first. Only if some are absent, the NEW reply of this send
+     (blocks after `base`, never older replies) is mapped onto the missing IDs:
+       - nothing of the range seen yet -> one constant shift (Q1..Q25 -> Q26..Q50, gaps are kept)
+       - part of it already banked      -> the new blocks, in order, fill the still-missing IDs (never more blocks than free slots) */
+  let banked = '';   // text already captured for the range while a repair reply is awaited
+  function splitById(canon) {
+    const order = [], byId = new Map();
+    for (const ch of String(canon || '').split(/(?=^##Q\d+##\s*$)/m)) {
+      const m = ch.match(/^##Q(\d+)##\s*$/m); if (!m) continue;
+      const n = Number(m[1]), c = ch.trim();
+      if (!byId.has(n)) order.push(n);
+      if (!byId.has(n) || c.length > byId.get(n).length) byId.set(n, c);
     }
-    const ends = [...source.matchAll(/(?<![A-Za-z0-9_])=[ \t]*END(?![A-Za-z0-9_])/gi)];
-    const hasRangeEnd = ends.some(e => e.index > lastHeader);
-    return ordered.join('\n') + (hasRangeEnd ? '\n=END' : '');
+    return { order, byId };
+  }
+  // same ID twice -> keep the longer block; ascending ID order. Untagged (legacy JSON) text passes through untouched.
+  function dedupeById(t) {
+    const canon = bridgeCanon(t);
+    if (!/^##Q\d+##\s*$/m.test(canon)) return String(t || '');
+    const { order, byId } = splitById(canon);
+    return order.slice().sort((x, y) => x - y).map(n => byId.get(n)).join('\n');
+  }
+  function extractRangeSmart(bl, base, startN, count) {
+    const direct = extractQuestionRange(bl.join('\n'), startN, count);
+    if (!Number.isFinite(startN) || !Number.isFinite(count)) return direct;
+    const endN = startN + count - 1, inR = n => n >= startN && n <= endN;
+    const have = new Set([...rangeIds(direct), ...rangeIds(banked)].filter(inR));
+    const need = []; for (let k = startN; k <= endN; k++) if (!have.has(k)) need.push(k);
+    if (!need.length) return direct;
+    const b0 = Math.min(Math.max(0, Number(base) || 0), bl.length);
+    const fresh = splitById(bridgeCanon(bl.slice(b0).join('\n')));
+    const foreign = fresh.order.filter(n => !inR(n));
+    if (!foreign.length) return direct;
+    const map = new Map();   // id written by the AI -> id it should have had
+    if (!have.size) { const off = startN - Math.min(...foreign); foreign.forEach(n => { if (inR(n + off)) map.set(n, n + off); }); }
+    else if (foreign.length <= need.length) foreign.forEach((n, i) => map.set(n, need[i]));
+    if (!map.size) return direct;
+    const all = splitById(direct).byId;
+    map.forEach((to, from) => all.set(to, fresh.byId.get(from).replace(/^##Q\d+##/, '##Q' + to + '##')));
+    return [...all.keys()].sort((x, y) => x - y).map(n => all.get(n)).join('\n');
   }
   // Keep a best capture per requested numeric range. Do not slice by old DOM block count.
   let captured = '';
   const bestOf = (base, startN, count) => {
     const cur = (Number.isFinite(startN) && Number.isFinite(count))
-      ? extractQuestionRange(getBlocks().join('\n'), startN, count)
+      ? extractRangeSmart(getBlocks(), base, startN, count)
       : getBlocks().slice(base || 0).join('\n');
     const saved = (Number.isFinite(startN) && Number.isFinite(count))
       ? extractQuestionRange(captured, startN, count) : captured;
@@ -9014,11 +9049,24 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
     return false;   // nothing observably happened: caller can still fall back to highlighting the Send button
   }
 
-  // Wait until a new reply appears and the AI stops writing; =END lets plain-text replies settle faster.
+  // Number-based completion (no =END needed): which question IDs of the requested range are already in the reply?
+  function rangeIds(t) {
+    const s = bridgeCanon(t), ids = new Set();
+    for (const m of s.matchAll(/^##Q(\d+)##\s*$/gm)) { const n = Number(m[1]); if (Number.isInteger(n) && n > 0) ids.add(n); }
+    return ids;
+  }
+  function hasAllNumbers(t, startN, count) {
+    const ids = rangeIds(t);
+    for (let n = startN; n < startN + count; n++) if (!ids.has(n)) return false;
+    return true;
+  }
+
+  // Wait until a new reply appears and the AI stops writing. For a numbered part, "done" = every requested =Q number is present; =END is never needed.
   async function waitDone(baseCount, maxMs, onGen, onNoStart, rangeStart, rangeCount) {
     const t0 = Date.now();
     captured = '';
     let seenGen = false, lastSig = '', lastChange = Date.now(), warned = false;
+    let sigChangedAt = Date.now();   // last time the reply text itself changed (ignores the "generating" flag)
     let quietStreak = 0;   // consecutive polls (every POLL_MS) with zero change AND not generating
     const POLL_MS = 600;   // poll fast: the model can finish a 25-question reply in well under a minute,
                             // and a slow poll is exactly what causes "read while still writing" false-completes.
@@ -9028,7 +9076,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
       if (gen && !seenGen) { seenGen = true; if (onGen) onGen(); }
       const bl = getBlocks();
       const cur = (Number.isFinite(rangeStart) && Number.isFinite(rangeCount))
-        ? extractQuestionRange(bl.join('\n'), rangeStart, rangeCount)
+        ? extractRangeSmart(bl, baseCount, rangeStart, rangeCount)
         : bl.slice(baseCount).join('\n');
       if (cur && (cnt(cur) > cnt(captured) || (cnt(cur) === cnt(captured) && cur.length >= captured.length))) captured = cur;   // retain best numbered-range capture even if DOM later changes
       // Length-only signatures miss edits where the model replaces text without changing its length.
@@ -9038,7 +9086,13 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
       if (changed || gen) { lastSig = sig; lastChange = Date.now(); quietStreak = 0; }
       const grew = (Number.isFinite(rangeStart) && Number.isFinite(rangeCount)) ? (cnt(cur) > 0 || cnt(captured) > 0) : (bl.length > baseCount || !!captured);
       const replyNow = String(cur || captured).trim();
-      const looksDone = /\]\s*\}\s*$/.test(replyNow) || hasYaiEndMarker(replyNow);
+      const ranged = Number.isFinite(rangeStart) && Number.isFinite(rangeCount);
+      const allIn = ranged && hasAllNumbers(replyNow + '\n' + banked, rangeStart, rangeCount);   // every requested number (e.g. Q1..Q20) is present
+      if (changed) sigChangedAt = Date.now();
+      // numbered part: ONLY the =Q numbers decide. =END / JSON-close are used just for un-numbered legacy replies.
+      const looksDone = ranged ? allIn : (/\]\s*\}\s*$/.test(replyNow) || hasYaiEndMarker(replyNow));
+      // a site whose "stop" indicator sticks after the reply is finished must not block us when all numbers are in and nothing changed for 8 s
+      const stuckDone = allIn && grew && Date.now() - sigChangedAt > 8000;
       // Completion is decided by SIGNAL, not a clock: the model's own "stop generating" state plus the
       // DOM/text going quiet. We never assume done just because some fixed number of seconds passed —
       // output speed varies a lot (a 25-question reply might settle in well under a minute or take much
@@ -9047,16 +9101,16 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
       // polls (no streaming flag, no content change) before declaring done, and require more of them when
       // there's no explicit =END / JSON-close marker yet (so a cut-off reply isn't mistaken for a pause).
       if (grew && !gen && !changed) quietStreak++;
-      const neededQuiet = looksDone ? 3 : 12;   // ~1.8s confirm once =END seen, ~7.2s confirm without one
-      if (grew && !gen && quietStreak >= neededQuiet) {
+      const neededQuiet = ranged ? (allIn ? 2 : 12) : (looksDone ? 3 : 12);   // all requested numbers seen: just wait ~1.2s for the AI to stop typing (question content is NOT judged here); numbers missing: ~7.2s
+      if ((grew && !gen && quietStreak >= neededQuiet) || stuckDone) {
         // Final re-confirm straight from the DOM (not just our tracked signature) right before declaring done,
         // to catch a last-moment render that our polling window could have just missed.
         const blF = getBlocks();
         const curF = (Number.isFinite(rangeStart) && Number.isFinite(rangeCount))
-          ? extractQuestionRange(blF.join('\n'), rangeStart, rangeCount)
+          ? extractRangeSmart(blF, baseCount, rangeStart, rangeCount)
           : blF.slice(baseCount).join('\n');
         if (curF && (cnt(curF) > cnt(captured) || (cnt(curF) === cnt(captured) && curF.length >= captured.length))) captured = curF;
-        if (isGenerating()) { quietStreak = 0; lastChange = Date.now(); continue; }
+        if (isGenerating() && !stuckDone) { quietStreak = 0; lastChange = Date.now(); continue; }
         const sigF = blF.length + ':' + (blF.length ? String(blF[blF.length - 1]).slice(-500) : '') + ':' + String(captured).slice(-500);
         if (sigF !== sig) { lastSig = sigF; lastChange = Date.now(); quietStreak = 0; continue; }
         return true;
@@ -9306,10 +9360,17 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
         }
       } catch (e) {}
     }
+    const askedN = new Map();   // question ID -> how many times it was re-requested
     async function askMissing(txt, startN, q, label, forceEnd) {
-      const miss = missingOf(qScan(txt), startN, q);
-      const needsEnd = !!forceEnd && !hasYaiEndMarker(txt);
+      let miss = missingOf(qScan(txt), startN, q);
+      const needsEnd = false;   // =END is optional: the script only counts =Q numbers and asks for the missing ones
       if (!miss.count && !needsEnd) return '';
+      if (miss.list.length) {   // each question ID is asked for at most twice in total (part check + final check): no endless re-asking
+        const fresh = miss.list.filter(n => (askedN.get(n) || 0) < 2);
+        if (!fresh.length) return '';
+        miss = { list: fresh, count: fresh.length };
+        fresh.forEach(n => askedN.set(n, (askedN.get(n) || 0) + 1));
+      }
       const base2 = getBlocks().length;
       const what = miss.list.length ? '=Q' + miss.list.join(' and =Q') : miss.count + ' more questions (=Q' + (startN + q - miss.count) + ' through =Q' + (startN + q - 1) + ')';
       const msg = (!miss.count && needsEnd)
@@ -9319,8 +9380,10 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
       await pause(3000, 7000);
       if (stopped || !(await insertPrompt(msg))) return '';
       await pause(1200, 3000); await clickSend();
+      banked = txt;   // what we already hold: a repair reply that restarts numbering is mapped onto the still-missing IDs only
       await waitDone(base2, 8 * 60000, null, null, startN, q);
-      return bestOf(base2, startN, q);
+      const got2 = bestOf(base2, startN, q); banked = '';
+      return got2;
     }
     const siteReady = await prepareSite(ui, bundle);
     if (!siteReady || stopped) return;
@@ -9391,19 +9454,12 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
 
         // reply cut / short / some questions unreadable? ask (max 2 rounds) for exactly the missing ones
         for (let round = 0; round < 2 && !stopped && got > 0; round++) {
-          const extra = await askMissing(text, part.startN, part.q, label);
+          const extra = await askMissing(text, part.startN, part.q, label), before = got;
           if (!extra) break;
-          text += '\n' + extra; got = cnt(text);
+          text = dedupeById(text + '\n' + extra); got = cnt(text);
+          if (got <= before) break;   // the repair brought nothing new: do not ask the same thing again
         }
-        // Question count alone is not completion: require the explicit plain-text terminator per part.
-        if (!stopped && got > 0 && !hasYaiEndMarker(text)) {
-          // Retry the tiny terminator-only repair once if the AI ignores the first request.
-          for (let endAttempt = 0; endAttempt < 2 && !stopped && !hasYaiEndMarker(text); endAttempt++) {
-            const endFix = await askMissing(text, part.startN, part.q, label + ' END marker', true);
-            if (endFix) text += '\n' + endFix;
-          }
-          if (!hasYaiEndMarker(text)) endWarnings.push(label);
-        }
+        // Completion = the requested =Q numbers are present (missing ones were re-requested above). =END is optional and never required.
         break;
       }
       if (stopped) break;
@@ -9419,9 +9475,10 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
     if (!stopped && !fatal && bundle.total) {
       allText = results.join('\n');
       for (let round = 0; round < 2 && !stopped; round++) {
-        const extra = await askMissing(allText, 1, bundle.total, 'Final check');
+        const extra = await askMissing(allText, 1, bundle.total, 'Final check'), before = cnt(allText);
         if (!extra) break;
-        results.push(extra); allText = results.join('\n');
+        results.push(extra); allText = dedupeById(results.join('\n'));   // the repair text re-contains the whole range: merge by question ID, never twice
+        if (cnt(allText) <= before) break;
       }
     }
     if (stopped) return;
@@ -9441,7 +9498,6 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
     const finalScan = qScan(allText);
     const finalMissing = bundle.total ? missingOf(finalScan, 1, bundle.total) : { list: [], count: 0 };
     const finalWarnings = [];
-    if (endWarnings.length) finalWarnings.push(endWarnings.join(', ') + ' me =END marker confirm nahi hua');
     if (finalMissing.count) finalWarnings.push(finalMissing.count + ' expected question(s) abhi missing/incomplete: ' + (finalMissing.list.length ? finalMissing.list.map(n => 'Q' + n).join(', ') : 'count mismatch'));
     if (finalScan.partialNums && finalScan.partialNums.size) finalWarnings.push('kuch fields (CON/EV/PG/LV) off format the: ' + [...finalScan.partialNums].sort((a,b) => a-b).map(n => 'Q' + n).join(', ') + ' (dobara nahi manga)');
     if (finalScan.duplicateNums && finalScan.duplicateNums.size) finalWarnings.push('duplicate question IDs: ' + [...finalScan.duplicateNums].sort((a,b) => a-b).map(n => 'Q' + n).join(', '));
