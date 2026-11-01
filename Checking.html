@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam Yatri — AI Model Tester</title>
+<style>
+:root{--bg:#111;--card:#1c1c1e;--line:#333;--tx:#eee;--mut:#999;--ok:#3ddc84;--bad:#ff5c5c;--warn:#ffb020;--acc:#6ea8ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,sans-serif;padding:12px;max-width:900px;margin:auto}
+h1{font-size:20px;margin:6px 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
+input,select,button{font:inherit;color:var(--tx);background:#2a2a2d;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+input{width:100%}
+button{cursor:pointer}
+button.pri{background:var(--acc);color:#000;border:0;font-weight:600}
+button:disabled{opacity:.5}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.row>*{flex:1 1 auto}
+.sum{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:6px 10px;border-radius:20px;background:#2a2a2d;font-weight:600}
+.m{border-top:1px solid var(--line);padding:10px 0}
+.m:first-child{border-top:0}
+.top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.name{font-weight:600;word-break:break-all}
+.meta{color:var(--mut);font-size:13px}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.out{margin-top:6px;font-size:13px;white-space:pre-wrap;word-break:break-word;background:#141416;border-radius:6px;padding:6px 8px;display:none}
+h2{font-size:15px;margin:0 0 6px;color:var(--acc)}
+</style>
+</head>
+<body>
+<h1>🧪 AI Model Tester</h1>
+
+<div class="card">
+  <div class="meta">Val Town URL</div>
+  <input id="url" placeholder="https://xxxx.web.val.run">
+  <div class="meta" style="margin-top:8px">Test message</div>
+  <input id="prompt" value="Hi">
+  <div class="row">
+    <button class="pri" id="load">🔄 Status load karo</button>
+    <button class="pri" id="all" disabled>▶ Sab models test karo</button>
+  </div>
+  <div class="row sum" id="sum"></div>
+  <div class="meta" id="msg" style="margin-top:8px"></div>
+</div>
+
+<div id="list"></div>
+
+<script>
+const DEFAULT_URL = 'https://vishalyadav--ac9af586d5c311f1ac7a1607ee4eb77e.web.val.run';
+const $ = (id) => document.getElementById(id);
+let models = [];            // {id, company, model, keys, state}
+const res = {};             // id -> 'ok' | 'bad'
+
+try { $('url').value = localStorage.getItem('ey_test_url') || DEFAULT_URL; } catch (e) { $('url').value = DEFAULT_URL; }
+const base = () => $('url').value.trim().replace(/\/+$/, '');
+
+function summary() {
+  const total = models.length;
+  const ok = Object.values(res).filter((v) => v === 'ok').length;
+  const bad = Object.values(res).filter((v) => v === 'bad').length;
+  const skipped = models.filter((m) => m.state !== 'ok').length;
+  $('sum').innerHTML = '';
+  [['Total: ' + total, ''], ['✅ Chal rahe: ' + ok, 'ok'], ['❌ Fail: ' + bad, 'bad'], ['⏸ Skipped: ' + skipped, 'warn'], ['⏳ Test baaki: ' + (total - ok - bad), '']].forEach(([t, c]) => {
+    const s = document.createElement('span'); s.className = 'pill ' + c; s.textContent = t; $('sum').appendChild(s);
+  });
+}
+
+function render() {
+  const box = $('list'); box.innerHTML = '';
+  const groups = {};
+  models.forEach((m) => (groups[m.company] ||= []).push(m));
+  Object.keys(groups).forEach((co) => {
+    const card = document.createElement('div'); card.className = 'card';
+    const h = document.createElement('h2'); h.textContent = co + ' (' + groups[co].length + ' models, ' + groups[co][0].keys + ' key)'; card.appendChild(h);
+    groups[co].forEach((m) => {
+      const d = document.createElement('div'); d.className = 'm'; d.id = 'm_' + m.id;
+      const top = document.createElement('div'); top.className = 'top';
+      const left = document.createElement('div');
+      const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = m.model; left.appendChild(nm);
+      const mt = document.createElement('div'); mt.className = 'meta';
+      mt.textContent = 'Status: ' + (m.state === 'ok' ? 'ready ✅' : m.state + ' ⏸'); left.appendChild(mt);
+      const right = document.createElement('div'); right.style.display = 'flex'; right.style.gap = '6px'; right.style.alignItems = 'center';
+      let sel = null;
+      if (m.keys > 1) {
+        sel = document.createElement('select');
+        for (let i = 0; i < m.keys; i++) { const o = document.createElement('option'); o.value = i; o.textContent = 'key ' + (i + 1); sel.appendChild(o); }
+        right.appendChild(sel);
+      }
+      const b = document.createElement('button'); b.textContent = 'Test'; b.onclick = () => testOne(m, b, sel ? sel.value : 0);
+      right.appendChild(b);
+      top.appendChild(left); top.appendChild(right); d.appendChild(top);
+      const out = document.createElement('div'); out.className = 'out'; out.id = 'o_' + m.id; d.appendChild(out);
+      card.appendChild(d);
+    });
+    box.appendChild(card);
+  });
+  summary();
+}
+
+async function load() {
+  const u = base(); if (!u) return;
+  try { localStorage.setItem('ey_test_url', u); } catch (e) {}
+  $('msg').textContent = 'Load ho raha hai...'; $('load').disabled = true;
+  try {
+    const r = await fetch(u + '/status');
+    const j = await r.json();
+    models = (j.order || []).map((x) => {
+      const i = x.id.indexOf(':');
+      return { id: x.id, company: x.id.slice(0, i), model: x.id.slice(i + 1), keys: x.keys, state: x.state };
+    });
+    Object.keys(res).forEach((k) => delete res[k]);
+    $('msg').textContent = models.length ? 'Total ' + models.length + ' models mile.' : '⚠️ Koi model set nahi hai — env vars check karo.';
+    $('all').disabled = !models.length;
+    render();
+  } catch (e) {
+    $('msg').textContent = '❌ Status nahi mila: ' + e.message + ' (URL ya AI_ALLOWED_ORIGINS check karo)';
+  }
+  $('load').disabled = false;
+}
+
+async function testOne(m, btn, key) {
+  const out = $('o_' + m.id); out.style.display = 'block'; out.className = 'out'; out.textContent = '⏳ Test ho raha hai...';
+  if (btn) btn.disabled = true;
+  const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 50000);
+  try {
+    const r = await fetch(base() + '/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target: m.id, key: parseInt(key) || 0, prompt: $('prompt').value || 'Hi' }), signal: ctl.signal });
+    const j = await r.json();
+    if (j.ok) {
+      res[m.id] = 'ok';
+      out.className = 'out ok'; out.textContent = '✅ Chal raha hai — ' + (j.ms / 1000).toFixed(1) + 's' + (m.keys > 1 ? ' (key ' + j.key + ')' : '') + '\n' + j.text;
+    } else {
+      res[m.id] = 'bad';
+      out.className = 'out bad'; out.textContent = '❌ Fail' + (j.status ? ' (HTTP ' + j.status + ')' : '') + (m.keys > 1 && j.key ? ' key ' + j.key : '') + ' — ' + (j.error || 'unknown');
+    }
+  } catch (e) {
+    res[m.id] = 'bad';
+    out.className = 'out bad'; out.textContent = '❌ Fail — ' + (e.name === 'AbortError' ? 'timeout' : e.message);
+  }
+  out.style.display = 'block';
+  clearTimeout(tm);
+  if (btn) btn.disabled = false;
+  summary();
+}
+
+async function testAll() {
+  $('all').disabled = true; $('load').disabled = true;
+  const queue = models.slice();
+  const worker = async () => { while (queue.length) { const m = queue.shift(); await testOne(m, null, 0); } };
+  await Promise.all([worker(), worker()]);   // 2 at a time
+  $('msg').textContent = 'Sab test ho gaye.';
+  $('all').disabled = false; $('load').disabled = false;
+}
+
+$('load').onclick = load;
+$('all').onclick = testAll;
+load();
+</script>
+</body>
+</html>
