@@ -3710,7 +3710,7 @@ function planManualParts(srcText, N) {
   // Exam Yatri: a SMALL first part (EY_FIRST_Q questions) so the quiz can start in a few seconds;
   // the remaining parts are generated in the background while the student already plays.
   const eyHead = (ey && N > EY_FIRST_Q + 2) ? EY_FIRST_Q : 0;
-  if (String(srcText || '').length <= MANUAL_MAX_TEXT) {
+  if (String(srcText || '').length <= MANUAL_MAX_TEXT || eyHead) {   // Exam Yatri: long notes ALSO get the segment plan (each part is sent only its own segments, so length is no problem)
     const counts = eyHead
       ? [eyHead, ...evenSplit(N - eyHead, Math.max(1, Math.ceil((N - eyHead) / capQ)))]
       : splitQ(N, Math.max(1, Math.ceil(N / capQ)));
@@ -5885,7 +5885,7 @@ function eyRenderModels() {
   menu.innerHTML = '';
   if (!eyModels || !eyModels.length) { chev.hidden = true; cur.hidden = true; eyCloseMenu(); return; }
   if (!eyModels.some(m => m.id === eyModel)) eyModel = eyModels[0].id;
-  const multi = eyModels.length > 1, sel = eyModels.find(m => m.id === eyModel);
+  const multi = false, sel = eyModels.find(m => m.id === eyModel);   // students never choose a model: the gateway picks the AI automatically
   chev.hidden = !multi; cur.hidden = !multi;
   cur.textContent = multi && sel ? (sel.label || sel.id) : '';
   if (!multi) eyCloseMenu();
@@ -5929,12 +5929,12 @@ async function eyLoadModels(force, quiet) {
   } finally { eyLoading = false; }
 }
 
-async function eyAsk(prompt, signal, effortOverride) {
+async function eyAsk(prompt, signal, effortOverride, race) {
   for (let a = 0; a < 3; a++) {
     try {
       let r;
       try {
-        r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: eyModel, prompt: prompt + EY_GATE, effort: effortOverride || eyEffort }), signal });
+        r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: eyModel, prompt: prompt + EY_GATE, effort: effortOverride || eyEffort, race: !!race }), signal });
       } catch (ne) {
         if (ne.name === 'AbortError') throw ne;
         throw new Error('Network error');
@@ -6123,7 +6123,7 @@ async function generateQuizWithEY(mode) {
   const sig = aiAbortController.signal;
   try {
     aiGenSub.textContent = P > 1 ? `Part 1 / ${P} (pehle ${frozen.parts[0].q} sawal)...` : t('genSub');
-    const reply1 = await eyAsk(first, sig, EY_FIRST_EFFORT);
+    const reply1 = await eyAsk(first, sig, EY_FIRST_EFFORT, true);   // race: same request goes to 2 keys at once, first answer wins
     collectedRaw += (collectedRaw ? '\n' : '') + reply1;
 
     if (P > 1) {
