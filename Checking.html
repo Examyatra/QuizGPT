@@ -116,7 +116,8 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 .tag.ok{background:var(--ok-bg);color:var(--ok)}.tag.bad{background:var(--bad-bg);color:var(--bad)}
 .note{margin:0 2px 10px;font-size:12.5px;color:var(--warn)}
 /* v5: per-company colour, key buttons, gateway cards */
-.cohead{border-left:4px solid var(--c,var(--acc));padding-left:10px}
+.cohead{border-left:4px solid var(--c,var(--acc));padding-left:10px;gap:4px 12px;flex-wrap:wrap}
+.cohead span{text-align:left}
 .chip.on{border-color:var(--c,var(--acc))}
 .send[data-s=ok]{background:var(--ok)}.send[data-s=bad]{background:var(--bad)}.send[data-s=load]{background:var(--warn)}
 .send.kb{min-width:44px;padding:7px 10px}
@@ -132,6 +133,7 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 .bar{height:4px;border-radius:4px;background:var(--surface2);margin:5px 0 3px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--c)}
 .tag.warn{background:#fff3df;color:var(--warn)}
+.m.paid{opacity:.55}
 .gerr{font-size:12px;color:var(--bad);overflow-wrap:anywhere}
 .chips.tiers .chip{padding:5px 10px;font-size:12.5px}
 </style>
@@ -167,8 +169,9 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
     <div class="crow">
       <button class="pri" id="co" disabled>Test shown models</button>
       <button class="sec" id="all" disabled>Test all ★ models</button>
+      <button class="sec" id="smart" disabled>🧠 Smart test</button>
     </div>
-    <div class="hint">★ = gateway ke chune hue (pool) models. Har model ke saamne har key ka alag button (K1, K2…) hai. Test ke natije gateway ki rating me bhi jud jaate hain, to naya model (jaise Mercury) test karte hi leaderboard me upar aa sakta hai.</div>
+    <div class="hint">★ = gateway pool · K1/K2 = us key se test · 🧠 Smart test ek baar me max 12 models jaanchta hai: pehle naye, phir 2+ din purane (paid aur band chhod deta hai). Natije SQLite me save hote hain.</div>
   </div>
 </div>
 
@@ -180,7 +183,7 @@ const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) 
 let provs = [];          // /admin/models : company -> keys -> models each key can see
 let board = [];          // /status : gateway leaderboard (real traffic ratings)
 let dbOn = null;
-let gwCo = '', gwTier = '', keyState = {};   // gateway tab filters + per-company key rest state
+let gwCo = '', gwTier = '', keyState = {}, bidx = {};   // gateway tab filters + per-company key rest state
 const res = {};          // rid -> 'ok' | 'bad'
 const outs = {};         // rid -> {kind, head, text, right}
 const refs = {};         // rid -> {row, out}  (only for rows currently on screen)
@@ -248,13 +251,14 @@ function softRefresh() {
   rt = setTimeout(async () => {
     try {
       const { j } = await getJson('/status');
-      if (j && Array.isArray(j.leaderboard)) { board = j.leaderboard; dbOn = j.db; keyState = j.keyState || {}; if (cur === '@gw') render(); }
+      if (j && Array.isArray(j.leaderboard)) { board = j.leaderboard; dbOn = j.db; keyState = j.keyState || {}; if (cur === '@gw') render(); else updateButtons(); }
     } catch (e) {}
   }, 1500);
 }
 
 /* ---------- rendering ---------- */
 function render() {
+  bidx = {}; board.forEach((b) => { bidx[b.id] = b; });
   const tabs = $('tabs'); tabs.innerHTML = '';
   if (cur !== '@gw' && !provs.some((p) => p.id === cur)) cur = provs.length ? provs[0].id : (board.length ? '@gw' : null);
   provs.forEach((p) => {
@@ -265,7 +269,7 @@ function render() {
   });
   if (board.length) {
     const t = el('button', 'tab' + (cur === '@gw' ? ' on' : ''), '📊 Gateway');
-    t.appendChild(el('i', '', board.length));
+    t.appendChild(el('i', '', gwRows().length));
     t.onclick = () => { cur = '@gw'; render(); };
     tabs.appendChild(t);
   }
@@ -283,7 +287,7 @@ function renderCompany(box, p) {
   let ki = curKey[p.id] ?? -1; if (ki >= p.keys.length) ki = -1; curKey[p.id] = ki;
   const sel = ki < 0 ? p.keys : [p.keys[ki]];
   const col = coColor(p.id);
-  const bm = {}; board.forEach((b) => { bm[b.id] = b; });
+  const bm = bidx;
   const head = el('div', 'cohead'); head.style.setProperty('--c', col); head.appendChild(el('h2', '', p.label));
   head.appendChild(el('span', '', [p.host, p.format, p.keys.length + ' key', p.auto ? 'auto discovery' : 'forced models'].filter(Boolean).join(' · ')));
   box.appendChild(head);
@@ -320,8 +324,8 @@ function renderCompany(box, p) {
       const top = el('div', 'top'); top.appendChild(el('span', 'dot'));
       const info = el('div', 'info'); const nm = el('div', 'name', m); if (isStar(p, m)) nm.appendChild(el('span', 'star', '★'));
       info.appendChild(nm);
-      const b0 = bm[p.id + ':' + m];
-      info.appendChild(el('div', 'meta', 'Key ' + ks.map((k) => k.n).join(', ') + ' pe available · ' + (b0 ? 'gateway: rating ' + b0.rating + (b0.avgSec != null ? ' · ' + b0.avgSec + 's' : '') + ' · ' + (b0.tier || '') : 'gateway pool ke bahar')));
+      const b0 = bm[p.id + ':' + m]; const pd = !!(b0 && b0.tier === 'paid'); if (pd) d.classList.add('paid');
+      info.appendChild(el('div', 'meta', 'Key ' + ks.map((k) => k.n).join(', ') + ' pe available · ' + (pd ? '💰 paid: gateway ise nahi aazmata' : b0 ? 'gateway: rating ' + b0.rating + (b0.avgSec != null ? ' · ' + b0.avgSec + 's' : '') + ' · ' + (b0.tier || '') : 'gateway pool ke bahar')));
       top.appendChild(info);
       const ctl = el('div', 'ctl'); const outs2 = el('div', 'outs');
       ks.forEach((k) => {
@@ -329,7 +333,7 @@ function renderCompany(box, p) {
         const b = el('button', 'send kb', ks.length > 1 ? 'K' + k.n : 'Send'); b.title = 'Key ' + k.n + ' se test karo';
         b.onclick = () => testOne(p, k, m, b); ctl.appendChild(b);
         const out = el('div', 'out'); out.hidden = true; outs2.appendChild(out);
-        refs[r0] = { row: d, out, kb: b }; shown.push({ p, k, m });
+        refs[r0] = { row: d, out, kb: b }; if (!pd) shown.push({ p, k, m });
       });
       top.appendChild(ctl); d.appendChild(top); d.appendChild(outs2);
       list.appendChild(d);
@@ -343,8 +347,7 @@ function renderCompany(box, p) {
   draw();
 }
 
-const TIERS = { elite: ['⭐ Elite', 'ok'], ok: ['✓ Theek', 'ok'], new: ['🆕 Naya', ''], slow: ['🐢 Slow', 'warn'], resting: ['⛔ Block', 'bad'] };
-function renderGateway(box) {
+function gwRows() {
   const rows = board.map((b) => ({
     ...b,
     prov: b.provider || b.id.split(':')[0],
@@ -352,6 +355,17 @@ function renderGateway(box) {
     tier: b.tier || (String(b.state).startsWith('resting') ? 'resting' : b.elite ? 'elite' : (b.ok + b.fail > 0 ? 'ok' : 'new')),
     rest: b.restSec != null ? b.restSec : (parseInt(String(b.state).replace(/\D/g, '')) || 0),
   }));
+  const have = new Set(board.map((b) => b.id));
+  provs.forEach((p) => {   // every other attached chat model: not in the gateway shortlist (yet)
+    (p.ranked || [...new Set(p.keys.flatMap((k) => k.chat))]).forEach((m) => {
+      if (!have.has(p.id + ':' + m)) rows.push({ id: p.id + ':' + m, prov: p.id, label: p.label, mdl: m, tier: 'out', rank: null, rating: null, ok: 0, fail: 0, avgSec: null, last: '-', lastErr: '', consec: 0, keys: p.keys.length, rest: 0, elite: false });
+    });
+  });
+  return rows;
+}
+const TIERS = { elite: ['⭐ Elite', 'ok'], ok: ['✓ Theek', 'ok'], new: ['🆕 Naya', ''], slow: ['🐢 Slow', 'warn'], resting: ['⛔ Block', 'bad'], paid: ['💰 Paid', 'bad'], out: ['⚪ Pool ke bahar', ''] };
+function renderGateway(box) {
+  const rows = gwRows();
   const head = el('div', 'cohead'); head.appendChild(el('h2', '', 'Gateway leaderboard'));
   head.appendChild(el('span', '', 'asli requests + tester ki rating, best pehle')); box.appendChild(head);
   if (dbOn === false) box.appendChild(el('div', 'note', 'SQLite nahi mila: ratings sirf memory me hain (val restart pe reset).'));
@@ -359,16 +373,16 @@ function renderGateway(box) {
   // one card per company: how many models work / are new / are blocked, avg speed, key rest state. Tap = filter.
   const co = {};
   rows.forEach((r) => {
-    const c = co[r.prov] || (co[r.prov] = { label: r.label || r.prov, n: 0, live: 0, fresh: 0, rest: 0, sec: [] });
+    const c = co[r.prov] || (co[r.prov] = { label: r.label || r.prov, n: 0, live: 0, fresh: 0, rest: 0, out: 0, sec: [] });
     c.n++;
-    if (r.tier === 'resting') c.rest++; else if (r.tier === 'new') c.fresh++; else c.live++;
+    if (r.tier === 'out') c.out++; else if (r.tier === 'resting' || r.tier === 'paid') c.rest++; else if (r.tier === 'new') c.fresh++; else c.live++;
     if (r.avgSec != null && r.tier !== 'resting') c.sec.push(r.avgSec);
   });
   const cards = el('div', 'cards');
   Object.keys(co).sort().forEach((id) => {
     const c = co[id]; const d = el('button', 'card' + (gwCo === id ? ' on' : '')); d.style.setProperty('--c', coColor(id));
     d.appendChild(el('b', '', c.label));
-    d.appendChild(el('span', '', c.live + ' chal · ' + c.fresh + ' naye · ' + c.rest + ' block'));
+    d.appendChild(el('span', '', c.live + ' chal · ' + c.fresh + ' naye · ' + c.rest + ' block' + (c.out ? ' · ' + c.out + ' bahar' : '')));
     d.appendChild(el('span', '', c.sec.length ? '⚡ avg ' + (c.sec.reduce((a, b) => a + b, 0) / c.sec.length).toFixed(1) + 's' : 'speed abhi pata nahi'));
     const ks = keyState[id] || [];
     if (ks.length) { const kp = el('div', 'kpills'); ks.forEach((k) => kp.appendChild(el('i', k.restSec > 0 ? 'bad' : '', 'K' + k.n + (k.restSec > 0 ? ' ⏸ ' + fmtRest(k.restSec) : ' ✓')))); d.appendChild(kp); }
@@ -379,7 +393,7 @@ function renderGateway(box) {
 
   const base = rows.filter((r) => !gwCo || r.prov === gwCo);
   const tc = el('div', 'chips tiers');
-  [['', 'Sab'], ['elite', '⭐ Elite'], ['ok', '✓ Theek'], ['new', '🆕 Naye'], ['slow', '🐢 Slow'], ['resting', '⛔ Block']].forEach(([k, l]) => {
+  [['', 'Sab'], ['elite', '⭐ Elite'], ['ok', '✓ Theek'], ['new', '🆕 Naye'], ['slow', '🐢 Slow'], ['resting', '⛔ Block'], ['paid', '💰 Paid'], ['out', '⚪ Bahar']].forEach(([k, l]) => {
     const n = k ? base.filter((r) => r.tier === k).length : base.length;
     const c = el('button', 'chip' + (gwTier === k ? ' on' : ''), l + ' ' + n); c.onclick = () => { gwTier = k; render(); }; tc.appendChild(c);
   });
@@ -390,15 +404,15 @@ function renderGateway(box) {
   if (!vis.length) list.appendChild(el('div', 'empty', 'Is filter me koi model nahi.'));
   vis.forEach((r) => {
     const d = el('div', 'm'); d.style.setProperty('--c', coColor(r.prov)); const top = el('div', 'top');
-    d.dataset.s = r.tier === 'resting' ? 'bad' : (r.ok > 0 ? 'ok' : 'idle');
+    d.dataset.s = (r.tier === 'resting' || r.tier === 'paid') ? 'bad' : (r.ok > 0 ? 'ok' : 'idle');
     top.appendChild(el('span', 'dot'));
-    const info = el('div', 'info'); const nm = el('div', 'name', r.rank + '. ' + r.mdl);
+    const info = el('div', 'info'); const nm = el('div', 'name', (r.rank ? r.rank + '. ' : '– ') + r.mdl);
     if (r.elite) nm.appendChild(el('span', 'star', '★'));
     nm.appendChild(el('span', 'cob', r.label || r.prov)); info.appendChild(nm);
-    const bar = el('div', 'bar'); const f = el('i'); f.style.width = Math.max(2, Math.min(100, r.rating)) + '%'; bar.appendChild(f); info.appendChild(bar);
+    const bar = el('div', 'bar'); const f = el('i'); f.style.width = Math.max(2, Math.min(100, r.rating)) + '%'; bar.appendChild(f); if (r.rating != null) info.appendChild(bar);
     const sp = r.avgSec == null ? 'speed ?' : (r.avgSec <= 6 ? '⚡ ' : r.avgSec >= 20 ? '🐢 ' : '') + r.avgSec + 's';
-    info.appendChild(el('div', 'meta', 'rating ' + r.rating + ' · ok ' + r.ok + ' / fail ' + r.fail + ' · ' + sp + ' · last ' + r.last + ' · ' + r.keys + ' key' + (r.ok + r.fail ? '' : ' · abhi tak test nahi hua')));
-    if (r.tier === 'resting') info.appendChild(el('div', 'gerr', '⛔ ' + fmtRest(r.rest) + ' tak band (lagatar ' + (r.consec || 1) + ' fail)' + (r.lastErr ? ' — ' + r.lastErr : '')));
+    info.appendChild(el('div', 'meta', r.tier === 'out' ? 'Pool ke bahar: gateway abhi ise use nahi karta. Company tab me test karo, achha nikla to pool me aa jayega.' : 'rating ' + r.rating + ' · ok ' + r.ok + ' / fail ' + r.fail + ' · ' + sp + ' · last ' + r.last + ' · ' + r.keys + ' key' + (r.ok + r.fail ? '' : ' · abhi tak test nahi hua')));
+    if (r.tier === 'paid') info.appendChild(el('div', 'gerr', '💰 Paid model: free plan pe nahi chalta, gateway ise kabhi nahi aazmata. Top-up ke baad tester me test karo, chal gaya to wapas aa jayega.')); else if (r.tier === 'resting') info.appendChild(el('div', 'gerr', '⛔ ' + fmtRest(r.rest) + ' tak band (lagatar ' + (r.consec || 1) + ' fail)' + (r.lastErr ? ' — ' + r.lastErr : '')));
     else if (r.lastErr && r.consec) info.appendChild(el('div', 'gerr', 'pichhli galti: ' + r.lastErr));
     top.appendChild(info);
     const t = TIERS[r.tier] || TIERS.ok; top.appendChild(el('span', 'tag ' + t[1], t[0]));
@@ -446,7 +460,7 @@ async function testOne(p, k, m, btn) {
   try {
     const r = await fetch(base() + '/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target: p.id + ':' + m, key: k.n - 1, prompt: msgText }), signal: ctl.signal });
     const j = await r.json();
-    if (j.ok) { res[r0] = 'ok'; setOut(r0, 'ok', 'Working', j.text, (j.ms / 1000).toFixed(1) + 's · key ' + j.key); }
+    if (j.ok) { res[r0] = 'ok'; setOut(r0, 'ok', 'Working', j.text, (j.ms / 1000).toFixed(1) + 's · key ' + j.key + (j.recorded ? ' · 💾 saved' : '')); }
     else { res[r0] = 'bad'; setOut(r0, 'bad', 'Failed' + (j.status ? ' · HTTP ' + j.status : '') + ' · key ' + (j.key || k.n), j.error || 'unknown', j.ms ? (j.ms / 1000).toFixed(1) + 's' : ''); }
   } catch (e) {
     res[r0] = 'bad';
@@ -467,9 +481,37 @@ async function runAll(items) {
   $('msg').textContent = stopReq ? 'Roka gaya: ' + done + '/' + items.length + ' test hue.' : 'Sab ' + items.length + ' tests ho gaye.';
   busy = false; stopReq = false; updateButtons();
 }
+// Smart test: only models that NEED a test, in small batches (max 12 per press, max 4 per company, so no free tier is hammered).
+// Order: 1) never tested  2) tested but not for 2+ days, oldest first  3) only if 1+2 are empty: strongest-looking models outside the
+// gateway shortlist (a proven one joins the shortlist). Paid and resting models are never included. One test per model.
+const SMART_MAX = 12, PER_CO = 4, STALE_MS = 48 * 3600 * 1000;
+function smartPlan() {
+  const now = Date.now(), need = [];
+  const triedHere = (pid, m) => Object.keys(outs).some((r0) => r0.startsWith(pid + ':' + m + '|'));
+  board.forEach((b) => {
+    const prov = b.provider || b.id.split(':')[0], mdl = b.model || b.id.slice(b.id.indexOf(':') + 1);
+    if (b.tier === 'paid' || b.tier === 'resting') return;
+    const tested = b.ok + b.fail > 0, age = tested ? now - (b.updated || 0) : Infinity;
+    if (tested && age < STALE_MS) return;
+    if (triedHere(prov, mdl)) return;
+    need.push({ prov, mdl, pri: tested ? 1 : 0, age });
+  });
+  if (!need.length) provs.forEach((p) => (p.ranked || []).filter((m) => !bidx[p.id + ':' + m] && !triedHere(p.id, m)).slice(0, 6).forEach((m) => need.push({ prov: p.id, mdl: m, pri: 2, age: Infinity })));
+  need.sort((a, b) => a.pri - b.pri || b.age - a.age);
+  const per = {}, items = [];
+  need.forEach((n) => {
+    if (items.length >= SMART_MAX || (per[n.prov] || 0) >= PER_CO) return;
+    const p = provs.find((x) => x.id === n.prov); if (!p) return;
+    const ks = p.keys.filter((kk) => kk.ok && modelsFor(p, kk).includes(n.mdl));
+    const k = ks.length ? ks[items.length % ks.length] : p.keys.find((kk) => kk.ok);
+    if (!k) return;
+    per[n.prov] = (per[n.prov] || 0) + 1; items.push({ p, k, m: n.mdl });
+  });
+  return { items, total: need.length };
+}
 function starItems() {
   const out = [];
-  provs.forEach((p) => p.keys.forEach((k) => { modelsFor(p, k).forEach((m) => { if (isStar(p, m)) out.push({ p, k, m }); }); }));
+  provs.forEach((p) => p.keys.forEach((k) => { modelsFor(p, k).forEach((m) => { if (isStar(p, m) && !(bidx[p.id + ':' + m] && bidx[p.id + ':' + m].tier === 'paid')) out.push({ p, k, m }); }); }));
   return out;
 }
 function updateButtons() {
@@ -478,6 +520,9 @@ function updateButtons() {
   $('co').textContent = 'Test shown (' + shown.length + ')';
   $('all').disabled = !busy && !n;
   $('all').textContent = busy ? '⏹ Stop' : 'Test all ★ (' + n + ')';
+  const sp = smartPlan(), sm = sp.items.length;
+  $('smart').disabled = !busy && !sm;
+  $('smart').textContent = busy ? '⏹ Stop' : sm ? '🧠 Smart test (' + sm + (sp.total > sm ? ' / ' + sp.total : '') + ')' : '🧠 Sab ho chuka';
   $('load').disabled = busy;
 }
 
@@ -485,6 +530,7 @@ $('load').onclick = load;
 $('gear').onclick = () => { const h = !$('conn').hidden; $('conn').hidden = h; $('gear').setAttribute('aria-expanded', String(!h)); };
 $('co').onclick = () => runAll(shown.slice());
 $('all').onclick = () => { if (busy) { stopReq = true; return; } runAll(starItems()); };
+$('smart').onclick = () => { if (busy) { stopReq = true; return; } runAll(smartPlan().items); };
 $('prompt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !$('co').disabled) $('co').click(); });
 $('prompt').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 140) + 'px'; });
 summary();
