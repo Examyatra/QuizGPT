@@ -649,6 +649,42 @@
   .ai-gen-label { font-size: 0.94rem; color: var(--ink); margin-bottom: 6px; font-weight: 500; }
   .ai-gen-sub { font-size: 0.8rem; color: var(--ink-faint); }
 
+  #generatingCard.card { position: fixed; inset: 0; z-index: 600; margin: 0; padding: 0; border: none; border-radius: 0; background: var(--bg); flex-direction: column; }
+  #generatingCard.card[style*="block"] { display: flex !important; }
+  .gen-top { flex: 0 0 auto; min-height: 20%; box-sizing: border-box; padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px; background: var(--panel); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+  .gen-top .ai-gen-label { margin: 0; font-size: 0.95rem; }
+  .gen-tip { font-size: 0.78rem; color: var(--ink-dim); line-height: 1.4; }
+  .gen-bar { height: 8px; border-radius: 8px; background: var(--line-soft); overflow: hidden; }
+  .gen-bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 8px; transition: width 0.4s; }
+  .gen-meta, .gen-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--ink-dim); }
+  .gen-stage { position: relative; flex: 1 1 auto; min-height: 0; }
+  #genGame { width: 100%; height: 100%; border: 0; display: block; background: #0b0a1a; }
+  .gen-pop { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; background: rgba(8,7,26,.6); cursor: pointer; transition: opacity .22s, transform .22s; }
+  .gen-pop.out { opacity: 0; transform: scale(1.35); pointer-events: none; }
+  .gen-pop-box { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 22px 26px; max-width: 78%; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.5); animation: genPopIn .3s ease-out; color: var(--ink); }
+  .gen-pop-box span { font-size: .85rem; color: var(--ink-dim); }
+  .gen-pop-box u { margin-top: 6px; font-size: .78rem; color: var(--accent); text-decoration: none; }
+  .gen-pop-ic { font-size: 2rem; }
+  @keyframes genPopIn { from { transform: scale(.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* generating screen - refined look */
+  .gen-top { gap: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.28); position: relative; z-index: 3; }
+  .gen-top .ai-gen-label { font-weight: 650; letter-spacing: .01em; }
+  .gen-bar { height: 6px; }
+  .gen-bar i { background: linear-gradient(90deg, var(--accent), #22e6ff); box-shadow: 0 0 10px rgba(34,230,255,.45); }
+  .gen-meta { font-size: .78rem; }
+  .gen-meta b { font-variant-numeric: tabular-nums; color: var(--ink); }
+  #genStatus::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: var(--accent); animation: genPulse 1.2s ease-in-out infinite; }
+  @keyframes genPulse { 0%,100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.1); } }
+  .gen-row { align-items: center; }
+  .gen-row .btn-sm { padding: 6px 12px; font-size: .78rem; }
+  .gen-pop { background: rgba(8,7,26,.66); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+  .gen-pop-box { gap: 8px; padding: 26px 26px 22px; border-radius: 20px; max-width: 280px; }
+  .gen-pop-box b { font-size: 1.02rem; font-weight: 650; }
+  .gen-pop-ic { width: 54px; height: 54px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(135deg, #6c63ff, #22e6ff); font-size: 0; margin-bottom: 4px; }
+  .gen-pop-btn { margin-top: 10px; border: 0; border-radius: 12px; padding: 10px 26px; font: 600 .85rem var(--sans); color: #06122a; background: #22e6ff; cursor: pointer; }
+  .gen-pop-btn:active { filter: brightness(.9); }
+
   body.quiz-open { overflow: hidden; height: 100%; }
 
   #quizCard.card {
@@ -1980,13 +2016,16 @@ body::before{content:"";position:fixed;inset:-15% -10%;z-index:-1;pointer-events
   </div>
 
   <div class="card" id="generatingCard" style="display:none;">
-    <div class="ai-gen-wrap">
-      <div class="ai-spinner"></div>
+    <div class="gen-top">
       <div class="ai-gen-label" id="aiGenLabel">Generating questions...</div>
-      <div class="ai-gen-sub" id="aiGenSub"></div>
-      <div class="result-actions" style="justify-content:center; margin-top:18px;">
-        <button class="btn-sm" id="cancelAiBtn">⬅️ <span data-i18n="cancelBtn">Cancel</span></button>
-      </div>
+      <div class="gen-bar"><i id="genBar"></i></div>
+      <div class="gen-meta"><span id="genStatus">Selecting the best AI model…</span><b id="genPct">0%</b></div>
+      <div class="gen-row"><div class="ai-gen-sub" id="aiGenSub"></div>
+        <button class="btn-sm" id="cancelAiBtn">⬅️ <span data-i18n="cancelBtn">Cancel</span></button></div>
+    </div>
+    <div class="gen-stage">
+      <iframe id="genGame" title="Mini game" allow="autoplay"></iframe>
+      <div class="gen-pop" id="genPop" style="display:none"><div class="gen-pop-box"><div class="gen-pop-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10v5M4.5 12.5h5"/><circle cx="16" cy="11" r=".6"/><circle cx="18.5" cy="14" r=".6"/></svg></div><b>Play while you wait</b><span>Your quiz starts automatically.</span><button type="button" class="gen-pop-btn">Got it</button></div></div>
     </div>
   </div>
 
@@ -5797,7 +5836,7 @@ document.getElementById('cancelAiBtn').addEventListener('click', backFromGenerat
    ===================================================================== */
 const EY_MAX_Q = 100;   // max questions per Exam Yatri quiz
 const EY_PART_Q = 10;   // questions per background part: short replies finish in ~15-20s, never get cut off, and many run in parallel
-const EY_FIRST_Q = 5;   // quiz starts as soon as this many questions are ready; the rest is generated in the background
+const EY_FIRST_Q = 10;   // quiz starts as soon as this many questions are ready; the rest is generated in the background
 const EY_SLICE_NOTES = true;   // token saver: each part is sent ONLY the notes segments assigned to it (before: the whole notes in every part). false = old behaviour
 const EY_EFFORT = { exam: 'medium', revision: 'medium' };   // reasoning depth sent to the gateway per quiz mode (instant | low | medium | high). Only models that support it use it (see main.ts)
 let eyEffort = '';   // set at the start of every quiz run
@@ -6094,6 +6133,33 @@ function eyBeginQuiz(list, run) {
   }, 250);
 }
 
+/* ---- Generating screen: live status, progress bar and mini-game (game.html) ---- */
+const genGame = document.getElementById('genGame'), genBar = document.getElementById('genBar'), genPct = document.getElementById('genPct'), genStatus = document.getElementById('genStatus');
+const genPop = document.getElementById('genPop');
+genPop.addEventListener('click', () => { genPop.classList.add('out'); setTimeout(() => { genPop.style.display = 'none'; }, 240); });
+let genOn = false, genSent = false, genT0 = 0, genTick = null;
+function genSet(s, p) { if (s) genStatus.textContent = s; if (p != null) { genBar.style.width = p + '%'; genPct.textContent = Math.round(p) + '%'; } }
+function genOpen() {
+  genOn = true; genSent = false; genT0 = Date.now(); genSet('Selecting the best AI model…', 5);
+  genGame.src = 'game.html';
+  genPop.classList.remove('out'); genPop.style.display = 'flex';
+  clearInterval(genTick);
+  genTick = setInterval(() => { if (genSent) genSet(null, Math.min(92, 12 + 80 * (1 - Math.exp(-(Date.now() - genT0) / 14000)))); }, 400);
+}
+function genClose() { genOn = false; clearInterval(genTick); genGame.src = 'about:blank'; }   // closes the game the moment the card hides
+new MutationObserver(() => {
+  const on = generatingCard.style.display === 'block';
+  if (on && !genOn) genOpen(); else if (!on && genOn) genClose();
+}).observe(generatingCard, { attributes: true, attributeFilter: ['style'] });
+const _eyAskRaw = eyAsk;
+eyAsk = async function () {
+  genSent = true; genSet('Request sent to the AI…', 12);
+  setTimeout(() => { if (genOn) genSet('Waiting for the AI’s response…'); }, 1500);
+  const r = await _eyAskRaw.apply(this, arguments);
+  if (genOn) genSet('Response received — preparing your quiz…', 96);
+  return r;
+};
+
 // Same prompts as the copy-paste flow (getManualPromptText / buildTopupPrompt), but sent by the app itself.
 async function generateQuizWithEY(mode) {
   mode = (mode === 'revision') ? 'revision' : 'exam';
@@ -6115,7 +6181,7 @@ async function generateQuizWithEY(mode) {
   aiAbortController = new AbortController();
   const sig = aiAbortController.signal;
   try {
-    aiGenSub.textContent = P > 1 ? `Part 1 / ${P} (pehle ${frozen.parts[0].q} sawal)...` : t('genSub');
+    aiGenSub.textContent = P > 1 ? `Part 1 / ${P} (first ${frozen.parts[0].q} questions)...` : t('genSub');
     const reply1 = await eyAsk(first, sig, EY_FIRST_EFFORT, true);   // race: same request goes to 2 keys at once, first answer wins
     collectedRaw += (collectedRaw ? '\n' : '') + reply1;
 
