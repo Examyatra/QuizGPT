@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Y ai build: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
+<!-- Y ai build: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -8088,7 +8088,7 @@ showResultScreen = function () { _sr(); decorateResult(); };
 })();
 </script>
 
-<!-- Word meaning lookup (select / long-press up to 5 words -> [Meaning] = dictionaries in parallel, best one shown | [Google] = opens a new tab) -->
+<!-- Word meaning lookup (select / long-press: 1 word -> [Dictionary] + [Google]; 2+ words -> only [Google] (opens a new tab)) -->
 <style>
 #dictOv,#dictChip{--dp:#0d0f17;--dr:#161926;--dl:#2a2f46;--dll:#222741;--di:#eef0ff;--dd:#aab0d2;--df:#7d84ad;--da:#8fa0ff}
 [data-theme="light"] #dictOv{--dp:#ffffff;--dr:#f6f5f0;--dl:#d8d2c4;--dll:#e6e0d0;--di:#14151c;--dd:#52546a;--df:#7c7d90;--da:#4050e0}
@@ -8138,7 +8138,9 @@ html:not(.yai-nosel) #quizOptions .option-btn span{-webkit-user-select:text;user
 html.yai-nosel #quizCard .quiz-body,html.yai-nosel #reviewList{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html.yai-nosel #quizCard .quiz-body input,html.yai-nosel #quizCard .quiz-body textarea{-webkit-user-select:text;user-select:text}
 html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
-::highlight(yai-dict){background:#e5484d;color:#fff}
+#quizCard .quiz-body ::selection,#reviewList ::selection{background:#e5484d;color:#fff;-webkit-text-fill-color:#fff}
+#quizCard .quiz-body ::-moz-selection,#reviewList ::-moz-selection{background:#e5484d;color:#fff}
+.yai-hl{position:fixed;z-index:849;pointer-events:none;background:rgba(229,72,77,.42);border-bottom:2px solid #ff3b46;border-radius:3px;box-sizing:border-box}
 .yai-h{position:fixed;z-index:851;display:none;width:44px;height:48px;touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
 .yai-h::before{content:"";position:absolute;left:21px;top:0;width:2px;height:10px;background:#e5484d}
 .yai-h::after{content:"";position:absolute;left:12px;top:9px;width:20px;height:20px;border-radius:50%;background:#e5484d;box-shadow:0 2px 8px rgba(0,0,0,.5)}
@@ -8151,8 +8153,8 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
   // Only 3 languages: English, Hindi, Sanskrit (+ Auto)
   const LANGS = [['auto', 'Auto'], ['en', 'English'], ['hi', '\u0939\u093F\u0928\u094D\u0926\u0940'], ['sa', '\u0938\u0902\u0938\u094D\u0915\u0943\u0924\u092E\u094D']];
   const cache = new Map();
-  const MAX_WORDS = 60, MAX_CHARS = 500;   // selection limit (long text can be selected; [Meaning] is offered only up to 3 words, [Google] works for all)
-  let pick = null, anchor = null, dragging = false, pushed = false, openedAt = 0, cur = null, chipTerm = '', chipT = null, suppressUntil = 0, lpT = null, lpX = 0, lpY = 0, reqId = 0;
+  const MAX_WORDS = 60, MAX_CHARS = 500;   // selection limit (long text can be selected; [Dictionary] is offered only for a single word, [Google] works for all)
+  let pick = null, anchor = null, dragging = false, pushed = false, openedAt = 0, cur = null, chipTerm = '', chipT = null, suppressUntil = 0, lpT = null, lpX = 0, lpY = 0, reqId = 0, raf = 0, lastSig = '';
 
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
   const enc = encodeURIComponent;
@@ -8161,7 +8163,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
 
   // ---------- DOM (built once) ----------
   const chip = el('div'); chip.id = 'dictChip';
-  const mBtn = el('button', 'dcb dcm', 'Meaning'); mBtn.type = 'button';
+  const mBtn = el('button', 'dcb dcm', 'Dictionary'); mBtn.type = 'button';
   const gBtn = el('a', 'dcb dcg', 'Google'); gBtn.href = 'https://www.google.com/'; gBtn.target = '_blank'; gBtn.rel = 'noopener';   // real link in a NEW tab: Back closes it and the quiz is exactly as left
   chip.appendChild(mBtn); chip.appendChild(gBtn);
   const googleUrl = t => 'https://www.google.com/search?q=' + encodeURIComponent(t);
@@ -8240,9 +8242,9 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
     if (pick) placeHandles(); else hideHandles();
     chipTerm = s.term;
     let hi = false; try { hi = typeof currentLang !== 'undefined' && currentLang === 'hi'; } catch (e) {}
-    mBtn.textContent = hi ? '\u0905\u0930\u094D\u0925 / Meaning' : 'Meaning';
+    mBtn.textContent = hi ? '\u0936\u092C\u094D\u0926\u0915\u094B\u0936 / Dictionary' : 'Dictionary';
     gBtn.href = googleUrl(s.term);
-    mBtn.style.display = s.term.split(' ').length > 3 ? 'none' : '';   // dictionary lookup only for up to 3 words
+    mBtn.style.display = s.term.split(' ').length > 1 ? 'none' : '';   // dictionary lookup only for a single word; 2+ words -> only Google
     chip.style.display = 'flex';
     const rs = s.range.getClientRects(), r = rs.length ? rs[rs.length - 1] : s.range.getBoundingClientRect();
     const w = chip.offsetWidth || 100, h = chip.offsetHeight || 36;
@@ -8253,7 +8255,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
   }
   const schedule = () => { clearTimeout(chipT); chipT = setTimeout(updateChip, 250); };
   document.addEventListener('selectionchange', schedule);
-  document.addEventListener('scroll', () => { if (chip.style.display !== 'none' || handlesOn) { hideChip(); hideHandles(); schedule(); } }, true);
+  document.addEventListener('scroll', () => { if (pick) { hideChip(); placeHandles(); schedule(); } else if (chip.style.display !== 'none' || handlesOn) { hideChip(); hideHandles(); schedule(); } }, true);   // with a pick the highlight moves with the text instead of vanishing
   window.addEventListener('resize', schedule);
   mBtn.addEventListener('pointerdown', e => { e.preventDefault(); const t = chipTerm; hideChip(); if (t) openFor(t); });
   mBtn.addEventListener('click', e => { e.preventDefault(); if (chipTerm) { const t = chipTerm; hideChip(); openFor(t); } });
@@ -8261,18 +8263,18 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
 
   // ---------- touch selection without Chrome's own menu (Define / Copy / Select all / Google panel) ----------
   // Long-press a word (question, option or explanation), keep the finger down and drag to extend to a phrase.
-  const customOn = !!(window.CSS && CSS.highlights && window.Highlight && window.matchMedia && matchMedia('(pointer:coarse)').matches);
+  const customOn = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);   // touch devices; the highlight is our own overlay layer, so no CSS Highlight API is needed
   if (customOn) document.documentElement.classList.add('yai-nosel');
   const WORD = /[\p{L}\p{M}\p{N}'\u2019-]+/gu;
   function setPick(range) {
     const term = cleanTerm(range.toString());
     if (!term || term.length > MAX_CHARS || term.split(' ').length > MAX_WORDS || !/\p{L}/u.test(term)) return false;
     pick = { term, range };
-    try { CSS.highlights.set('yai-dict', new Highlight(range)); } catch (e) {}
+    startTrack();
     placeHandles();
     return true;
   }
-  function clearPick() { pick = null; anchor = null; dragging = false; hDrag = false; hideHandles(); try { CSS.highlights.delete('yai-dict'); } catch (e) {} }
+  function clearPick() { pick = null; anchor = null; dragging = false; hDrag = false; hideHandles(); if (raf) { cancelAnimationFrame(raf); raf = 0; } }
   function wordRangeAtPoint(x, y) {
     const roots = document.querySelectorAll(SEL_ROOT);
     for (const root of roots) {
@@ -8298,16 +8300,55 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
   hStart.setAttribute('aria-hidden', 'true'); hEnd.setAttribute('aria-hidden', 'true');
   document.body.appendChild(hStart); document.body.appendChild(hEnd);
   let handlesOn = false, hDrag = false;
-  function hideHandles() { hStart.style.display = 'none'; hEnd.style.display = 'none'; handlesOn = false; }
+  const hlBoxes = [];
+  function paintHl(rects) {   // palette-proof red highlight (independent of the page background / CSS Highlight support)
+    while (hlBoxes.length < rects.length) { const d = el('div', 'yai-hl'); d.setAttribute('aria-hidden', 'true'); document.body.appendChild(d); hlBoxes.push(d); }
+    hlBoxes.forEach((d, i) => {
+      const r = rects[i];
+      if (!r) { d.style.display = 'none'; return; }
+      d.style.left = r.left + 'px'; d.style.top = r.top + 'px'; d.style.width = r.width + 'px'; d.style.height = r.height + 'px'; d.style.display = 'block';
+    });
+  }
+  function hideHandles() { hStart.style.display = 'none'; hEnd.style.display = 'none'; handlesOn = false; lastSig = ''; paintHl([]); }
+  // visible area of the text = viewport ∩ every scrolling / clipping ancestor (the quiz body scrolls inside the card)
+  function clipBox(node) {
+    let l = 0, t = 0, r = window.innerWidth, b = window.innerHeight;
+    for (let n = node && node.nodeType === 3 ? node.parentElement : node; n && n.nodeType === 1 && n !== document.documentElement; n = n.parentElement) {
+      let cs; try { cs = getComputedStyle(n); } catch (e) { continue; }
+      if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') { const nb = n.getBoundingClientRect(); l = Math.max(l, nb.left); t = Math.max(t, nb.top); r = Math.min(r, nb.right); b = Math.min(b, nb.bottom); }
+    }
+    return { l, t, r, b };
+  }
   function placeHandles() {
     if (!pick || !pick.range.startContainer.isConnected || ov.classList.contains('show')) { hideHandles(); return; }
-    const rs = Array.from(pick.range.getClientRects()).filter(r => r.width > 0);
+    const rs = Array.from(pick.range.getClientRects()).filter(r => r.width > 0 && r.height > 0);
     if (!rs.length) { hideHandles(); return; }
-    const a = rs[0], b = rs[rs.length - 1];
+    const c = clipBox(pick.range.commonAncestorContainer);
+    const sig = rs.map(r => Math.round(r.left) + ',' + Math.round(r.top) + ',' + Math.round(r.right) + ',' + Math.round(r.bottom)).join('|') + '#' + Math.round(c.l) + ',' + Math.round(c.t) + ',' + Math.round(c.r) + ',' + Math.round(c.b);
+    if (sig === lastSig && handlesOn) return;   // nothing moved: no DOM writes
+    lastSig = sig;
+    const vis = [];
+    rs.forEach(r => {
+      const l = Math.max(r.left, c.l), t = Math.max(r.top, c.t), rt = Math.min(r.right, c.r), b = Math.min(r.bottom, c.b);
+      if (rt - l > 0.5 && b - t > 0.5) vis.push({ left: l, top: t, width: rt - l, height: b - t });
+    });
+    paintHl(vis);
+    const a = rs[0], z = rs[rs.length - 1];
     hStart.style.left = (a.left - 22) + 'px'; hStart.style.top = (a.bottom - 2) + 'px';
-    hEnd.style.left = (b.right - 22) + 'px'; hEnd.style.top = (b.bottom - 2) + 'px';
-    hStart.style.display = 'block'; hEnd.style.display = 'block'; handlesOn = true;
+    hEnd.style.left = (z.right - 22) + 'px'; hEnd.style.top = (z.bottom - 2) + 'px';
+    hStart.style.display = (a.bottom >= c.t && a.bottom <= c.b) ? 'block' : 'none';   // a handle whose text scrolled out of view is hidden
+    hEnd.style.display = (z.bottom >= c.t && z.bottom <= c.b) ? 'block' : 'none';
+    handlesOn = true;
   }
+  // keep the highlight glued to the text while a pick exists: scroll, resize, palette / font / KaTeX layout shifts; drop it if the question was re-rendered
+  function track() {
+    raf = 0;
+    if (!pick) return;
+    if (!pick.range.startContainer.isConnected || !pick.range.endContainer.isConnected) { clearPick(); hideChip(); return; }
+    placeHandles();
+    raf = requestAnimationFrame(track);
+  }
+  function startTrack() { if (!raf) raf = requestAnimationFrame(track); }
   function bindHandle(h) {
     let fixed = null;
     const isStart = h === hStart;
