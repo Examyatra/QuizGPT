@@ -725,7 +725,7 @@
   #resultScreenCard .result-actions .btn-sm.primary { color: #fff; border: 0; background: var(--grad-main); box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 45%, transparent); }
   #resultScreenCard #retryWrongBtn ~ #reviewJumpBtn { color: var(--ink); background: linear-gradient(var(--panel),var(--panel)) padding-box, var(--grad-main) border-box; border: 1.5px solid transparent; box-shadow: none; }
   #resultScreenCard #reviewJumpBtn:first-child { grid-column: 1 / -1; }
-  #resultScreenCard #restartQuizBtn { grid-column: 1 / -1; color: var(--ink-dim); background: transparent; border: 1px solid var(--line); }
+  #resultScreenCard #restartQuizBtn { grid-column: 1 / -1; color: var(--ink); font-weight: 800; background: linear-gradient(135deg, color-mix(in srgb, var(--coral) 34%, var(--panel)), color-mix(in srgb, var(--accent) 34%, var(--panel))); border: 1.5px solid color-mix(in srgb, var(--coral) 60%, transparent); box-shadow: 0 6px 16px color-mix(in srgb, var(--coral) 22%, transparent); }
   #resultScreenCard #reviewCollapse { margin: 0; text-align: left; }
   .rs-sec { margin: 0 0 10px 2px; font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
   #resultScreenCard .review-item { gap: 12px; padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, var(--panel) 90%, transparent); }
@@ -1727,6 +1727,69 @@ header::after{background:linear-gradient(90deg,var(--accent),var(--teal),var(--c
 .container > .card,.step-label{transition:box-shadow .5s,background-color .5s}
 .ey-main.active{color:var(--on-grad,#fff)!important;box-shadow:0 10px 28px color-mix(in srgb,var(--accent) 50%,transparent),inset 0 1px 0 rgba(255,255,255,.3)!important}
 #resultScreenCard #retryWrongBtn ~ #reviewJumpBtn{color:var(--ink)!important}
+/* ===== Calm step 4 (method card): fewer glows, no shine sweep, softer shadows ===== */
+#methodCard .btn-main{box-shadow:0 5px 14px color-mix(in srgb,var(--accent) 20%,transparent)!important}
+#methodCard .btn-main::after{display:none!important;animation:none!important}
+#methodCard .ey-main,#methodCard .site-pick,#methodCard .mode-seg{box-shadow:0 2px 8px rgba(0,0,0,.2)!important}
+#methodCard .ey-main.active{box-shadow:0 5px 14px color-mix(in srgb,var(--accent) 22%,transparent),inset 0 1px 0 rgba(255,255,255,.1)!important}
+#methodCard .ey-main .dot{box-shadow:none!important}
+#methodCard .ai-row3 .site-pick.active{box-shadow:0 3px 10px color-mix(in srgb,var(--c) 22%,transparent)!important}
+#methodCard .mode-seg button.active,#methodCard .gen-btn.active{box-shadow:none!important}
+#methodCard .ey-main.active .ey-cur{background:rgba(255,255,255,.14)}
+</style>
+<style id="yaiMatte">
+/* ===== Matte pass: same layout, same buttons — only colour intensity, glow and gloss are toned down =====
+   Primary actions keep a clear (but matte) gradient; secondary 'selected' states use a tinted surface,
+   so a step with many buttons never turns into a wall of bright fills. */
+body::before{opacity:.8}
+
+/* primary buttons: matte gradient, soft shadow, no shine sweep / white gloss */
+.btn-main,.btn-sm.primary,#resultScreenCard .result-actions .btn-sm.primary{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 78%,#6e6e80),color-mix(in srgb,var(--teal) 78%,#6e6e80))!important;box-shadow:0 5px 14px color-mix(in srgb,var(--accent) 20%,transparent)!important}
+.btn-main::after{display:none!important;animation:none!important}
+.btn-main.ghost{background:linear-gradient(var(--panel),var(--panel)) padding-box,linear-gradient(135deg,color-mix(in srgb,var(--accent) 62%,var(--line)),color-mix(in srgb,var(--teal) 62%,var(--line))) border-box!important;box-shadow:none!important}
+.step-label .num,.brand .mark,.lang-toggle button.active,.drop .icon-doc{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 78%,#6e6e80),color-mix(in srgb,var(--teal) 78%,#6e6e80))!important}
+.step-label .num{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent),0 3px 8px color-mix(in srgb,var(--accent) 24%,transparent)!important}
+.brand .mark{box-shadow:0 3px 10px color-mix(in srgb,var(--accent) 26%,transparent)!important}
+.lang-toggle button.active{box-shadow:none!important}
+.drop .icon-doc{box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 24%,transparent)!important;animation:yaiFloat 3.2s ease-in-out infinite!important}
+.drop,.drop:hover,.drop.drag{box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 14%,transparent)!important}
+
+/* selected states (toggles / tabs / pickers): tinted surface instead of a solid bright fill */
+.mode-seg button.active,.gen-btn.active,.upload-tab.active{background:color-mix(in srgb,var(--accent) 58%,var(--panel-raised))!important;color:var(--ink)!important;box-shadow:none!important}
+.ey-main.active{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 56%,var(--panel-raised)),color-mix(in srgb,var(--teal) 56%,var(--panel-raised))) padding-box,var(--grad-main) border-box!important;color:var(--ink)!important;box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 16%,transparent)!important}
+.ey-main:not(.active){box-shadow:0 2px 8px rgba(0,0,0,.2)!important}
+.ey-main .dot{box-shadow:none!important}
+.ai-row3 .site-pick.active{background:linear-gradient(180deg,color-mix(in srgb,var(--c) 20%,var(--panel-raised)),color-mix(in srgb,var(--c) 9%,var(--panel-raised)))!important;box-shadow:0 3px 10px color-mix(in srgb,var(--c) 18%,transparent)!important}
+.site-pick,.upload-tab,.btn-sm,.mode-seg{box-shadow:0 2px 8px rgba(0,0,0,.2)}
+
+/* cards: softer coloured halo */
+.container > .card:not(#quizCard):not(#generatingCard):not(#resultScreenCard){box-shadow:0 10px 28px color-mix(in srgb,var(--accent) 11%,rgba(0,0,0,.28))!important}
+
+/* home quick buttons: matte colour, no gloss layer, no white inner edge */
+.quick-btn::after{display:none!important}
+.quick-btn::before{background:rgba(255,255,255,.06)!important}
+.quick-btn{border:1px solid rgba(255,255,255,.12)!important}
+#quickResumeQuiz{background:linear-gradient(135deg,#a94a5e,#a85a3e)!important;box-shadow:0 6px 16px rgba(0,0,0,.28)!important}
+#quickLastText{background:linear-gradient(135deg,#2f7d66,#2b727a)!important;box-shadow:0 6px 16px rgba(0,0,0,.28)!important}
+.quick-btn .qb-title{text-shadow:0 1px 2px rgba(0,0,0,.3)!important}
+
+/* 7-day practice graph: no neon bars / glows */
+:root:not([data-theme="light"]) .practice-graph{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 16%,var(--panel)),color-mix(in srgb,var(--teal) 7%,var(--panel)) 72%),var(--panel)!important;border:1px solid color-mix(in srgb,var(--accent) 34%,var(--line))!important;box-shadow:0 8px 20px -10px rgba(0,0,0,.5)!important}
+.pg-bar:not(.zero){background:linear-gradient(180deg,color-mix(in srgb,var(--teal) 78%,#6e6e80),color-mix(in srgb,var(--accent) 78%,#6e6e80))!important;box-shadow:none!important}
+.pg-total{background:color-mix(in srgb,var(--accent) 24%,transparent)!important;color:var(--ink)!important;box-shadow:none!important}
+.pg-col.today .pg-bar-track{box-shadow:0 0 0 1.5px color-mix(in srgb,var(--teal) 50%,transparent)!important}
+.pg-col.today .pg-label{text-shadow:none!important}
+
+/* result screen */
+#resultScreenCard .score-circle{box-shadow:0 0 24px color-mix(in srgb,var(--accent) 22%,transparent),0 10px 26px color-mix(in srgb,var(--accent) 14%,transparent)!important}
+
+/* quiz player: matte right / wrong, calmer chips and flashes */
+#quizCard .option-btn.correct{background:linear-gradient(135deg,#217a5d,#1c6b52);border-color:#5fb897;box-shadow:0 0 0 2px rgba(80,180,140,.16),0 5px 14px rgba(0,0,0,.25)}
+#quizCard .option-btn.wrong{background:linear-gradient(135deg,#a8404f,#8f2f45);border-color:#d98a97;box-shadow:0 0 0 2px rgba(220,120,135,.16),0 5px 14px rgba(0,0,0,.25)}
+.btn-chip.chip-submit{background:color-mix(in srgb,var(--teal) 78%,#6e6e80)}
+@keyframes blinkRed{0%,100%{filter:brightness(1);transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}50%{filter:brightness(1.08)}}
+@keyframes flashGreen{0%,100%{filter:brightness(1);transform:scale(1)}50%{filter:brightness(1.08);transform:scale(1.02)}}
+@keyframes nextPulse{0%,100%{box-shadow:0 0 0 0 rgba(124,140,255,.3)}50%{box-shadow:0 0 0 7px rgba(124,140,255,0)}}
 </style>
 </head>
 <body>
@@ -6404,38 +6467,38 @@ function escapeHtmlKeepMath(str) {
 /* ===== Quiz player background palette rotation ===== */
 const QUIZ_PALETTES = [
   // 0 — Original deep indigo (default)
-  { bg:'#0a0916', panel:'#141228', panelR:'#1b1836', line:'#2d2a54', accent:'#8b7bff', teal:'#2fd9b0', coral:'#ff6b7a',
-    g1:'radial-gradient(820px 460px at 6% -6%,rgba(139,123,255,.34),transparent 60%),radial-gradient(700px 420px at 104% 8%,rgba(255,79,154,.26),transparent 60%),radial-gradient(760px 460px at 50% 112%,rgba(0,224,184,.22),transparent 60%),radial-gradient(500px 300px at 90% 55%,rgba(255,176,32,.10),transparent 60%)' },
+  { bg:'#0a0916', panel:'#141228', panelR:'#1b1836', line:'#2d2a54', accent:'#8374f0', teal:'#5ad6b8', coral:'#f06573',
+    g1:'radial-gradient(820px 460px at 6% -6%,rgba(131,116,240,.27),transparent 60%),radial-gradient(700px 420px at 104% 8%,rgba(240,101,160,.20),transparent 60%),radial-gradient(760px 460px at 50% 112%,rgba(90,214,192,.17),transparent 60%),radial-gradient(500px 300px at 90% 55%,rgba(240,190,101,.08),transparent 60%)' },
   // 1 — Midnight teal
-  { bg:'#071318', panel:'#0e2028', panelR:'#132633', line:'#1e3d4a', accent:'#2fd9b0', teal:'#4aa8ff', coral:'#ff8a6b',
-    g1:'radial-gradient(800px 440px at 5% -5%,rgba(47,217,176,.30),transparent 60%),radial-gradient(700px 400px at 102% 6%,rgba(74,168,255,.22),transparent 60%),radial-gradient(720px 440px at 50% 110%,rgba(139,123,255,.18),transparent 60%),radial-gradient(480px 280px at 88% 52%,rgba(0,200,255,.10),transparent 60%)' },
+  { bg:'#071318', panel:'#0e2028', panelR:'#132633', line:'#1e3d4a', accent:'#5ad6b8', teal:'#65adf0', coral:'#f08265',
+    g1:'radial-gradient(800px 440px at 5% -5%,rgba(90,214,184,.23),transparent 60%),radial-gradient(700px 400px at 102% 6%,rgba(101,173,240,.17),transparent 60%),radial-gradient(720px 440px at 50% 110%,rgba(131,116,240,.14),transparent 60%),radial-gradient(480px 280px at 88% 52%,rgba(90,187,214,.08),transparent 60%)' },
   // 2 — Deep crimson
-  { bg:'#140810', panel:'#221220', panelR:'#2a1826', line:'#4a1e3a', accent:'#ff6b9e', teal:'#ff9c5b', coral:'#c474ff',
-    g1:'radial-gradient(800px 440px at 8% -8%,rgba(255,107,158,.30),transparent 60%),radial-gradient(700px 400px at 105% 5%,rgba(196,116,255,.24),transparent 60%),radial-gradient(740px 440px at 50% 114%,rgba(255,156,91,.18),transparent 60%),radial-gradient(460px 280px at 85% 55%,rgba(255,60,100,.10),transparent 60%)' },
+  { bg:'#140810', panel:'#221220', panelR:'#2a1826', line:'#4a1e3a', accent:'#f06595', teal:'#f09c65', coral:'#b86df0',
+    g1:'radial-gradient(800px 440px at 8% -8%,rgba(240,101,149,.23),transparent 60%),radial-gradient(700px 400px at 105% 5%,rgba(184,109,240,.19),transparent 60%),radial-gradient(740px 440px at 50% 114%,rgba(240,156,101,.14),transparent 60%),radial-gradient(460px 280px at 85% 55%,rgba(240,101,129,.08),transparent 60%)' },
   // 3 — Forest night
-  { bg:'#071510', panel:'#0e2218', panelR:'#132b1e', line:'#1e4030', accent:'#3ee87a', teal:'#5bcfff', coral:'#ffce4a',
-    g1:'radial-gradient(800px 440px at 6% -6%,rgba(62,232,122,.28),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(91,207,255,.22),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(255,206,74,.16),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(0,200,130,.10),transparent 60%)' },
+  { bg:'#071510', panel:'#0e2218', panelR:'#132b1e', line:'#1e4030', accent:'#5ad686', teal:'#5ab2d6', coral:'#f0ca65',
+    g1:'radial-gradient(800px 440px at 6% -6%,rgba(90,214,134,.22),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(90,178,214,.17),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(240,202,101,.12),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(84,200,159,.08),transparent 60%)' },
   // 4 — Solar amber
-  { bg:'#150e02', panel:'#231a06', panelR:'#2c200a', line:'#4a380e', accent:'#ffb320', teal:'#ff7c4a', coral:'#d97bff',
-    g1:'radial-gradient(800px 440px at 6% -6%,rgba(255,179,32,.30),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(217,123,255,.24),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(255,124,74,.18),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(255,200,0,.10),transparent 60%)' },
+  { bg:'#150e02', panel:'#231a06', panelR:'#2c200a', line:'#4a380e', accent:'#f0c065', teal:'#f08b65', coral:'#cc74f0',
+    g1:'radial-gradient(800px 440px at 6% -6%,rgba(240,192,101,.23),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(204,116,240,.19),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(240,139,101,.14),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(240,210,101,.08),transparent 60%)' },
   // 5 — Cobalt night
-  { bg:'#050e1a', panel:'#0c1a2e', panelR:'#101f38', line:'#1a3050', accent:'#4a9eff', teal:'#2fd9b0', coral:'#ff8a6b',
-    g1:'radial-gradient(800px 440px at 6% -6%,rgba(74,158,255,.32),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(47,217,176,.22),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(255,138,107,.18),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(74,158,255,.10),transparent 60%)' },
+  { bg:'#050e1a', panel:'#0c1a2e', panelR:'#101f38', line:'#1a3050', accent:'#65a5f0', teal:'#5ad6b8', coral:'#f08265',
+    g1:'radial-gradient(800px 440px at 6% -6%,rgba(101,165,240,.25),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(90,214,184,.17),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(240,130,101,.14),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(101,165,240,.08),transparent 60%)' },
   // 6 — Burnt copper
-  { bg:'#160a06', panel:'#26140c', panelR:'#2f1a10', line:'#4f2c1a', accent:'#ff8a4a', teal:'#ffc14a', coral:'#6fd0ff',
-    g1:'radial-gradient(800px 440px at 6% -6%,rgba(255,138,74,.30),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(255,193,74,.22),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(111,208,255,.18),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(255,138,74,.10),transparent 60%)' },
+  { bg:'#160a06', panel:'#26140c', panelR:'#2f1a10', line:'#4f2c1a', accent:'#f09665', teal:'#f0c065', coral:'#5dafd6',
+    g1:'radial-gradient(800px 440px at 6% -6%,rgba(240,150,101,.23),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(240,192,101,.17),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(93,175,214,.14),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(240,150,101,.08),transparent 60%)' },
   // 7 — Graphite blue
-  { bg:'#0b0e16', panel:'#161b29', panelR:'#1c2234', line:'#2c3552', accent:'#7aa2ff', teal:'#6be3c4', coral:'#ffb066',
-    g1:'radial-gradient(800px 440px at 6% -6%,rgba(122,162,255,.30),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(107,227,196,.22),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(255,176,102,.18),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(122,162,255,.10),transparent 60%)' },
+  { bg:'#0b0e16', panel:'#161b29', panelR:'#1c2234', line:'#2c3552', accent:'#7398f0', teal:'#65d6b9', coral:'#f0a865',
+    g1:'radial-gradient(800px 440px at 6% -6%,rgba(115,152,240,.23),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(101,214,185,.17),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(240,168,101,.14),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(115,152,240,.08),transparent 60%)' },
   // 8 — Orchid night
-  { bg:'#150716', panel:'#24102a', panelR:'#2d1535', line:'#4d2058', accent:'#e46bff', teal:'#ff7ab8', coral:'#7ae0ff',
-    g1:'radial-gradient(800px 440px at 6% -6%,rgba(228,107,255,.30),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(255,122,184,.22),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(122,224,255,.18),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(228,107,255,.10),transparent 60%)' },
+  { bg:'#150716', panel:'#24102a', panelR:'#2d1535', line:'#4d2058', accent:'#d665f0', teal:'#f073ad', coral:'#66bcd6',
+    g1:'radial-gradient(800px 440px at 6% -6%,rgba(214,101,240,.23),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(240,115,173,.17),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(102,188,214,.14),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(214,101,240,.08),transparent 60%)' },
   // 9 — Olive dusk
-  { bg:'#0c1206', panel:'#192410', panelR:'#202d14', line:'#38491e', accent:'#b5e34a', teal:'#4ae0b0', coral:'#ffb84a',
-    g1:'radial-gradient(800px 440px at 6% -6%,rgba(181,227,74,.30),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(74,224,176,.22),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(255,184,74,.18),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(181,227,74,.10),transparent 60%)' },
+  { bg:'#0c1206', panel:'#192410', panelR:'#202d14', line:'#38491e', accent:'#b1d65a', teal:'#5ad6ae', coral:'#f0b965',
+    g1:'radial-gradient(800px 440px at 6% -6%,rgba(177,214,90,.23),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(90,214,174,.17),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(240,185,101,.14),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(177,214,90,.08),transparent 60%)' },
   // 10 — Deep ocean
-  { bg:'#041219', panel:'#0a2230', panelR:'#0f2b3d', line:'#16435a', accent:'#22d3ee', teal:'#a78bfa', coral:'#fb923c',
-    g1:'radial-gradient(800px 440px at 6% -6%,rgba(34,211,238,.30),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(167,139,250,.22),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(251,146,60,.18),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(34,211,238,.10),transparent 60%)' },
+  { bg:'#041219', panel:'#0a2230', panelR:'#0f2b3d', line:'#16435a', accent:'#5ac6d6', teal:'#a085f0', coral:'#f0a365',
+    g1:'radial-gradient(800px 440px at 6% -6%,rgba(90,198,214,.23),transparent 60%),radial-gradient(700px 400px at 103% 6%,rgba(160,133,240,.17),transparent 60%),radial-gradient(740px 440px at 50% 112%,rgba(240,163,101,.14),transparent 60%),radial-gradient(460px 280px at 87% 54%,rgba(90,198,214,.08),transparent 60%)' },
 ];
 let _lastPaletteIdx = -1;
 function applyQuizPalette(qIndex) {
@@ -6652,7 +6715,7 @@ nextQBtn.addEventListener('click', goNextOrFinish);
 skipQBtn.addEventListener('click', goNextOrFinish);
 
 backToPasteBtn.addEventListener('click', () => openNewQuizChoiceModal());
-restartQuizBtn.addEventListener('click', () => openNewQuizChoiceModal());
+restartQuizBtn.addEventListener('click', () => { startFreshWithNewPdf(); try { updateQuickButtons(); } catch (e) {} });   // result screen: straight to Home (the choice popup was hidden behind this full-screen card)
 function finishWithCheck() {
   const un = userAnswers.filter(a => a === -1).length;
   if (eyBgActive()) {
@@ -7647,7 +7710,7 @@ function decorateResult() {
     g = document.createElement('div'); g.id = 'gradeMsg'; g.className = 'grade-msg';
     document.querySelector('#resultScreenCard .result-actions').before(g);
   }
-  g.textContent = pct >= 85 ? '🏆 Outstanding — exam ready!' : pct >= 70 ? '🎯 Strong — thoda aur polish' : pct >= 50 ? '📈 Theek hai — wrong wale dobara karo' : '💪 Revise karo, phir retry — tum kar loge';
+  g.textContent = pct >= 85 ? '🏆 Outstanding — Exam Ready!' : pct >= 70 ? '🎯 Strong — Thoda Aur Polish' : pct >= 50 ? '📈 Theek Hai — Wrong Wale Dobara Karo' : '💪 Revise Karo, Phir Retry — Tum Kar Loge';
 
   // Marks row — show only if student attempted at least one question
   const marksRow = document.getElementById('marksRow');
