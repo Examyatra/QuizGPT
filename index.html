@@ -649,41 +649,90 @@
   .ai-gen-label { font-size: 0.94rem; color: var(--ink); margin-bottom: 6px; font-weight: 500; }
   .ai-gen-sub { font-size: 0.8rem; color: var(--ink-faint); }
 
-  #generatingCard.card { position: fixed; inset: 0; z-index: 600; margin: 0; padding: 0; border: none; border-radius: 0; background: var(--bg); flex-direction: column; }
-  #generatingCard.card[style*="block"] { display: flex !important; }
-  .gen-top { flex: 0 0 auto; min-height: 20%; box-sizing: border-box; padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px; background: var(--panel); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; gap: 8px; }
-  .gen-top .ai-gen-label { margin: 0; font-size: 0.95rem; }
-  .gen-tip { font-size: 0.78rem; color: var(--ink-dim); line-height: 1.4; }
-  .gen-bar { height: 8px; border-radius: 8px; background: var(--line-soft); overflow: hidden; }
-  .gen-bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 8px; transition: width 0.4s; }
-  .gen-meta, .gen-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--ink-dim); }
-  .gen-stage { position: relative; flex: 1 1 auto; min-height: 0; }
-  #genGame { width: 100%; height: 100%; border: 0; display: block; background: #0b0a1a; }
-  .gen-pop { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; background: rgba(8,7,26,.6); cursor: pointer; transition: opacity .22s, transform .22s; }
-  .gen-pop.out { opacity: 0; transform: scale(1.35); pointer-events: none; }
-  .gen-pop-box { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 22px 26px; max-width: 78%; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.5); animation: genPopIn .3s ease-out; color: var(--ink); }
-  .gen-pop-box span { font-size: .85rem; color: var(--ink-dim); }
-  .gen-pop-box u { margin-top: 6px; font-size: .78rem; color: var(--accent); text-decoration: none; }
-  .gen-pop-ic { font-size: 2rem; }
-  @keyframes genPopIn { from { transform: scale(.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-  /* generating screen - refined look */
-  .gen-top { gap: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.28); position: relative; z-index: 3; }
-  .gen-top .ai-gen-label { font-weight: 650; letter-spacing: .01em; }
-  .gen-bar { height: 6px; }
-  .gen-bar i { background: linear-gradient(90deg, var(--accent), #22e6ff); box-shadow: 0 0 10px rgba(34,230,255,.45); }
-  .gen-meta { font-size: .78rem; }
-  .gen-meta b { font-variant-numeric: tabular-nums; color: var(--ink); }
-  #genStatus::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: var(--accent); animation: genPulse 1.2s ease-in-out infinite; }
+  /* ===== GENERATING SCREEN: ~20% status panel + ~80% game, site theme (violet/pink/teal glow) ===== */
+  #generatingCard.card { position: fixed; inset: 0; z-index: 600; margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; flex-direction: column; overflow: hidden;
+    background: radial-gradient(760px 420px at 6% -6%, rgba(139,123,255,.34), transparent 60%), radial-gradient(640px 400px at 104% 8%, rgba(255,79,154,.24), transparent 60%), radial-gradient(700px 440px at 50% 112%, rgba(0,224,184,.2), transparent 60%), var(--bg); }
+  [data-theme="light"] #generatingCard.card { background: radial-gradient(760px 420px at 6% -6%, rgba(95,114,255,.2), transparent 60%), radial-gradient(640px 400px at 104% 8%, rgba(255,61,148,.14), transparent 60%), radial-gradient(700px 440px at 50% 112%, rgba(0,200,170,.14), transparent 60%), var(--bg); }
+  #generatingCard.card[style*="block"] { display: flex !important; animation: genIn .4s cubic-bezier(.2,.8,.2,1); }
+  @keyframes genIn { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
+  .gen-top { flex: 0 0 20%; min-height: 150px; position: relative; z-index: 3; display: flex; flex-direction: column; justify-content: center; gap: 12px;
+    padding: calc(env(safe-area-inset-top, 0px) + 14px) max(16px, calc((100% - 540px) / 2)) 14px;
+    background: color-mix(in srgb, var(--panel) 86%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line); box-shadow: 0 12px 34px -18px rgba(123,92,255,.6); }
+  .gen-top::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: linear-gradient(90deg,var(--accent),var(--teal),var(--coral),var(--accent)); background-size: 200% 100%; animation: yaiFlow 6s linear infinite; }
+  .gen-head { display: flex; align-items: center; gap: 12px; }
+  .gen-mark { width: 40px; height: 40px; flex: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; background: var(--grad-main); box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 60%, transparent), inset 0 1px 0 rgba(255,255,255,.35); animation: yaiFloat 4s ease-in-out infinite; }
+  .gen-titles { flex: 1; min-width: 0; }
+  .gen-top .ai-gen-label { margin: 0; font-family: var(--serif); font-size: 1.02rem; font-weight: 600; line-height: 1.25; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .gen-top .ai-gen-sub { margin-top: 2px; font-size: .74rem; color: var(--ink-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gen-top .ai-gen-sub:empty { display: none; }
+  .gen-pct { flex: none; min-width: 54px; text-align: center; padding: 6px 10px; border-radius: 999px; font-size: .82rem; font-weight: 700; font-variant-numeric: tabular-nums; color: #fff; background: var(--grad-main); box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 45%, transparent); }
+  .gen-bar { height: 7px; border-radius: 999px; background: var(--line-soft); overflow: hidden; }
+  .gen-bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg,var(--teal),var(--accent)); box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 70%, transparent); transition: width .45s cubic-bezier(.2,.8,.2,1); }
+  .gen-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .gen-status { display: flex; align-items: center; min-width: 0; font-size: .78rem; color: var(--ink-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #genStatus::before { content: ""; flex: none; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: var(--g5, #00e0b8); box-shadow: 0 0 8px var(--g5, #00e0b8); animation: genPulse 1.2s ease-in-out infinite; }
   @keyframes genPulse { 0%,100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.1); } }
-  .gen-row { align-items: center; }
-  .gen-row .btn-sm { padding: 6px 12px; font-size: .78rem; }
-  .gen-pop { background: rgba(8,7,26,.66); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
-  .gen-pop-box { gap: 8px; padding: 26px 26px 22px; border-radius: 20px; max-width: 280px; }
-  .gen-pop-box b { font-size: 1.02rem; font-weight: 650; }
-  .gen-pop-ic { width: 54px; height: 54px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(135deg, #6c63ff, #22e6ff); font-size: 0; margin-bottom: 4px; }
-  .gen-pop-btn { margin-top: 10px; border: 0; border-radius: 12px; padding: 10px 26px; font: 600 .85rem var(--sans); color: #06122a; background: #22e6ff; cursor: pointer; }
-  .gen-pop-btn:active { filter: brightness(.9); }
+  #cancelAiBtn { flex: none; padding: 6px 14px; font-size: .76rem; border-radius: 999px; }
+  .gen-stage { flex: 1 1 auto; min-height: 0; display: flex; justify-content: center; padding: 14px 14px calc(env(safe-area-inset-bottom, 0px) + 14px); }
+  .gen-frame { position: relative; width: 100%; max-width: 540px; height: 100%; padding: 1.5px; border-radius: 24px; overflow: hidden; background: linear-gradient(135deg,var(--accent),var(--teal)); box-shadow: 0 18px 50px color-mix(in srgb, var(--accent) 35%, transparent); }
+  #genGame { width: 100%; height: 100%; border: 0; display: block; border-radius: 22.5px; background: #0f0d24; opacity: 0; transform: scale(.97); transition: opacity .4s ease, transform .4s cubic-bezier(.2,.8,.2,1); }
+  #genGame.ready { opacity: 1; transform: none; }
+  .gen-pop { position: absolute; inset: 1.5px; border-radius: 22.5px; z-index: 2; display: flex; align-items: center; justify-content: center; padding: 18px; background: rgba(10,9,22,.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); cursor: pointer; transition: opacity .25s, transform .25s; }
+  .gen-pop.out { opacity: 0; transform: scale(.97); pointer-events: none; }
+  .gen-pop-box { width: 100%; max-width: 290px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 26px 24px 22px; border-radius: 22px; color: var(--ink); border: 1.5px solid transparent;
+    background: linear-gradient(var(--panel),var(--panel)) padding-box, linear-gradient(135deg,var(--accent),var(--teal)) border-box; box-shadow: 0 20px 56px rgba(0,0,0,.5); animation: genPopIn .45s cubic-bezier(.2,.9,.3,1.2) .15s both; }
+  .gen-pop-box b { font-family: var(--serif); font-size: 1.15rem; font-weight: 600; }
+  .gen-pop-box span { font-size: .82rem; line-height: 1.5; color: var(--ink-dim); }
+  .gen-pop-ic { width: 58px; height: 58px; border-radius: 18px; display: flex; align-items: center; justify-content: center; color: #fff; background: var(--grad-main); box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 0 7px color-mix(in srgb, var(--accent) 14%, transparent); margin-bottom: 6px; }
+  .gen-pop-btn { margin-top: 12px; width: 100%; border: 0; border-radius: 13px; padding: 12px; font: 700 .9rem var(--sans); color: #fff; background: var(--grad-main); box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 50%, transparent); cursor: pointer; }
+  .gen-pop-btn:active { transform: scale(.97); }
+  @keyframes genPopIn { from { opacity: 0; transform: translateY(14px) scale(.92); } to { opacity: 1; transform: none; } }
+
+  /* ===== RESULT SCREEN: full-screen, sectioned, themed ===== */
+  #resultScreenCard.card { position: fixed; inset: 0; z-index: 590; margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; text-align: center;
+    background: radial-gradient(760px 420px at 6% -6%, rgba(139,123,255,.34), transparent 60%), radial-gradient(640px 400px at 104% 8%, rgba(255,79,154,.24), transparent 60%), radial-gradient(700px 440px at 50% 112%, rgba(0,224,184,.2), transparent 60%), var(--bg); }
+  [data-theme="light"] #resultScreenCard.card { background: radial-gradient(760px 420px at 6% -6%, rgba(95,114,255,.2), transparent 60%), radial-gradient(640px 400px at 104% 8%, rgba(255,61,148,.14), transparent 60%), radial-gradient(700px 440px at 50% 112%, rgba(0,200,170,.14), transparent 60%), var(--bg); }
+  #resultScreenCard.card[style*="block"] { animation: rsIn .4s cubic-bezier(.2,.8,.2,1); }
+  @keyframes rsIn { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
+  @keyframes rsUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+  .rs-inner { max-width: 540px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 26px) 18px calc(env(safe-area-inset-bottom, 0px) + 28px); display: flex; flex-direction: column; gap: 16px; }
+  .rs-inner > * { animation: rsUp .5s cubic-bezier(.2,.8,.2,1) both; }
+  .rs-inner > :nth-child(2) { animation-delay: .06s; } .rs-inner > :nth-child(3) { animation-delay: .12s; } .rs-inner > :nth-child(4) { animation-delay: .18s; }
+  .rs-inner > :nth-child(5) { animation-delay: .24s; } .rs-inner > :nth-child(6) { animation-delay: .3s; }
+  .rs-title { margin: 0; font-family: var(--serif); font-size: 1.5rem; font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
+  .rs-title::after { content: ""; display: block; width: 46px; height: 3px; border-radius: 3px; margin: 10px auto 0; background: var(--grad-main); }
+  #resultScreenCard .score-circle { --pct: 0; position: relative; width: 196px; height: 196px; margin: 4px auto 0; border: 0; border-radius: 50%;
+    background: conic-gradient(var(--teal) 0, var(--accent) calc(var(--pct) * .5%), var(--coral) calc(var(--pct) * 1%), var(--line-soft) calc(var(--pct) * 1%));
+    box-shadow: 0 0 40px color-mix(in srgb, var(--accent) 45%, transparent), 0 14px 40px color-mix(in srgb, var(--accent) 28%, transparent); }
+  #resultScreenCard .score-circle::before { content: ""; position: absolute; inset: 12px; border-radius: 50%; background: var(--panel); box-shadow: inset 0 2px 14px rgba(0,0,0,.25); }
+  #resultScreenCard .score-circle > * { position: relative; }
+  #resultScreenCard .score-circle .big { font-size: 2.6rem; line-height: 1.1; color: var(--ink); }
+  #resultScreenCard .score-circle .small { margin-top: 2px; font-size: .95rem; font-weight: 700; color: var(--ink-dim); }
+  #resultScreenCard .grade-msg { margin: 0; padding: 13px 16px; border-radius: 16px; font-size: .94rem; font-weight: 600; line-height: 1.4; color: var(--ink); background: color-mix(in srgb, var(--accent) 14%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent); }
+  .rs-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .rs-stat { display: flex; flex-direction: column; gap: 3px; padding: 13px 4px 11px; border-radius: 16px; background: color-mix(in srgb, var(--panel) 88%, transparent); border: 1px solid var(--line); }
+  .rs-stat b { font-size: 1.3rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .rs-stat span { font-size: .68rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-faint); }
+  .rs-stat.ok b { color: var(--teal); } .rs-stat.bad b { color: var(--coral); } .rs-stat.time b { color: var(--accent); }
+  #resultScreenCard #marksRow { display: none; align-items: center; justify-content: space-between; gap: 12px; text-align: left; margin: 0; padding: 14px 18px; border-radius: 16px; border: 1.5px solid transparent;
+    background: linear-gradient(var(--panel),var(--panel)) padding-box, linear-gradient(135deg,var(--accent),var(--teal)) border-box; }
+  #marksRow .m-l { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); }
+  #marksRow .m-n { display: block; margin-top: 4px; font-size: .76rem; font-weight: 500; color: var(--ink-dim); }
+  #marksRow b { flex: none; font-family: var(--serif); font-size: 1.7rem; font-weight: 700; color: var(--ink); } #marksRow b i { font-style: normal; font-size: 1rem; font-weight: 600; color: var(--ink-faint); }
+  #resultScreenCard .result-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0; }
+  #resultScreenCard .result-actions .btn-sm { justify-content: center; padding: 14px 10px; border-radius: 14px; font-size: .9rem; font-weight: 700; }
+  #resultScreenCard .result-actions .btn-sm.primary { color: #fff; border: 0; background: var(--grad-main); box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 45%, transparent); }
+  #resultScreenCard #retryWrongBtn ~ #reviewJumpBtn { color: var(--ink); background: linear-gradient(var(--panel),var(--panel)) padding-box, var(--grad-main) border-box; border: 1.5px solid transparent; box-shadow: none; }
+  #resultScreenCard #reviewJumpBtn:first-child { grid-column: 1 / -1; }
+  #resultScreenCard #restartQuizBtn { grid-column: 1 / -1; color: var(--ink-dim); background: transparent; border: 1px solid var(--line); }
+  #resultScreenCard #reviewCollapse { margin: 0; text-align: left; }
+  .rs-sec { margin: 0 0 10px 2px; font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+  #resultScreenCard .review-item { gap: 12px; padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, var(--panel) 90%, transparent); }
+  #resultScreenCard .review-item > span:first-child { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #resultScreenCard .review-item .tag { flex: none; width: 26px; height: 26px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: .78rem; }
+  #resultScreenCard .powered-by { margin-top: 4px; }
+  @media (prefers-reduced-motion: reduce) { .rs-inner > *, #resultScreenCard.card[style*="block"], #generatingCard.card[style*="block"] { animation: none; } }
 
   body.quiz-open { overflow: hidden; height: 100%; }
 
@@ -1661,6 +1710,24 @@ body::before{content:"";position:fixed;inset:-15% -10%;z-index:-1;pointer-events
 .ey-pop-b .ey-pop-r{border:0;color:#fff;background:var(--grad-main);box-shadow:0 8px 22px rgba(192,75,255,.5)}
 @media (prefers-reduced-motion:reduce){body::before{animation:none}}
 </style>
+<style id="yaiStepTheme">
+/* ===== per-step palette: vars are set by JS on each step/screen; every show of a step rotates its palette ===== */
+body::before{background:var(--glow,radial-gradient(760px 520px at 8% 0%,rgba(120,100,255,.40),transparent 62%),radial-gradient(700px 480px at 100% 12%,rgba(255,70,150,.30),transparent 62%),radial-gradient(760px 520px at 55% 108%,rgba(0,220,190,.26),transparent 62%),radial-gradient(520px 340px at 92% 58%,rgba(255,170,40,.14),transparent 62%))!important}
+.btn-main{background:var(--grad-main,linear-gradient(135deg,#6d7bff,#c24bff 52%,#ff4f9a))!important;color:var(--on-grad,#fff)!important;box-shadow:0 10px 26px color-mix(in srgb,var(--accent) 50%,transparent)!important}
+.btn-main.ghost{background:linear-gradient(var(--panel),var(--panel)) padding-box,var(--grad-main) border-box!important;color:var(--ink)!important;box-shadow:none!important}
+.step-label .num,.brand .mark,.lang-toggle button.active,.drop .icon-doc{background:var(--grad-main)!important;color:var(--on-grad,#fff)!important}
+.step-label .num{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent),0 4px 14px color-mix(in srgb,var(--accent) 55%,transparent)!important}
+.brand .mark{box-shadow:0 4px 18px color-mix(in srgb,var(--accent) 55%,transparent)!important}
+header::after{background:linear-gradient(90deg,var(--accent),var(--teal),var(--coral),var(--accent))!important;background-size:200% 100%!important}
+.container > .card:not(#quizCard):not(#generatingCard):not(#resultScreenCard){background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 10%,var(--panel)),var(--panel) 60%) padding-box,linear-gradient(135deg,color-mix(in srgb,var(--accent) 70%,transparent),color-mix(in srgb,var(--teal) 55%,transparent)) border-box!important;box-shadow:0 14px 38px color-mix(in srgb,var(--accent) 20%,transparent)!important}
+.drop{background:radial-gradient(260px 160px at 50% 28%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 70%),radial-gradient(240px 140px at 15% 100%,color-mix(in srgb,var(--teal) 16%,transparent),transparent 70%),linear-gradient(var(--panel-raised),var(--panel-raised)) padding-box,linear-gradient(135deg,var(--accent),var(--teal),var(--coral)) border-box!important}
+.drop .drop-main{background:linear-gradient(90deg,var(--ink),color-mix(in srgb,var(--accent) 75%,var(--ink)))!important;-webkit-background-clip:text!important;background-clip:text!important}
+#generatingCard.card,#resultScreenCard.card{background:var(--glow,none),var(--bg)!important}
+.gen-mark,.gen-pct,.gen-pop-ic,.gen-pop-btn,#resultScreenCard .result-actions .btn-sm.primary{color:var(--on-grad,#fff)!important}
+.container > .card,.step-label{transition:box-shadow .5s,background-color .5s}
+.ey-main.active{color:var(--on-grad,#fff)!important;box-shadow:0 10px 28px color-mix(in srgb,var(--accent) 50%,transparent),inset 0 1px 0 rgba(255,255,255,.3)!important}
+#resultScreenCard #retryWrongBtn ~ #reviewJumpBtn{color:var(--ink)!important}
+</style>
 </head>
 <body>
 
@@ -2017,16 +2084,19 @@ body::before{content:"";position:fixed;inset:-15% -10%;z-index:-1;pointer-events
 
   <div class="card" id="generatingCard" style="display:none;">
     <div class="gen-top">
-      <div class="ai-gen-label" id="aiGenLabel">Generating questions...</div>
+      <div class="gen-head">
+        <div class="gen-mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17l.7 1.8 1.8.7-1.8.7L19 22l-.7-1.8-1.8-.7 1.8-.7z"/></svg></div>
+        <div class="gen-titles"><div class="ai-gen-label" id="aiGenLabel">Generating questions...</div><div class="ai-gen-sub" id="aiGenSub"></div></div>
+        <b class="gen-pct" id="genPct">0%</b>
+      </div>
       <div class="gen-bar"><i id="genBar"></i></div>
-      <div class="gen-meta"><span id="genStatus">Selecting the best AI model…</span><b id="genPct">0%</b></div>
-      <div class="gen-row"><div class="ai-gen-sub" id="aiGenSub"></div>
-        <button class="btn-sm" id="cancelAiBtn">⬅️ <span data-i18n="cancelBtn">Cancel</span></button></div>
+      <div class="gen-row"><span class="gen-status" id="genStatus">Selecting the best AI model…</span>
+        <button class="btn-sm" id="cancelAiBtn">✕ <span data-i18n="cancelBtn">Cancel</span></button></div>
     </div>
-    <div class="gen-stage">
+    <div class="gen-stage"><div class="gen-frame">
       <iframe id="genGame" title="Mini game" allow="autoplay"></iframe>
-      <div class="gen-pop" id="genPop" style="display:none"><div class="gen-pop-box"><div class="gen-pop-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10v5M4.5 12.5h5"/><circle cx="16" cy="11" r=".6"/><circle cx="18.5" cy="14" r=".6"/></svg></div><b>Play while you wait</b><span>Your quiz starts automatically.</span><button type="button" class="gen-pop-btn">Got it</button></div></div>
-    </div>
+      <div class="gen-pop" id="genPop" style="display:none"><div class="gen-pop-box"><div class="gen-pop-ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10v5M4.5 12.5h5"/><circle cx="16" cy="11" r=".6"/><circle cx="18.5" cy="14" r=".6"/></svg></div><b>Play while you wait</b><span>Your quiz is being prepared and will start automatically. Enjoy a quick game till then.</span><button type="button" class="gen-pop-btn">Let’s play</button></div></div>
+    </div></div>
   </div>
 
   <div class="card" id="pasteCard" style="display:none;">
@@ -2075,21 +2145,31 @@ body::before{content:"";position:fixed;inset:-15% -10%;z-index:-1;pointer-events
   </div>
 
   <div class="card result-wrap" id="resultScreenCard" style="display:none;">
-    <h2 style="font-family:var(--serif); font-size:1rem; font-weight:600; margin:0 0 4px;" data-i18n="resultTitle">Quiz result</h2>
+   <div class="rs-inner">
+    <h2 class="rs-title" data-i18n="resultTitle">Quiz result</h2>
     <div class="score-circle">
       <div class="big" id="scoreBig">0/0</div>
       <div class="small" id="scorePercent">0%</div>
     </div>
-    <div class="quiz-timer" id="resultTimeRow" style="justify-content:center; margin-bottom:6px;"></div>
-    <div id="marksRow" style="text-align:center; font-size:0.82rem; font-weight:600; color:var(--ink-dim); margin-bottom:14px; display:none;"></div>
-    <div class="result-actions" style="justify-content:center;">
+    <div class="grade-msg" id="gradeMsg"></div>
+    <div class="rs-stats">
+      <div class="rs-stat ok"><b id="rsRight">0</b><span>Correct</span></div>
+      <div class="rs-stat bad"><b id="rsWrong">0</b><span>Wrong</span></div>
+      <div class="rs-stat"><b id="rsSkip">0</b><span>Skipped</span></div>
+      <div class="rs-stat time"><b id="rsTime">0:00</b><span>Time</span></div>
+    </div>
+    <div class="quiz-timer" id="resultTimeRow" style="display:none;"></div>
+    <div id="marksRow"></div>
+    <div class="result-actions">
       <button class="btn-sm primary" id="reviewJumpBtn">📋 <span data-i18n="reviewTitle">Review answers</span></button>
       <button class="btn-sm" id="restartQuizBtn">🔁 <span data-i18n="restartBtn">New quiz</span></button>
     </div>
     <div id="reviewCollapse" style="display:none;">
+      <div class="rs-sec">Question review</div>
       <div class="review-list" id="reviewList"></div>
     </div>
     <div class="powered-by">Y <span class="ai-tag">ai</span> — powered by Vishal Yadav</div>
+   </div>
   </div>
 
 </div>
@@ -6141,11 +6221,16 @@ let genOn = false, genSent = false, genT0 = 0, genTick = null;
 function genSet(s, p) { if (s) genStatus.textContent = s; if (p != null) { genBar.style.width = p + '%'; genPct.textContent = Math.round(p) + '%'; } }
 function genOpen() {
   genOn = true; genSent = false; genT0 = Date.now(); genSet('Selecting the best AI model…', 5);
-  genGame.src = 'game.html';
+  genGame.classList.remove('ready'); genGame.src = 'game.html';
   genPop.classList.remove('out'); genPop.style.display = 'flex';
   clearInterval(genTick);
   genTick = setInterval(() => { if (genSent) genSet(null, Math.min(92, 12 + 80 * (1 - Math.exp(-(Date.now() - genT0) / 14000)))); }, 400);
 }
+genGame.addEventListener('load', () => {
+  if (!genOn) return; genGame.classList.add('ready');
+  try { const cs = getComputedStyle(generatingCard), r = genGame.contentDocument.documentElement;   // same-origin only; otherwise the game keeps its default colours
+    r.style.setProperty('--grad', cs.getPropertyValue('--grad-main')); r.style.setProperty('--on', cs.getPropertyValue('--on-grad')); r.style.setProperty('--acc', cs.getPropertyValue('--accent')); r.style.setProperty('--acc2', cs.getPropertyValue('--teal')); } catch (e) {}
+});
 function genClose() { genOn = false; clearInterval(genTick); genGame.src = 'about:blank'; }   // closes the game the moment the card hides
 new MutationObserver(() => {
   const on = generatingCard.style.display === 'block';
@@ -7479,7 +7564,7 @@ function burst(el, n) {
   const cols = ['#7c8cff', '#4a9b7f', '#818cf8', '#22d3ee', '#a78bfa', '#f472b6'];
   for (let i = 0; i < n; i++) {
     const s = document.createElement('span');
-    s.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;width:7px;height:7px;border-radius:${Math.random() < .5 ? '50%' : '2px'};background:${cols[i % cols.length]};pointer-events:none;z-index:300`;
+    s.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;width:7px;height:7px;border-radius:${Math.random() < .5 ? '50%' : '2px'};background:${cols[i % cols.length]};pointer-events:none;z-index:700`;
     document.body.appendChild(s);
     const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 120;
     s.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d + 60}px) rotate(${Math.random() * 540}deg) scale(.4)`, opacity: 0 }], { duration: 800 + Math.random() * 500, easing: 'cubic-bezier(.2,.8,.3,1)' }).onfinish = () => s.remove();
@@ -7570,16 +7655,23 @@ function decorateResult() {
     const _examLabel = localStorage.getItem('yai_examName') || DEFAULT_EXAM_NAME;
     const scored = right * 4 - wrong;
     const maxScore = total * 4;
-    marksRow.textContent = _examLabel + ' score: ' + scored + ' / ' + maxScore + '  (+4 correct, \u22121 wrong, 0 skipped)';
-    marksRow.style.display = 'block';
+    marksRow.innerHTML = '<div><span class="m-l">' + escapeHtml(_examLabel) + ' score</span><span class="m-n">+4 correct \u00B7 \u22121 wrong \u00B7 ' + (total - attempted) + ' skipped</span></div><b>' + scored + '<i> / ' + maxScore + '</i></b>';
+    marksRow.style.display = 'flex';
   } else if (marksRow) {
     marksRow.style.display = 'none';
   }
 
+  // Stat tiles + ring
+  const _rs = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  _rs('rsRight', right); _rs('rsWrong', wrong); _rs('rsSkip', total - attempted); _rs('rsTime', formatTime(quizTotalSeconds));
+  const _ring = document.querySelector('#resultScreenCard .score-circle');
+  if (_ring) _ring.style.setProperty('--pct', REDUCED ? pct : 0);
+  resultScreenCard.scrollTop = 0;
+
   // Animated percent counter
   if (!REDUCED) {
     const t0 = performance.now();
-    const step = ts => { const p = Math.min(1, (ts - t0) / 900); scorePercent.textContent = Math.round(pct * p) + '%'; if (p < 1) requestAnimationFrame(step); };
+    const step = ts => { const p = Math.min(1, (ts - t0) / 900); scorePercent.textContent = Math.round(pct * p) + '%'; if (_ring) _ring.style.setProperty('--pct', pct * p); if (p < 1) requestAnimationFrame(step); };
     requestAnimationFrame(step);
   }
 
@@ -7897,6 +7989,40 @@ eyRenderModels(); eyLoadModels(true, true);   // cached list shows instantly; fr
 try { document.documentElement.style.setProperty('--yp-delay', '-' + (Math.random() * 60).toFixed(1) + 's'); } catch (e) {}   // different background shade on every visit
 const _sr = showResultScreen;
 showResultScreen = function () { _sr(); decorateResult(); };
+
+/* ===== Step palettes: each step/screen gets its own palette; it rotates every time that step is shown ===== */
+(function () {
+  const first = document.querySelector('.container > .step-label'), root = document.documentElement, N = QUIZ_PALETTES.length;
+  const defs = [['s1', [first, first && first.nextElementSibling]], ['s2', ['rangeStepLabel', 'rangeCard']], ['s3', ['resultStepLabel', 'resultCard']], ['s4', ['methodStepLabel', 'methodCard']], ['gen', ['generatingCard']], ['paste', ['pasteCard']], ['res', ['resultScreenCard']]];
+  let store = {}; try { store = JSON.parse(localStorage.yai_stepPal || '{}'); } catch (e) {}
+  const cur = {}, vis = {}; let lastKey = null, lastIdx = -1;
+  const lum = h => { const n = parseInt(h.slice(1), 16); const c = [n >> 16, (n >> 8) & 255, n & 255].map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; };
+  const isLight = () => root.getAttribute('data-theme') === 'light';
+  function vars(p, light) {
+    const mx = (c, pc) => light ? `color-mix(in srgb, ${c} ${pc}%, #14151c)` : c;
+    const a = mx(p.accent, 68), t = mx(p.teal, 68);
+    const v = { '--accent': a, '--accent-dim': `color-mix(in srgb, ${a} 70%, #000)`, '--teal': t, '--coral': mx(p.coral, 72), '--grad-main': `linear-gradient(135deg, ${a}, ${t})`, '--on-grad': (light || lum(p.accent) < .45) ? '#fff' : '#10101c', '--glow': p.g1 };
+    const d = { '--bg': p.bg, '--panel': p.panel, '--panel-raised': p.panelR, '--line': p.line, '--line-soft': `color-mix(in srgb, ${p.line} 55%, ${p.bg})` };
+    Object.keys(d).forEach(k => { v[k] = light ? '' : d[k]; });
+    return v;
+  }
+  const paint = (el, v) => { if (el) Object.keys(v).forEach(k => el.style.setProperty(k, v[k])); };
+  const els = d => d[1].map(x => typeof x === 'string' ? document.getElementById(x) : x).filter(Boolean);
+  function apply(d, asPage) { const v = vars(QUIZ_PALETTES[cur[d[0]]], isLight()); els(d).forEach(e => paint(e, v)); if (asPage) paint(root, v); }
+  function show(d) {
+    const key = d[0]; let idx = store[key] == null ? (defs.indexOf(d) * 3) % N : (store[key] + 1) % N;
+    if (idx === lastIdx) idx = (idx + 1) % N;
+    store[key] = cur[key] = idx; lastKey = key; lastIdx = idx;
+    try { localStorage.yai_stepPal = JSON.stringify(store); } catch (e) {}
+    apply(d, true);
+  }
+  defs.forEach(d => {
+    const list = els(d), card = list[list.length - 1]; if (!card) return;
+    vis[d[0]] = card.style.display !== 'none'; if (vis[d[0]]) show(d);
+    new MutationObserver(() => { const v = card.style.display !== 'none'; if (v && !vis[d[0]]) show(d); vis[d[0]] = v; }).observe(card, { attributes: true, attributeFilter: ['style'] });
+  });
+  new MutationObserver(() => { defs.forEach(d => { if (cur[d[0]] != null) apply(d, d[0] === lastKey); }); }).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+})();
 </script>
 
 <!-- Word meaning lookup (select / long-press up to 5 words -> [Meaning] = dictionaries in parallel, best one shown | [Google] = opens a new tab) -->
