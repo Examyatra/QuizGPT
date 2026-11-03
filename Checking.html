@@ -136,6 +136,33 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 .m.paid{opacity:.55}
 .gerr{font-size:12px;color:var(--bad);overflow-wrap:anywhere}
 .chips.tiers .chip{padding:5px 10px;font-size:12.5px}
+/* name-tier badges: HIGH / MID / LOW based on model name keywords */
+.ntag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:5px;padding:1px 6px;margin-left:6px;vertical-align:1px;letter-spacing:.02em}
+.ntag.h{background:#dbeafe;color:#1d4ed8}
+.ntag.m{background:#fef9c3;color:#92400e}
+.ntag.l{background:#f1f5f9;color:#64748b}
+@media(prefers-color-scheme:dark){
+  .ntag.h{background:#1e3a5f;color:#93c5fd}
+  .ntag.m{background:#3b2f00;color:#fcd34d}
+  .ntag.l{background:#1e2330;color:#94a3b8}
+}
+/* name-tier filter chips in company tab */
+.ntfilt{display:flex;gap:6px;flex-wrap:wrap;margin:0 2px 10px;align-items:center}
+.ntfilt span{font-size:12px;color:var(--mut);font-weight:600}
+.qcard{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:10px 12px;margin:0 0 12px;box-shadow:var(--shadow)}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:6px}
+.qrow{padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.qline{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.qtxt{overflow-wrap:anywhere}
+.qmut{color:var(--mut);font-size:12.5px;overflow-wrap:anywhere}
+.qbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin:5px 0 2px}
+.qbar i{display:block;height:100%;background:var(--ok)}
+.qbar.low i{background:var(--warn)}.qbar.out i{background:var(--bad)}
+.qbtn{border:1px solid var(--line);background:var(--surface);color:inherit;border-radius:8px;padding:4px 9px;font-size:12.5px;font-weight:600;flex:0 0 auto}
+.qbtn:disabled{opacity:.5}
+.qm{margin:4px 0 6px}.qm .qline{font-size:12.5px}
+.qsum{font-size:12.5px;color:var(--mut);margin:2px 0 6px;overflow-wrap:anywhere}
+.qkey{margin-top:6px;font-size:12.5px;color:var(--mut)}
 </style>
 </head>
 <body>
@@ -178,6 +205,23 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 <script>
 const DEFAULT_URL = 'https://vishalyadav--ac9af586d5c311f1ac7a1607ee4eb77e.web.val.run';
 const $ = (id) => document.getElementById(id);
+
+/* ---------- model name tier helpers (mirrors score() logic in main.ts) ---------- */
+function nameScore(id) {
+  const s = id.toLowerCase();
+  let tier = 10;
+  if (/opus|ultra|max|\bpro\b|large|heavy|maverick|\br1\b|\bo[1-4]\b|\b4o\b|405b|\b[7-9]\db\b|\b[1-9]\d{2,}b\b|\d{3,}b/.test(s)) tier = 30;
+  else if (/sonnet|medium|plus|turbo|flash|scout|balanced/.test(s)) tier = 20;
+  if (/\bmini|\bnano|\blite|\btiny|\bmicro|\bsmall|\bhaiku|\bbase|\bedge|\bexpress|\b[1-9]b\b|\b1\db\b/.test(s)) tier = 6;
+  return tier;
+}
+function nameTierLabel(id) {
+  const t = nameScore(id);
+  if (t >= 30) return { cls: 'h', txt: 'HIGH' };
+  if (t >= 20) return { cls: 'm', txt: 'MID' };
+  if (t <= 6)  return { cls: 'l', txt: 'LOW' };
+  return null; // tier=10 = no keyword found, no badge
+}
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 
 let provs = [];          // /admin/models : company -> keys -> models each key can see
@@ -189,10 +233,11 @@ const outs = {};         // rid -> {kind, head, text, right}
 const refs = {};         // rid -> {row, out}  (only for rows currently on screen)
 let cur = null;          // current tab: company id or '@gw'
 const curKey = {};       // company id -> chosen key index
-let q = '', starOnly = false, busy = false, stopReq = false, shown = [];
+let q = '', starOnly = false, ntFilter = '', busy = false, stopReq = false, shown = [];
 
 try { $('url').value = localStorage.getItem('ey_test_url') || DEFAULT_URL; }
 catch (e) { $('url').value = DEFAULT_URL; }
+const cacheBoard = () => { try { localStorage.setItem('ey_board_cache', JSON.stringify(board.map((b) => ({ id: b.id, provider: b.provider, model: b.model, ok: b.ok, fail: b.fail, tier: b.tier, updated: b.updated, nextCheck: b.nextCheck, rating: b.rating, avgSec: b.avgSec })))); } catch (e) {} };
 const base = () => $('url').value.trim().replace(/\/+$/, '');
 const rid = (p, k, m) => p.id + ':' + m + '|' + (k.n - 1);
 
@@ -221,6 +266,15 @@ function summary() {
 /* ---------- helpers ---------- */
 const coColor = (id) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 360; return 'hsl(' + h + ' 62% 48%)'; };
 const fmtRest = (s) => s < 90 ? s + 's' : s < 5400 ? Math.round(s / 60) + ' min' : s < 172800 ? (Math.round(s / 360) / 10) + ' ghante' : Math.round(s / 86400) + ' din';
+const dbRec = (pid, m) => bidx[pid + ':' + m] || null;
+const isDone = (pid, m) => { const b = dbRec(pid, m); return !!(b && b.ok + b.fail > 0); };   // already tested: result lives in Val Town SQLite
+const fmtDay = (t) => t ? new Date(t).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '';
+function dbState(pid, m) {
+  const b = dbRec(pid, m); if (!b || !(b.ok + b.fail > 0)) return 'idle';
+  if (b.tier === 'limited') return 'skip';
+  if (b.tier === 'paid' || b.tier === 'dead' || b.tier === 'resting') return 'bad';
+  return b.ok > 0 ? 'ok' : 'bad';
+}
 function rowState(pid, m) {
   let st = 'idle';
   for (const r0 in outs) {
@@ -229,7 +283,7 @@ function rowState(pid, m) {
     if (kd === 'load') return 'load';
     if (kd === 'ok') st = 'ok'; else if (kd === 'bad' && st !== 'ok') st = 'bad';
   }
-  return st;
+  return st === 'idle' ? dbState(pid, m) : st;
 }
 
 /* ---------- output box under a row ---------- */
@@ -251,7 +305,8 @@ function softRefresh() {
   rt = setTimeout(async () => {
     try {
       const { j } = await getJson('/status');
-      if (j && Array.isArray(j.leaderboard)) { board = j.leaderboard; dbOn = j.db; keyState = j.keyState || {}; if (cur === '@gw') render(); else updateButtons(); }
+      await loadQuota();
+      if (j && Array.isArray(j.leaderboard)) { board = j.leaderboard; dbOn = j.db; keyState = j.keyState || {}; cacheBoard(); if (cur === '@gw' || !busy) render(); else updateButtons(); }
     } catch (e) {}
   }, 1500);
 }
@@ -260,7 +315,7 @@ function softRefresh() {
 function render() {
   bidx = {}; board.forEach((b) => { bidx[b.id] = b; });
   const tabs = $('tabs'); tabs.innerHTML = '';
-  if (cur !== '@gw' && !provs.some((p) => p.id === cur)) cur = provs.length ? provs[0].id : (board.length ? '@gw' : null);
+  if (cur !== '@gw' && cur !== '@quota' && !provs.some((p) => p.id === cur)) cur = provs.length ? provs[0].id : (board.length ? '@gw' : null);
   provs.forEach((p) => {
     const t = el('button', 'tab' + (p.id === cur ? ' on' : ''), p.label);
     t.appendChild(el('i', '', unionCount(p)));
@@ -273,12 +328,19 @@ function render() {
     t.onclick = () => { cur = '@gw'; render(); };
     tabs.appendChild(t);
   }
+  if (Object.keys(quota).length) {
+    const t = el('button', 'tab' + (cur === '@quota' ? ' on' : ''), '📈 Quota');
+    const lim = Object.values(quota).filter((c) => c.status === 'limited').length; if (lim) t.appendChild(el('i', '', '⏸ ' + lim));
+    t.onclick = () => { cur = '@quota'; render(); };
+    tabs.appendChild(t);
+  }
   for (const k in refs) delete refs[k];
   const box = $('list'); box.innerHTML = '';
   shown = [];
   if (!cur) {
     box.appendChild(el('div', 'empty', 'Koi company nahi mili. Val Town env me AI_<NAAM>_KEY aur AI_<NAAM>_ENDPOINT check karo.'));
   } else if (cur === '@gw') renderGateway(box);
+  else if (cur === '@quota') renderQuota(box);
   else renderCompany(box, provs.find((p) => p.id === cur));
   summary(); updateButtons();
 }
@@ -297,6 +359,7 @@ function renderCompany(box, p) {
   if (p.keys.length > 1) mk('Sab keys (' + p.keys.length + ')', ki < 0, false, () => { curKey[p.id] = -1; render(); });
   p.keys.forEach((kk, i) => mk('Key ' + kk.n + (kk.ok ? ' ✅ ' + kk.chat.length : ' ❌ ' + (kk.status || 'err')), p.keys.length === 1 || ki === i, !kk.ok, () => { curKey[p.id] = i; render(); }));
   box.appendChild(chips);
+  box.appendChild(quotaPanel(p));
 
   sel.filter((k) => !k.ok).forEach((k) => box.appendChild(el('div', 'kerr', 'Key ' + k.n + ': model list nahi mili (HTTP ' + (k.status || 'network') + ', ' + k.ms + 'ms)\n' + (k.error || 'no details'))));
   if (sel.some((k) => !k.ok) && p.forced.length) box.appendChild(el('div', 'note', 'Forced models (AI_' + p.id + '_MODELS) neeche test ke liye diye hain.'));
@@ -310,11 +373,29 @@ function renderCompany(box, p) {
   const si = el('input'); si.type = 'search'; si.placeholder = 'Model dhundo…'; si.value = q; si.setAttribute('aria-label', 'Model dhundo');
   const lb = el('label'); const cb = el('input'); cb.type = 'checkbox'; cb.checked = starOnly; lb.appendChild(cb); lb.appendChild(document.createTextNode('Sirf ★'));
   filt.appendChild(si); filt.appendChild(lb); box.appendChild(filt);
+  // name-tier filter chips
+  const ntrow = el('div', 'ntfilt'); ntrow.appendChild(el('span', '', 'Naam tier:'));
+  [['', 'Sab'], ['h', '🔵 HIGH'], ['m', '🟡 MID'], ['l', '⚪ LOW'], ['?', '— Pata nahi']].forEach(([k, lbl]) => {
+    const c = el('button', 'chip' + (ntFilter === k ? ' on' : ''), lbl);
+    c.style.setProperty('--c', col);
+    c.onclick = () => { ntFilter = k; render(); };
+    ntrow.appendChild(c);
+  });
+  box.appendChild(ntrow);
   const listHost = el('div'); box.appendChild(listHost);
   const draw = () => {
     for (const r0 in refs) delete refs[r0];
     listHost.innerHTML = '';
-    const ms = names.filter((m) => (!starOnly || isStar(p, m)) && (!q || m.toLowerCase().includes(q.toLowerCase())));
+    const ms = names.filter((m) => {
+      if (starOnly && !isStar(p, m)) return false;
+      if (q && !m.toLowerCase().includes(q.toLowerCase())) return false;
+      if (ntFilter) {
+        const nt = nameTierLabel(m);
+        const cls = nt ? nt.cls : '?';
+        if (cls !== ntFilter) return false;
+      }
+      return true;
+    });
     shown = [];
     if (!ms.length) { listHost.appendChild(el('div', 'empty', 'Koi model nahi dikh raha.')); updateButtons(); return; }
     const list = el('div', 'list');
@@ -323,9 +404,11 @@ function renderCompany(box, p) {
       const d = el('div', 'm'); d.dataset.p = p.id; d.dataset.m = m; d.style.setProperty('--c', col);
       const top = el('div', 'top'); top.appendChild(el('span', 'dot'));
       const info = el('div', 'info'); const nm = el('div', 'name', m); if (isStar(p, m)) nm.appendChild(el('span', 'star', '★'));
+      const nt = nameTierLabel(m); if (nt) { const nb = el('span', 'ntag ' + nt.cls, nt.txt); nm.appendChild(nb); }
       info.appendChild(nm);
-      const b0 = bm[p.id + ':' + m]; const pd = !!(b0 && b0.tier === 'paid'); if (pd) d.classList.add('paid');
-      info.appendChild(el('div', 'meta', 'Key ' + ks.map((k) => k.n).join(', ') + ' pe available · ' + (pd ? '💰 paid: gateway ise nahi aazmata' : b0 ? 'gateway: rating ' + b0.rating + (b0.avgSec != null ? ' · ' + b0.avgSec + 's' : '') + ' · ' + (b0.tier || '') : 'gateway pool ke bahar')));
+      const b0 = bm[p.id + ':' + m]; const pd = !!(b0 && (b0.tier === 'paid' || b0.tier === 'dead')); if (pd) d.classList.add('paid');
+      const done = isDone(p.id, m);
+      info.appendChild(el('div', 'meta', 'Key ' + ks.map((k) => k.n).join(', ') + ' pe available · ' + (pd ? (b0.tier === 'dead' ? '☠ band: jawab nahi deta' : '💰 paid') + ' · gateway ise nahi aazmata' + (b0.nextCheck ? ' · agla test ' + fmtDay(b0.nextCheck) : '') : b0 ? 'gateway: rating ' + b0.rating + (b0.avgSec != null ? ' · ' + b0.avgSec + 's' : '') + ' · ' + (b0.tier || '') + (done ? ' · ✔ tested ' + fmtDay(b0.updated) : '') : 'gateway pool ke bahar')));
       top.appendChild(info);
       const ctl = el('div', 'ctl'); const outs2 = el('div', 'outs');
       ks.forEach((k) => {
@@ -333,7 +416,7 @@ function renderCompany(box, p) {
         const b = el('button', 'send kb', ks.length > 1 ? 'K' + k.n : 'Send'); b.title = 'Key ' + k.n + ' se test karo';
         b.onclick = () => testOne(p, k, m, b); ctl.appendChild(b);
         const out = el('div', 'out'); out.hidden = true; outs2.appendChild(out);
-        refs[r0] = { row: d, out, kb: b }; if (!pd) shown.push({ p, k, m });
+        refs[r0] = { row: d, out, kb: b }; if (!pd && !done) shown.push({ p, k, m });
       });
       top.appendChild(ctl); d.appendChild(top); d.appendChild(outs2);
       list.appendChild(d);
@@ -363,7 +446,7 @@ function gwRows() {
   });
   return rows;
 }
-const TIERS = { elite: ['⭐ Elite', 'ok'], ok: ['✓ Theek', 'ok'], new: ['🆕 Naya', ''], slow: ['🐢 Slow', 'warn'], resting: ['⛔ Block', 'bad'], paid: ['💰 Paid', 'bad'], out: ['⚪ Pool ke bahar', ''] };
+const TIERS = { dead: ['☠ Band', 'bad'], elite: ['⭐ Elite', 'ok'], ok: ['✓ Theek', 'ok'], new: ['🆕 Naya', ''], slow: ['🐢 Slow', 'warn'], resting: ['⛔ Block', 'bad'], limited: ['⏸ Limit', 'warn'], paid: ['💰 Paid', 'bad'], out: ['⚪ Pool ke bahar', ''] };
 function renderGateway(box) {
   const rows = gwRows();
   const head = el('div', 'cohead'); head.appendChild(el('h2', '', 'Gateway leaderboard'));
@@ -375,7 +458,7 @@ function renderGateway(box) {
   rows.forEach((r) => {
     const c = co[r.prov] || (co[r.prov] = { label: r.label || r.prov, n: 0, live: 0, fresh: 0, rest: 0, out: 0, sec: [] });
     c.n++;
-    if (r.tier === 'out') c.out++; else if (r.tier === 'resting' || r.tier === 'paid') c.rest++; else if (r.tier === 'new') c.fresh++; else c.live++;
+    if (r.tier === 'out') c.out++; else if (r.tier === 'resting' || r.tier === 'paid' || r.tier === 'limited') c.rest++; else if (r.tier === 'new') c.fresh++; else c.live++;
     if (r.avgSec != null && r.tier !== 'resting') c.sec.push(r.avgSec);
   });
   const cards = el('div', 'cards');
@@ -385,7 +468,7 @@ function renderGateway(box) {
     d.appendChild(el('span', '', c.live + ' chal · ' + c.fresh + ' naye · ' + c.rest + ' block' + (c.out ? ' · ' + c.out + ' bahar' : '')));
     d.appendChild(el('span', '', c.sec.length ? '⚡ avg ' + (c.sec.reduce((a, b) => a + b, 0) / c.sec.length).toFixed(1) + 's' : 'speed abhi pata nahi'));
     const ks = keyState[id] || [];
-    if (ks.length) { const kp = el('div', 'kpills'); ks.forEach((k) => kp.appendChild(el('i', k.restSec > 0 ? 'bad' : '', 'K' + k.n + (k.restSec > 0 ? ' ⏸ ' + fmtRest(k.restSec) : ' ✓')))); d.appendChild(kp); }
+    if (ks.length) { const kp = el('div', 'kpills'); ks.forEach((k) => kp.appendChild(el('i', k.restSec > 0 || k.limSec > 0 ? 'bad' : '', 'K' + k.n + (k.restSec > 0 ? ' ⏸ ' + fmtRest(k.restSec) : k.limSec > 0 ? ' ⏸ ' + (k.worst || 'limit') + ' ' + fmtRest(k.limSec) : k.pct >= 60 ? ' ⚠ ' + k.pct + '%' : ' ✓')))); d.appendChild(kp); }
     d.onclick = () => { gwCo = gwCo === id ? '' : id; render(); };
     cards.appendChild(d);
   });
@@ -393,7 +476,7 @@ function renderGateway(box) {
 
   const base = rows.filter((r) => !gwCo || r.prov === gwCo);
   const tc = el('div', 'chips tiers');
-  [['', 'Sab'], ['elite', '⭐ Elite'], ['ok', '✓ Theek'], ['new', '🆕 Naye'], ['slow', '🐢 Slow'], ['resting', '⛔ Block'], ['paid', '💰 Paid'], ['out', '⚪ Bahar']].forEach(([k, l]) => {
+  [['', 'Sab'], ['elite', '⭐ Elite'], ['ok', '✓ Theek'], ['new', '🆕 Naye'], ['slow', '🐢 Slow'], ['resting', '⛔ Block'], ['limited', '⏸ Limit'], ['paid', '💰 Paid'], ['out', '⚪ Bahar']].forEach(([k, l]) => {
     const n = k ? base.filter((r) => r.tier === k).length : base.length;
     const c = el('button', 'chip' + (gwTier === k ? ' on' : ''), l + ' ' + n); c.onclick = () => { gwTier = k; render(); }; tc.appendChild(c);
   });
@@ -404,7 +487,7 @@ function renderGateway(box) {
   if (!vis.length) list.appendChild(el('div', 'empty', 'Is filter me koi model nahi.'));
   vis.forEach((r) => {
     const d = el('div', 'm'); d.style.setProperty('--c', coColor(r.prov)); const top = el('div', 'top');
-    d.dataset.s = (r.tier === 'resting' || r.tier === 'paid') ? 'bad' : (r.ok > 0 ? 'ok' : 'idle');
+    d.dataset.s = (r.tier === 'resting' || r.tier === 'paid') ? 'bad' : r.tier === 'limited' ? 'skip' : (r.ok > 0 ? 'ok' : 'idle');
     top.appendChild(el('span', 'dot'));
     const info = el('div', 'info'); const nm = el('div', 'name', (r.rank ? r.rank + '. ' : '– ') + r.mdl);
     if (r.elite) nm.appendChild(el('span', 'star', '★'));
@@ -413,6 +496,7 @@ function renderGateway(box) {
     const sp = r.avgSec == null ? 'speed ?' : (r.avgSec <= 6 ? '⚡ ' : r.avgSec >= 20 ? '🐢 ' : '') + r.avgSec + 's';
     info.appendChild(el('div', 'meta', r.tier === 'out' ? 'Pool ke bahar: gateway abhi ise use nahi karta. Company tab me test karo, achha nikla to pool me aa jayega.' : 'rating ' + r.rating + ' · ok ' + r.ok + ' / fail ' + r.fail + ' · ' + sp + ' · last ' + r.last + ' · ' + r.keys + ' key' + (r.ok + r.fail ? '' : ' · abhi tak test nahi hua')));
     if (r.tier === 'paid') info.appendChild(el('div', 'gerr', '💰 Paid model: free plan pe nahi chalta, gateway ise kabhi nahi aazmata. Top-up ke baad tester me test karo, chal gaya to wapas aa jayega.')); else if (r.tier === 'resting') info.appendChild(el('div', 'gerr', '⛔ ' + fmtRest(r.rest) + ' tak band (lagatar ' + (r.consec || 1) + ' fail)' + (r.lastErr ? ' — ' + r.lastErr : '')));
+    else if (r.tier === 'limited') info.appendChild(el('div', 'gerr', '⏸ Is company ki limit / quota bhar gayi: gateway reset hone tak ise nahi bhejta (📈 Quota tab dekho).'));
     else if (r.lastErr && r.consec) info.appendChild(el('div', 'gerr', 'pichhli galti: ' + r.lastErr));
     top.appendChild(info);
     const t = TIERS[r.tier] || TIERS.ok; top.appendChild(el('span', 'tag ' + t[1], t[0]));
@@ -433,10 +517,12 @@ async function load() {
   const u = base(); if (!u) return;
   try { localStorage.setItem('ey_test_url', u); } catch (e) {}
   $('msg').textContent = 'Load ho raha hai (har key ki model list mangi ja rahi hai)…'; $('load').disabled = true; $('connNote').textContent = '';
-  const [rm, rs] = await Promise.allSettled([getJson('/admin/models'), getJson('/status')]);
+  const [rm, rs, rq] = await Promise.allSettled([getJson('/admin/models'), getJson('/status'), getJson('/admin/quota')]);
   Object.keys(res).forEach((k) => delete res[k]); Object.keys(outs).forEach((k) => delete outs[k]);
   provs = []; board = []; dbOn = null; keyState = {};
-  if (rs.status === 'fulfilled' && rs.value.j && Array.isArray(rs.value.j.leaderboard)) { board = rs.value.j.leaderboard; dbOn = rs.value.j.db; keyState = rs.value.j.keyState || {}; }
+  if (rs.status === 'fulfilled' && rs.value.j && Array.isArray(rs.value.j.leaderboard)) { board = rs.value.j.leaderboard; dbOn = rs.value.j.db; keyState = rs.value.j.keyState || {}; cacheBoard(); }
+  else { try { const c = JSON.parse(localStorage.getItem('ey_board_cache') || 'null'); if (Array.isArray(c)) board = c; } catch (e) {} }   // Val not reachable: show the last saved ticks
+  quota = {}; if (rq.status === 'fulfilled' && rq.value.j && Array.isArray(rq.value.j.providers)) rq.value.j.providers.forEach((p) => { quota[p.id] = p; });
   let err = '';
   if (rm.status === 'rejected') err = '❌ Val se connect nahi hua: URL check karo (ya network / CORS).';
   else if (rm.value.status === 401 || rm.value.status === 403) err = '🔒 Ye page apni website ke origin se khula hona chahiye (jo Val Town env AI_ALLOWED_ORIGINS me hai). Is file ko wahi hosting par daalo, file se ya kisi aur site se nahi chalega.';
@@ -451,8 +537,104 @@ async function load() {
   render();
 }
 
+/* ---------- quota per key (gateway counts every call + reads the company's rate-limit headers; SQLite keeps it) ---------- */
+let quota = {};   // company id -> { keys:[{req,tin,tout,e429,hdr,...}], dailyReq, dailyTok }
+const fmtTok = (n) => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(n || 0);
+const numOf = (v) => { const n = Number(v); return v !== undefined && v !== '' && Number.isFinite(n) ? n : null; };
+async function loadQuota() {
+  try { const { j } = await getJson('/admin/quota'); if (j && Array.isArray(j.providers)) { quota = {}; j.providers.forEach((p) => { quota[p.id] = p; }); } } catch (e) {}
+}
+async function quotaCheck(p, i, btn, last = true) {
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  try {
+    const r = await fetch(base() + '/admin/quota/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target: p.id, key: i }) });
+    const j = await r.json().catch(() => ({}));
+    $('msg').textContent = j.ok ? 'Quota check ho gaya: ' + p.label + ' key ' + (i + 1) + (j.account ? ' (account info)' : ' (model ' + j.via + ' ko Hi bheja)') : '⚠️ ' + (j.error || 'quota check nahi hua');
+  } catch (e) { $('msg').textContent = '⚠️ Quota check: network error'; }
+  if (last) { await loadQuota(); render(); }
+}
+const fmtN = (n) => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e4 ? (n / 1e3).toFixed(1) + 'k' : String(n);
+function meterRow(m) {
+  const row = el('div', 'qm'), top = el('div', 'qline');
+  top.appendChild(el('span', 'qtxt', m.name + ' · ' + fmtN(m.used) + (m.limit > 1 || m.src === 'env' ? ' / ' + fmtN(m.limit) : '') + ' (' + m.pct + '%)' + (m.src === 'hdr' ? ' · company' : m.src === 'auto' ? ' · khud seekha' : '')));
+  top.appendChild(el('span', 'qmut', m.once ? 'refill nahi hota' : m.resetSec > 0 ? 'reset ' + fmtRest(m.resetSec) + ' me' : ''));
+  row.appendChild(top);
+  const bar = el('div', 'qbar' + (m.pct >= 90 ? ' out' : m.pct >= 60 ? ' low' : '')), f = el('i');
+  f.style.width = Math.max(1, Math.min(100, m.pct)) + '%'; bar.appendChild(f); row.appendChild(bar);
+  return row;
+}
+function renderQuota(box) {
+  const head = el('div', 'cohead'); head.appendChild(el('h2', '', 'Quota & rate limits'));
+  head.appendChild(el('span', '', 'har key ke meters · gateway inhi se model chunta hai · har 15s auto-refresh')); box.appendChild(head);
+  const bt = el('button', 'qbtn', '↻ Refresh'); bt.onclick = async () => { bt.disabled = true; await loadQuota(); render(); };
+  box.appendChild(bt);
+  const ids = Object.keys(quota).sort();
+  ids.forEach((id) => {
+    const c = quota[id], card = el('div', 'qcard'), hd = el('div', 'qhead');
+    card.style.borderTop = '3px solid ' + coColor(id);
+    hd.appendChild(el('span', '', c.label + (c.once ? ' · 🎁 one-time' : ' · 🔁 refill')));
+    const st = c.status === 'limited' ? ['⏸ Limit · ' + fmtRest(c.limSec) + ' me khulega' + (c.why ? ' (' + c.why + ')' : ''), 'bad'] : c.status === 'slow' ? ['⚠ Dheema ' + c.pct + '%' + (c.why ? ' (' + c.why + ')' : ''), 'warn'] : ['✅ Theek', 'ok'];
+    hd.appendChild(el('span', 'tag ' + st[1], st[0])); card.appendChild(hd);
+    const f = c.factor || {};
+    card.appendChild(el('div', 'qsum', 'Aaj ' + (c.todayReq || 0) + ' calls · share ' + c.sharePct + '% (fair ' + c.targetPct + '%) · routing weight ×' + f.total + ' = bacha-hua ×' + f.avail + ' · pace ×' + f.pace + (c.once ? ' · one-time ×' + f.once : '') + ' · share ×' + f.share));
+    const L = c.limits || {}, ls = [['RPM', L.rpm, 'rpm'], ['RPH', L.rph, 'rph'], ['RPD', L.rpd, 'rpd'], ['TPM', L.tpm], ['TPD', L.tpd], ['Month req', L.monthReq], ['Month tok', L.monthTok], ['Total req', L.totalReq], ['Total tok', L.totalTok]].filter((x) => x[1]).map((x) => x[0] + ' ' + fmtN(x[1]) + (L.auto && L.auto[x[2]] ? ' (khud seekha)' : ''));
+    card.appendChild(el('div', 'qsum', ls.length ? 'Limits (har key): ' + ls.join(' · ') : 'Limit abhi pata nahi: gateway company ke headers aur pehle 429 se khud seekh lega (kuch daalna nahi).'));
+    if (c.guard === false) card.appendChild(el('div', 'note', 'AI_QUOTA_GUARD=0: quota-routing band hai.'));
+    (c.keys || []).forEach((k) => {
+      const row = el('div', 'qrow');
+      row.appendChild(el('b', '', 'Key ' + k.n + (k.limSec > 0 ? ' ⏸ ' + fmtRest(k.limSec) : k.restSec > 0 ? ' ⏳ rest ' + fmtRest(k.restSec) : '')));
+      row.appendChild(el('div', 'qkey', 'abhi ' + k.rpm + '/min · ' + k.rph + '/ghanta · aaj ' + k.req + ' (' + fmtTok((k.tin || 0) + (k.tout || 0)) + ' tok) · mahina ' + fmtN(k.mreq || 0) + ' · total ' + fmtN(k.treq || 0) + (k.e429 ? ' · 429 × ' + k.e429 : '')));
+      (k.meters || []).forEach((m) => row.appendChild(meterRow(m)));
+      if (!(k.meters || []).length) row.appendChild(el('div', 'qmut', 'Is key ke liye abhi koi limit pata nahi.'));
+      card.appendChild(row);
+    });
+    box.appendChild(card);
+  });
+}
+setInterval(async () => { if (cur === '@quota' && !document.hidden && !busy) { await loadQuota(); if (cur === '@quota') render(); } }, 15000);
+function quotaPanel(p) {
+  const qd = quota[p.id], card = el('div', 'qcard'), hd = el('div', 'qhead');
+  hd.appendChild(el('span', '', '📊 Quota · aaj (UTC din)'));
+  const all = el('button', 'qbtn', '↻ Sab keys');
+  all.onclick = async () => { all.disabled = true; for (let i = 0; i < p.keys.length; i++) await quotaCheck(p, i, null, i === p.keys.length - 1); };
+  hd.appendChild(all); card.appendChild(hd);
+  if (!qd) { card.appendChild(el('div', 'qmut', 'Quota data nahi mila (Val me naya main.ts deploy karo, phir Reload).')); return card; }
+  p.keys.forEach((kk, i) => {
+    const k = (qd.keys || [])[i] || {}, row = el('div', 'qrow'), top = el('div', 'qline'), left = el('div', 'qtxt');
+    left.appendChild(el('b', '', 'Key ' + kk.n));
+    left.appendChild(document.createTextNode(' · ' + (k.req || 0) + ' calls · ' + fmtTok((k.tin || 0) + (k.tout || 0)) + ' tokens (in ' + fmtTok(k.tin || 0) + ' / out ' + fmtTok(k.tout || 0) + ')' + (k.e429 ? ' · 429 × ' + k.e429 : '') + (k.restSec > 0 ? ' · ⏳ rest ' + fmtRest(k.restSec) : '')));
+    const b = el('button', 'qbtn', '↻ check'); b.title = 'Is key ka quota abhi update karo (1 chhota Hi, ya OpenRouter me account info)';
+    b.onclick = () => quotaCheck(p, i, b);
+    top.appendChild(left); top.appendChild(b); row.appendChild(top);
+    const h = k.hdr;
+    if (h) {
+      [['Requests', h.rqRem, h.rqLim, h.rqReset], ['Tokens', h.tkRem, h.tkLim, h.tkReset]].forEach(([lbl, rem, lim, rs]) => {
+        if (rem === undefined && lim === undefined) return;
+        row.appendChild(el('div', 'qmut', lbl + ' bacha: ' + (rem !== undefined ? rem : '?') + (lim ? ' / ' + lim : '') + (rs ? ' · reset ' + rs : '')));
+        const r = numOf(rem), l = numOf(lim);
+        if (r != null && l) {
+          const bar = el('div', 'qbar' + (r === 0 ? ' out' : r / l < 0.1 ? ' low' : '')), fill = el('i');
+          fill.style.width = Math.max(0, Math.min(100, (r / l) * 100)) + '%'; bar.appendChild(fill); row.appendChild(bar);
+        }
+      });
+      row.appendChild(el('div', 'qmut', 'company ke headers · ' + (k.hdrAgeSec != null ? fmtRest(k.hdrAgeSec) + ' pehle' : '')));
+    } else row.appendChild(el('div', 'qmut', 'Company ke rate-limit headers nahi mile (ya abhi koi call nahi hui): upar ki ginti hamari apni hai.'));
+    if (k.acct) {
+      try { const a = JSON.parse(k.acct); row.appendChild(el('div', 'qmut', 'Account: ' + Object.keys(a).map((x) => x + ' ' + a[x]).join(' · ') + (k.acctAgeSec != null ? ' · ' + fmtRest(k.acctAgeSec) + ' pehle' : ''))); } catch (e) {}
+    }
+    (k.meters || []).filter((m) => m.src !== 'hdr').forEach((m) => row.appendChild(meterRow(m)));
+    const est = [];
+    if (qd.dailyReq) est.push('≈ ' + Math.max(0, qd.dailyReq - (k.req || 0)) + ' calls');
+    if (qd.dailyTok) est.push('≈ ' + fmtTok(Math.max(0, qd.dailyTok - (k.tin || 0) - (k.tout || 0))) + ' tokens');
+    if (est.length) row.appendChild(el('div', 'qmut', 'Aaj bacha (andaaza = aapki limit − hamari ginti): ' + est.join(' · ')));
+    card.appendChild(row);
+  });
+  return card;
+}
+
 /* ---------- testing ---------- */
 async function testOne(p, k, m, btn) {
+  if (btn && isDone(p.id, m) && !Object.keys(outs).some((x) => x.startsWith(p.id + ':' + m + '|')) && !confirm('Ye model pehle hi test ho chuka hai (result saved). Phir bhi test karu?')) return;
   const r0 = rid(p, k, m), msgText = $('prompt').value.trim() || 'Hi';
   setOut(r0, 'load', 'Response aa raha hai…', '');
   if (btn) btn.disabled = true;
@@ -482,7 +664,7 @@ async function runAll(items) {
   busy = false; stopReq = false; updateButtons();
 }
 // Smart test: only models that NEED a test, in small batches (max 12 per press, max 4 per company, so no free tier is hammered).
-// Order: 1) never tested  2) tested but not for 2+ days, oldest first  3) only if 1+2 are empty: strongest-looking models outside the
+// Only models never tested (a saved result = never tested again here). If none are left: strongest-looking models outside the
 // gateway shortlist (a proven one joins the shortlist). Paid and resting models are never included. One test per model.
 const SMART_MAX = 12, PER_CO = 4, STALE_MS = 48 * 3600 * 1000;
 function smartPlan() {
@@ -490,11 +672,10 @@ function smartPlan() {
   const triedHere = (pid, m) => Object.keys(outs).some((r0) => r0.startsWith(pid + ':' + m + '|'));
   board.forEach((b) => {
     const prov = b.provider || b.id.split(':')[0], mdl = b.model || b.id.slice(b.id.indexOf(':') + 1);
-    if (b.tier === 'paid' || b.tier === 'resting') return;
-    const tested = b.ok + b.fail > 0, age = tested ? now - (b.updated || 0) : Infinity;
-    if (tested && age < STALE_MS) return;
+    if (b.tier === 'paid' || b.tier === 'dead' || b.tier === 'resting' || b.tier === 'limited') return;
+    if (b.ok + b.fail > 0) return;   // result already saved in SQLite: never test twice
     if (triedHere(prov, mdl)) return;
-    need.push({ prov, mdl, pri: tested ? 1 : 0, age });
+    need.push({ prov, mdl, pri: 0, age: Infinity });
   });
   if (!need.length) provs.forEach((p) => (p.ranked || []).filter((m) => !bidx[p.id + ':' + m] && !triedHere(p.id, m)).slice(0, 6).forEach((m) => need.push({ prov: p.id, mdl: m, pri: 2, age: Infinity })));
   need.sort((a, b) => a.pri - b.pri || b.age - a.age);
@@ -511,11 +692,11 @@ function smartPlan() {
 }
 function starItems() {
   const out = [];
-  provs.forEach((p) => p.keys.forEach((k) => { modelsFor(p, k).forEach((m) => { if (isStar(p, m) && !(bidx[p.id + ':' + m] && bidx[p.id + ':' + m].tier === 'paid')) out.push({ p, k, m }); }); }));
+  provs.forEach((p) => p.keys.forEach((k) => { modelsFor(p, k).forEach((m) => { if (isStar(p, m) && !isDone(p.id, m) && !(bidx[p.id + ':' + m] && ['paid', 'dead', 'limited'].includes(bidx[p.id + ':' + m].tier))) out.push({ p, k, m }); }); }));
   return out;
 }
 function updateButtons() {
-  const gw = cur === '@gw', n = starItems().length;
+  const gw = cur === '@gw' || cur === '@quota', n = starItems().length;
   $('co').disabled = busy || gw || !shown.length;
   $('co').textContent = 'Test shown (' + shown.length + ')';
   $('all').disabled = !busy && !n;

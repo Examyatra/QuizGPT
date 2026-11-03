@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Y ai build: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
+<!-- Y ai build: exam-fixed-53 (Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -3928,9 +3928,9 @@ function usedLinesOf(prev) {
 }
 function buildTierPrompt(pt, prev, srcText, mode, examName) {
   examName = (examName && examName.trim()) ? examName.trim() : DEFAULT_EXAM_NAME;
-  const excl = prev.slice(-100).map(q => '- ' + String(q.question).replace(/\s+/g, ' ').slice(0, 70)).join('\n');
   const eySlim = typeof eyActive !== 'undefined' && eyActive && EY_SLICE_NOTES && pt.segs && pt.segs.length;   // Exam Yatri: parts own DISJOINT segments, so earlier lines can never come back
   const usedLines = eySlim ? [] : usedLinesOf(prev);
+  const excl = prev.slice(eySlim ? -EY_EXCL_KEEP : -100).map(q => '- ' + String(q.question).replace(/\s+/g, ' ').slice(0, 70)).join('\n');
   let head = YAI_HEAD + 'TASK: PART ' + pt.i + ' of ' + pt.P + ' (mixed pages). Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from the study notes below. The whole quiz of ' + lastRequestedCount + ' questions is written in ' + pt.P + ' parts. EVERY part samples the WHOLE notes (random pages, important topics a little more often) and together the parts cover every page. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.';
   if (eySlim) head = YAI_HEAD + 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from the study-note segments below (the segments chosen for this part; the other parts cover the rest of the notes). The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.';
   else if (pt.P > 1) head += '\n\nIf more parts follow in this chat, they will arrive as short messages later: in THIS reply write ONLY part ' + pt.i + '.';
@@ -3938,6 +3938,191 @@ function buildTierPrompt(pt, prev, srcText, mode, examName) {
   if (usedLines.length) head += '\n\nSOURCE LINES ALREADY USED BY EARLIER PARTS (these exact lines already gave a question \u2014 this part MUST pick DIFFERENT lines/facts; do not build a new question from any line below, even with a different angle):\n' + usedLines.slice(-150).map(e => '- ' + e).join('\n');
   return head + '\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (pt.marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 1000000, mode || 'exam', srcText, { k: pt.i, P: pt.P, must: pt.must, nPages: pt.nPages, usedLines, segs: pt.segs, slim: !!eySlim }, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
 }
+/* =====================================================================================================
+   Exam Yatri compact prompt (V2) - used ONLY by the direct-API flow (copy-paste prompts for ChatGPT / Gemini / Claude are untouched).
+   Layout:  [STATIC RULES: identical in every part of a quiz => providers with prefix caching bill / process them once]
+            + study notes (tidied: no blank lines, running headers or page numbers)
+            + [PART TASK: short, changes per part: count, numbering, type plan, segment plan, already-made list].
+   Both Simple and Complex buttons use the COMPLEX level here (free models write weak questions from a Simple prompt).
+   A/B test: localStorage.ey_pv = '1' (then reload) = old long prompt; remove it = V2. Console: eyPromptStats() compares sizes.
+   ===================================================================================================== */
+const EY_PROMPT_V2 = true;
+const EY_FORCE_COMPLEX = true;     // API flow: Simple button also gets the complex-level prompt
+const EY_DEDUPE = true;            // app-side near-duplicate filter for questions that come back from the API
+const EY_TOPUP_NOTES_MAX = 30000;  // chars of notes sent with a top-up call (old: up to 70000)
+function eyV2() { try { if (localStorage.getItem('ey_pv') === '1') return false; } catch (e) {} return EY_PROMPT_V2 && typeof eyActive !== 'undefined' && eyActive; }
+
+/* ---- notes tidy-up: pure whitespace / junk removal; wording is never changed (evidence matching ignores spacing anyway) ---- */
+let _eyJunk = { key: '', set: null };
+const eyLineKey = l => l.toLowerCase().replace(/[0-9\u0966-\u096F]+/g, '#').replace(/\s+/g, ' ').trim();
+function eyJunkSet(src) {   // short lines at the top/bottom of many pages = running headers / footers
+  src = String(src || '');
+  const key = src.length + ':' + src.slice(0, 40);
+  if (_eyJunk.key === key) return _eyJunk.set;
+  const pages = splitPagesText(src), set = new Set();
+  if (pages.length >= 4) {
+    const cnt = new Map();
+    pages.forEach(pg => {
+      const seen = new Set(), ls = pg.split('\n').map(l => l.trim()).filter(l => l && !/^---\s*Page/i.test(l) && !/^\[S\d+/.test(l));
+      ls.slice(0, 2).concat(ls.slice(-2)).forEach(l => { if (l.length >= 4 && l.length <= 90 && !/^(page|pg\.?|p\.)?\s*\d{1,4}(\s*(of|\/)\s*\d{1,4})?$/i.test(l)) seen.add(eyLineKey(l)); });   // headers / footers only sit at the top or bottom of a page
+      seen.forEach(k => cnt.set(k, (cnt.get(k) || 0) + 1));
+    });
+    const need = Math.max(3, Math.ceil(pages.length * 0.4));
+    cnt.forEach((c, k) => { if (c >= need) set.add(k); });
+  }
+  _eyJunk = { key, set };
+  return set;
+}
+function eyTidyNotes(text, src) {
+  const junk = eyJunkSet(src), out = []; let pg = '';
+  String(text || '').replace(/\r\n?/g, '\n').replace(/[\u00A0\u200B\u200C\u200D\u2060\uFEFF]/g, ' ').split('\n').forEach(l => {
+    l = l.replace(/[ \t]+/g, ' ').trim();
+    if (!l) return;
+    const mk = l.match(/^---\s*Page (\d+)\s*---$/) || l.match(/^\[S\d+ \| p\.(\d+)\]/);
+    if (mk) { pg = mk[1]; out.push(l); return; }
+    if (/^\[S\d+/.test(l)) { out.push(l); return; }
+    if (!/[A-Za-z0-9\u0900-\u097F]/.test(l)) return;                                  // symbol-only line
+    if (l.length <= 90 && junk.has(eyLineKey(l))) return;                              // running header / footer
+    out.push(l);
+  });
+  return out.join('\n');
+}
+function eySampleNotes(text, max) {   // top-up only: keep evenly spread pages so a long note still fits the budget
+  text = String(text || '');
+  if (text.length <= max) return text;
+  const pages = splitPagesText(text), k = Math.ceil(text.length / max);
+  return pages.filter((_, i) => i % k === 0).join('').slice(0, max);
+}
+
+/* ---- language ---- */
+const EY_EX = {
+  en: { q: 'A 12 V battery is connected across a 4 \u03a9 and a 2 \u03a9 resistor in series. Which of the following is the current through the 2 \u03a9 resistor?', con: 'In series the same current flows through every resistor, so I = V / (R1 + R2) = 12 / 6 = 2 A. 6 A or 3 A come from using only one resistor and ignoring the other.' },
+  hi: { q: '12 V \u0915\u0940 \u092c\u0948\u091f\u0930\u0940 4 \u03a9 \u0914\u0930 2 \u03a9 \u0915\u0947 \u0926\u094b resistors \u0938\u0947 series \u092e\u0947\u0902 \u091c\u0941\u0921\u093c\u0940 \u0939\u0948\u0964 2 \u03a9 resistor \u0938\u0947 \u0917\u0941\u091c\u093c\u0930\u0928\u0947 \u0935\u093e\u0932\u0940 current \u0915\u093f\u0924\u0928\u0940 \u0939\u094b\u0917\u0940?', con: 'Series \u092e\u0947\u0902 \u0939\u0930 resistor \u0938\u0947 same current \u0917\u0941\u091c\u093c\u0930\u0924\u0940 \u0939\u0948, \u0907\u0938\u0932\u093f\u090f I = V / (R1 + R2) = 12 / 6 = 2 A\u0964 \u0938\u093f\u0930\u094d\u092b \u090f\u0915 resistor \u0932\u0947\u0928\u0947 \u092a\u0930 6 A \u092f\u093e 3 A \u0906\u0924\u093e \u0939\u0948, \u091c\u094b \u0926\u0942\u0938\u0930\u0947 \u0915\u094b \u091b\u094b\u0921\u093c \u0926\u0947\u0924\u093e \u0939\u0948\u0964' }
+};
+function eyLangInfo(langText) {
+  const kind = quizLangKind(langText), LL = quizLangList(langText);
+  if (kind === 'english') return { ex: 'en', note: 'English only', rule: 'Write question, options and CON ONLY in English (no Hindi, no Devanagari, no transliteration).' };
+  if (kind === 'hindi') return { ex: 'hi', note: 'Hindi only (technical terms stay in English/Roman)', rule: 'Write question, options and CON in Hindi (Devanagari); keep technical terms (names, formulas, units, standard terminology) in English/Roman script inside the Hindi sentences. No separate English version.' };
+  if (kind === 'bilingual') return { ex: 'both', note: 'Bilingual "<English> / <Hindi>"', rule: 'Question, EVERY option and CON must each be bilingual in exactly this format: "<English text> / <Hindi translation>"; technical terms stay in English/Roman inside the Hindi half too.' };
+  if (LL.length <= 1) { const L1 = LL[0] || langText; return { ex: 'en', layout: true, note: L1 + ' only (technical terms may stay in English)', rule: 'Write question, options and CON in ' + L1 + ' (its normal script); technical terms may stay in English/Roman. No translation.' }; }
+  const fmt = LL.map(x => '<' + x + ' text>').join(' / ');
+  return { ex: 'en', layout: true, note: 'Multilingual "' + fmt + '"', rule: 'Question, EVERY option and CON must each contain all of ' + LL.join(' + ') + ' in exactly this format: "' + fmt + '" (same order, separated by " / "); technical terms may stay in English/Roman.' };
+}
+
+/* ---- STATIC part (depends only on exam name, language and question-type setting => the same text for every part of a quiz) ---- */
+let _eyStatic = { key: '', text: '' };
+function eyStaticRules(exam, langText, typesPref) {
+  const key = exam + '|' + langText + '|' + typesPref;
+  if (_eyStatic.key === key) return _eyStatic.text;
+  const L = eyLangInfo(langText), mixed = typesPref === 'mixed';
+  const ex = L.ex === 'both' ? { q: EY_EX.en.q + ' / ' + EY_EX.hi.q, con: EY_EX.en.con + ' / ' + EY_EX.hi.con } : EY_EX[L.ex];
+  const defs = mixed ? [
+    '- mcq: single-best-answer, exactly 4 options (A-D), as described in COMPLEX LEVEL.',
+    '- tf: ONE precise exam-style statement (1-2 lines) from the notes; write TYPE: tf and NO A-D lines; ANS is True or False exactly as the plan says. A FALSE statement is a plausible near-miss of a real fact (changed qualifier, number, side, name, stage or exception), never absurd. CON states the correct fact.',
+    '- statement: Q is ONE line made of parts separated by " // ": a short context line, then 3 or 4 numbered statements "1. ", "2. ", "3. ", "4. ", then the LAST part "Which of the above statements is/are correct?". Exactly 4 options made only of statement numbers (e.g. "1 and 2 only", "2 and 3 only", "1, 2 and 3", "1 only") in natural order. At least one statement is subtly false.',
+    '- match: Q is ONE line separated by " // ": "Match Column I with Column II:", "Column I", items "A. ..", "B. ..", "C. ..", "D. ..", "Column II", "1. ..", "2. ..", "3. ..", "4. ..", then the LAST part "Which of the following is the correct match?". Use a DOT after item markers (A. and 1.), never "A)" or "A:". Exactly 4 options, each a full pairing like "A-2, B-4, C-1, D-3"; wrong options swap two pairs.',
+    '- assertion_reason: Q is ONE line: "Assertion (A): ..." then " // " then "Reason (R): ..." (no question after). The 4 options are EXACTLY, in this order: "Both A and R are true and R is the correct explanation of A", "Both A and R are true but R is not the correct explanation of A", "A is true but R is false", "A is false but R is true" (translated per LANGUAGE).'
+  ].join('\n') : '- every question is type mcq with exactly 4 options (A-D).';
+  const samples = [
+    '=Q1\nQ: ' + ex.q + '\nA: 1 A\nB: 2 A\nC: 3 A\nD: 6 A\nANS: B\nCON: ' + ex.con + '\nEV: in a series circuit the same current flows through every resistor\nPG: 12\nSEG: S12\nLV: medium'
+  ];
+  if (mixed) samples.push(
+    '=Q2\nQ: In a series circuit the same current flows through every resistor.\nTYPE: tf\nANS: True\nCON: Series components share one path, so the current is equal in all of them while the voltage divides.\nEV: in a series circuit the same current flows through every resistor\nPG: 12\nSEG: S12\nLV: easy',
+    '=Q3\nQ: Consider the following statements about a series circuit: // 1. The same current flows through every resistor. // 2. The voltage is the same across every resistor. // 3. The total resistance is the sum of the resistances. // Which of the above statements is/are correct?\nA: 1 only\nB: 1 and 3 only\nC: 2 and 3 only\nD: 1, 2 and 3\nANS: B\nCON: One path means equal current and added resistances; the voltage is shared, so statement 2 is wrong.\nEV: in a series circuit the same current flows through every resistor\nPG: 12\nSEG: S12\nLV: medium'
+  );
+  const text = [
+    'ROLE: You are a senior ' + exam + ' paper-setter. Below these rules you get study notes (OCR text, small errors possible) and then a short PART TASK. Write real exam-level questions from those notes.',
+    '',
+    'OUTPUT CONTRACT: reply with PLAIN TEXT only and start directly with the first "=Q<number>" line. No intro, analysis, title, markdown, bullets, code block, JSON or closing line; never use Canvas, files or tools. Plan silently. Every field is ONE line that starts with its tag, a colon and a space:',
+    '=Q<n>   (header line, alone on its line, required for every question)',
+    'Q: question text',
+    'A: / B: / C: / D: option lines (only for questions that have options)',
+    'ANS: one letter A-D (never the option text) | True or False for tf',
+    'CON: 2-3 short sentences in SIMPLE language, from your own knowledge: the idea behind the answer and why the closest wrong option is wrong (never copy EV)',
+    'EV: exact phrase (max 15 words) copied EXACTLY from the notes, untranslated',
+    'PG: page number from the --- Page N --- or [S.. | p.N] marker (several: 12,45); never guess, never empty',
+    'SEG: segment id from the [S..] marker (only if the notes have such markers)',
+    'LV: easy | medium | hard',
+    'TYPE: tf   (only for true/false questions; they have no A-D lines)',
+    'The app reshuffles options: never mention option letters inside Q, options or CON. Never use "All/None of the above" or "Both A and B" (the assertion-reason options are the only exception). Never use @@, %%, ** or lines of dashes. If Q is asked as a question, "?" is its very LAST character (nothing after it: no marks, year, page or citation); a statement ends with a full stop. Statement / match / assertion-reason questions keep the WHOLE Q on one line, parts separated by " // ".',
+    '',
+    'LANGUAGE (highest priority; overrides the language of the notes): ' + L.rule + ' Output language: ' + L.note + '.',
+    '',
+    isUnnamedExam(exam)
+      ? 'EXAM PROFILE (silent): the student named no exam. Infer the subject, academic level and the usual competitive-exam question style from the notes and write in that style and level.'
+      : 'EXAM PROFILE (silent; never print): the student\'s exam is "' + exam + '" (the name may include year, stage, paper or subject; use all of it). From your own knowledge recall its real paper pattern and formats, how real previous-year questions are worded (stem length, traps, distractor style, skills tested), the latest trend and the real difficulty, and its repeatedly tested topics. Make EVERY question match that pattern, wording and level, using ONLY topics of the notes. Never invent past questions, years or statistics; never copy a real question. If you do not know the exam well, infer level and style from its name and the notes.',
+    '',
+    'SOURCE RULE: the notes decide WHAT is tested and the correct answer; every question must be solvable from the notes alone. Use your full subject knowledge only to frame questions (realistic scenarios or problems, correct values and units, strong distractors, repairing OCR errors) and to add related high-yield facts in CON. Never test a topic, drug, cut-off or classification that is absent from the notes; skip a point if the notes are unclear or contradict standard references. Ignore headers, footers, page numbers, captions and OCR garbage. NEVER ask about page numbers, headings, chapter names, index, author or what a page covers. If the notes already contain MCQs, use their concepts but write fresh questions.',
+    '',
+    'COMPLEX LEVEL (every question, in every part): the student must THINK. Build each question on 2-3 related concepts of the notes (cause + effect, principle + application, rule + exception, item A vs look-alike B; medical exams: finding + mechanism + management), only where they truly belong together; otherwise take ONE concept and add a twist (exception, comparison, next step). Hide the concepts: do not copy a note sentence and do not leak the answer through a keyword. Each question reads like a real previous-year ' + exam + ' question: one clear ask, logically correct, no nonsense scenario. MCQ mix: ~50% scenario / case / problem (medical: clinical vignette with values and units), ~25% short applied ("most common", "all EXCEPT", characteristic finding), ~25% hard multi-step. Difficulty about 10% easy, 40% medium, 50% hard. Vary the reasoning pattern (cause/effect, method choice, exception, formula application, data interpretation, telling look-alikes apart) and never repeat a pattern twice in a row. No plain recall such as "X is seen in?".',
+    '',
+    'OPTIONS: all genuine contenders of the same category, similar length and style, no giveaway; prefer distractors taken from other items of the same topic in the notes; numbers in ascending order. Exactly ONE option is best and defensible from the notes; if two could be argued, rewrite the question.',
+    '',
+    'NO REPEATS (hard rule): every question tests a DIFFERENT fact. Never two questions on the same line, fact, answer or stem pattern, not even from another angle or with reworded options. Questions listed under ALREADY MADE and every earlier question of your reply count too. Before you finish, compare all your questions silently and replace any duplicate or near-duplicate with a new fact. Vary how the stems begin.',
+    '',
+    'SELECTION: if the PART TASK lists segments, follow that plan. Otherwise silently rank the topics of the notes by exam yield (about 60% of the questions from high-yield topics, 25% medium, 15% low), spread the questions over the WHOLE notes in random order, and let every part of the notes contribute when the quota allows. A very high-yield topic may get 2 questions on DIFFERENT lines; a low-yield topic at most 1.',
+    '',
+    'QUESTION TYPES (follow the TYPE PLAN of the PART TASK if there is one):',
+    defs,
+    '',
+    'STYLE REFERENCE (layout and level only; do not reuse the topic' + (L.layout ? '; written in English as a layout sample, so write YOUR questions in ' + L.note : '') + '):',
+    samples.join('\n\n'),
+    '',
+    'QUALITY GATE (silent, before you finish): re-solve every question from its EV line only; if that evidence does not prove the marked answer or two options can be defended, rewrite it; drop anything trivial, trick-worded or about page numbers/headings. If space runs short, shorten CON - never drop questions - and finish the whole output.'
+  ].join('\n');
+  _eyStatic = { key, text };
+  return text;
+}
+
+/* ---- the whole prompt: STATIC + notes + PART TASK ---- */
+function eyBuildPrompt(o) {
+  const exam = (o.exam && o.exam.trim()) ? o.exam.trim() : DEFAULT_EXAM_NAME;
+  const langText = getQuizLangPref(), typesPref = getQuizTypesPref(), L = eyLangInfo(langText);
+  const count = Math.max(1, parseInt(o.count) || 10), startN = Math.max(1, parseInt(o.startN) || 1), endN = startN + count - 1;
+  const notes = eyTidyNotes(o.notes, o.src);
+  const plan = buildTypePlan(count, 'exam', typesPref);
+  const segs = (o.segs && o.segs.length) ? o.segs : null;
+  const prev = (o.prev || []).slice(o.topup ? -2 * EY_EXCL_KEEP : -EY_EXCL_KEEP).map(q => '- ' + String(q.question).replace(/\s+/g, ' ').slice(0, 60));
+  const t = [];
+  t.push('=== PART TASK ===');
+  t.push('Exam: ' + exam + '. Quiz language: ' + langText + ' (' + L.note + ').');
+  if (o.topup) t.push('TOP-UP: I already have ' + o.got + ' of ' + o.N + ' questions. Write ' + count + ' NEW ones. ' + (o.topup === 'uncovered' ? 'These pages still have NO questions: cover them first and spread the questions over ALL of them.' : 'Cover high-yield points that are not asked yet, from new angles.'));
+  else if (o.P > 1) t.push('This is PART ' + o.i + ' of ' + o.P + ' of one quiz of ' + o.N + ' questions; the other parts cover other segments / pages, so write ONLY this part.');
+  t.push('Write EXACTLY ' + count + ' questions, numbered =Q' + startN + ' through =Q' + endN + '. Never stop early and never ask whether to continue.');
+  if (plan) t.push('TYPE PLAN (mandatory; set TYPE for tf): ' + plan.map((x, i) => 'Q' + (startN + i) + ': ' + x.type + (x.truth ? ' (statement must be ' + x.truth.toUpperCase() + ')' : '')).join(', ') + '.');
+  if (segs) {
+    const list = segs.map(s => s.id + ' (p.' + (s.page || '?') + ', ' + (s.w === 3 ? 'HIGH' : s.w === 2 ? 'MEDIUM' : 'LOW') + ') x' + s.q).join('; ');
+    t.push('SEGMENT PLAN: the notes are cut into segments marked [S12 | p.5]. This part covers ONLY these segments, each with a starting quota (the HIGH/MEDIUM/LOW tags are the app\'s rough keyword guess; YOU judge real exam relevance): ' + list);
+    t.push('Write exactly the listed number of questions per segment (total ' + count + '); never use unlisted segments as the main topic; a x2 / x3 quota must test DIFFERENT lines; if a segment has fewer testable facts than its quota (or none: blank, figure-only, index), give the extra questions to unused facts of other listed segments. Set SEG and PG from the marker; EV must come from inside those segments. Shuffle the order. Using your knowledge of ' + exam + ' previous-year papers you may move up to ' + Math.max(1, Math.round(count * 0.3)) + ' questions from segments you judge low-yield to high-yield segments (different facts); every listed segment keeps at least 1 question and the total stays ' + count + '.');
+  }
+  if (prev.length) t.push('ALREADY MADE (do NOT repeat these or their concepts):\n' + prev.join('\n'));
+  t.push('RECAP: exam-level COMPLEX questions in the format of the rules above; no repeats; every answer provable from the notes; EV copied exactly from the notes; PG / SEG from the markers; CON in simple language; plain text only. Exactly ' + count + ' questions, =Q' + startN + ' to =Q' + endN + '; output language = ' + L.note + '. Your reply starts directly with the line =Q' + startN + ' - begin now.');
+  return eyStaticRules(exam, langText, typesPref) + '\n\n=== STUDY NOTES (OCR-extracted) ===\n' + notes + '\n=== END OF NOTES ===\n\n' + t.join('\n');
+}
+
+/* ---- near-duplicate filter for what the API returns (the prompt asks for no repeats; weak free models still slip) ---- */
+const _eyTokMap = new WeakMap();
+function eyTok(q) {
+  let s = _eyTokMap.get(q);
+  if (!s) { s = new Set(String(q.question || '').toLowerCase().split(/[^a-z0-9\u0900-\u097F]+/).filter(w => w.length > 2)); _eyTokMap.set(q, s); }
+  return s;
+}
+function eyNearDup(a, b) {
+  const x = eyTok(a), y = eyTok(b);
+  if (!x.size || !y.size) return false;
+  let n = 0; x.forEach(w => { if (y.has(w)) n++; });
+  const j = n / (x.size + y.size - n);
+  if (j >= 0.8) return true;
+  const ea = flatTxt((a.srcEvidence || [])[0]), eb = flatTxt((b.srcEvidence || [])[0]);
+  return ea.length >= 14 && ea === eb && j >= 0.45;   // same source line AND a similar stem
+}
+function eyDedupe(list) {
+  if (!EY_DEDUPE) return list || [];
+  const out = [];
+  (list || []).forEach(q => { if (!out.some(x => eyNearDup(x, q))) out.push(q); });
+  return out;
+}
+
 function getManualPromptText(mode, partIdx, frozen) {
   // frozen (Exam Yatri background run) = { parts, N, src }: the plan made for part 1 is reused as-is, never re-planned
   const n = frozen ? String(frozen.N) : document.getElementById('numQuestionsManual').value;
@@ -3948,6 +4133,11 @@ function getManualPromptText(mode, partIdx, frozen) {
   const parts = frozen ? frozen.parts : planManualParts(srcText, qn);
   manualPartsExpected = parts.length; manualPartsPlan = parts; lastRequestedCount = qn;
   try { localStorage.setItem('yai_pending', JSON.stringify({ n: qn, ts: Date.now() })); } catch (e) {}
+  if (eyV2()) {   // Exam Yatri direct API: compact prompt (static rules first, notes, short part task)
+    const p1 = parts[Math.min(Math.max(partIdx || 1, 1), parts.length) - 1], i1 = p1.i || 1;
+    const prevL = (collectedRaw && i1 > 1) ? normalizeQuiz(lenientParse(collectedRaw) || []) : [];
+    return eyBuildPrompt({ count: p1.q, startN: manualPartsPlan.slice(0, i1 - 1).reduce((a, x) => a + x.q, 0) + 1, i: i1, P: parts.length, N: qn, notes: p1.marked || p1.text || srcText, segs: p1.segs, exam: examName, prev: prevL, src: srcText });
+  }
   if (parts.length === 1) {
     return YAI_HEAD + 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (parts[0].marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 1000000, mode || 'exam', srcText, (parts[0].segs && parts[0].segs.length) ? { k: 1, P: 1, segs: parts[0].segs } : null, 1, examName);
   }
@@ -5845,6 +6035,9 @@ function buildTopupPrompt(list, mode) {
   if (text.length > MANUAL_MAX_TEXT) text = text.slice(0, MANUAL_MAX_TEXT);
   const excl = list.slice(-80).map(q => '- ' + String(q.question).replace(/\s+/g, ' ').slice(0, 70)).join('\n');
   const examNameTopup = getExamName(true);
+  if (eyV2()) {
+    return eyBuildPrompt({ count: remaining, startN: Math.max(got, ...list.map(q => Number.isFinite(q.num) ? q.num : 0)) + 1, i: manualRound + 1, P: 0, N: N, got: got, notes: eySampleNotes(text, EY_TOPUP_NOTES_MAX), segs: null, exam: examNameTopup, prev: list, src: src, topup: focusUncovered ? 'uncovered' : 'new' });
+  }
   return YAI_HEAD + 'TASK: ROUND ' + (manualRound + 1) + ' (top-up). I already have ' + got + ' of ' + N + ' questions. Create EXACTLY ' + remaining + ' NEW ' + examNameTopup + '-level quiz questions from the study notes below. '
     + (focusUncovered ? 'These pages still have NO questions: cover them first and spread the questions over ALL of them. ' : 'Cover high-yield points that are not asked yet, from new angles. ')
     + 'Do NOT repeat any of these already-made questions or their concepts:\n' + excl + '\n\n=== STUDY NOTES (OCR-extracted) ===\n' + text + '\n=== END OF NOTES ===' + buildQuizInstruction(remaining, 1000000, mode || 'exam', text, null, Math.max(got, ...list.map(q => Number.isFinite(q.num) ? q.num : 0)) + 1, examNameTopup);
@@ -5978,12 +6171,16 @@ document.getElementById('cancelAiBtn').addEventListener('click', backFromGenerat
    Add a new company in Val Town -> it shows up here automatically.
    ===================================================================== */
 const EY_MAX_Q = 100;   // max questions per Exam Yatri quiz
-const EY_PART_Q = 10;   // questions per background part: short replies finish in ~15-20s, never get cut off, and many run in parallel
+const EY_PART_Q = 15;   // questions per background part. Every call re-sends ~15k chars of instructions, so fewer/bigger parts = fewer tokens (100 questions: 10 -> 7 calls). 15 questions is ~4k output tokens, well under the gateway's 8192 cap. Lower it if a model starts cutting replies
 const EY_FIRST_Q = 10;   // quiz starts as soon as this many questions are ready; the rest is generated in the background
 const EY_SLICE_NOTES = true;   // token saver: each part is sent ONLY the notes segments assigned to it (before: the whole notes in every part). false = old behaviour
 const EY_EFFORT = { exam: 'medium', revision: 'medium' };   // reasoning depth sent to the gateway per quiz mode (instant | low | medium | high). Only models that support it use it (see main.ts)
 let eyEffort = '';   // set at the start of every quiz run
 const EY_FIRST_EFFORT = 'medium';   // part 1 (first 5 questions): same medium reasoning (small part, so it is still fast)
+const EY_RACE_FIRST = false;   // API-call saver: true = part 1 is sent to 2 different AIs at once (2x tokens, the loser is wasted). false = one AI; the gateway still hedges a slow one after a safe delay
+const EY_TOPUP_GAP = 2;   // API-call saver: a quiz of 40+ questions that is short by this many or fewer is accepted as is (a whole extra call + full instructions for 1-2 questions is not worth it). Quizzes under 40 still get exact top-ups
+const EY_EXCL_KEEP = 20;   // token saver: 'already made' stems sent to a part whose notes segments are already disjoint (was the last 100)
+const EY_MODELS_TTL = 6 * 3600 * 1000;   // the gateway's model list is a constant: refetch at most every 6 h, not on every page load
 const EY_PARALLEL = 5;   // background parts generated at the same time (1 = old one-by-one)
 const EY_LEAN_PROMPT = true;   // token saver + fewer contradictions: Exam Yatri-only wording trims in the prompt (copy-paste AI sites never see them). false = old wording
 // Appended to every Exam Yatri request: a short self-check that raises question quality without changing the app's own prompt.
@@ -6094,7 +6291,7 @@ async function eyLoadModels(force, quiet) {
     const list = Array.isArray(d.models) ? d.models.filter(m => m && m.id) : [];
     if (!list.length) throw new Error('Abhi koi AI model available nahi hai.');
     eyModels = list;
-    try { localStorage.setItem('yai_ey_models', JSON.stringify(list)); } catch (e) {}
+    try { localStorage.setItem('yai_ey_models', JSON.stringify(list)); localStorage.setItem('yai_ey_models_at', String(Date.now())); } catch (e) {}
     eyRenderModels();
     return true;
   } catch (e) {
@@ -6105,27 +6302,31 @@ async function eyLoadModels(force, quiet) {
 }
 
 async function eyAsk(prompt, signal, effortOverride, race) {
-  for (let a = 0; a < 3; a++) {
+  for (let a = 0; a < 5; a++) {
     try {
       let r;
       try {
-        r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: eyModel, prompt: prompt + EY_GATE, effort: effortOverride || eyEffort, race: !!race }), signal });
+        r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: eyModel, prompt: (prompt.indexOf('QUALITY GATE (silent, before you finish)') >= 0 ? prompt : prompt + EY_GATE), effort: effortOverride || eyEffort, race: !!race }), signal });
       } catch (ne) {
         if (ne.name === 'AbortError') throw ne;
         throw new Error('Network error');
       }
       const d = await r.json().catch(() => ({}));
-      if (!r.ok) { const err = new Error(d.error || ('HTTP ' + r.status)); err.status = r.status; throw err; }
+      if (!r.ok) { const err = new Error(d.error || ('HTTP ' + r.status)); err.status = r.status; err.retryAfter = Number(d.retryAfter) || 0; err.gw = !!d.error; throw err; }   // gw = the answer came from our gateway (it already tried several AIs)
       if (!d.text) throw new Error('AI ne khaali jawab diya');
       return d.text;
     } catch (e) {
       if (e.name === 'AbortError' || (signal && signal.aborted)) throw e;
-      if (a < 2 && (!e.status || e.status === 429 || e.status >= 500)) { await new Promise(res => setTimeout(res, 800 + a * 1200)); continue; }
+      const busy = e.status === 429 && e.retryAfter > 0;   // gateway says every AI is at its rate limit and when one frees up: wait that long (up to 3 times) instead of failing
+      const transient = !e.status || e.status === 429 || (e.status >= 500 && e.status !== 504 && !e.gw);   // a 5xx the GATEWAY wrote already went through up to 4 AIs: resending would repeat all of it (double tokens). Only platform-level 5xx / network errors are resent   // 504 = the gateway already spent its whole time budget: a resend would only pay twice
+      if ((a < 1 || (busy && a < 4)) && transient) { await new Promise(res => setTimeout(res, busy ? Math.min(e.retryAfter, 15) * 1000 + 300 : 800 + a * 1200)); continue; }
       throw e;
     }
   }
 }
 
+// true when a top-up call is worth its cost: big quizzes (40+) accept a tiny shortfall, small ones stay exact
+function eyShort(N, got) { return got < N - (N >= 40 ? EY_TOPUP_GAP : 0); }
 function eyParsedList() { const p = lenientParse(collectedRaw); return p ? normalizeQuiz(p) : []; }
 
 /* ---------- Background generation: quiz starts after the first small part, the rest streams in while the student plays ---------- */
@@ -6172,7 +6373,8 @@ function eyWaitForNext() {
 // Adds freshly generated questions to the RUNNING quiz without disturbing the question on screen.
 function eyAppendQuestions(list) {
   const have = new Set(quizData.map(eyQKey));
-  const fresh = (list || []).filter(q => { const k = eyQKey(q); if (have.has(k)) return false; have.add(k); return true; });   // only exact repeats are dropped
+  const seen = quizData.slice();
+  const fresh = (list || []).filter(q => { const k = eyQKey(q); if (have.has(k)) return false; if (EY_DEDUPE && seen.some(x => eyNearDup(x, q))) return false; have.add(k); seen.push(q); return true; });   // exact repeats and near-duplicates (same stem / same source line) are dropped; the top-up round refills
   if (!fresh.length) return 0;
   const add = fresh;   // every generated question is kept (same rule as the rest of the app)
   quizData.push(...add);
@@ -6238,7 +6440,7 @@ async function eyRunBackground(run) {
     if (firstErr) throw firstErr;
     flush();
     // 2) top-up rounds (same rule as before) if the AI gave fewer questions than asked
-    while (quizData.length < run.N && run.round < MANUAL_MAX_ROUNDS) {
+    while (eyShort(run.N, quizData.length) && run.round < MANUAL_MAX_ROUNDS) {
       if (!live()) return;
       lastRequestedCount = run.N; manualRound = run.round;
       const reply = await eyAsk(buildTopupPrompt(quizData.slice(), run.mode), sig);
@@ -6308,11 +6510,38 @@ eyAsk = async function () {
   return r;
 };
 
+
+// Console helper (A/B): eyPromptStats() -> size of the OLD prompt vs the V2 prompt for the notes currently extracted (part 1 of a quiz)
+window.eyPromptStats = function () {
+  const src = (resultText.value || rawExtractedText || '').trim();
+  if (!src) return 'Pehle text extract karo';
+  if (typeof eyBgActive === 'function' && eyBgActive()) return 'Quiz background me ban raha hai - khatam hone ke baad try karo';
+  const was = eyActive, wasPv = localStorage.getItem('ey_pv'), out = {};
+  try {
+    eyActive = true;
+    [['old', '1'], ['v2', '']].forEach(([k, v]) => {
+      if (v) localStorage.setItem('ey_pv', v); else localStorage.removeItem('ey_pv');
+      const p = getManualPromptText('exam', 1), i = p.indexOf('=== STUDY NOTES');
+      out[k] = { chars: p.length, approxTokens: Math.round(p.length / 3.6) };
+      if (k === 'v2') { const st = p.indexOf('\n\n=== STUDY NOTES'); out[k].staticPrefixChars = st; out[k].notesChars = p.indexOf('=== END OF NOTES') - st; out[k].partTaskChars = p.length - p.indexOf('=== PART TASK ==='); }
+    });
+  } finally { eyActive = was; if (wasPv == null) localStorage.removeItem('ey_pv'); else localStorage.setItem('ey_pv', wasPv); }
+  out.note = 'Hindi text me 1 token ~ 2-3 chars hota hai, isliye approxTokens sirf tulna ke liye hai';
+  console.table(out); return out;
+};
+
 // Same prompts as the copy-paste flow (getManualPromptText / buildTopupPrompt), but sent by the app itself.
+let eyStarting = false;   // one start at a time: a double tap used to launch a 2nd full request that orphaned the 1st (double tokens) and made the Cancel button lose the live one
 async function generateQuizWithEY(mode) {
+  if (eyStarting) return;
+  eyStarting = true;
+  try { await _generateQuizWithEY(mode); } finally { eyStarting = false; }
+}
+async function _generateQuizWithEY(mode) {
   mode = (mode === 'revision') ? 'revision' : 'exam';
   lastQuizMode = mode;
   eyEffort = EY_EFFORT[mode] || '';
+  const pmode = EY_FORCE_COMPLEX ? 'exam' : mode;   // prompt level: the API flow always asks for COMPLEX (exam-level) questions
   if (!(resultText.value || rawExtractedText || '').trim()) { showToast('Pehle text extract karo'); return; }
   const nEl = document.getElementById('numQuestionsManual');
   if (Date.now() - eyCapAt < 800) return;   // cap popup just opened (Start tap raced the field's blur): wait for the student
@@ -6322,7 +6551,7 @@ async function generateQuizWithEY(mode) {
   if (!mdl) { if (eyModels && eyModels.length > 1) eyOpenMenu(); return; }
 
   resetPromptState();                                   // clean slate (collectedRaw, parts plan) + stops any older background run
-  const first = getManualPromptText(mode, 1);           // also plans the parts and sets lastRequestedCount
+  const first = getManualPromptText(pmode, 1);          // also plans the parts and sets lastRequestedCount
   const P = manualPartsPlan.length || 1;
   const frozen = { parts: manualPartsPlan.slice(), N: lastRequestedCount, src: (resultText.value || rawExtractedText).trim() };
   showGeneratingStep(lastRequestedCount, mdl.label || mdl.id);
@@ -6330,14 +6559,14 @@ async function generateQuizWithEY(mode) {
   const sig = aiAbortController.signal;
   try {
     aiGenSub.textContent = P > 1 ? `Part 1 / ${P} (first ${frozen.parts[0].q} questions)...` : t('genSub');
-    const reply1 = await eyAsk(first, sig, EY_FIRST_EFFORT, true);   // race: same request goes to 2 keys at once, first answer wins
+    const reply1 = await eyAsk(first, sig, EY_FIRST_EFFORT, EY_RACE_FIRST);   // race (optional, off by default): same request goes to 2 AIs at once
     collectedRaw += (collectedRaw ? '\n' : '') + reply1;
 
     if (P > 1) {
       // FAST PATH: play as soon as the first small part is ready; the other parts keep generating in the background
-      const list1 = eyParseNew(reply1);
+      const list1 = eyDedupe(eyParseNew(reply1));
       if (!list1.length) throw new Error(t('aiParseError'));
-      const run = { mode, frozen, parts: frozen.parts, N: frozen.N, total: frozen.N, k: 2, round: manualRound, ctl: new AbortController(), stopped: false, failed: false, done: false, running: false };
+      const run = { mode: pmode, frozen, parts: frozen.parts, N: frozen.N, total: frozen.N, k: 2, round: manualRound, ctl: new AbortController(), stopped: false, failed: false, done: false, running: false };
       eyBg = run;
       generatingCard.style.display = 'none';
       eyBeginQuiz(list1, run);
@@ -6347,9 +6576,9 @@ async function generateQuizWithEY(mode) {
 
     // single part (small quiz): same as before, top-up first, then start
     let list = eyParsedList();
-    while (list.length < lastRequestedCount && manualRound < MANUAL_MAX_ROUNDS) {
+    while (eyShort(lastRequestedCount, list.length) && manualRound < MANUAL_MAX_ROUNDS) {
       aiGenSub.textContent = `Top-up: ${list.length} / ${lastRequestedCount}...`;
-      const reply = await eyAsk(buildTopupPrompt(list, mode), sig);
+      const reply = await eyAsk(buildTopupPrompt(list, pmode), sig);
       manualRound++;
       collectedRaw += '\n' + reply;
       const nl = eyParsedList();
@@ -8048,7 +8277,8 @@ function setUiMode(m) {
 document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => setUiMode(b.dataset.m)));
 setUiMode(localStorage.getItem('yai_mode2') === 'exam' ? 'exam' : 'revision');
 eySetActive(true, true);   // Exam Yatri is the default AI
-eyRenderModels(); eyLoadModels(true, true);   // cached list shows instantly; fresh list loads silently
+eyRenderModels();   // cached list shows instantly; it is refreshed silently only when missing or older than EY_MODELS_TTL
+{ let at = 0; try { at = Number(localStorage.getItem('yai_ey_models_at')) || 0; } catch (e) {} if (!eyModels || Date.now() - at > EY_MODELS_TTL) eyLoadModels(true, true); }
 try { document.documentElement.style.setProperty('--yp-delay', '-' + (Math.random() * 60).toFixed(1) + 's'); } catch (e) {}   // different background shade on every visit
 const _sr = showResultScreen;
 showResultScreen = function () { _sr(); decorateResult(); };
