@@ -141,10 +141,12 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 .ntag.h{background:#dbeafe;color:#1d4ed8}
 .ntag.m{background:#fef9c3;color:#92400e}
 .ntag.l{background:#f1f5f9;color:#64748b}
+.ntag.f{background:#dcfce7;color:#166534}
 @media(prefers-color-scheme:dark){
   .ntag.h{background:#1e3a5f;color:#93c5fd}
   .ntag.m{background:#3b2f00;color:#fcd34d}
   .ntag.l{background:#1e2330;color:#94a3b8}
+  .ntag.f{background:#12301f;color:#86efac}
 }
 /* name-tier filter chips in company tab */
 .ntfilt{display:flex;gap:6px;flex-wrap:wrap;margin:0 2px 10px;align-items:center}
@@ -191,14 +193,12 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 
 <div class="composer">
   <div class="cin">
-    <label class="lbl" for="prompt" style="margin-bottom:6px">Message</label>
-    <textarea id="prompt" rows="1">Hi</textarea>
     <div class="crow">
       <button class="pri" id="co" disabled>Test shown models</button>
       <button class="sec" id="all" disabled>Test all ★ models</button>
       <button class="sec" id="smart" disabled>🧠 Smart test</button>
     </div>
-    <div class="hint">★ = gateway pool · K1/K2 = us key se test · 🧠 Smart test ek baar me max 12 models jaanchta hai: pehle naye, phir 2+ din purane (paid aur band chhod deta hai). Natije SQLite me save hote hain.</div>
+    <div class="hint">★ = gateway pool · K1/K2 = us key se test · 🧠 Smart test: ek baar me 12 naye models (pehle “free” naam wale, phir baaki, aakhir me pro/max type). Paid sirf test ke baad lagta hai; paid model ko K1/K2 se manually test karo, chal gaya to Free ho jayega.</div>
   </div>
 </div>
 
@@ -405,6 +405,7 @@ function renderCompany(box, p) {
       const top = el('div', 'top'); top.appendChild(el('span', 'dot'));
       const info = el('div', 'info'); const nm = el('div', 'name', m); if (isStar(p, m)) nm.appendChild(el('span', 'star', '★'));
       const nt = nameTierLabel(m); if (nt) { const nb = el('span', 'ntag ' + nt.cls, nt.txt); nm.appendChild(nb); }
+      { const bf = bm[p.id + ':' + m]; if (bf && bf.cost === 'free' && bf.ok > 0) nm.appendChild(el('span', 'ntag f', '🆓 FREE ✔')); else if (FREE_NAME.test(m)) nm.appendChild(el('span', 'ntag f', 'free?')); }
       info.appendChild(nm);
       const b0 = bm[p.id + ':' + m]; const pd = !!(b0 && (b0.tier === 'paid' || b0.tier === 'dead')); if (pd) d.classList.add('paid');
       const done = isDone(p.id, m);
@@ -416,7 +417,7 @@ function renderCompany(box, p) {
         const b = el('button', 'send kb', ks.length > 1 ? 'K' + k.n : 'Send'); b.title = 'Key ' + k.n + ' se test karo';
         b.onclick = () => testOne(p, k, m, b); ctl.appendChild(b);
         const out = el('div', 'out'); out.hidden = true; outs2.appendChild(out);
-        refs[r0] = { row: d, out, kb: b }; if (!pd && !done) shown.push({ p, k, m });
+        refs[r0] = { row: d, out, kb: b }; if (!pd && !done && k === ks[0]) shown.push({ p, k, m });   // v13: one key per model is enough, the verdict is company-wide
       });
       top.appendChild(ctl); d.appendChild(top); d.appendChild(outs2);
       list.appendChild(d);
@@ -494,8 +495,9 @@ function renderGateway(box) {
     nm.appendChild(el('span', 'cob', r.label || r.prov)); info.appendChild(nm);
     const bar = el('div', 'bar'); const f = el('i'); f.style.width = Math.max(2, Math.min(100, r.rating)) + '%'; bar.appendChild(f); if (r.rating != null) info.appendChild(bar);
     const sp = r.avgSec == null ? 'speed ?' : (r.avgSec <= 6 ? '⚡ ' : r.avgSec >= 20 ? '🐢 ' : '') + r.avgSec + 's';
+    if (r.cost === 'free' && r.ok > 0) nm.appendChild(el('span', 'ntag f', '🆓 FREE ✔'));
     info.appendChild(el('div', 'meta', r.tier === 'out' ? 'Pool ke bahar: gateway abhi ise use nahi karta. Company tab me test karo, achha nikla to pool me aa jayega.' : 'rating ' + r.rating + ' · ok ' + r.ok + ' / fail ' + r.fail + ' · ' + sp + ' · last ' + r.last + ' · ' + r.keys + ' key' + (r.ok + r.fail ? '' : ' · abhi tak test nahi hua')));
-    if (r.tier === 'paid') info.appendChild(el('div', 'gerr', '💰 Paid model: free plan pe nahi chalta, gateway ise kabhi nahi aazmata. Top-up ke baad tester me test karo, chal gaya to wapas aa jayega.')); else if (r.tier === 'resting') info.appendChild(el('div', 'gerr', '⛔ ' + fmtRest(r.rest) + ' tak band (lagatar ' + (r.consec || 1) + ' fail)' + (r.lastErr ? ' — ' + r.lastErr : '')));
+    if (r.tier === 'paid') info.appendChild(el('div', 'gerr', '💰 Test me paid nikla (company ki saari keys ke liye). Ab ye apne aap dobara test nahi hota. Tum manually test karo aur ye jawab de de, to turant 🆓 Free ho jayega.')); else if (r.tier === 'resting') info.appendChild(el('div', 'gerr', '⛔ ' + fmtRest(r.rest) + ' tak band (lagatar ' + (r.consec || 1) + ' fail)' + (r.lastErr ? ' — ' + r.lastErr : '')));
     else if (r.tier === 'limited') info.appendChild(el('div', 'gerr', '⏸ Is company ki limit / quota bhar gayi: gateway reset hone tak ise nahi bhejta (📈 Quota tab dekho).'));
     else if (r.lastErr && r.consec) info.appendChild(el('div', 'gerr', 'pichhli galti: ' + r.lastErr));
     top.appendChild(info);
@@ -633,24 +635,38 @@ function quotaPanel(p) {
 }
 
 /* ---------- testing ---------- */
-async function testOne(p, k, m, btn) {
+async function testOne(p, k, m, btn, auto) {
   if (btn && isDone(p.id, m) && !Object.keys(outs).some((x) => x.startsWith(p.id + ':' + m + '|')) && !confirm('Ye model pehle hi test ho chuka hai (result saved). Phir bhi test karu?')) return;
-  const r0 = rid(p, k, m), msgText = $('prompt').value.trim() || 'Hi';
+  const r0 = rid(p, k, m), msgText = 'Hi';
   setOut(r0, 'load', 'Response aa raha hai…', '');
   if (btn) btn.disabled = true;
   const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 50000);
+  let verdict = 'transient';   // ok | model (verdict belongs to the MODEL, same on every key) | account (only THIS key is bad) | transient (inconclusive)
   try {
     const r = await fetch(base() + '/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target: p.id + ':' + m, key: k.n - 1, prompt: msgText }), signal: ctl.signal });
     const j = await r.json();
-    if (j.ok) { res[r0] = 'ok'; setOut(r0, 'ok', 'Working', j.text, (j.ms / 1000).toFixed(1) + 's · key ' + j.key + (j.recorded ? ' · 💾 saved' : '')); }
-    else { res[r0] = 'bad'; setOut(r0, 'bad', 'Failed' + (j.status ? ' · HTTP ' + j.status : '') + ' · key ' + (j.key || k.n), j.error || 'unknown', j.ms ? (j.ms / 1000).toFixed(1) + 's' : ''); }
+    if (j.ok) { verdict = 'ok'; res[r0] = 'ok'; setOut(r0, 'ok', 'Working' + (j.cost === 'free' ? ' · 🆓 Free' : ''), j.text, (j.ms / 1000).toFixed(1) + 's · key ' + j.key + (j.recorded ? ' · 💾 saved' : '')); }
+    else { verdict = j.cls || 'transient'; res[r0] = 'bad'; setOut(r0, 'bad', 'Failed' + (j.status ? ' · HTTP ' + j.status : '') + ' · key ' + (j.key || k.n) + (j.state === 'paid' ? ' · 💰 Paid' : ''), j.error || 'unknown', j.ms ? (j.ms / 1000).toFixed(1) + 's' : ''); }
   } catch (e) {
     res[r0] = 'bad';
     setOut(r0, 'bad', 'Failed', e.name === 'AbortError' ? 'Timeout: 50s me response nahi aaya.' : e.message);
   }
   clearTimeout(tm);
   if (btn) btn.disabled = false;
+  // v13: the answer (works / paid / dead) belongs to the MODEL and is stored per company, so every other key of this company gets the same
+  // verdict at once - no extra test call, no extra tokens. Only a KEY problem (bad key / empty balance) makes us try the next key.
+  if (verdict === 'ok' || verdict === 'model') {
+    p.keys.forEach((k2) => {
+      if (k2.n === k.n || !modelsFor(p, k2).includes(m)) return;
+      const r2 = rid(p, k2, m); if (outs[r2] && outs[r2].kind !== 'load') return;
+      setOut(r2, verdict === 'ok' ? 'ok' : 'bad', (verdict === 'ok' ? 'Working' : 'Failed') + ' · key ' + k.n + ' ke result se (company-wide)', 'Is company ka verdict model ka hota hai, isliye is key pe dobara test nahi kiya (tokens bache).', '');
+    });
+  }
   summary(); softRefresh();
+  if (verdict === 'account' && auto && !stopReq) {   // this key is the problem, not the model: try the next key of the company once
+    const k2 = p.keys.find((kk) => kk.ok && kk.n !== k.n && modelsFor(p, kk).includes(m) && !outs[rid(p, kk, m)]);
+    if (k2) await testOne(p, k2, m, null, true);
+  }
 }
 
 async function runAll(items) {
@@ -658,7 +674,7 @@ async function runAll(items) {
   if (items.length > 25 && !confirm(items.length + ' tests chalenge (har ek chhota request). Chalu karu?')) return;
   busy = true; stopReq = false; updateButtons();
   const queue = items.slice(); let done = 0;
-  const worker = async () => { while (queue.length && !stopReq) { const it = queue.shift(); await testOne(it.p, it.k, it.m, null); done++; $('msg').textContent = 'Test chal raha hai… ' + done + '/' + items.length; } };
+  const worker = async () => { while (queue.length && !stopReq) { const it = queue.shift(); await testOne(it.p, it.k, it.m, null, true); done++; $('msg').textContent = 'Test chal raha hai… ' + done + '/' + items.length; } };
   await Promise.all([worker(), worker(), worker()]);
   $('msg').textContent = stopReq ? 'Roka gaya: ' + done + '/' + items.length + ' test hue.' : 'Sab ' + items.length + ' tests ho gaye.';
   busy = false; stopReq = false; updateButtons();
@@ -667,6 +683,15 @@ async function runAll(items) {
 // Only models never tested (a saved result = never tested again here). If none are left: strongest-looking models outside the
 // gateway shortlist (a proven one joins the shortlist). Paid and resting models are never included. One test per model.
 const SMART_MAX = 12, PER_CO = 4, STALE_MS = 48 * 3600 * 1000;
+// v13 test order: (0) "free" in the name / list says free / already proven free -> (1) nothing says anything -> (1.6) looks paid (pro/ultra/max/opus..., or list says paid).
+// This is ONLY an order: nothing is marked paid before its test.
+const FREE_NAME = /(^|[^a-z0-9])free([^a-z0-9]|$)/i, LOOKS_PAID = /(^|[^a-z0-9])(pro|ultra|max|opus|premium|plus|turbo|large)([^a-z0-9]|$)/i;
+function hintOf(p, m) { let h = null; (p.keys || []).forEach((k) => { const v = k.hint && k.hint[m]; if (v === true) h = true; else if (v === false && h !== true) h = false; }); return h; }
+function lane(pid, m) {
+  const p = provs.find((x) => x.id === pid), h = p ? hintOf(p, m) : null, b = dbRec(pid, m);
+  if ((b && b.cost === 'free') || FREE_NAME.test(m) || h === true) return 0;
+  return h === false || LOOKS_PAID.test(m) ? 1.6 : 1;
+}
 function smartPlan() {
   const now = Date.now(), need = [];
   const triedHere = (pid, m) => Object.keys(outs).some((r0) => r0.startsWith(pid + ':' + m + '|'));
@@ -675,10 +700,10 @@ function smartPlan() {
     if (b.tier === 'paid' || b.tier === 'dead' || b.tier === 'resting' || b.tier === 'limited') return;
     if (b.ok + b.fail > 0) return;   // result already saved in SQLite: never test twice
     if (triedHere(prov, mdl)) return;
-    need.push({ prov, mdl, pri: 0, age: Infinity });
+    need.push({ prov, mdl, pri: lane(prov, mdl), age: Infinity });
   });
   if (!need.length) provs.forEach((p) => (p.ranked || []).filter((m) => !bidx[p.id + ':' + m] && !triedHere(p.id, m)).slice(0, 6).forEach((m) => need.push({ prov: p.id, mdl: m, pri: 2, age: Infinity })));
-  need.sort((a, b) => a.pri - b.pri || b.age - a.age);
+  need.sort((a, b) => a.pri - b.pri || b.age - a.age || nameScore(b.mdl) - nameScore(a.mdl));
   const per = {}, items = [];
   need.forEach((n) => {
     if (items.length >= SMART_MAX || (per[n.prov] || 0) >= PER_CO) return;
@@ -692,7 +717,7 @@ function smartPlan() {
 }
 function starItems() {
   const out = [];
-  provs.forEach((p) => p.keys.forEach((k) => { modelsFor(p, k).forEach((m) => { if (isStar(p, m) && !isDone(p.id, m) && !(bidx[p.id + ':' + m] && ['paid', 'dead', 'limited'].includes(bidx[p.id + ':' + m].tier))) out.push({ p, k, m }); }); }));
+  provs.forEach((p) => p.keys.forEach((k) => { modelsFor(p, k).forEach((m) => { if (isStar(p, m) && p.keys.find((kk) => kk.ok && modelsFor(p, kk).includes(m)) === k && !isDone(p.id, m) && !(bidx[p.id + ':' + m] && ['paid', 'dead', 'limited'].includes(bidx[p.id + ':' + m].tier))) out.push({ p, k, m }); }); }));
   return out;
 }
 function updateButtons() {
@@ -712,8 +737,6 @@ $('gear').onclick = () => { const h = !$('conn').hidden; $('conn').hidden = h; $
 $('co').onclick = () => runAll(shown.slice());
 $('all').onclick = () => { if (busy) { stopReq = true; return; } runAll(starItems()); };
 $('smart').onclick = () => { if (busy) { stopReq = true; return; } runAll(smartPlan().items); };
-$('prompt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !$('co').disabled) $('co').click(); });
-$('prompt').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 140) + 'px'; });
 summary();
 load();
 </script>
