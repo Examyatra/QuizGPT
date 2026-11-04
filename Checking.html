@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AI Model Tester</title>
+<title>AI Gateway · Admin Control Center</title>
 <style>
 :root{
   --bg:#f5f6f8;--surface:#fff;--surface2:#eef0f4;--line:#e1e4ea;--tx:#161a22;--mut:#6a7282;
@@ -175,27 +175,164 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 .qsum{font-size:12.5px;color:var(--mut);margin:2px 0 6px;overflow-wrap:anywhere}
 .qkey{margin-top:6px;font-size:12.5px;color:var(--mut)}
 </style>
+
+<style id="organized-dashboard-theme">
+:root{
+  color-scheme:dark;
+  --bg:#0b0f17;--surface:#141b27;--surface2:#1b2534;--line:#293548;
+  --tx:#edf3fc;--mut:#96a5ba;--acc:#8b95ff;--acc-tx:#0b1020;
+  --ok:#48d6a5;--ok-bg:#10372e;--bad:#ff7889;--bad-bg:#3b1d27;--warn:#f4bd62;
+  --shadow:0 12px 34px rgba(0,0,0,.18);
+}
+html,body{background:var(--bg);color:var(--tx)}
+body{font-size:14px;background:
+ radial-gradient(ellipse at 12% -10%,rgba(92,104,220,.12),transparent 38%),
+ radial-gradient(ellipse at 100% 0%,rgba(31,178,151,.07),transparent 30%),var(--bg)}
+.wrap{max-width:1120px;padding:0 20px 150px}
+header{position:sticky;top:0;z-index:50;padding:17px 0 15px;background:rgba(11,15,23,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(41,53,72,.7);margin-bottom:18px}
+h1{font-size:clamp(20px,3vw,26px);letter-spacing:-.035em}
+.sub{font-size:12.5px;margin-top:4px;max-width:75ch;overflow-wrap:anywhere}
+.iconbtn{border-radius:11px;background:var(--surface);border-color:var(--line);padding:10px 14px}
+#gear{white-space:nowrap}
+.settings-panel{padding:20px;margin:0 0 18px;border-radius:18px;background:linear-gradient(145deg,#172233,#121a26);border-color:#34435a}
+.settings-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+.settings-title h2{margin:2px 0 3px;font-size:18px}
+.settings-title p,.field-help{margin:0;color:var(--mut);font-size:12px}
+.eyebrow{font-size:10px;letter-spacing:.14em;font-weight:800;color:var(--acc)}
+.secure-mark{font-size:11px;color:var(--ok);background:var(--ok-bg);border-radius:99px;padding:5px 9px;white-space:nowrap}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{min-width:0}
+.field input{width:100%;background:#0d1420;border:1px solid #34435a;border-radius:11px;padding:12px 13px;font-size:14px}
+.field-help{margin-top:6px;line-height:1.45}
+.optional{font-weight:500;color:var(--mut)}
+.settings-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:17px}
+.primary-action{background:var(--acc);color:#10152b;border:0}
+.setup-help{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);color:var(--mut);font-size:12px}
+.setup-help summary{cursor:pointer;color:#c5d0e2;font-weight:650}
+.setup-help ol{padding-left:20px;line-height:1.8}
+.security-note{padding:9px 11px;border-radius:9px;background:#251f18;color:#e9c58d}
+.stats{grid-template-columns:repeat(4,minmax(0,1fr));border-radius:16px;overflow:hidden;margin:0 0 20px;background:rgba(20,27,39,.94)}
+.stat{padding:15px 16px;text-align:left;min-width:0}
+.stat b{font-size:25px;margin-bottom:5px}
+.stat span{font-size:12px;letter-spacing:.01em}
+.tabs{gap:7px;border:0;margin:0 0 18px;padding:0 0 5px}
+.tab{border:1px solid var(--line);border-radius:11px;margin:0;padding:9px 13px;background:var(--surface);font-size:13px}
+.tab.on{background:#242b4b;border-color:#737fff;color:#c4caff}
+.tab i{background:#263247;color:#d0d9e8}
+.cohead{margin:0 0 13px;padding:13px 15px;border:1px solid var(--line);border-left:4px solid var(--c,var(--acc));border-radius:13px;background:var(--surface)}
+.cohead h2{font-size:17px}
+.cohead span{font-size:12px}
+.chips{gap:7px;margin:0 0 12px}
+.chip{border-radius:10px;padding:8px 11px;background:var(--surface);border-color:var(--line);font-size:12.5px}
+.chip.on{background:#252c4c;border-color:var(--acc);color:#d3d7ff}
+.kinfo{font-size:12px;margin:0 2px 12px}
+.filt{margin:0 0 11px;gap:12px}
+.filt input[type=search]{background:var(--surface);border-color:var(--line);border-radius:11px;padding:11px 13px}
+.filt label{padding:8px 11px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.ntfilt{padding:9px 10px;background:rgba(20,27,39,.65);border:1px solid var(--line);border-radius:12px}
+.model-state-filters{margin-top:10px}
+.list{border-radius:16px;background:rgba(20,27,39,.88);border-color:var(--line)}
+.m{padding:15px 16px;border-top-color:#253247}
+.m:first-child{padding-top:15px}
+.top{align-items:flex-start;gap:12px}
+.dot{margin-top:7px}
+.name{font-size:14px;line-height:1.55}
+.meta{font-size:12px;line-height:1.55;margin-top:3px}
+.ctl{margin-left:auto}
+.send{border-radius:10px;padding:9px 14px;white-space:nowrap}
+.out{margin:12px 0 0 22px;border-radius:12px;background:#0e1520}
+.out .oh{padding:9px 12px}
+.out .ob{font-size:13px;line-height:1.6}
+.tag{border-radius:8px;padding:4px 8px;font-size:11px}
+.cards{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:11px}
+.card{border-radius:14px;padding:13px 14px;background:var(--surface);gap:5px}
+.card b{font-size:14px}
+.card span{font-size:11.5px;line-height:1.5}
+.qcard,.key-health-card{border-radius:14px;background:var(--surface);border-color:var(--line);padding:13px}
+.note,.kerr{border-radius:10px;padding:10px 12px}
+.empty{padding:42px 16px}
+.composer{background:rgba(15,21,32,.96);backdrop-filter:blur(18px);border-top:1px solid #2b374a;padding:11px 16px calc(11px + env(safe-area-inset-bottom,0px))}
+.cin{max-width:1080px}
+.crow{gap:10px;margin:0}
+.crow button{border-radius:12px;padding:12px 10px;font-size:13px;min-height:48px}
+.crow .pri{background:#737fff;color:#0b1020}
+.crow .sec{background:#1a2433;border-color:#2c3a50}
+.action-hint{display:none}
+.toast{background:#172131;border-color:#35445a;color:var(--tx)}
+.detailbox{background:var(--surface);border-color:var(--line);border-radius:16px}
+.detailhead{background:var(--surface)}
+@media(max-width:700px){
+ .wrap{padding:0 13px 138px}
+ header{padding:13px 0 12px;margin-bottom:14px}
+ .settings-grid{grid-template-columns:1fr}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .stat{border-bottom:1px solid var(--line)}
+ .stat:nth-child(3){border-left:0}
+ .stat:nth-child(n+3){border-bottom:0}
+ .stat b{font-size:22px}
+ .tabs{overflow-x:auto;flex-wrap:nowrap}
+ .tab{padding:9px 11px}
+ .cohead{align-items:flex-start}
+ .top{flex-wrap:wrap}
+ .ctl{margin-left:22px}
+ .send.kb{min-width:88px}
+ .composer{padding-left:10px;padding-right:10px}
+ .crow{display:grid;grid-template-columns:1fr 1fr 1fr}
+ .crow button{font-size:11.5px;padding:9px 5px;line-height:1.35}
+ .settings-actions .status{flex-basis:100%}
+}
+@media(max-width:390px){
+ .wrap{padding-left:10px;padding-right:10px}
+ .crow{grid-template-columns:1fr 1fr}
+ .crow #smart{grid-column:1/-1}
+ .settings-title{display:block}
+ .secure-mark{display:inline-block;margin-top:9px}
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
   <header>
     <div>
-      <h1>AI Model Tester</h1>
-      <div class="sub" id="msg">Load ho raha hai…</div>
+      <h1>AI Gateway Control Center</h1>
+      <div class="sub" id="msg">Gateway se connect ho raha hai…</div>
     </div>
-    <button class="iconbtn" id="gear" aria-expanded="false">⚙ Connection</button>
+    <button class="iconbtn" id="gear" aria-expanded="false">⚙ Settings</button>
   </header>
 
-  <section class="conn" id="conn" hidden>
-    <label class="lbl" for="url">Val Town URL</label>
-    <input id="url" placeholder="https://xxxx.web.val.run" autocomplete="off">
-    <label class="lbl" for="adminToken" style="margin-top:10px">AI_ADMIN_TOKEN (sirf agar Val me set hai)</label>
-    <input id="adminToken" type="password" placeholder="Admin token (optional)" autocomplete="off">
-    <div class="hint">Token is tab ki memory me hi rahega; reload par dobara enter karna hoga.</div>
-    <div class="actions">
-      <button class="iconbtn" id="load">🔄 Reload</button>
-      <span class="status" id="connNote"></span>
+  <section class="conn settings-panel" id="conn" hidden aria-label="Connection settings">
+    <div class="settings-title">
+      <div><div class="eyebrow">ADMIN CONFIGURATION</div><h2>Connection settings</h2><p>Gateway URL और Admin Token यहाँ सेव करें। अगली बार अपने-आप लोड होंगे।</p></div>
+      <span class="secure-mark">🔒 Private</span>
     </div>
+    <div class="settings-grid">
+      <div class="field">
+        <label class="lbl" for="url">Val Town Gateway URL</label>
+        <input id="url" placeholder="https://your-val-name.web.val.run" autocomplete="url" inputmode="url">
+        <div class="field-help">अपने Gateway Val का Public URL डालें।</div>
+      </div>
+      <div class="field">
+        <label class="lbl" for="adminToken">Admin Token <span class="optional">optional</span></label>
+        <input id="adminToken" type="password" placeholder="AI_ADMIN_TOKEN" autocomplete="current-password">
+        <div class="field-help">यह वही Secret होना चाहिए जो Val Town Env Vars में AI_ADMIN_TOKEN के रूप में सेट है।</div>
+      </div>
+    </div>
+    <div class="settings-actions">
+      <button class="iconbtn primary-action" id="load">↻ Save & Connect</button>
+      <button class="iconbtn" id="forgetToken" type="button">Forget saved token</button>
+      <span class="status" id="connNote" role="status"></span>
+    </div>
+    <details class="setup-help">
+      <summary>Connection setup और troubleshooting</summary>
+      <ol>
+        <li>Val Town में Gateway Val खोलें और उसका सही <b>.web.val.run</b> URL यहाँ डालें।</li>
+        <li>Val Town → Settings → Env vars में <b>AI_ADMIN_TOKEN</b> सेट हो तो वही Token यहाँ डालें।</li>
+        <li><b>Save & Connect</b> दबाएँ। Dashboard <b>/admin/models</b> और <b>/status</b> से डेटा लोड करेगा।</li>
+        <li>401/403 आए तो Token, URL और <b>AI_ALLOWED_ORIGINS</b> जाँचें।</li>
+      </ol>
+      <p class="security-note">सुरक्षा: Token इस Browser के localStorage में सेव होगा। केवल अपने निजी और भरोसेमंद डिवाइस पर इस्तेमाल करें; साझा डिवाइस पर “Forget saved token” दबाएँ।</p>
+    </details>
   </section>
 
   <div class="stats" id="sum"></div>
@@ -210,7 +347,7 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
       <button class="sec" id="all" disabled>Test all ★ models</button>
       <button class="sec" id="smart" disabled>🧠 Smart test</button>
     </div>
-    <div class="hint">★ = gateway pool · K1/K2 = us key se test · 🧠 Smart Test: 90% naye/untested + 10% pehle successful Working models (max 12 = 11 new + 1 old; 10 ka batch = 9 + 1). Model-level success/definite failure sab compatible keys par shared hota hai; auth/quota/network errors sirf selected key par rehte hain. Har key se max 2 models; failed/never-worked models auto-repeat nahi hote.</div>
+    <div class="hint action-hint">Test controls · selected company / gateway pool / smart discovery</div>
   </div>
 </div>
 
@@ -254,8 +391,13 @@ let cur = null;          // current tab: company id or '@gw' / '@keys'
 const curKey = {};       // company id -> chosen key index
 let q = '', starOnly = false, ntFilter = '', modelView = 'working', busy = false, stopReq = false, shown = [];
 
-try { $('url').value = localStorage.getItem('ey_test_url') || DEFAULT_URL; }
-catch (e) { $('url').value = DEFAULT_URL; }
+try {
+  $('url').value = localStorage.getItem('ey_test_url') || DEFAULT_URL;
+  $('adminToken').value = localStorage.getItem('ey_admin_token') || '';
+} catch (e) {
+  $('url').value = DEFAULT_URL;
+  $('adminToken').value = '';
+}
 const cacheBoard = () => { try { localStorage.setItem('ey_board_cache', JSON.stringify(board.map((b) => ({ id: b.id, provider: b.provider, model: b.model, ok: b.ok, fail: b.fail, tier: b.tier, updated: b.updated, nextCheck: b.nextCheck, rating: b.rating, avgSec: b.avgSec })))); } catch (e) {} };
 const base = () => $('url').value.trim().replace(/\/+$/, '');
 const authHeaders = (extra = {}) => {
@@ -620,8 +762,14 @@ function showConn(note) { $('conn').hidden = false; $('gear').setAttribute('aria
 
 async function load() {
   const u = base(); if (!u) return;
-  try { localStorage.setItem('ey_test_url', u); } catch (e) {}
-  $('msg').textContent = 'Load ho raha hai (har key ki model list mangi ja rahi hai)…'; $('load').disabled = true; $('connNote').textContent = '';
+  try {
+    localStorage.setItem('ey_test_url', u);
+    const savedToken = $('adminToken').value.trim();
+    if (savedToken) localStorage.setItem('ey_admin_token', savedToken);
+    else localStorage.removeItem('ey_admin_token');
+  } catch (e) {}
+  $('connNote').textContent = 'Settings saved in this browser.';
+  $('msg').textContent = 'Load ho raha hai (har key ki model list mangi ja rahi hai)…'; $('load').disabled = true; $('load').textContent = 'Connecting…'; $('connNote').textContent = '';
   const [rm, rs] = await Promise.allSettled([getJson('/admin/models'), getJson('/status')]);
   Object.keys(res).forEach((k) => delete res[k]); Object.keys(outs).forEach((k) => delete outs[k]);
   provs = []; board = []; dbOn = null; keyState = {};
@@ -637,7 +785,7 @@ async function load() {
     const keys = provs.reduce((a, p) => a + p.keys.length, 0), good = provs.reduce((a, p) => a + p.keys.filter((k) => k.ok).length, 0);
     $('msg').textContent = provs.length ? provs.length + ' companies · ' + good + '/' + keys + ' keys ki list mili' : '⚠️ Koi company set nahi hai. Env vars check karo.';
   }
-  $('load').disabled = false;
+  $('load').disabled = false; $('load').textContent = '↻ Save & Connect';
   render();
 }
 
@@ -857,7 +1005,18 @@ function updateButtons() {
 }
 
 $('load').onclick = load;
-$('gear').onclick = () => { const h = !$('conn').hidden; $('conn').hidden = h; $('gear').setAttribute('aria-expanded', String(!h)); };
+$('forgetToken').onclick = () => {
+  try { localStorage.removeItem('ey_admin_token'); } catch (e) {}
+  $('adminToken').value = '';
+  $('connNote').textContent = 'Saved Admin Token removed from this browser.';
+  showToast('ok', 'Saved token removed', 'Gateway URL and database data were not changed.');
+};
+$('gear').onclick = () => {
+  const h = !$('conn').hidden;
+  $('conn').hidden = h;
+  $('gear').setAttribute('aria-expanded', String(!h));
+  if (!h) $('url').focus();
+};
 $('co').onclick = () => runAll(shown.slice());
 $('all').onclick = () => { if (busy) { stopReq = true; return; } runAll(starItems()); };
 $('smart').onclick = () => { if (busy) { stopReq = true; return; } runAll(smartPlan().items); };
