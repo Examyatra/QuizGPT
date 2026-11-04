@@ -443,8 +443,21 @@ function showSummaryDetail(bucket, label) {
   if (!items.length) panel.appendChild(el('div', 'empty', 'Is category me abhi koi model nahi.'));
   items.forEach(({p,m}) => {
     const row = el('div', 'detailitem'); row.appendChild(el('span', '', p.label + ' · ' + m));
+    const actions = el('div', 'ctl');
     const go = el('button', '', 'Open'); go.onclick = () => { veil.remove(); cur = p.id; modelView = bucket; q = m; render(); };
-    row.appendChild(go); panel.appendChild(row);
+    actions.appendChild(go);
+    const usableKey = p.keys.find((k) => k.ok && modelsFor(p, k).includes(m));
+    if (usableKey && bucket !== 'unavailable') {
+      const retry = el('button', 'send', '↻ Retest');
+      retry.onclick = async () => {
+        veil.remove();
+        cur = p.id; modelView = bucket; q = m; render();
+        retry.disabled = true; retry.textContent = 'Testing…';
+        await testOne(p, usableKey, m, null, false);
+      };
+      actions.appendChild(retry);
+    }
+    row.appendChild(actions); panel.appendChild(row);
   });
   veil.addEventListener('click', (e) => { if (e.target === veil) veil.remove(); });
   veil.appendChild(panel); document.body.appendChild(veil);
@@ -864,7 +877,7 @@ async function testOne(p, k, m, btn, auto) {
       setOut(r2, verdict === 'ok' ? 'ok' : 'bad', (verdict === 'ok' ? 'Working' : 'Failed') + ' · shared model verdict from key ' + k.n, 'First discovery result is key par bhi available hai; duplicate API call nahi ki gayi.', '');
     });
   }
-  summary(); softRefresh();
+  if (!busy) { summary(); softRefresh(); }
   if ((verdict === 'account' || verdict === 'transient') && auto && !stopReq) {   // key/account or inconclusive network result: try another eligible key once
     const k2 = p.keys.find((kk) => kk.ok && kk.n !== k.n && modelsFor(p, kk).includes(m) && !outs[rid(p, kk, m)]);
     if (k2) await testOne(p, k2, m, null, true);
