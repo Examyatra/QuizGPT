@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AI Model Tester</title>
+<title>Model Check</title>
 <style>
 :root{
   --bg:#f5f6f8;--surface:#fff;--surface2:#eef0f4;--line:#e1e4ea;--tx:#161a22;--mut:#6a7282;
@@ -148,9 +148,13 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
   .ntag.l{background:#1e2330;color:#94a3b8}
   .ntag.f{background:#12301f;color:#86efac}
 }
-/* name-tier filter chips in company tab */
-.ntfilt{display:flex;gap:6px;flex-wrap:wrap;margin:0 2px 10px;align-items:center}
-.ntfilt span{font-size:12px;color:var(--mut);font-weight:600}
+/* simplified model list */
+.stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+.conn{padding:16px}
+header{padding:18px 0 14px}
+.sub{line-height:1.4}
+.model-state-filters{margin-top:2px}
+@media(max-width:480px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.stat{padding:10px 8px}.stat span{font-size:11.5px}}
 .qcard{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:10px 12px;margin:0 0 12px;box-shadow:var(--shadow)}
 .qhead{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:6px}
 .qrow{padding:8px 0;border-top:1px solid var(--line);font-size:13px}
@@ -171,20 +175,20 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 <div class="wrap">
   <header>
     <div>
-      <h1>AI Model Tester</h1>
+      <h1>Model Check</h1>
       <div class="sub" id="msg">Load ho raha hai…</div>
     </div>
-    <button class="iconbtn" id="gear" aria-expanded="false">⚙ Connection</button>
+    <button class="iconbtn" id="gear" aria-expanded="false">⚙ Settings</button>
   </header>
 
   <section class="conn" id="conn" hidden>
-    <label class="lbl" for="url">Val Town URL</label>
+    <label class="lbl" for="url">Gateway URL</label>
     <input id="url" placeholder="https://xxxx.web.val.run" autocomplete="off">
-    <label class="lbl" for="adminToken" style="margin-top:10px">AI_ADMIN_TOKEN (sirf agar Val me set hai)</label>
-    <input id="adminToken" type="password" placeholder="Admin token (optional)" autocomplete="off">
-    <div class="hint">Token is tab ki memory me hi rahega; reload par dobara enter karna hoga.</div>
+    <label class="lbl" for="adminToken" style="margin-top:10px">Admin token <span style="font-weight:400">(optional)</span></label>
+    <input id="adminToken" type="password" placeholder="Enter admin token" autocomplete="off">
+    <div class="hint">Token is used only for this session.</div>
     <div class="actions">
-      <button class="iconbtn" id="load">🔄 Reload</button>
+      <button class="iconbtn" id="load">↻ Connect</button>
       <span class="status" id="connNote"></span>
     </div>
   </section>
@@ -197,11 +201,11 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 <div class="composer">
   <div class="cin">
     <div class="crow">
-      <button class="pri" id="co" disabled>Test shown models</button>
-      <button class="sec" id="all" disabled>Test all ★ models</button>
-      <button class="sec" id="smart" disabled>🧠 Smart test</button>
+      <button class="pri" id="co" disabled>Test selected</button>
+      <button class="sec" id="all" disabled>Test all</button>
+      <button class="sec" id="smart" disabled>Smart scan</button>
     </div>
-    <div class="hint">★ = gateway pool · K1/K2 = us key se test · 🧠 Smart Test: 90% naye/untested + 10% pehle successful Working models (max 12 = 11 new + 1 old; 10 ka batch = 9 + 1). Model-level success/definite failure sab compatible keys par shared hota hai; auth/quota/network errors sirf selected key par rehte hain. Har key se max 2 models; failed/never-worked models auto-repeat nahi hote.</div>
+    <div class="hint">Smart scan discovers new models and rechecks a small sample of working models. Results are saved by the gateway.</div>
   </div>
 </div>
 
@@ -277,8 +281,8 @@ function summary() {
     const bucket = modelBucket(p.id, m); counts[bucket] = (counts[bucket] || 0) + 1;
   }));
   const box = $('sum'); box.innerHTML = '';
-  [['Working', counts.working, 'ok'], ['Retest', counts.retest, ''], ['Never worked', counts.never, 'bad'], ['Not tested', counts.untested, '']].forEach(([l, n, c]) => {
-    const item = el('div', 'stat ' + c); item.appendChild(el('b', '', n)); item.appendChild(el('span', '', l)); box.appendChild(item);
+  [['Working', counts.working, 'ok'], ['Needs recheck', counts.retest, ''], ['To test', counts.never + counts.untested, '']].forEach(([label, n, cls]) => {
+    const item = el('div', 'stat ' + cls); item.appendChild(el('b', '', n)); item.appendChild(el('span', '', label)); box.appendChild(item);
   });
 }
 
@@ -371,7 +375,7 @@ function render() {
   const box = $('list'); box.innerHTML = '';
   shown = [];
   if (!cur) {
-    box.appendChild(el('div', 'empty', 'Koi company nahi mili. Val Town env me AI_<NAAM>_KEY aur AI_<NAAM>_ENDPOINT check karo.'));
+    box.appendChild(el('div', 'empty', 'No providers found. Check your gateway configuration and connect again.'));
   } else if (cur === '@gw') renderGateway(box);
   else if (cur === '@keys') renderKeyHealth(box);
   else renderCompany(box, provs.find((p) => p.id === cur));
@@ -384,7 +388,7 @@ function renderCompany(box, p) {
   const col = coColor(p.id);
   const bm = bidx;
   const head = el('div', 'cohead'); head.style.setProperty('--c', col); head.appendChild(el('h2', '', p.label));
-  head.appendChild(el('span', '', [p.host, p.format, p.keys.length + ' key', p.auto ? 'auto discovery' : 'forced models'].filter(Boolean).join(' · ')));
+  head.appendChild(el('span', '', p.keys.length + (p.keys.length === 1 ? ' key connected' : ' keys connected')));
   box.appendChild(head);
 
   const chips = el('div', 'chips'); chips.style.setProperty('--c', col);
@@ -399,26 +403,17 @@ function renderCompany(box, p) {
   const sets = sel.map((k) => new Set(modelsFor(p, k)));
   const order = [...new Set(sel.flatMap((k) => modelsFor(p, k)))];
   const names = [...p.pool.filter((m) => order.includes(m)), ...order.filter((m) => !p.pool.includes(m)).sort()];
-  box.appendChild(el('div', 'kinfo', names.length + ' models' + (sel.length > 1 ? ' (model ko ek representative key se test kiya jayega; result compatible keys par shared hoga)' : '') + ' · ★ ' + p.pool.length + ' gateway pool me'));
+  box.appendChild(el('div', 'kinfo', names.length + (names.length === 1 ? ' model available' : ' models available')));
 
   const filt = el('div', 'filt');
   const si = el('input'); si.type = 'search'; si.placeholder = 'Model dhundo…'; si.value = q; si.setAttribute('aria-label', 'Model dhundo');
   const lb = el('label'); const cb = el('input'); cb.type = 'checkbox'; cb.checked = starOnly; lb.appendChild(cb); lb.appendChild(document.createTextNode('Sirf ★'));
   filt.appendChild(si); filt.appendChild(lb); box.appendChild(filt);
-  // name-tier filter chips
-  const ntrow = el('div', 'ntfilt'); ntrow.appendChild(el('span', '', 'Naam tier:'));
-  [['', 'Sab'], ['h', '🔵 HIGH'], ['m', '🟡 MID'], ['l', '⚪ LOW'], ['?', '— Pata nahi']].forEach(([k, lbl]) => {
-    const c = el('button', 'chip' + (ntFilter === k ? ' on' : ''), lbl);
-    c.style.setProperty('--c', col);
-    c.onclick = () => { ntFilter = k; render(); };
-    ntrow.appendChild(c);
-  });
-  box.appendChild(ntrow);
   const bucketCounts = { working: 0, retest: 0, never: 0, untested: 0, unavailable: 0 };
   names.forEach((m) => { const b = modelBucket(p.id, m); bucketCounts[b] = (bucketCounts[b] || 0) + 1; });
   const stateFilters = el('div', 'chips model-state-filters');
-  [['working', '✓ Working'], ['retest', '↻ Retest'], ['never', '✕ Never worked'], ['untested', '○ Not tested']].forEach(([key, label]) => {
-    const c = el('button', 'chip' + (modelView === key ? ' on' : ''), label + ' ' + bucketCounts[key]);
+  [['working', '✓ Working', bucketCounts.working], ['retest', '↻ Recheck', bucketCounts.retest], ['untested', '○ To test', bucketCounts.never + bucketCounts.untested]].forEach(([key, label, count]) => {
+    const c = el('button', 'chip' + (modelView === key ? ' on' : ''), label + ' ' + count);
     c.onclick = () => { modelView = key; render(); };
     stateFilters.appendChild(c);
   });
@@ -430,31 +425,23 @@ function renderCompany(box, p) {
     listHost.innerHTML = '';
     const ms = names.filter((m) => {
       const bucket = modelBucket(p.id, m);
-      if (bucket !== modelView) return false;
+      if (modelView === 'untested' ? !['never', 'untested'].includes(bucket) : bucket !== modelView) return false;
       if (starOnly && !isStar(p, m)) return false;
       if (q && !m.toLowerCase().includes(q.toLowerCase())) return false;
-      if (ntFilter) {
-        const nt = nameTierLabel(m);
-        const cls = nt ? nt.cls : '?';
-        if (cls !== ntFilter) return false;
-      }
       return true;
     });
     shown = [];
-    if (!ms.length) { listHost.appendChild(el('div', 'empty', modelView === 'working' ? 'Abhi koi proven working model nahi. Smart Test se discovery shuru karo.' : modelView === 'retest' ? 'Abhi kisi previously-working model ko retest ki zarurat nahi.' : modelView === 'never' ? 'Abhi koi failed model record nahi hai.' : 'Sab discovered models test ho chuke hain.')); updateButtons(); return; }
+    if (!ms.length) { listHost.appendChild(el('div', 'empty', modelView === 'working' ? 'No working models yet. Run a smart scan to discover models.' : modelView === 'retest' ? 'No models need a recheck right now.' : 'Everything has been checked.')); updateButtons(); return; }
     const list = el('div', 'list');
     ms.forEach((m) => {
       const ks = sel.filter((k, i) => sets[i].has(m));
       const d = el('div', 'm'); d.dataset.p = p.id; d.dataset.m = m; d.style.setProperty('--c', col);
       const top = el('div', 'top'); top.appendChild(el('span', 'dot'));
       const info = el('div', 'info'); const nm = el('div', 'name', m); if (isStar(p, m)) nm.appendChild(el('span', 'star', '★'));
-      const nt = nameTierLabel(m); if (nt) { const nb = el('span', 'ntag ' + nt.cls, nt.txt); nm.appendChild(nb); }
-      { const bf = bm[p.id + ':' + m]; if (bf && bf.cost === 'free' && bf.ok > 0) nm.appendChild(el('span', 'ntag f', '🆓 FREE ✔')); else if (FREE_NAME.test(m)) nm.appendChild(el('span', 'ntag f', 'free?')); }
       info.appendChild(nm);
       const b0 = bm[p.id + ':' + m]; const pd = !!(b0 && (b0.tier === 'paid' || b0.tier === 'dead')); if (pd) d.classList.add('paid');
       const done = isDone(p.id, m); const bucket = modelBucket(p.id, m);
-      nm.appendChild(el('span', 'ntag ' + (bucket === 'working' ? 'f' : bucket === 'retest' ? 'm' : 'x'), modelBucketLabel(bucket)));
-      info.appendChild(el('div', 'meta', 'Key ' + ks.map((k) => k.n).join(', ') + ' pe available · ' + (pd ? (b0.tier === 'dead' ? '☠ band: jawab nahi deta' : '💰 paid') + ' · gateway ise nahi aazmata' + (b0.nextCheck ? ' · agla test ' + fmtDay(b0.nextCheck) : '') : b0 ? 'gateway: rating ' + b0.rating + (b0.avgSec != null ? ' · ' + b0.avgSec + 's' : '') + ' · ' + (b0.tier || '') + (done ? ' · ✔ tested ' + fmtDay(b0.updated) : '') : 'gateway pool ke bahar')));
+      info.appendChild(el('div', 'meta', 'Available on ' + (ks.length ? ks.map((k) => 'Key ' + k.n).join(', ') : 'no active key') + (done ? ' · Previously checked' : '')));
       top.appendChild(info);
       const ctl = el('div', 'ctl'); const outs2 = el('div', 'outs');
       const testKey = ks[0]; // one representative key per company+model; no per-key model retest loop
@@ -573,7 +560,7 @@ function showConn(note) { $('conn').hidden = false; $('gear').setAttribute('aria
 async function load() {
   const u = base(); if (!u) return;
   try { localStorage.setItem('ey_test_url', u); } catch (e) {}
-  $('msg').textContent = 'Load ho raha hai (har key ki model list mangi ja rahi hai)…'; $('load').disabled = true; $('connNote').textContent = '';
+  $('msg').textContent = 'Connecting to gateway…'; $('load').disabled = true; $('connNote').textContent = '';
   const [rm, rs] = await Promise.allSettled([getJson('/admin/models'), getJson('/status')]);
   Object.keys(res).forEach((k) => delete res[k]); Object.keys(outs).forEach((k) => delete outs[k]);
   provs = []; board = []; dbOn = null; keyState = {};
@@ -587,7 +574,7 @@ async function load() {
   if (err) { $('msg').textContent = err; showConn(location.protocol === 'file:' ? 'Abhi page file:// se khula hai: hosting par upload karke kholo.' : ''); }
   else {
     const keys = provs.reduce((a, p) => a + p.keys.length, 0), good = provs.reduce((a, p) => a + p.keys.filter((k) => k.ok).length, 0);
-    $('msg').textContent = provs.length ? provs.length + ' companies · ' + good + '/' + keys + ' keys ki list mili' : '⚠️ Koi company set nahi hai. Env vars check karo.';
+    $('msg').textContent = provs.length ? 'Connected · ' + provs.length + ' providers · ' + good + '/' + keys + ' keys ready' : 'No providers configured';
   }
   $('load').disabled = false;
   render();
@@ -797,12 +784,12 @@ function starItems() {
 function updateButtons() {
   const gw = cur === '@gw', n = starItems().length;
   $('co').disabled = busy || gw || !shown.length;
-  $('co').textContent = 'Test shown (' + shown.length + ')';
+  $('co').textContent = 'Test selected (' + shown.length + ')';
   $('all').disabled = !busy && !n;
-  $('all').textContent = busy ? '⏹ Stop' : 'Test all ★ (' + n + ')';
+  $('all').textContent = busy ? '⏹ Stop' : 'Test all (' + n + ')';
   const sp = smartPlan(), sm = sp.items.length;
   $('smart').disabled = !busy && !sm;
-  $('smart').textContent = busy ? '⏹ Stop' : sm ? '🧠 Smart Test (' + sp.fresh + ' new / ' + sp.old + ' retest)' : '✓ Smart Test complete';
+  $('smart').textContent = busy ? '⏹ Stop' : sm ? 'Smart scan (' + sp.total + ')' : '✓ Scan complete';
   $('load').disabled = busy;
 }
 
