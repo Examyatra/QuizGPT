@@ -201,7 +201,7 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
       <button class="sec" id="all" disabled>Test all ★ models</button>
       <button class="sec" id="smart" disabled>🧠 Smart test</button>
     </div>
-    <div class="hint">★ = gateway pool · K1/K2 = us key se test · 🧠 Smart test: ek baar me 12 naye models (pehle “free” naam wale, phir baaki, aakhir me pro/max type). Paid sirf test ke baad lagta hai; paid model ko K1/K2 se manually test karo, chal gaya to Free ho jayega.</div>
+    <div class="hint">★ = gateway pool · K1/K2 = us key se test · 🧠 Smart Test: 90% naye/untested + 10% pehle successful Working models (max 12 = 11 new + 1 old; 10 ka batch = 9 + 1). Model-level success/definite failure sab compatible keys par shared hota hai; auth/quota/network errors sirf selected key par rehte hain. Har key se max 2 models; failed/never-worked models auto-repeat nahi hote.</div>
   </div>
 </div>
 
@@ -243,7 +243,7 @@ const outs = {};         // rid -> {kind, head, text, right}
 const refs = {};         // rid -> {row, out}  (only for rows currently on screen)
 let cur = null;          // current tab: company id or '@gw' / '@keys'
 const curKey = {};       // company id -> chosen key index
-let q = '', starOnly = false, ntFilter = '', busy = false, stopReq = false, shown = [];
+let q = '', starOnly = false, ntFilter = '', modelView = 'working', busy = false, stopReq = false, shown = [];
 
 try { $('url').value = localStorage.getItem('ey_test_url') || DEFAULT_URL; }
 catch (e) { $('url').value = DEFAULT_URL; }
@@ -270,12 +270,15 @@ const isStar = (p, m) => p.pool.includes(m);
 function unionCount(p) { const s = new Set(); p.keys.forEach((k) => modelsFor(p, k).forEach((m) => s.add(m))); return s.size; }
 
 function summary() {
-  let total = 0; provs.forEach((p) => p.keys.forEach((k) => { total += modelsFor(p, k).length; }));
-  const ok = Object.values(res).filter((v) => v === 'ok').length;
-  const bad = Object.values(res).filter((v) => v === 'bad').length;
+  const counts = { working: 0, retest: 0, never: 0, untested: 0, unavailable: 0 };
+  const seen = new Set();
+  provs.forEach((p) => [...new Set([...(p.ranked || []), ...(p.forced || []), ...p.keys.flatMap((k) => modelsFor(p, k))])].forEach((m) => {
+    const id = p.id + ':' + m; if (seen.has(id)) return; seen.add(id);
+    const bucket = modelBucket(p.id, m); counts[bucket] = (counts[bucket] || 0) + 1;
+  }));
   const box = $('sum'); box.innerHTML = '';
-  [['Listed', total, ''], ['Working', ok, 'ok'], ['Failed', bad, 'bad'], ['Pending', Math.max(0, total - ok - bad), '']].forEach(([l, n, c]) => {
-    const s = el('div', 'stat ' + c); s.appendChild(el('b', '', n)); s.appendChild(el('span', '', l)); box.appendChild(s);
+  [['Working', counts.working, 'ok'], ['Retest', counts.retest, ''], ['Never worked', counts.never, 'bad'], ['Not tested', counts.untested, '']].forEach(([l, n, c]) => {
+    const item = el('div', 'stat ' + c); item.appendChild(el('b', '', n)); item.appendChild(el('span', '', l)); box.appendChild(item);
   });
 }
 
@@ -290,6 +293,20 @@ function dbState(pid, m) {
   if (b.tier === 'limited') return 'skip';
   if (b.tier === 'paid' || b.tier === 'dead' || b.tier === 'resting') return 'bad';
   return b.ok > 0 ? 'ok' : 'bad';
+}
+function modelBucket(pid, m) {
+  const b = dbRec(pid, m);
+  if (!b || !(b.ok + b.fail > 0)) return 'untested';
+  if (b.tier === 'paid' || b.cost === 'paid') return 'unavailable';
+  // A key/account/rate-limit error is inconclusive; do not label the model broken.
+  const lastOk = Number(b.lastOk || b.last_ok || 0), lastFail = Number(b.lastFail || b.last_fail || 0);
+  const accountIssue = /^(401|403|429|quota|account|billing|credits)/i.test(String(b.last || ''));
+  if (b.ok > 0 && !accountIssue && (lastFail > lastOk || b.tier === 'slow' || b.tier === 'dead' || b.tier === 'resting')) return 'retest';
+  if (b.ok > 0) return 'working';
+  return 'never';
+}
+function modelBucketLabel(bucket) {
+  return bucket === 'working' ? 'Working' : bucket === 'retest' ? 'Previously working · retest' : bucket === 'never' ? 'Never worked' : bucket === 'untested' ? 'Not tested yet' : 'Unavailable';
 }
 function rowState(pid, m) {
   let st = 'idle';
@@ -321,7 +338,6 @@ function softRefresh() {
   rt = setTimeout(async () => {
     try {
       const { j } = await getJson('/status');
-      await loadQuota();
       if (j && Array.isArray(j.leaderboard)) { board = j.leaderboard; dbOn = j.db; keyState = j.keyState || {}; cacheBoard(); if (cur === '@gw' || !busy) render(); else updateButtons(); }
     } catch (e) {}
   }, 1500);
@@ -331,7 +347,7 @@ function softRefresh() {
 function render() {
   bidx = {}; board.forEach((b) => { bidx[b.id] = b; });
   const tabs = $('tabs'); tabs.innerHTML = '';
-  if (cur !== '@gw' && cur !== '@quota' && cur !== '@keys' && !provs.some((p) => p.id === cur)) cur = provs.length ? provs[0].id : (board.length ? '@gw' : null);
+  if (cur !== '@gw' && cur !== '@keys' && !provs.some((p) => p.id === cur)) cur = provs.length ? provs[0].id : (board.length ? '@gw' : null);
   provs.forEach((p) => {
     const t = el('button', 'tab' + (p.id === cur ? ' on' : ''), p.label);
     t.appendChild(el('i', '', unionCount(p)));
@@ -351,12 +367,6 @@ function render() {
     t.onclick = () => { cur = '@gw'; render(); };
     tabs.appendChild(t);
   }
-  if (Object.keys(quota).length) {
-    const t = el('button', 'tab' + (cur === '@quota' ? ' on' : ''), '📈 Quota');
-    const lim = Object.values(quota).filter((c) => c.status === 'limited').length; if (lim) t.appendChild(el('i', '', '⏸ ' + lim));
-    t.onclick = () => { cur = '@quota'; render(); };
-    tabs.appendChild(t);
-  }
   for (const k in refs) delete refs[k];
   const box = $('list'); box.innerHTML = '';
   shown = [];
@@ -364,7 +374,6 @@ function render() {
     box.appendChild(el('div', 'empty', 'Koi company nahi mili. Val Town env me AI_<NAAM>_KEY aur AI_<NAAM>_ENDPOINT check karo.'));
   } else if (cur === '@gw') renderGateway(box);
   else if (cur === '@keys') renderKeyHealth(box);
-  else if (cur === '@quota') renderQuota(box);
   else renderCompany(box, provs.find((p) => p.id === cur));
   summary(); updateButtons();
 }
@@ -383,7 +392,6 @@ function renderCompany(box, p) {
   if (p.keys.length > 1) mk('Sab keys (' + p.keys.length + ')', ki < 0, false, () => { curKey[p.id] = -1; render(); });
   p.keys.forEach((kk, i) => mk('Key ' + kk.n + (kk.ok ? ' ✅ ' + kk.chat.length : ' ❌ ' + (kk.status || 'err')), p.keys.length === 1 || ki === i, !kk.ok, () => { curKey[p.id] = i; render(); }));
   box.appendChild(chips);
-  box.appendChild(quotaPanel(p));
 
   sel.filter((k) => !k.ok).forEach((k) => box.appendChild(el('div', 'kerr', 'Key ' + k.n + ': model list nahi mili (HTTP ' + (k.status || 'network') + ', ' + k.ms + 'ms)\n' + (k.error || 'no details'))));
   if (sel.some((k) => !k.ok) && p.forced.length) box.appendChild(el('div', 'note', 'Forced models (AI_' + p.id + '_MODELS) neeche test ke liye diye hain.'));
@@ -391,7 +399,7 @@ function renderCompany(box, p) {
   const sets = sel.map((k) => new Set(modelsFor(p, k)));
   const order = [...new Set(sel.flatMap((k) => modelsFor(p, k)))];
   const names = [...p.pool.filter((m) => order.includes(m)), ...order.filter((m) => !p.pool.includes(m)).sort()];
-  box.appendChild(el('div', 'kinfo', names.length + ' models' + (sel.length > 1 ? ' (sab keys milakar, har model ke saamne K1/K2… alag test)' : '') + ' · ★ ' + p.pool.length + ' gateway pool me'));
+  box.appendChild(el('div', 'kinfo', names.length + ' models' + (sel.length > 1 ? ' (model ko ek representative key se test kiya jayega; result compatible keys par shared hoga)' : '') + ' · ★ ' + p.pool.length + ' gateway pool me'));
 
   const filt = el('div', 'filt');
   const si = el('input'); si.type = 'search'; si.placeholder = 'Model dhundo…'; si.value = q; si.setAttribute('aria-label', 'Model dhundo');
@@ -406,11 +414,23 @@ function renderCompany(box, p) {
     ntrow.appendChild(c);
   });
   box.appendChild(ntrow);
+  const bucketCounts = { working: 0, retest: 0, never: 0, untested: 0, unavailable: 0 };
+  names.forEach((m) => { const b = modelBucket(p.id, m); bucketCounts[b] = (bucketCounts[b] || 0) + 1; });
+  const stateFilters = el('div', 'chips model-state-filters');
+  [['working', '✓ Working'], ['retest', '↻ Retest'], ['never', '✕ Never worked'], ['untested', '○ Not tested']].forEach(([key, label]) => {
+    const c = el('button', 'chip' + (modelView === key ? ' on' : ''), label + ' ' + bucketCounts[key]);
+    c.onclick = () => { modelView = key; render(); };
+    stateFilters.appendChild(c);
+  });
+  box.appendChild(stateFilters);
+  if (bucketCounts.unavailable) box.appendChild(el('div', 'note', bucketCounts.unavailable + ' confirmed paid models hidden. Never-worked models stay in their own tab and are not automatically tested again.'));
   const listHost = el('div'); box.appendChild(listHost);
   const draw = () => {
     for (const r0 in refs) delete refs[r0];
     listHost.innerHTML = '';
     const ms = names.filter((m) => {
+      const bucket = modelBucket(p.id, m);
+      if (bucket !== modelView) return false;
       if (starOnly && !isStar(p, m)) return false;
       if (q && !m.toLowerCase().includes(q.toLowerCase())) return false;
       if (ntFilter) {
@@ -421,7 +441,7 @@ function renderCompany(box, p) {
       return true;
     });
     shown = [];
-    if (!ms.length) { listHost.appendChild(el('div', 'empty', 'Koi model nahi dikh raha.')); updateButtons(); return; }
+    if (!ms.length) { listHost.appendChild(el('div', 'empty', modelView === 'working' ? 'Abhi koi proven working model nahi. Smart Test se discovery shuru karo.' : modelView === 'retest' ? 'Abhi kisi previously-working model ko retest ki zarurat nahi.' : modelView === 'never' ? 'Abhi koi failed model record nahi hai.' : 'Sab discovered models test ho chuke hain.')); updateButtons(); return; }
     const list = el('div', 'list');
     ms.forEach((m) => {
       const ks = sel.filter((k, i) => sets[i].has(m));
@@ -432,17 +452,28 @@ function renderCompany(box, p) {
       { const bf = bm[p.id + ':' + m]; if (bf && bf.cost === 'free' && bf.ok > 0) nm.appendChild(el('span', 'ntag f', '🆓 FREE ✔')); else if (FREE_NAME.test(m)) nm.appendChild(el('span', 'ntag f', 'free?')); }
       info.appendChild(nm);
       const b0 = bm[p.id + ':' + m]; const pd = !!(b0 && (b0.tier === 'paid' || b0.tier === 'dead')); if (pd) d.classList.add('paid');
-      const done = isDone(p.id, m);
+      const done = isDone(p.id, m); const bucket = modelBucket(p.id, m);
+      nm.appendChild(el('span', 'ntag ' + (bucket === 'working' ? 'f' : bucket === 'retest' ? 'm' : 'x'), modelBucketLabel(bucket)));
       info.appendChild(el('div', 'meta', 'Key ' + ks.map((k) => k.n).join(', ') + ' pe available · ' + (pd ? (b0.tier === 'dead' ? '☠ band: jawab nahi deta' : '💰 paid') + ' · gateway ise nahi aazmata' + (b0.nextCheck ? ' · agla test ' + fmtDay(b0.nextCheck) : '') : b0 ? 'gateway: rating ' + b0.rating + (b0.avgSec != null ? ' · ' + b0.avgSec + 's' : '') + ' · ' + (b0.tier || '') + (done ? ' · ✔ tested ' + fmtDay(b0.updated) : '') : 'gateway pool ke bahar')));
       top.appendChild(info);
       const ctl = el('div', 'ctl'); const outs2 = el('div', 'outs');
-      ks.forEach((k) => {
-        const r0 = rid(p, k, m);
-        const b = el('button', 'send kb', ks.length > 1 ? 'K' + k.n : 'Send'); b.title = 'Key ' + k.n + ' se test karo';
-        b.onclick = () => testOne(p, k, m, b); ctl.appendChild(b);
+      const testKey = ks[0]; // one representative key per company+model; no per-key model retest loop
+      if (testKey) {
+        const r0 = rid(p, testKey, m);
+        const b = el('button', 'send kb', bucket === 'retest' || bucket === 'never' ? '↻ Retest' : 'Test');
+        b.title = 'Ek available key se test; model verdict compatible keys par shared hoga';
+        b.onclick = () => testOne(p, testKey, m, b);
+        ctl.appendChild(b);
         const out = el('div', 'out'); out.hidden = true; outs2.appendChild(out);
-        refs[r0] = { row: d, out, kb: b }; if (!pd && !done && k === ks[0]) shown.push({ p, k, m });   // v13: one key per model is enough, the verdict is company-wide
-      });
+        ks.forEach((k) => { refs[rid(p, k, m)] = { row: d, out, kb: b }; });
+        const kh = testKey.history && testKey.history[m];
+        if (kh && kh.status) {
+          const good = kh.status === 'working', bad = kh.status === 'failed';
+          if (good || bad) setOut(r0, good ? 'ok' : 'bad', (good ? 'Working' : 'Failed') + ' · shared model status', (kh.error || (good ? 'Company-level model verdict: this model works on compatible keys.' : 'Company-level model verdict: this model failed on a compatible key.')) + (kh.testedAt ? ' · ' + new Date(kh.testedAt).toLocaleString() : ''), kh.ms ? (kh.ms / 1000).toFixed(1) + 's' : '');
+          else setOut(r0, 'bad', kh.status === 'account_error' ? 'Key/account error · Key ' + testKey.n : 'Inconclusive · Key ' + testKey.n, kh.error || kh.tag || 'Is key ka result model verdict nahi hai.', kh.testedAt ? new Date(kh.testedAt).toLocaleString() : '');
+        }
+        if (!pd && !done) shown.push({ p, k: testKey, m });
+      }
       top.appendChild(ctl); d.appendChild(top); d.appendChild(outs2);
       list.appendChild(d);
     });
@@ -522,7 +553,7 @@ function renderGateway(box) {
     if (r.cost === 'free' && r.ok > 0) nm.appendChild(el('span', 'ntag f', '🆓 FREE ✔'));
     info.appendChild(el('div', 'meta', r.tier === 'out' ? 'Pool ke bahar: gateway abhi ise use nahi karta. Company tab me test karo, achha nikla to pool me aa jayega.' : 'rating ' + r.rating + ' · ok ' + r.ok + ' / fail ' + r.fail + ' · ' + sp + ' · last ' + r.last + ' · ' + r.keys + ' key' + (r.ok + r.fail ? '' : ' · abhi tak test nahi hua')));
     if (r.tier === 'paid') info.appendChild(el('div', 'gerr', '💰 Test me paid nikla (company ki saari keys ke liye). Ab ye apne aap dobara test nahi hota. Tum manually test karo aur ye jawab de de, to turant 🆓 Free ho jayega.')); else if (r.tier === 'resting') info.appendChild(el('div', 'gerr', '⛔ ' + fmtRest(r.rest) + ' tak band (lagatar ' + (r.consec || 1) + ' fail)' + (r.lastErr ? ' — ' + r.lastErr : '')));
-    else if (r.tier === 'limited') info.appendChild(el('div', 'gerr', '⏸ Is company ki limit / quota bhar gayi: gateway reset hone tak ise nahi bhejta (📈 Quota tab dekho).'));
+    else if (r.tier === 'limited') info.appendChild(el('div', 'gerr', '⏸ Provider ne temporary rate-limit diya hai; cooldown ke baad student traffic dobara try kar sakta hai.'));
     else if (r.lastErr && r.consec) info.appendChild(el('div', 'gerr', 'pichhli galti: ' + r.lastErr));
     top.appendChild(info);
     const t = TIERS[r.tier] || TIERS.ok; top.appendChild(el('span', 'tag ' + t[1], t[0]));
@@ -543,12 +574,11 @@ async function load() {
   const u = base(); if (!u) return;
   try { localStorage.setItem('ey_test_url', u); } catch (e) {}
   $('msg').textContent = 'Load ho raha hai (har key ki model list mangi ja rahi hai)…'; $('load').disabled = true; $('connNote').textContent = '';
-  const [rm, rs, rq] = await Promise.allSettled([getJson('/admin/models'), getJson('/status'), getJson('/admin/quota')]);
+  const [rm, rs] = await Promise.allSettled([getJson('/admin/models'), getJson('/status')]);
   Object.keys(res).forEach((k) => delete res[k]); Object.keys(outs).forEach((k) => delete outs[k]);
   provs = []; board = []; dbOn = null; keyState = {};
   if (rs.status === 'fulfilled' && rs.value.j && Array.isArray(rs.value.j.leaderboard)) { board = rs.value.j.leaderboard; dbOn = rs.value.j.db; keyState = rs.value.j.keyState || {}; cacheBoard(); }
   else { try { const c = JSON.parse(localStorage.getItem('ey_board_cache') || 'null'); if (Array.isArray(c)) board = c; } catch (e) {} }   // Val not reachable: show the last saved ticks
-  quota = {}; if (rq.status === 'fulfilled' && rq.value.j && Array.isArray(rq.value.j.providers)) rq.value.j.providers.forEach((p) => { quota[p.id] = p; });
   let err = '';
   if (rm.status === 'rejected') err = '❌ Val se connect nahi hua: URL check karo (ya network / CORS).';
   else if (rm.value.status === 401 || rm.value.status === 403) err = '🔒 Ye page apni website ke origin se khula hona chahiye (jo Val Town env AI_ALLOWED_ORIGINS me hai). Is file ko wahi hosting par daalo, file se ya kisi aur site se nahi chalega.';
@@ -609,101 +639,6 @@ function renderKeyHealth(box) {
   });
 }
 
-/* ---------- quota per key (gateway counts every call + reads the company's rate-limit headers; SQLite keeps it) ---------- */
-let quota = {};   // company id -> { keys:[{req,tin,tout,e429,hdr,...}], dailyReq, dailyTok }
-const fmtTok = (n) => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(n || 0);
-const numOf = (v) => { const n = Number(v); return v !== undefined && v !== '' && Number.isFinite(n) ? n : null; };
-async function loadQuota() {
-  try { const { j } = await getJson('/admin/quota'); if (j && Array.isArray(j.providers)) { quota = {}; j.providers.forEach((p) => { quota[p.id] = p; }); } } catch (e) {}
-}
-async function quotaCheck(p, i, btn, last = true) {
-  if (btn) { btn.disabled = true; btn.textContent = '…'; }
-  try {
-    const r = await fetch(base() + '/admin/quota/check', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ target: p.id, key: i }) });
-    const j = await r.json().catch(() => ({}));
-    $('msg').textContent = j.ok ? 'Quota check ho gaya: ' + p.label + ' key ' + (i + 1) + (j.account ? ' (account info)' : ' (model ' + j.via + ' ko Hi bheja)') : '⚠️ ' + (j.error || 'quota check nahi hua');
-  } catch (e) { $('msg').textContent = '⚠️ Quota check: network error'; }
-  if (last) { await loadQuota(); render(); }
-}
-const fmtN = (n) => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e4 ? (n / 1e3).toFixed(1) + 'k' : String(n);
-function meterRow(m) {
-  const row = el('div', 'qm'), top = el('div', 'qline');
-  top.appendChild(el('span', 'qtxt', m.name + ' · ' + fmtN(m.used) + (m.limit > 1 || m.src === 'env' ? ' / ' + fmtN(m.limit) : '') + ' (' + m.pct + '%)' + (m.src === 'hdr' ? ' · company' : m.src === 'auto' ? ' · khud seekha' : '')));
-  top.appendChild(el('span', 'qmut', m.once ? 'refill nahi hota' : m.resetSec > 0 ? 'reset ' + fmtRest(m.resetSec) + ' me' : ''));
-  row.appendChild(top);
-  const bar = el('div', 'qbar' + (m.pct >= 90 ? ' out' : m.pct >= 60 ? ' low' : '')), f = el('i');
-  f.style.width = Math.max(1, Math.min(100, m.pct)) + '%'; bar.appendChild(f); row.appendChild(bar);
-  return row;
-}
-function renderQuota(box) {
-  const head = el('div', 'cohead'); head.appendChild(el('h2', '', 'Usage telemetry (not availability detection)'));
-  head.appendChild(el('span', '', 'har key ka usage/header record · routing par koi asar nahi · har 15s auto-refresh')); box.appendChild(head);
-  const bt = el('button', 'qbtn', '↻ Refresh'); bt.onclick = async () => { bt.disabled = true; await loadQuota(); render(); };
-  box.appendChild(bt);
-  const ids = Object.keys(quota).sort();
-  ids.forEach((id) => {
-    const c = quota[id], card = el('div', 'qcard'), hd = el('div', 'qhead');
-    card.style.borderTop = '3px solid ' + coColor(id);
-    hd.appendChild(el('span', '', c.label + (c.once ? ' · 🎁 one-time' : ' · 🔁 refill')));
-    const st = c.status === 'limited' ? ['⏸ Limit · ' + fmtRest(c.limSec) + ' me khulega' + (c.why ? ' (' + c.why + ')' : ''), 'bad'] : c.status === 'slow' ? ['⚠ Dheema ' + c.pct + '%' + (c.why ? ' (' + c.why + ')' : ''), 'warn'] : ['✅ Theek', 'ok'];
-    hd.appendChild(el('span', 'tag ' + st[1], st[0])); card.appendChild(hd);
-    const f = c.factor || {};
-    card.appendChild(el('div', 'qsum', 'Aaj ' + (c.todayReq || 0) + ' calls · usage share ' + c.sharePct + '% · quota estimates sirf reference ke liye (AI selection par asar nahi)'));
-    const L = c.limits || {}, ls = [['RPM', L.rpm, 'rpm'], ['RPH', L.rph, 'rph'], ['RPD', L.rpd, 'rpd'], ['TPM', L.tpm], ['TPD', L.tpd], ['Month req', L.monthReq], ['Month tok', L.monthTok], ['Total req', L.totalReq], ['Total tok', L.totalTok]].filter((x) => x[1]).map((x) => x[0] + ' ' + fmtN(x[1]) + (L.auto && L.auto[x[2]] ? ' (khud seekha)' : ''));
-    card.appendChild(el('div', 'qsum', ls.length ? 'Limits (har key): ' + ls.join(' · ') : 'Configured limit estimate nahi hai; live API response hi key availability decide karega.'));
-    if (c.guard === false) card.appendChild(el('div', 'note', 'Quota-based automatic routing disabled; this data is informational only.'));
-    (c.keys || []).forEach((k) => {
-      const row = el('div', 'qrow');
-      row.appendChild(el('b', '', 'Key ' + k.n + (k.limSec > 0 ? ' ⏸ ' + fmtRest(k.limSec) : k.restSec > 0 ? ' ⏳ rest ' + fmtRest(k.restSec) : '')));
-      row.appendChild(el('div', 'qkey', 'abhi ' + k.rpm + '/min · ' + k.rph + '/ghanta · aaj ' + k.req + ' (' + fmtTok((k.tin || 0) + (k.tout || 0)) + ' tok) · mahina ' + fmtN(k.mreq || 0) + ' · total ' + fmtN(k.treq || 0) + (k.e429 ? ' · 429 × ' + k.e429 : '')));
-      (k.meters || []).forEach((m) => row.appendChild(meterRow(m)));
-      if (!(k.meters || []).length) row.appendChild(el('div', 'qmut', 'Is key ke liye abhi koi limit pata nahi.'));
-      card.appendChild(row);
-    });
-    box.appendChild(card);
-  });
-}
-setInterval(async () => { if (cur === '@quota' && !document.hidden && !busy) { await loadQuota(); if (cur === '@quota') render(); } }, 15000);
-function quotaPanel(p) {
-  const qd = quota[p.id], card = el('div', 'qcard'), hd = el('div', 'qhead');
-  hd.appendChild(el('span', '', '📊 Quota · aaj (UTC din)'));
-  const all = el('button', 'qbtn', '↻ Sab keys');
-  all.onclick = async () => { all.disabled = true; for (let i = 0; i < p.keys.length; i++) await quotaCheck(p, i, null, i === p.keys.length - 1); };
-  hd.appendChild(all); card.appendChild(hd);
-  if (!qd) { card.appendChild(el('div', 'qmut', 'Quota data nahi mila (Val me naya main.ts deploy karo, phir Reload).')); return card; }
-  p.keys.forEach((kk, i) => {
-    const k = (qd.keys || [])[i] || {}, row = el('div', 'qrow'), top = el('div', 'qline'), left = el('div', 'qtxt');
-    left.appendChild(el('b', '', 'Key ' + kk.n));
-    left.appendChild(document.createTextNode(' · ' + (k.req || 0) + ' calls · ' + fmtTok((k.tin || 0) + (k.tout || 0)) + ' tokens (in ' + fmtTok(k.tin || 0) + ' / out ' + fmtTok(k.tout || 0) + ')' + (k.e429 ? ' · 429 × ' + k.e429 : '') + (k.restSec > 0 ? ' · ⏳ rest ' + fmtRest(k.restSec) : '')));
-    const b = el('button', 'qbtn', '↻ check'); b.title = 'Is key ka usage/header telemetry refresh karo (small test request ho sakti hai)';
-    b.onclick = () => quotaCheck(p, i, b);
-    top.appendChild(left); top.appendChild(b); row.appendChild(top);
-    const h = k.hdr;
-    if (h) {
-      [['Requests', h.rqRem, h.rqLim, h.rqReset], ['Tokens', h.tkRem, h.tkLim, h.tkReset]].forEach(([lbl, rem, lim, rs]) => {
-        if (rem === undefined && lim === undefined) return;
-        row.appendChild(el('div', 'qmut', lbl + ' bacha: ' + (rem !== undefined ? rem : '?') + (lim ? ' / ' + lim : '') + (rs ? ' · reset ' + rs : '')));
-        const r = numOf(rem), l = numOf(lim);
-        if (r != null && l) {
-          const bar = el('div', 'qbar' + (r === 0 ? ' out' : r / l < 0.1 ? ' low' : '')), fill = el('i');
-          fill.style.width = Math.max(0, Math.min(100, (r / l) * 100)) + '%'; bar.appendChild(fill); row.appendChild(bar);
-        }
-      });
-      row.appendChild(el('div', 'qmut', 'company ke headers · ' + (k.hdrAgeSec != null ? fmtRest(k.hdrAgeSec) + ' pehle' : '')));
-    } else row.appendChild(el('div', 'qmut', 'Rate-limit headers sirf informational hain; key availability live API response se decide hoti hai.'));
-    if (k.acct) {
-      try { const a = JSON.parse(k.acct); row.appendChild(el('div', 'qmut', 'Account: ' + Object.keys(a).map((x) => x + ' ' + a[x]).join(' · ') + (k.acctAgeSec != null ? ' · ' + fmtRest(k.acctAgeSec) + ' pehle' : ''))); } catch (e) {}
-    }
-    (k.meters || []).filter((m) => m.src !== 'hdr').forEach((m) => row.appendChild(meterRow(m)));
-    const est = [];
-    if (qd.dailyReq) est.push('≈ ' + Math.max(0, qd.dailyReq - (k.req || 0)) + ' calls');
-    if (qd.dailyTok) est.push('≈ ' + fmtTok(Math.max(0, qd.dailyTok - (k.tin || 0) - (k.tout || 0))) + ' tokens');
-    if (est.length) row.appendChild(el('div', 'qmut', 'Aaj bacha (andaaza = aapki limit − hamari ginti): ' + est.join(' · ')));
-    card.appendChild(row);
-  });
-  return card;
-}
-
 /* ---------- testing ---------- */
 async function testOne(p, k, m, btn, auto) {
   if (btn && isDone(p.id, m) && !Object.keys(outs).some((x) => x.startsWith(p.id + ':' + m + '|')) && !confirm('Ye model pehle hi test ho chuka hai (result saved). Phir bhi test karu?')) return;
@@ -711,29 +646,28 @@ async function testOne(p, k, m, btn, auto) {
   setOut(r0, 'load', 'Response aa raha hai…', '');
   if (btn) btn.disabled = true;
   const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 50000);
-  let verdict = 'transient';   // ok | model (verdict belongs to the MODEL, same on every key) | account (only THIS key is bad) | transient (inconclusive)
+  let verdict = 'transient', discoveryShared = false;   // model-level verdicts are shared; auth/quota errors stay key-scoped
   try {
-    const r = await fetch(base() + '/test', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ target: p.id + ':' + m, key: k.n - 1, prompt: msgText }), signal: ctl.signal });
+    const r = await fetch(base() + '/test', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ target: p.id + ':' + m, key: k.n - 1, availableKeys: p.keys.filter(kk => modelsFor(p, kk).includes(m)).map(kk => kk.n - 1), prompt: msgText }), signal: ctl.signal });
     const j = await r.json();
-    if (j.ok) { verdict = 'ok'; res[r0] = 'ok'; setOut(r0, 'ok', 'Working' + (j.cost === 'free' ? ' · 🆓 Free' : ''), j.text, (j.ms / 1000).toFixed(1) + 's · key ' + j.key + (j.recorded ? ' · 💾 saved' : '')); }
-    else { verdict = j.cls || 'transient'; res[r0] = 'bad'; setOut(r0, 'bad', 'Failed' + (j.status ? ' · HTTP ' + j.status : '') + ' · key ' + (j.key || k.n) + (j.state === 'paid' ? ' · 💰 Paid' : ''), j.error || 'unknown', j.ms ? (j.ms / 1000).toFixed(1) + 's' : ''); }
+    if (j.ok) { verdict = 'ok'; discoveryShared = !!j.discoveryShared; res[r0] = 'ok'; setOut(r0, 'ok', 'Working' + (j.cost === 'free' ? ' · 🆓 Free' : ''), j.text, (j.ms / 1000).toFixed(1) + 's · key ' + j.key + (j.recorded ? ' · 💾 saved' : '')); }
+    else { verdict = j.cls || 'transient'; discoveryShared = !!j.discoveryShared; res[r0] = 'bad'; setOut(r0, 'bad', 'Failed' + (j.status ? ' · HTTP ' + j.status : '') + ' · key ' + (j.key || k.n) + (j.state === 'paid' ? ' · 💰 Paid' : ''), j.error || 'unknown', j.ms ? (j.ms / 1000).toFixed(1) + 's' : ''); }
   } catch (e) {
     res[r0] = 'bad';
     setOut(r0, 'bad', 'Failed', e.name === 'AbortError' ? 'Timeout: 50s me response nahi aaya.' : e.message);
   }
   clearTimeout(tm);
   if (btn) btn.disabled = false;
-  // v13: the answer (works / paid / dead) belongs to the MODEL and is stored per company, so every other key of this company gets the same
-  // verdict at once - no extra test call, no extra tokens. Only a KEY problem (bad key / empty balance) makes us try the next key.
-  if (verdict === 'ok' || verdict === 'model') {
+  // Every model-level success/definite failure is shared across compatible keys; auth/quota/transient errors stay with the selected key.
+  if (discoveryShared && (verdict === 'ok' || verdict === 'model')) {
     p.keys.forEach((k2) => {
       if (k2.n === k.n || !modelsFor(p, k2).includes(m)) return;
       const r2 = rid(p, k2, m); if (outs[r2] && outs[r2].kind !== 'load') return;
-      setOut(r2, verdict === 'ok' ? 'ok' : 'bad', (verdict === 'ok' ? 'Working' : 'Failed') + ' · key ' + k.n + ' ke result se (company-wide)', 'Is company ka verdict model ka hota hai, isliye is key pe dobara test nahi kiya (tokens bache).', '');
+      setOut(r2, verdict === 'ok' ? 'ok' : 'bad', (verdict === 'ok' ? 'Working' : 'Failed') + ' · shared model verdict from key ' + k.n, 'First discovery result is key par bhi available hai; duplicate API call nahi ki gayi.', '');
     });
   }
   summary(); softRefresh();
-  if (verdict === 'account' && auto && !stopReq) {   // this key is the problem, not the model: try the next key of the company once
+  if ((verdict === 'account' || verdict === 'transient') && auto && !stopReq) {   // key/account or inconclusive network result: try another eligible key once
     const k2 = p.keys.find((kk) => kk.ok && kk.n !== k.n && modelsFor(p, kk).includes(m) && !outs[rid(p, kk, m)]);
     if (k2) await testOne(p, k2, m, null, true);
   }
@@ -746,15 +680,21 @@ async function runAll(items) {
   const queue = items.slice(); let done = 0;
   const worker = async () => { while (queue.length && !stopReq) { const it = queue.shift(); await testOne(it.p, it.k, it.m, null, true); done++; $('msg').textContent = 'Test chal raha hai… ' + done + '/' + items.length; } };
   await Promise.all([worker(), worker(), worker()]);
-  $('msg').textContent = stopReq ? 'Roka gaya: ' + done + '/' + items.length + ' test hue.' : 'Sab ' + items.length + ' tests ho gaye.';
-  busy = false; stopReq = false; updateButtons();
+  const wasStopped = stopReq; busy = false; stopReq = false;
+  try {
+    const { j } = await getJson('/status');
+    if (j && Array.isArray(j.leaderboard)) { board = j.leaderboard; dbOn = j.db; keyState = j.keyState || {}; cacheBoard(); }
+  } catch (e) {}
+  $('msg').textContent = wasStopped ? 'Roka gaya: ' + done + '/' + items.length + ' test hue.' : 'Discovery batch complete: ' + done + '/' + items.length + '. Results saved; failed models auto-repeat nahi honge.';
+  render();
 }
-// Smart test: only models that NEED a test, in small batches (max 12 per press, max 4 per company, so no free tier is hammered).
-// Only models never tested (a saved result = never tested again here). If none are left: strongest-looking models outside the
-// gateway shortlist (a proven one joins the shortlist). Paid and resting models are never included. One test per model.
-const SMART_MAX = 12, PER_CO = 4, STALE_MS = 48 * 3600 * 1000;
-// v13 test order: (0) "free" in the name / list says free / already proven free -> (1) nothing says anything -> (1.6) looks paid (pro/ultra/max/opus..., or list says paid).
-// This is ONLY an order: nothing is marked paid before its test.
+// Smart Test = 90% new discovery + 10% previously-working health sample.
+// Ratio examples: 10 tests => 9 new + 1 old; max batch 12 => 11 new + 1 old.
+// A provider:model is a single company-wide record, even when visible under multiple API keys.
+// It is selected/tested once through one representative key; its model verdict is shared across all keys.
+// Select up to 2 DIFFERENT models per API key, rotating across keys/providers.
+// Never-worked failures and models moved to Retest by student traffic are NOT auto-retried.
+const SMART_MAX = 12, SMART_PER_KEY = 2;
 const FREE_NAME = /(^|[^a-z0-9])free([^a-z0-9]|$)/i, LOOKS_PAID = /(^|[^a-z0-9])(pro|ultra|max|opus|premium|plus|turbo|large)([^a-z0-9]|$)/i;
 function hintOf(p, m) { let h = null; (p.keys || []).forEach((k) => { const v = k.hint && k.hint[m]; if (v === true) h = true; else if (v === false && h !== true) h = false; }); return h; }
 function lane(pid, m) {
@@ -763,42 +703,106 @@ function lane(pid, m) {
   return h === false || LOOKS_PAID.test(m) ? 1.6 : 1;
 }
 function smartPlan() {
-  const now = Date.now(), need = [];
-  const triedHere = (pid, m) => Object.keys(outs).some((r0) => r0.startsWith(pid + ':' + m + '|'));
-  board.forEach((b) => {
-    const prov = b.provider || b.id.split(':')[0], mdl = b.model || b.id.slice(b.id.indexOf(':') + 1);
-    if (b.tier === 'paid' || b.tier === 'dead' || b.tier === 'resting' || b.tier === 'limited') return;
-    if (b.ok + b.fail > 0) return;   // result already saved in SQLite: never test twice
-    if (triedHere(prov, mdl)) return;
-    need.push({ prov, mdl, pri: lane(prov, mdl), age: Infinity });
+  const candidates = { fresh: new Map(), old: new Map() };
+  const keyId = (p, k) => p.id + '|' + (k.n - 1);
+  // Build a candidate queue for every configured API key. A model listed under several keys
+  // is still tested only once per provider; the first eligible key is used as its representative.
+  provs.forEach((p) => {
+    p.keys.forEach((k) => {
+      if (!k.ok) return;
+      const id = keyId(p, k);
+      const models = [...new Set([...modelsFor(p, k), ...(p.forced || [])])];
+      models.forEach((m) => {
+        const b = dbRec(p.id, m);
+        if (b && (b.tier === 'paid' || b.cost === 'paid' || b.tier === 'limited')) return;
+        const tested = !!(b && Number(b.ok || 0) + Number(b.fail || 0) > 0) || Object.keys(outs).some((r0) => r0.startsWith(p.id + ':' + m + '|'));
+        if (!tested) {
+          if (!candidates.fresh.has(id)) candidates.fresh.set(id, { p, k, models: [] });
+          candidates.fresh.get(id).models.push({ m, pri: lane(p.id, m) });
+          return;
+        }
+        // 10% health sample: only models with a proven prior success that are still classified Working.
+        // A model already failing after student traffic is intentionally left for Manual Retest.
+        if (b && Number(b.ok || 0) > 0 && modelBucket(p.id, m) === 'working') {
+          if (!candidates.old.has(id)) candidates.old.set(id, { p, k, models: [] });
+          candidates.old.get(id).models.push({ m, pri: 0, updated: Number(b.updated || 0) });
+        }
+      });
+    });
   });
-  if (!need.length) provs.forEach((p) => (p.ranked || []).filter((m) => !bidx[p.id + ':' + m] && !triedHere(p.id, m)).slice(0, 6).forEach((m) => need.push({ prov: p.id, mdl: m, pri: 2, age: Infinity })));
-  need.sort((a, b) => a.pri - b.pri || b.age - a.age || nameScore(b.mdl) - nameScore(a.mdl));
-  const per = {}, items = [];
-  need.forEach((n) => {
-    if (items.length >= SMART_MAX || (per[n.prov] || 0) >= PER_CO) return;
-    const p = provs.find((x) => x.id === n.prov); if (!p) return;
-    const ks = p.keys.filter((kk) => kk.ok && modelsFor(p, kk).includes(n.mdl));
-    const k = ks.length ? ks[items.length % ks.length] : p.keys.find((kk) => kk.ok);
-    if (!k) return;
-    per[n.prov] = (per[n.prov] || 0) + 1; items.push({ p, k, m: n.mdl });
+  const sortQueues = (map, old) => [...map.entries()].map(([id, q]) => {
+    const unique = new Map(); q.models.forEach((x) => { if (!unique.has(x.m)) unique.set(x.m, x); });
+    q.models = [...unique.values()].sort((a, b) => old
+      ? (a.updated - b.updated) || (scoreSafe(b.m) - scoreSafe(a.m))
+      : (a.pri - b.pri) || (scoreSafe(b.m) - scoreSafe(a.m)));
+    q.id = id; q.at = 0;
+    return q;
   });
-  return { items, total: need.length };
+  const freshQ = sortQueues(candidates.fresh, false), oldQ = sortQueues(candidates.old, true);
+  const keyUsage = new Map(); // shared across 90/10 lanes: max 2 distinct provider:model tests per API key
+  const take = (queues, limit, already, perKeyLimit = SMART_PER_KEY) => {
+    const picked = [], seen = already || new Set();
+    if (!queues.length) return picked;
+    let progress = true, cursor = 0;
+    try { cursor = Number(localStorage.getItem('ey_smart_key_cursor') || 0) % queues.length; } catch (_) {}
+    while (picked.length < limit && progress) {
+      progress = false;
+      const roundStart = cursor; let nextCursor = cursor;
+      for (let step = 0; step < queues.length; step++) {
+        if (picked.length >= limit) break;
+        const qi = (roundStart + step) % queues.length, q = queues[qi];
+        if ((keyUsage.get(q.id) || 0) >= perKeyLimit) continue;
+        while (q.at < q.models.length && seen.has(q.p.id + ':' + q.models[q.at].m)) q.at++;
+        if (q.at >= q.models.length) continue;
+        const x = q.models[q.at++], id = q.p.id + ':' + x.m;
+        if (seen.has(id)) continue;
+        seen.add(id); keyUsage.set(q.id, (keyUsage.get(q.id) || 0) + 1); picked.push({ p: q.p, k: q.k, m: x.m }); progress = true;
+        nextCursor = (qi + 1) % queues.length;
+      }
+      cursor = nextCursor;
+    }
+    try { localStorage.setItem('ey_smart_key_cursor', String(cursor)); } catch (_) {}
+    return picked;
+  };
+  const totalFresh = new Set(freshQ.flatMap((q) => q.models.map((x) => q.p.id + ':' + x.m))).size;
+  const totalOld = new Set(oldQ.flatMap((q) => q.models.map((x) => q.p.id + ':' + x.m))).size;
+  const freshTarget = Math.min(SMART_MAX, Math.round(SMART_MAX * 0.9)); // 10 => 9; 12 => 11
+  const oldTarget = SMART_MAX - freshTarget; // 10 => 1; 12 => 1
+  const used = new Set();
+  let fresh = take(freshQ, freshTarget, used, 1);
+  let old = take(oldQ, oldTarget, used, SMART_PER_KEY);
+  // If one lane is short, use remaining slots from the other lane; never pull Never-worked or failed models.
+  if (fresh.length < freshTarget && old.length < oldTarget) {
+    old = old.concat(take(oldQ, SMART_MAX - fresh.length - old.length, used, SMART_PER_KEY));
+  }
+  if (fresh.length + old.length < SMART_MAX) {
+    fresh = fresh.concat(take(freshQ, SMART_MAX - fresh.length - old.length, used, SMART_PER_KEY));
+  }
+  return {
+    items: [...fresh, ...old],
+    fresh: fresh.length,
+    old: old.length,
+    totalFresh,
+    totalOld,
+    total: totalFresh + totalOld,
+  };
 }
+function scoreSafe(m) { try { return nameScore(m); } catch (_) { return 0; } }
+
 function starItems() {
   const out = [];
   provs.forEach((p) => p.keys.forEach((k) => { modelsFor(p, k).forEach((m) => { if (isStar(p, m) && p.keys.find((kk) => kk.ok && modelsFor(p, kk).includes(m)) === k && !isDone(p.id, m) && !(bidx[p.id + ':' + m] && ['paid', 'dead', 'limited'].includes(bidx[p.id + ':' + m].tier))) out.push({ p, k, m }); }); }));
   return out;
 }
 function updateButtons() {
-  const gw = cur === '@gw' || cur === '@quota', n = starItems().length;
+  const gw = cur === '@gw', n = starItems().length;
   $('co').disabled = busy || gw || !shown.length;
   $('co').textContent = 'Test shown (' + shown.length + ')';
   $('all').disabled = !busy && !n;
   $('all').textContent = busy ? '⏹ Stop' : 'Test all ★ (' + n + ')';
   const sp = smartPlan(), sm = sp.items.length;
   $('smart').disabled = !busy && !sm;
-  $('smart').textContent = busy ? '⏹ Stop' : sm ? '🧠 Smart test (' + sm + (sp.total > sm ? ' / ' + sp.total : '') + ')' : '🧠 Sab ho chuka';
+  $('smart').textContent = busy ? '⏹ Stop' : sm ? '🧠 Smart Test (' + sp.fresh + ' new / ' + sp.old + ' retest)' : '✓ Smart Test complete';
   $('load').disabled = busy;
 }
 
