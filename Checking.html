@@ -180,6 +180,9 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
   <section class="conn" id="conn" hidden>
     <label class="lbl" for="url">Val Town URL</label>
     <input id="url" placeholder="https://xxxx.web.val.run" autocomplete="off">
+    <label class="lbl" for="adminToken" style="margin-top:10px">AI_ADMIN_TOKEN (sirf agar Val me set hai)</label>
+    <input id="adminToken" type="password" placeholder="Admin token (optional)" autocomplete="off">
+    <div class="hint">Token is tab ki memory me hi rahega; reload par dobara enter karna hoga.</div>
     <div class="actions">
       <button class="iconbtn" id="load">🔄 Reload</button>
       <span class="status" id="connNote"></span>
@@ -202,6 +205,13 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
   </div>
 </div>
 
+<style>
+.key-health-card{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--surface)}
+.key-health-card .top{justify-content:space-between;flex-wrap:wrap}
+.key-health-controls{margin-top:10px;flex-wrap:wrap}
+.key-health-controls select{min-width:0;flex:1;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:13px}
+.key-health-controls .send{background:var(--acc);color:var(--acc-tx);border:0;border-radius:9px;padding:8px 12px;font-weight:600}
+</style>
 <script>
 const DEFAULT_URL = 'https://vishalyadav--ac9af586d5c311f1ac7a1607ee4eb77e.web.val.run';
 const $ = (id) => document.getElementById(id);
@@ -231,7 +241,7 @@ let gwCo = '', gwTier = '', keyState = {}, bidx = {};   // gateway tab filters +
 const res = {};          // rid -> 'ok' | 'bad'
 const outs = {};         // rid -> {kind, head, text, right}
 const refs = {};         // rid -> {row, out}  (only for rows currently on screen)
-let cur = null;          // current tab: company id or '@gw'
+let cur = null;          // current tab: company id or '@gw' / '@keys'
 const curKey = {};       // company id -> chosen key index
 let q = '', starOnly = false, ntFilter = '', busy = false, stopReq = false, shown = [];
 
@@ -239,6 +249,12 @@ try { $('url').value = localStorage.getItem('ey_test_url') || DEFAULT_URL; }
 catch (e) { $('url').value = DEFAULT_URL; }
 const cacheBoard = () => { try { localStorage.setItem('ey_board_cache', JSON.stringify(board.map((b) => ({ id: b.id, provider: b.provider, model: b.model, ok: b.ok, fail: b.fail, tier: b.tier, updated: b.updated, nextCheck: b.nextCheck, rating: b.rating, avgSec: b.avgSec })))); } catch (e) {} };
 const base = () => $('url').value.trim().replace(/\/+$/, '');
+const authHeaders = (extra = {}) => {
+  const h = { ...extra };
+  const token = $('adminToken')?.value?.trim();
+  if (token) h['x-admin-token'] = token;
+  return h;
+};
 const rid = (p, k, m) => p.id + ':' + m + '|' + (k.n - 1);
 
 /* ---------- data helpers ---------- */
@@ -315,13 +331,20 @@ function softRefresh() {
 function render() {
   bidx = {}; board.forEach((b) => { bidx[b.id] = b; });
   const tabs = $('tabs'); tabs.innerHTML = '';
-  if (cur !== '@gw' && cur !== '@quota' && !provs.some((p) => p.id === cur)) cur = provs.length ? provs[0].id : (board.length ? '@gw' : null);
+  if (cur !== '@gw' && cur !== '@quota' && cur !== '@keys' && !provs.some((p) => p.id === cur)) cur = provs.length ? provs[0].id : (board.length ? '@gw' : null);
   provs.forEach((p) => {
     const t = el('button', 'tab' + (p.id === cur ? ' on' : ''), p.label);
     t.appendChild(el('i', '', unionCount(p)));
     t.onclick = () => { cur = p.id; render(); };
     tabs.appendChild(t);
   });
+  if (provs.length) {
+    const blockedN = Object.values(keyState).flat().filter((k) => k.permanent || k.restSec > 0).length;
+    const t = el('button', 'tab' + (cur === '@keys' ? ' on' : ''), '🔐 Key Health');
+    if (blockedN) t.appendChild(el('i', '', blockedN));
+    t.onclick = () => { cur = '@keys'; render(); };
+    tabs.appendChild(t);
+  }
   if (board.length) {
     const t = el('button', 'tab' + (cur === '@gw' ? ' on' : ''), '📊 Gateway');
     t.appendChild(el('i', '', gwRows().length));
@@ -340,6 +363,7 @@ function render() {
   if (!cur) {
     box.appendChild(el('div', 'empty', 'Koi company nahi mili. Val Town env me AI_<NAAM>_KEY aur AI_<NAAM>_ENDPOINT check karo.'));
   } else if (cur === '@gw') renderGateway(box);
+  else if (cur === '@keys') renderKeyHealth(box);
   else if (cur === '@quota') renderQuota(box);
   else renderCompany(box, provs.find((p) => p.id === cur));
   summary(); updateButtons();
@@ -509,7 +533,7 @@ function renderGateway(box) {
 
 /* ---------- loading ---------- */
 async function getJson(path) {
-  const r = await fetch(base() + path);
+  const r = await fetch(base() + path, { headers: authHeaders() });
   let j = null; try { j = await r.json(); } catch (e) {}
   return { status: r.status, j };
 }
@@ -539,6 +563,52 @@ async function load() {
   render();
 }
 
+/* ---------- persistent API-key health + manual recovery ---------- */
+function renderKeyHealth(box) {
+  const head = el('div', 'cohead');
+  head.appendChild(el('b', '', 'API Key Health & Recovery'));
+  head.appendChild(el('span', '', 'Blocked keys ki live list · manual test se recovery'));
+  box.appendChild(head);
+  const rows = [];
+  provs.forEach((p) => (keyState[p.id] || []).forEach((st) => rows.push({ p, st })));
+  rows.sort((a, b) => Number(b.st.permanent) - Number(a.st.permanent) || b.st.restSec - a.st.restSec || b.st.failures - a.st.failures);
+  if (!rows.length) { box.appendChild(el('div', 'empty', 'Abhi koi API key configured nahi hai.')); return; }
+  const blocked = rows.filter((x) => x.st.permanent || x.st.restSec > 0);
+  box.appendChild(el('div', 'kinfo', blocked.length + ' blocked / resting keys · ' + (rows.length - blocked.length) + ' active keys. Secret API key kabhi page par show nahi hoti.'));
+  rows.forEach(({ p, st }) => {
+    const card = el('div', 'm key-health-card');
+    const top = el('div', 'top');
+    top.appendChild(el('div', 'name', p.label + ' · Key ' + st.n));
+    const status = st.permanent ? '⛔ PERMANENT BLOCK' : st.restSec > 0 ? '⏳ RESTING' : '✅ ACTIVE';
+    top.appendChild(el('span', 'tag ' + (st.permanent || st.restSec > 0 ? 'bad' : 'ok'), status)); card.appendChild(top);
+    const detail = st.permanent ? '3 consecutive account-level failures. Automatic routing se excluded.' : st.restSec > 0 ? 'Failure count: ' + st.failures + ' · Unlock in ' + fmtRest(st.restSec) + (st.restUntil ? ' · ' + new Date(st.restUntil).toLocaleString() : '') : 'Failure count: ' + st.failures + ' · No active quarantine';
+    card.appendChild(el('div', 'meta', detail));
+    const models = (p.keys[st.n - 1]?.chat || []).filter(Boolean);
+    const forced = p.forced || [];
+    const options = [...new Set([...models, ...forced])];
+    if (!options.length) { card.appendChild(el('div', 'qmut', 'Is key par manually test karne ke liye model discovery unavailable hai. Reload karke dobara dekho.')); }
+    else {
+      const controls = el('div', 'ctl key-health-controls');
+      const select = el('select'); select.style.flex = '1';
+      options.forEach((m) => { const o = document.createElement('option'); o.value = m; o.textContent = m; select.appendChild(o); });
+      const btn = el('button', 'send', st.permanent || st.restSec > 0 ? '🧪 Test & recover' : '🧪 Manual test');
+      btn.onclick = async () => {
+        btn.disabled = true; btn.textContent = 'Testing…';
+        try {
+          const r = await fetch(base() + '/test', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ target: p.id + ':' + select.value, key: st.n - 1, prompt: 'Hi', record: false }) });
+          const j = await r.json().catch(() => ({}));
+          if (j.ok) $('msg').textContent = '✅ ' + p.label + ' Key ' + st.n + ' recovered. Successful manual test ne quarantine + failure count reset kar diya.';
+          else $('msg').textContent = '⚠️ Manual test failed: ' + (j.error || j.cls || 'unknown error') + (j.status ? ' (HTTP ' + j.status + ')' : '');
+        } catch (e) { $('msg').textContent = '⚠️ Manual test network error: ' + e.message; }
+        try { const { j: fresh } = await getJson('/status'); if (fresh?.keyState) keyState = fresh.keyState; } catch (e) {}
+        render();
+      };
+      controls.appendChild(select); controls.appendChild(btn); card.appendChild(controls);
+    }
+    box.appendChild(card);
+  });
+}
+
 /* ---------- quota per key (gateway counts every call + reads the company's rate-limit headers; SQLite keeps it) ---------- */
 let quota = {};   // company id -> { keys:[{req,tin,tout,e429,hdr,...}], dailyReq, dailyTok }
 const fmtTok = (n) => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(n || 0);
@@ -549,7 +619,7 @@ async function loadQuota() {
 async function quotaCheck(p, i, btn, last = true) {
   if (btn) { btn.disabled = true; btn.textContent = '…'; }
   try {
-    const r = await fetch(base() + '/admin/quota/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target: p.id, key: i }) });
+    const r = await fetch(base() + '/admin/quota/check', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ target: p.id, key: i }) });
     const j = await r.json().catch(() => ({}));
     $('msg').textContent = j.ok ? 'Quota check ho gaya: ' + p.label + ' key ' + (i + 1) + (j.account ? ' (account info)' : ' (model ' + j.via + ' ko Hi bheja)') : '⚠️ ' + (j.error || 'quota check nahi hua');
   } catch (e) { $('msg').textContent = '⚠️ Quota check: network error'; }
@@ -566,8 +636,8 @@ function meterRow(m) {
   return row;
 }
 function renderQuota(box) {
-  const head = el('div', 'cohead'); head.appendChild(el('h2', '', 'Quota & rate limits'));
-  head.appendChild(el('span', '', 'har key ke meters · gateway inhi se model chunta hai · har 15s auto-refresh')); box.appendChild(head);
+  const head = el('div', 'cohead'); head.appendChild(el('h2', '', 'Usage telemetry (not availability detection)'));
+  head.appendChild(el('span', '', 'har key ka usage/header record · routing par koi asar nahi · har 15s auto-refresh')); box.appendChild(head);
   const bt = el('button', 'qbtn', '↻ Refresh'); bt.onclick = async () => { bt.disabled = true; await loadQuota(); render(); };
   box.appendChild(bt);
   const ids = Object.keys(quota).sort();
@@ -578,10 +648,10 @@ function renderQuota(box) {
     const st = c.status === 'limited' ? ['⏸ Limit · ' + fmtRest(c.limSec) + ' me khulega' + (c.why ? ' (' + c.why + ')' : ''), 'bad'] : c.status === 'slow' ? ['⚠ Dheema ' + c.pct + '%' + (c.why ? ' (' + c.why + ')' : ''), 'warn'] : ['✅ Theek', 'ok'];
     hd.appendChild(el('span', 'tag ' + st[1], st[0])); card.appendChild(hd);
     const f = c.factor || {};
-    card.appendChild(el('div', 'qsum', 'Aaj ' + (c.todayReq || 0) + ' calls · share ' + c.sharePct + '% (fair ' + c.targetPct + '%) · routing weight ×' + f.total + ' = bacha-hua ×' + f.avail + ' · pace ×' + f.pace + (c.once ? ' · one-time ×' + f.once : '') + ' · share ×' + f.share));
+    card.appendChild(el('div', 'qsum', 'Aaj ' + (c.todayReq || 0) + ' calls · usage share ' + c.sharePct + '% · quota estimates sirf reference ke liye (AI selection par asar nahi)'));
     const L = c.limits || {}, ls = [['RPM', L.rpm, 'rpm'], ['RPH', L.rph, 'rph'], ['RPD', L.rpd, 'rpd'], ['TPM', L.tpm], ['TPD', L.tpd], ['Month req', L.monthReq], ['Month tok', L.monthTok], ['Total req', L.totalReq], ['Total tok', L.totalTok]].filter((x) => x[1]).map((x) => x[0] + ' ' + fmtN(x[1]) + (L.auto && L.auto[x[2]] ? ' (khud seekha)' : ''));
-    card.appendChild(el('div', 'qsum', ls.length ? 'Limits (har key): ' + ls.join(' · ') : 'Limit abhi pata nahi: gateway company ke headers aur pehle 429 se khud seekh lega (kuch daalna nahi).'));
-    if (c.guard === false) card.appendChild(el('div', 'note', 'AI_QUOTA_GUARD=0: quota-routing band hai.'));
+    card.appendChild(el('div', 'qsum', ls.length ? 'Limits (har key): ' + ls.join(' · ') : 'Configured limit estimate nahi hai; live API response hi key availability decide karega.'));
+    if (c.guard === false) card.appendChild(el('div', 'note', 'Quota-based automatic routing disabled; this data is informational only.'));
     (c.keys || []).forEach((k) => {
       const row = el('div', 'qrow');
       row.appendChild(el('b', '', 'Key ' + k.n + (k.limSec > 0 ? ' ⏸ ' + fmtRest(k.limSec) : k.restSec > 0 ? ' ⏳ rest ' + fmtRest(k.restSec) : '')));
@@ -605,7 +675,7 @@ function quotaPanel(p) {
     const k = (qd.keys || [])[i] || {}, row = el('div', 'qrow'), top = el('div', 'qline'), left = el('div', 'qtxt');
     left.appendChild(el('b', '', 'Key ' + kk.n));
     left.appendChild(document.createTextNode(' · ' + (k.req || 0) + ' calls · ' + fmtTok((k.tin || 0) + (k.tout || 0)) + ' tokens (in ' + fmtTok(k.tin || 0) + ' / out ' + fmtTok(k.tout || 0) + ')' + (k.e429 ? ' · 429 × ' + k.e429 : '') + (k.restSec > 0 ? ' · ⏳ rest ' + fmtRest(k.restSec) : '')));
-    const b = el('button', 'qbtn', '↻ check'); b.title = 'Is key ka quota abhi update karo (1 chhota Hi, ya OpenRouter me account info)';
+    const b = el('button', 'qbtn', '↻ check'); b.title = 'Is key ka usage/header telemetry refresh karo (small test request ho sakti hai)';
     b.onclick = () => quotaCheck(p, i, b);
     top.appendChild(left); top.appendChild(b); row.appendChild(top);
     const h = k.hdr;
@@ -620,7 +690,7 @@ function quotaPanel(p) {
         }
       });
       row.appendChild(el('div', 'qmut', 'company ke headers · ' + (k.hdrAgeSec != null ? fmtRest(k.hdrAgeSec) + ' pehle' : '')));
-    } else row.appendChild(el('div', 'qmut', 'Company ke rate-limit headers nahi mile (ya abhi koi call nahi hui): upar ki ginti hamari apni hai.'));
+    } else row.appendChild(el('div', 'qmut', 'Rate-limit headers sirf informational hain; key availability live API response se decide hoti hai.'));
     if (k.acct) {
       try { const a = JSON.parse(k.acct); row.appendChild(el('div', 'qmut', 'Account: ' + Object.keys(a).map((x) => x + ' ' + a[x]).join(' · ') + (k.acctAgeSec != null ? ' · ' + fmtRest(k.acctAgeSec) + ' pehle' : ''))); } catch (e) {}
     }
@@ -643,7 +713,7 @@ async function testOne(p, k, m, btn, auto) {
   const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 50000);
   let verdict = 'transient';   // ok | model (verdict belongs to the MODEL, same on every key) | account (only THIS key is bad) | transient (inconclusive)
   try {
-    const r = await fetch(base() + '/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target: p.id + ':' + m, key: k.n - 1, prompt: msgText }), signal: ctl.signal });
+    const r = await fetch(base() + '/test', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ target: p.id + ':' + m, key: k.n - 1, prompt: msgText }), signal: ctl.signal });
     const j = await r.json();
     if (j.ok) { verdict = 'ok'; res[r0] = 'ok'; setOut(r0, 'ok', 'Working' + (j.cost === 'free' ? ' · 🆓 Free' : ''), j.text, (j.ms / 1000).toFixed(1) + 's · key ' + j.key + (j.recorded ? ' · 💾 saved' : '')); }
     else { verdict = j.cls || 'transient'; res[r0] = 'bad'; setOut(r0, 'bad', 'Failed' + (j.status ? ' · HTTP ' + j.status : '') + ' · key ' + (j.key || k.n) + (j.state === 'paid' ? ' · 💰 Paid' : ''), j.error || 'unknown', j.ms ? (j.ms / 1000).toFixed(1) + 's' : ''); }
