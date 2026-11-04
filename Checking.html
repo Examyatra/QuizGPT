@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Model Check</title>
+<title>AI Model Tester</title>
 <style>
 :root{
   --bg:#f5f6f8;--surface:#fff;--surface2:#eef0f4;--line:#e1e4ea;--tx:#161a22;--mut:#6a7282;
@@ -46,6 +46,15 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
 .stat b{display:block;font-size:22px;line-height:1.1;font-weight:700;font-variant-numeric:tabular-nums}
 .stat span{font-size:12.5px;color:var(--mut)}
 .stat.ok b{color:var(--ok)}.stat.bad b{color:var(--bad)}
+.stat{cursor:pointer;transition:background .15s}.stat:hover{background:var(--surface2)}
+.toast{position:fixed;z-index:1000;top:calc(env(safe-area-inset-top,0px) + 12px);left:50%;transform:translateX(-50%);width:min(92vw,520px);padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:0 12px 36px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
+.toast.show{opacity:1;transform:translate(-50%,0)}.toast.ok{border-left:4px solid var(--ok)}.toast.bad{border-left:4px solid var(--bad)}.toast .th{font-weight:700}.toast .tb{font-size:13px;color:var(--mut);margin-top:3px;max-height:100px;overflow:auto;overflow-wrap:anywhere}
+.detailveil{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:18px}
+.detailbox{width:min(100%,560px);max-height:80vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
+.detailhead{display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:-14px;background:var(--surface);padding:4px 0 10px}
+.detailitem{display:flex;justify-content:space-between;gap:12px;padding:10px 2px;border-top:1px solid var(--line);font-size:13px}
+.detailitem button{background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12px}
+
 
 /* tabs */
 .tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:14px;scrollbar-width:none}
@@ -148,13 +157,9 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
   .ntag.l{background:#1e2330;color:#94a3b8}
   .ntag.f{background:#12301f;color:#86efac}
 }
-/* simplified model list */
-.stats{grid-template-columns:repeat(3,minmax(0,1fr))}
-.conn{padding:16px}
-header{padding:18px 0 14px}
-.sub{line-height:1.4}
-.model-state-filters{margin-top:2px}
-@media(max-width:480px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.stat{padding:10px 8px}.stat span{font-size:11.5px}}
+/* name-tier filter chips in company tab */
+.ntfilt{display:flex;gap:6px;flex-wrap:wrap;margin:0 2px 10px;align-items:center}
+.ntfilt span{font-size:12px;color:var(--mut);font-weight:600}
 .qcard{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:10px 12px;margin:0 0 12px;box-shadow:var(--shadow)}
 .qhead{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:6px}
 .qrow{padding:8px 0;border-top:1px solid var(--line);font-size:13px}
@@ -175,20 +180,20 @@ header{padding:18px 0 14px}
 <div class="wrap">
   <header>
     <div>
-      <h1>Model Check</h1>
+      <h1>AI Model Tester</h1>
       <div class="sub" id="msg">Load ho raha hai…</div>
     </div>
-    <button class="iconbtn" id="gear" aria-expanded="false">⚙ Settings</button>
+    <button class="iconbtn" id="gear" aria-expanded="false">⚙ Connection</button>
   </header>
 
   <section class="conn" id="conn" hidden>
-    <label class="lbl" for="url">Gateway URL</label>
+    <label class="lbl" for="url">Val Town URL</label>
     <input id="url" placeholder="https://xxxx.web.val.run" autocomplete="off">
-    <label class="lbl" for="adminToken" style="margin-top:10px">Admin token <span style="font-weight:400">(optional)</span></label>
-    <input id="adminToken" type="password" placeholder="Enter admin token" autocomplete="off">
-    <div class="hint">Token is used only for this session.</div>
+    <label class="lbl" for="adminToken" style="margin-top:10px">AI_ADMIN_TOKEN (sirf agar Val me set hai)</label>
+    <input id="adminToken" type="password" placeholder="Admin token (optional)" autocomplete="off">
+    <div class="hint">Token is tab ki memory me hi rahega; reload par dobara enter karna hoga.</div>
     <div class="actions">
-      <button class="iconbtn" id="load">↻ Connect</button>
+      <button class="iconbtn" id="load">🔄 Reload</button>
       <span class="status" id="connNote"></span>
     </div>
   </section>
@@ -201,11 +206,11 @@ header{padding:18px 0 14px}
 <div class="composer">
   <div class="cin">
     <div class="crow">
-      <button class="pri" id="co" disabled>Test selected</button>
-      <button class="sec" id="all" disabled>Test all</button>
-      <button class="sec" id="smart" disabled>Smart scan</button>
+      <button class="pri" id="co" disabled>Test shown models</button>
+      <button class="sec" id="all" disabled>Test all ★ models</button>
+      <button class="sec" id="smart" disabled>🧠 Smart test</button>
     </div>
-    <div class="hint">Smart scan discovers new models and rechecks a small sample of working models. Results are saved by the gateway.</div>
+    <div class="hint">★ = gateway pool · K1/K2 = us key se test · 🧠 Smart Test: 90% naye/untested + 10% pehle successful Working models (max 12 = 11 new + 1 old; 10 ka batch = 9 + 1). Model-level success/definite failure sab compatible keys par shared hota hai; auth/quota/network errors sirf selected key par rehte hain. Har key se max 2 models; failed/never-worked models auto-repeat nahi hote.</div>
   </div>
 </div>
 
@@ -273,6 +278,36 @@ function modelsFor(p, k) {
 const isStar = (p, m) => p.pool.includes(m);
 function unionCount(p) { const s = new Set(); p.keys.forEach((k) => modelsFor(p, k).forEach((m) => s.add(m))); return s.size; }
 
+function showToast(kind, title, message, duration = 4000) {
+  let node = $('testToast');
+  if (!node) { node = el('div', 'toast'); node.id = 'testToast'; document.body.appendChild(node); }
+  clearTimeout(node._hideTimer);
+  node.className = 'toast ' + (kind === 'ok' ? 'ok' : 'bad');
+  node.innerHTML = '';
+  node.appendChild(el('div', 'th', title));
+  node.appendChild(el('div', 'tb', String(message || '').slice(0, 700)));
+  requestAnimationFrame(() => node.classList.add('show'));
+  node._hideTimer = setTimeout(() => node.classList.remove('show'), duration);
+}
+function showSummaryDetail(bucket, label) {
+  const items = [];
+  provs.forEach((p) => {
+    const names = [...new Set([...(p.ranked || []), ...(p.forced || []), ...p.keys.flatMap((k) => modelsFor(p, k))])];
+    names.forEach((m) => { if (modelBucket(p.id, m) === bucket) items.push({ p, m }); });
+  });
+  const veil = el('div', 'detailveil'), panel = el('div', 'detailbox');
+  const head = el('div', 'detailhead'); head.appendChild(el('b', '', label + ' · ' + items.length));
+  const close = el('button', 'iconbtn', 'Close'); close.onclick = () => veil.remove(); head.appendChild(close); panel.appendChild(head);
+  if (!items.length) panel.appendChild(el('div', 'empty', 'Is category me abhi koi model nahi.'));
+  items.forEach(({p,m}) => {
+    const row = el('div', 'detailitem'); row.appendChild(el('span', '', p.label + ' · ' + m));
+    const go = el('button', '', 'Open'); go.onclick = () => { veil.remove(); cur = p.id; modelView = bucket; q = m; render(); };
+    row.appendChild(go); panel.appendChild(row);
+  });
+  veil.addEventListener('click', (e) => { if (e.target === veil) veil.remove(); });
+  veil.appendChild(panel); document.body.appendChild(veil);
+}
+
 function summary() {
   const counts = { working: 0, retest: 0, never: 0, untested: 0, unavailable: 0 };
   const seen = new Set();
@@ -281,8 +316,11 @@ function summary() {
     const bucket = modelBucket(p.id, m); counts[bucket] = (counts[bucket] || 0) + 1;
   }));
   const box = $('sum'); box.innerHTML = '';
-  [['Working', counts.working, 'ok'], ['Needs recheck', counts.retest, ''], ['To test', counts.never + counts.untested, '']].forEach(([label, n, cls]) => {
-    const item = el('div', 'stat ' + cls); item.appendChild(el('b', '', n)); item.appendChild(el('span', '', label)); box.appendChild(item);
+  [['Working', counts.working, 'ok', 'working'], ['Needs recheck', counts.retest, '', 'retest'], ['Never worked', counts.never, 'bad', 'never'], ['To test', counts.untested, '', 'untested']].forEach(([l, n, c, bucket]) => {
+    const item = el('button', 'stat ' + c); item.type = 'button'; item.appendChild(el('b', '', n)); item.appendChild(el('span', '', l));
+    item.setAttribute('aria-label', l + ': ' + n + '. Tap to see models');
+    item.onclick = () => showSummaryDetail(bucket, l);
+    box.appendChild(item);
   });
 }
 
@@ -294,6 +332,7 @@ const isDone = (pid, m) => { const b = dbRec(pid, m); return !!(b && b.ok + b.fa
 const fmtDay = (t) => t ? new Date(t).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '';
 function dbState(pid, m) {
   const b = dbRec(pid, m); if (!b || !(b.ok + b.fail > 0)) return 'idle';
+  if (b.last === 'busy' && !b.ok) return 'idle';
   if (b.tier === 'limited') return 'skip';
   if (b.tier === 'paid' || b.tier === 'dead' || b.tier === 'resting') return 'bad';
   return b.ok > 0 ? 'ok' : 'bad';
@@ -304,7 +343,12 @@ function modelBucket(pid, m) {
   if (b.tier === 'paid' || b.cost === 'paid') return 'unavailable';
   // A key/account/rate-limit error is inconclusive; do not label the model broken.
   const lastOk = Number(b.lastOk || b.last_ok || 0), lastFail = Number(b.lastFail || b.last_fail || 0);
-  const accountIssue = /^(401|403|429|quota|account|billing|credits)/i.test(String(b.last || ''));
+  const lastTag = String(b.last || ''), why = String(b.why || '');
+  // Provider capacity / high-demand messages are temporary. A model with no
+  // prior success stays untested; a previously working model goes to recheck.
+  if (lastTag === 'busy') return b.ok > 0 ? 'retest' : 'untested';
+  // HTTP 403/429 can be either model-level or key-level; use the backend's classified reason.
+  const accountIssue = /^(401|quota|account|billing|credits)/i.test(lastTag) || /key\/account problem.*model NOT blamed/i.test(why);
   if (b.ok > 0 && !accountIssue && (lastFail > lastOk || b.tier === 'slow' || b.tier === 'dead' || b.tier === 'resting')) return 'retest';
   if (b.ok > 0) return 'working';
   return 'never';
@@ -375,7 +419,7 @@ function render() {
   const box = $('list'); box.innerHTML = '';
   shown = [];
   if (!cur) {
-    box.appendChild(el('div', 'empty', 'No providers found. Check your gateway configuration and connect again.'));
+    box.appendChild(el('div', 'empty', 'Koi company nahi mili. Val Town env me AI_<NAAM>_KEY aur AI_<NAAM>_ENDPOINT check karo.'));
   } else if (cur === '@gw') renderGateway(box);
   else if (cur === '@keys') renderKeyHealth(box);
   else renderCompany(box, provs.find((p) => p.id === cur));
@@ -388,7 +432,7 @@ function renderCompany(box, p) {
   const col = coColor(p.id);
   const bm = bidx;
   const head = el('div', 'cohead'); head.style.setProperty('--c', col); head.appendChild(el('h2', '', p.label));
-  head.appendChild(el('span', '', p.keys.length + (p.keys.length === 1 ? ' key connected' : ' keys connected')));
+  head.appendChild(el('span', '', [p.host, p.format, p.keys.length + ' key', p.auto ? 'auto discovery' : 'forced models'].filter(Boolean).join(' · ')));
   box.appendChild(head);
 
   const chips = el('div', 'chips'); chips.style.setProperty('--c', col);
@@ -403,17 +447,26 @@ function renderCompany(box, p) {
   const sets = sel.map((k) => new Set(modelsFor(p, k)));
   const order = [...new Set(sel.flatMap((k) => modelsFor(p, k)))];
   const names = [...p.pool.filter((m) => order.includes(m)), ...order.filter((m) => !p.pool.includes(m)).sort()];
-  box.appendChild(el('div', 'kinfo', names.length + (names.length === 1 ? ' model available' : ' models available')));
+  box.appendChild(el('div', 'kinfo', names.length + ' models' + (sel.length > 1 ? ' (model ko ek representative key se test kiya jayega; result compatible keys par shared hoga)' : '') + ' · ★ ' + p.pool.length + ' gateway pool me'));
 
   const filt = el('div', 'filt');
   const si = el('input'); si.type = 'search'; si.placeholder = 'Model dhundo…'; si.value = q; si.setAttribute('aria-label', 'Model dhundo');
   const lb = el('label'); const cb = el('input'); cb.type = 'checkbox'; cb.checked = starOnly; lb.appendChild(cb); lb.appendChild(document.createTextNode('Sirf ★'));
   filt.appendChild(si); filt.appendChild(lb); box.appendChild(filt);
+  // name-tier filter chips
+  const ntrow = el('div', 'ntfilt'); ntrow.appendChild(el('span', '', 'Naam tier:'));
+  [['', 'Sab'], ['h', '🔵 HIGH'], ['m', '🟡 MID'], ['l', '⚪ LOW'], ['?', '— Pata nahi']].forEach(([k, lbl]) => {
+    const c = el('button', 'chip' + (ntFilter === k ? ' on' : ''), lbl);
+    c.style.setProperty('--c', col);
+    c.onclick = () => { ntFilter = k; render(); };
+    ntrow.appendChild(c);
+  });
+  box.appendChild(ntrow);
   const bucketCounts = { working: 0, retest: 0, never: 0, untested: 0, unavailable: 0 };
   names.forEach((m) => { const b = modelBucket(p.id, m); bucketCounts[b] = (bucketCounts[b] || 0) + 1; });
   const stateFilters = el('div', 'chips model-state-filters');
-  [['working', '✓ Working', bucketCounts.working], ['retest', '↻ Recheck', bucketCounts.retest], ['untested', '○ To test', bucketCounts.never + bucketCounts.untested]].forEach(([key, label, count]) => {
-    const c = el('button', 'chip' + (modelView === key ? ' on' : ''), label + ' ' + count);
+  [['working', '✓ Working'], ['retest', '↻ Retest'], ['never', '✕ Never worked'], ['untested', '○ Not tested']].forEach(([key, label]) => {
+    const c = el('button', 'chip' + (modelView === key ? ' on' : ''), label + ' ' + bucketCounts[key]);
     c.onclick = () => { modelView = key; render(); };
     stateFilters.appendChild(c);
   });
@@ -425,23 +478,31 @@ function renderCompany(box, p) {
     listHost.innerHTML = '';
     const ms = names.filter((m) => {
       const bucket = modelBucket(p.id, m);
-      if (modelView === 'untested' ? !['never', 'untested'].includes(bucket) : bucket !== modelView) return false;
+      if (bucket !== modelView) return false;
       if (starOnly && !isStar(p, m)) return false;
       if (q && !m.toLowerCase().includes(q.toLowerCase())) return false;
+      if (ntFilter) {
+        const nt = nameTierLabel(m);
+        const cls = nt ? nt.cls : '?';
+        if (cls !== ntFilter) return false;
+      }
       return true;
     });
     shown = [];
-    if (!ms.length) { listHost.appendChild(el('div', 'empty', modelView === 'working' ? 'No working models yet. Run a smart scan to discover models.' : modelView === 'retest' ? 'No models need a recheck right now.' : 'Everything has been checked.')); updateButtons(); return; }
+    if (!ms.length) { listHost.appendChild(el('div', 'empty', modelView === 'working' ? 'Abhi koi proven working model nahi. Smart Test se discovery shuru karo.' : modelView === 'retest' ? 'Abhi kisi previously-working model ko retest ki zarurat nahi.' : modelView === 'never' ? 'Abhi koi failed model record nahi hai.' : 'Sab discovered models test ho chuke hain.')); updateButtons(); return; }
     const list = el('div', 'list');
     ms.forEach((m) => {
       const ks = sel.filter((k, i) => sets[i].has(m));
       const d = el('div', 'm'); d.dataset.p = p.id; d.dataset.m = m; d.style.setProperty('--c', col);
       const top = el('div', 'top'); top.appendChild(el('span', 'dot'));
       const info = el('div', 'info'); const nm = el('div', 'name', m); if (isStar(p, m)) nm.appendChild(el('span', 'star', '★'));
+      const nt = nameTierLabel(m); if (nt) { const nb = el('span', 'ntag ' + nt.cls, nt.txt); nm.appendChild(nb); }
+      { const bf = bm[p.id + ':' + m]; if (bf && bf.cost === 'free' && bf.ok > 0) nm.appendChild(el('span', 'ntag f', '🆓 FREE ✔')); else if (FREE_NAME.test(m)) nm.appendChild(el('span', 'ntag f', 'free?')); }
       info.appendChild(nm);
       const b0 = bm[p.id + ':' + m]; const pd = !!(b0 && (b0.tier === 'paid' || b0.tier === 'dead')); if (pd) d.classList.add('paid');
       const done = isDone(p.id, m); const bucket = modelBucket(p.id, m);
-      info.appendChild(el('div', 'meta', 'Available on ' + (ks.length ? ks.map((k) => 'Key ' + k.n).join(', ') : 'no active key') + (done ? ' · Previously checked' : '')));
+      nm.appendChild(el('span', 'ntag ' + (bucket === 'working' ? 'f' : bucket === 'retest' ? 'm' : 'x'), modelBucketLabel(bucket)));
+      info.appendChild(el('div', 'meta', 'Key ' + ks.map((k) => k.n).join(', ') + ' pe available · ' + (pd ? (b0.tier === 'dead' ? '☠ band: jawab nahi deta' : '💰 paid') + ' · gateway ise nahi aazmata' + (b0.nextCheck ? ' · agla test ' + fmtDay(b0.nextCheck) : '') : b0 ? 'gateway: rating ' + b0.rating + (b0.avgSec != null ? ' · ' + b0.avgSec + 's' : '') + ' · ' + (b0.tier || '') + (done ? ' · ✔ tested ' + fmtDay(b0.updated) : '') : 'gateway pool ke bahar')));
       top.appendChild(info);
       const ctl = el('div', 'ctl'); const outs2 = el('div', 'outs');
       const testKey = ks[0]; // one representative key per company+model; no per-key model retest loop
@@ -560,7 +621,7 @@ function showConn(note) { $('conn').hidden = false; $('gear').setAttribute('aria
 async function load() {
   const u = base(); if (!u) return;
   try { localStorage.setItem('ey_test_url', u); } catch (e) {}
-  $('msg').textContent = 'Connecting to gateway…'; $('load').disabled = true; $('connNote').textContent = '';
+  $('msg').textContent = 'Load ho raha hai (har key ki model list mangi ja rahi hai)…'; $('load').disabled = true; $('connNote').textContent = '';
   const [rm, rs] = await Promise.allSettled([getJson('/admin/models'), getJson('/status')]);
   Object.keys(res).forEach((k) => delete res[k]); Object.keys(outs).forEach((k) => delete outs[k]);
   provs = []; board = []; dbOn = null; keyState = {};
@@ -574,7 +635,7 @@ async function load() {
   if (err) { $('msg').textContent = err; showConn(location.protocol === 'file:' ? 'Abhi page file:// se khula hai: hosting par upload karke kholo.' : ''); }
   else {
     const keys = provs.reduce((a, p) => a + p.keys.length, 0), good = provs.reduce((a, p) => a + p.keys.filter((k) => k.ok).length, 0);
-    $('msg').textContent = provs.length ? 'Connected · ' + provs.length + ' providers · ' + good + '/' + keys + ' keys ready' : 'No providers configured';
+    $('msg').textContent = provs.length ? provs.length + ' companies · ' + good + '/' + keys + ' keys ki list mili' : '⚠️ Koi company set nahi hai. Env vars check karo.';
   }
   $('load').disabled = false;
   render();
@@ -637,11 +698,13 @@ async function testOne(p, k, m, btn, auto) {
   try {
     const r = await fetch(base() + '/test', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ target: p.id + ':' + m, key: k.n - 1, availableKeys: p.keys.filter(kk => modelsFor(p, kk).includes(m)).map(kk => kk.n - 1), prompt: msgText }), signal: ctl.signal });
     const j = await r.json();
-    if (j.ok) { verdict = 'ok'; discoveryShared = !!j.discoveryShared; res[r0] = 'ok'; setOut(r0, 'ok', 'Working' + (j.cost === 'free' ? ' · 🆓 Free' : ''), j.text, (j.ms / 1000).toFixed(1) + 's · key ' + j.key + (j.recorded ? ' · 💾 saved' : '')); }
-    else { verdict = j.cls || 'transient'; discoveryShared = !!j.discoveryShared; res[r0] = 'bad'; setOut(r0, 'bad', 'Failed' + (j.status ? ' · HTTP ' + j.status : '') + ' · key ' + (j.key || k.n) + (j.state === 'paid' ? ' · 💰 Paid' : ''), j.error || 'unknown', j.ms ? (j.ms / 1000).toFixed(1) + 's' : ''); }
+    if (j.ok) { verdict = 'ok'; discoveryShared = !!j.discoveryShared; res[r0] = 'ok'; setOut(r0, 'ok', 'Working' + (j.cost === 'free' ? ' · 🆓 Free' : ''), j.text, (j.ms / 1000).toFixed(1) + 's · key ' + j.key + (j.recorded ? ' · 💾 saved' : '')); showToast('ok', '✓ Working · ' + p.label + ' / ' + m, (j.text || 'Key ne successful response diya.') + ' · ' + (j.ms / 1000).toFixed(1) + 's · Key ' + j.key); }
+    else { verdict = j.tag === 'busy' ? 'busy' : (j.cls || 'transient'); discoveryShared = !!j.discoveryShared; res[r0] = 'bad'; const busy = verdict === 'busy'; setOut(r0, 'bad', (busy ? 'Temporarily busy · retry later' : 'Failed') + (j.status ? ' · HTTP ' + j.status : '') + ' · key ' + (j.key || k.n) + (j.state === 'paid' ? ' · 💰 Paid' : ''), j.error || 'unknown', j.ms ? (j.ms / 1000).toFixed(1) + 's' : ''); showToast('bad', '⚠ ' + (busy ? 'Model capacity busy' : verdict === 'account' ? 'Key/account issue' : verdict === 'model' ? 'Model failed' : 'Inconclusive') + ' · ' + p.label + ' / ' + m, (j.error || 'Test failed') + (j.status ? ' · HTTP ' + j.status : '') + ' · Key ' + (j.key || k.n)); }
   } catch (e) {
     res[r0] = 'bad';
-    setOut(r0, 'bad', 'Failed', e.name === 'AbortError' ? 'Timeout: 50s me response nahi aaya.' : e.message);
+    const errText = e.name === 'AbortError' ? 'Timeout: 50s me response nahi aaya.' : e.message;
+    setOut(r0, 'bad', 'Failed', errText);
+    showToast('bad', '⚠ Test connection failed · ' + p.label + ' / ' + m, errText);
   }
   clearTimeout(tm);
   if (btn) btn.disabled = false;
@@ -784,12 +847,12 @@ function starItems() {
 function updateButtons() {
   const gw = cur === '@gw', n = starItems().length;
   $('co').disabled = busy || gw || !shown.length;
-  $('co').textContent = 'Test selected (' + shown.length + ')';
+  $('co').textContent = 'Test shown (' + shown.length + ')';
   $('all').disabled = !busy && !n;
-  $('all').textContent = busy ? '⏹ Stop' : 'Test all (' + n + ')';
+  $('all').textContent = busy ? '⏹ Stop' : 'Test all ★ (' + n + ')';
   const sp = smartPlan(), sm = sp.items.length;
   $('smart').disabled = !busy && !sm;
-  $('smart').textContent = busy ? '⏹ Stop' : sm ? 'Smart scan (' + sp.total + ')' : '✓ Scan complete';
+  $('smart').textContent = busy ? '⏹ Stop' : sm ? '🧠 Smart Test (' + sp.fresh + ' new / ' + sp.old + ' retest)' : '✓ Smart Test complete';
   $('load').disabled = busy;
 }
 
