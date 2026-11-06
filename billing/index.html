@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<title>Vishal Medical Store – Billing</title>
+<style>
+:root{--ink:#1f3a6e;--bg:#f6f7fb;--line:#b8c2d8;--good:#12803a}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:#111a33;font-size:21px;line-height:1.35}
+#app{max-width:760px;margin:0 auto;padding:12px 12px 130px}
+h1{font-size:28px;color:var(--ink);text-align:center;margin:8px 0 16px}h2{font-size:21px;margin:14px 0 2px;color:var(--ink)}h3{margin:16px 0 8px;color:var(--ink)}
+input,select,textarea{width:100%;font-size:22px;padding:14px;border:2px solid var(--line);border-radius:12px;background:#fff;margin:4px 0 8px}
+label{font-size:18px;font-weight:700;color:#2b3858;display:block;margin-top:8px}
+.btn{display:block;width:100%;font-size:22px;padding:16px;min-height:64px;border:0;border-radius:14px;background:#dfe6f6;color:var(--ink);font-weight:700;margin:10px 0}
+.huge{font-size:26px;min-height:84px}.main{background:var(--ink);color:#fff}.good{background:var(--good);color:#fff}.wa{background:#25d366;color:#fff}.danger{background:#fde2e2;color:#a11}
+.ghost{background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 16px;font-size:19px;color:var(--ink);font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bar{margin-bottom:8px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0 14px}.steps span{text-align:center;padding:10px 2px;border-radius:10px;background:#e6e9f2;font-size:16px;color:#566}
+.steps .on{background:var(--ink);color:#fff;font-weight:700}.steps .done{background:#cfead9;color:#145}
+.row{background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px;margin:14px 0}.rh{display:flex;justify-content:space-between;align-items:center}
+.x{background:#fde2e2;color:#a11;border:0;border-radius:10px;padding:10px 12px;font-size:17px;font-weight:700}
+.stp{display:grid;grid-template-columns:72px minmax(0,1fr) 72px;gap:8px;align-items:center;width:100%}.stp button{height:64px;width:100%;padding:0;font-size:34px;line-height:1;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:12px}.stp input{text-align:center;margin:0;padding:10px 4px;width:100%;color:var(--ink)!important;-webkit-text-fill-color:var(--ink);opacity:1;font-weight:800;font-size:26px;background:#fff}.qrow{display:flex;flex-direction:column;gap:10px;margin:6px 0 12px}.ut{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--ink);border-radius:12px;overflow:hidden;width:100%}.ut button{min-height:56px;padding:0 8px;font-size:18px;font-weight:700;border:0;background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap}.ut button+button{border-left:2px solid var(--ink)}.ut button.on{background:var(--ink);color:#fff}
+.unit{display:flex;align-items:center;gap:12px;background:#eef3fd;border:2px solid var(--line);border-radius:12px;padding:12px;margin:6px 0 10px;font-size:19px;font-weight:700;color:var(--ink)}.unit input{width:32px;height:32px;margin:0;flex:none}
+.g4{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sw{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 14px;margin:8px 0 4px;font-size:19px;font-weight:700;color:var(--ink)}.sw input{display:none}.sw i{width:68px;height:38px;border-radius:20px;background:#b9c1d3;position:relative;flex:none;transition:.15s}.sw i::after{content:'';position:absolute;top:4px;left:4px;width:30px;height:30px;border-radius:50%;background:#fff;transition:.15s}.sw input:checked+i{background:#c0392b}.sw input:checked+i::after{left:34px}
+.adv{background:#eef3fd;border-radius:12px;padding:10px;margin-top:6px}
+.note{font-size:15px;color:#a35a00;display:block}.ok{font-size:15px;color:#157a3a;display:block}.warn{color:#c00;font-weight:700;font-size:18px}
+.amtline{font-size:24px;text-align:right;padding:6px 2px}.hint{font-size:16px;color:#556}
+.item{background:#fff;border:2px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.sticky{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:3px solid var(--ink);padding:8px 12px;z-index:5}.sticky>div{max-width:760px;margin:0 auto}
+.sticky .tl{font-size:26px;display:flex;justify-content:space-between}.sticky .btn{margin:6px 0 2px}
+.seg{display:grid;gap:8px}.seg button{padding:14px;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:12px;font-weight:700;font-size:18px}.seg .on{background:var(--ink);color:#fff}
+.wrap{overflow:hidden;background:#fff;padding:4px;border-radius:8px;border:1px solid var(--line)}
+#inv{width:760px;border:2px solid var(--ink);color:#0f1b3a;font-family:Inter,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#fff;font-size:12px;line-height:1.35;font-variant-numeric:tabular-nums;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#inv table{border-collapse:collapse;width:100%}#inv td,#inv th{border:1px solid var(--ink);padding:4px 6px;vertical-align:top}
+#inv .pt{table-layout:fixed}#inv .pt th{font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;background:#eef2fa;padding:4px 2px;text-align:center;vertical-align:middle}
+#inv .pt td{font-size:10.5px;padding:3px 2px;height:22px}#inv .pt td.c{text-align:center}#inv .pt td.l{text-align:left;word-break:break-word}#inv .pt td.rt{padding-right:4px}#inv .nw{white-space:nowrap}
+#inv td table{margin:-1px;width:calc(100% + 2px)}#inv .nb td,#inv .nb th{border:0}
+#inv .ti{text-align:center;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:6px;border-bottom:1.5px solid var(--ink);background:#eef2fa}
+#inv .brand{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 10px 8px;text-align:center}#inv .brand img{height:46px}
+#inv .sn{font-size:28px;font-weight:800;letter-spacing:.5px;color:var(--ink);text-transform:uppercase;line-height:1.1}#inv .ad{font-size:12.5px;font-weight:500;margin-top:3px}
+#inv .info{table-layout:fixed;border-top:1px solid var(--ink);border-bottom:1.5px solid var(--ink)}#inv .info td{border:0;border-right:1px solid var(--ink);padding:6px 10px;font-size:12px;font-weight:600}#inv .info td:last-child{border-right:0}
+#inv .k{display:block;font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#5a6b92;margin-bottom:1px}
+#inv .kv{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:1px 0}#inv .kv span{color:#5a6b92}
+#inv .sig{font-family:'Mrs Saint Delafield','Dancing Script','Segoe Script','Brush Script MT','Lucida Handwriting',cursive;font-size:42px;line-height:1;color:#14234a;min-height:52px;padding-top:4px}
+#inv td,#inv th{font-size:inherit}#inv .pt td.p,#inv .tt td.p{padding-left:1px;padding-right:1px;text-align:center}#inv .tt td{font-size:12px;padding:4px 6px}#inv .gt td{font-size:14px;font-weight:800;background:#eef2fa}
+.big-t{font-size:34px;font-weight:700;text-align:center}.rt{text-align:right}.sm{font-size:11px;color:#47598a}
+@page{size:A4;margin:8mm}
+@media print{html,body{background:#fff!important;height:auto!important}body>*:not(#app){display:none!important}#app{max-width:none!important;padding:0!important;margin:0!important}#app>*:not(.wrap){display:none!important}.wrap{border:0!important;padding:0!important;overflow:visible!important;height:auto!important}#inv{position:static!important;width:100%!important;transform:none!important}}
+
+html{-webkit-text-size-adjust:100%}body{overflow-x:hidden;overflow-wrap:anywhere}
+input,select,textarea{min-width:0;max-width:100%;min-height:58px}input[type=checkbox],input[type=file]{min-height:0}
+.two>*,.g4>*,.stp>*{min-width:0}
+@media(max-width:560px){.two.fl,.g4{grid-template-columns:1fr}}
+label{font-size:20px}.hint{font-size:18px}.note,.ok{font-size:17px}.steps span{font-size:17px}h1{font-size:26px}
+#app{padding-bottom:190px}.sticky{padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+.opt2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:6px 0 10px}.opt3{grid-template-columns:repeat(4,1fr)}
+.pk{padding:12px 4px;min-height:64px;border:3px solid var(--line);background:#fff;color:var(--ink);border-radius:14px;font-size:22px;font-weight:800;margin:0}
+.pk.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.sug{display:grid;gap:8px;margin:0 0 10px}.sug button{text-align:left;padding:14px;min-height:60px;border:2px solid var(--good);background:#eaf7ef;border-radius:12px;font-size:20px;font-weight:700;color:#0d4a23}
+.sumc{background:#fff;border:3px solid var(--ink);border-radius:16px;padding:14px;margin:10px 0}.sumc .ln{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #dde3f0;font-size:21px}.sumc .gt{font-size:30px;font-weight:800;color:var(--ink);border:0;padding-top:12px}.sumc small{font-size:17px;color:#556}
+</style></head><body><div id="app"></div>
+<datalist id="ms"></datalist><datalist id="cn"></datalist><datalist id="cm"></datalist>
+<script type="module">
+// ===== Calculation (runs fully in the browser) =====
+const r2 = (x) => Math.round((Number(x) + Number.EPSILON) * 100) / 100;
+
+function calc(items, { mode = 'included', interstate = false, discount = 0, dtype = 'amt' } = {}) {
+  const base = (items || []).map((it) => {
+    const qty = Number(it.qty) || 0, rate = Number(it.rate) || 0;
+    return { it, qty, rate, g: Number(it.gst) || 0, amt: r2(qty * rate) };
+  });
+  const sumAmt = r2(base.reduce((s, x) => s + x.amt, 0));
+  const D = Math.min(Math.max(0, r2(dtype === 'pct' ? (sumAmt * Number(discount || 0)) / 100 : discount)), sumAmt); // discount cannot exceed bill
+  let left = D, gross = 0, taxable = 0, tax = 0;
+  const lines = base.map((x, i) => {
+    const d = i === base.length - 1 ? left : r2(sumAmt ? (D * x.amt) / sumAmt : 0);
+    left = r2(left - d);
+    const net = r2(x.amt - d);
+    const split = (v) => (mode === 'included' ? r2((v * 100) / (100 + x.g)) : v);
+    const t0 = split(x.amt), tx = split(net);
+    const t = mode === 'included' ? r2(net - tx) : r2((net * x.g) / 100);
+    const cgst = interstate ? 0 : r2(t / 2);
+    const sgst = interstate ? 0 : r2(t - cgst);
+    const igst = interstate ? t : 0;
+    gross = r2(gross + t0); taxable = r2(taxable + tx); tax = r2(tax + t);
+    return { ...x.it, qty: x.qty, rate: x.rate, gst: x.g, gst_set: x.it.gst !== '' && x.it.gst != null, amt: x.amt, disc: d, t0, taxable: tx, tax: t, cgst, sgst, igst };
+  });
+  const disc = r2(gross - taxable);           // discount shown on bill (taxable value)
+  const sub = r2(taxable + tax);              // = gross - discount + tax
+  const total = Math.round(sub);
+  const roundoff = r2(total - sub);
+  return { lines, gross, tax, discount: disc, sub, roundoff, total, words: words(total) };
+}
+
+const A = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve',
+  'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+const T = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+function two(n) { return n < 20 ? A[n] : T[Math.floor(n / 10)] + (n % 10 ? ' ' + A[n % 10] : ''); }
+function conv(n) {
+  const parts = [];
+  const cr = Math.floor(n / 1e7); n %= 1e7;
+  const lk = Math.floor(n / 1e5); n %= 1e5;
+  const th = Math.floor(n / 1e3); n %= 1e3;
+  const h = Math.floor(n / 100); n %= 100;
+  if (cr) parts.push(conv(cr) + ' Crore');
+  if (lk) parts.push(two(lk) + ' Lakh');
+  if (th) parts.push(two(th) + ' Thousand');
+  if (h) parts.push(A[h] + ' Hundred');
+  if (n) parts.push(two(n));
+  return parts.join(' ');
+}
+function words(amount) {
+  const v = r2(Math.abs(amount));
+  const rs = Math.floor(v), p = Math.round((v - rs) * 100);
+  let s = 'Rupees ' + (rs ? conv(rs) : 'Zero');
+  if (p) s += ' and ' + conv(p) + ' Paise';
+  return s + ' Only';
+}
+
+// iso 'YYYY-MM-DD' + whole years; clamps to last valid day (29 Feb -> 28 Feb)
+function addYears(iso, years = 2) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const ty = y + years;
+  const last = new Date(ty, m, 0).getDate();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${ty}-${p(m)}-${p(Math.min(d, last))}`;
+}
+
+// Auto expiry: random 2-3 years after bill date (kept per product via exp_off months)
+const expRnd=()=>(Number(S&&S.expiry_years)||2)*12+Math.floor(Math.random()*13);
+const addMon=(iso,m)=>{const[y,mo]=iso.split('-').map(Number);const t=y*12+(mo-1)+m;return Math.floor(t/12)+'-'+String(t%12+1).padStart(2,'0')};
+const app=document.getElementById('app');
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const dmy=iso=>iso?iso.split('-').reverse().join('-'):'';
+const rnd=()=>Math.random().toString(36).slice(2,6).toUpperCase();
+const inr=n=>'₹ '+Number(n).toFixed(2).replace(/\.00$/,'');
+const arr=x=>Array.isArray(x)?x:[];
+const svgURI=s=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);
+const xe=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const LOGO_DEFAULT=svgURI('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1f3a6e"/><rect x="26" y="11" width="12" height="42" rx="3" fill="#fff"/><rect x="11" y="26" width="42" height="12" rx="3" fill="#fff"/><circle cx="32" cy="32" r="5.5" fill="#12803a"/></svg>');
+const genSig=n=>svgURI('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 70"><text x="8" y="42" font-family="Snell Roundhand,Segoe Script,Brush Script MT,Lucida Handwriting,Apple Chancery,cursive" font-size="34" font-style="italic" fill="#14234a">'+xe(n)+'</text><path d="M8 57C70 48 140 62 270 50" stroke="#14234a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>');
+const lsGet=k=>{try{const v=localStorage.getItem(k);return v==null?undefined:JSON.parse(v)}catch(e){return undefined}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+// ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
+// Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
+// so two bills can never get the same number, and a half-saved bill can never exist.
+const APP_VERSION='OFFLINE-1.2';
+const uuid=()=>{try{if(crypto.randomUUID)return crypto.randomUUID()}catch(e){}return 'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10)};
+let errT=0;const oops=m=>{const n=Date.now();if(n-errT<4000)return;errT=n;try{toast(m)}catch(_){}};
+window.addEventListener('error',e=>{if(e&&/Script error|ResizeObserver/.test(String(e.message||'')))return;oops('⚠ कुछ गड़बड़ हुई। दोबारा दबाएँ, या ऐप बंद करके खोलें।')});
+window.addEventListener('unhandledrejection',()=>oops('⚠ कुछ गड़बड़ हुई। दोबारा दबाएँ।'));
+const DEFAULTS={shop_name:'VISHAL MEDICAL STORE',address:'Jaffarpur, Paranapur Road, Jaffarpur, Azamgarh, Uttar Pradesh',pin:'276001',mobile:'9450994540',email:'svup50@gmail.com',gstin:'09ACTPY4775H2ZH',dl1:'UP5020B000159',dl2:'UP5021B000159',signatory:'Ramkesh Yadav',show_signatory:'1',start_no:'5001',prefix:'',transport:'SELF',terms:'',upi:'',pay_mobile:'',logo:'',signature:'',autosave:'1',expiry_years:'2'};
+const STORES=['settings','customers','medicines','invoices','assets'];
+let db=null;
+const rq=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const clip=(v,n)=>String(v??'').trim().slice(0,n);
+const numOrNull=v=>(v===''||v==null||isNaN(Number(v))?null:Number(v));
+const nowIso=()=>new Date().toISOString();
+const hashStr=s=>{let a=0xdeadbeef,b=0x41c6ce57;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);a=Math.imul(a^c,2654435761);b=Math.imul(b^c,1597334677)}a=Math.imul(a^(a>>>16),2246822507)^Math.imul(b^(b>>>13),3266489909);b=Math.imul(b^(b>>>16),2246822507)^Math.imul(a^(a>>>13),3266489909);return(4294967296*(2097151&b)+(a>>>0)).toString(36)+'-'+s.length};
+function openDB(){return new Promise((res,rej)=>{
+ if(!window.indexedDB)return rej(new Error('इस फ़ोन के ब्राउज़र में डेटा सेव करने की सुविधा नहीं है। Chrome में खोलें।'));
+ let q;try{q=indexedDB.open('vms-billing',1)}catch(e){return rej(e)}
+ q.onupgradeneeded=()=>{const d=q.result;
+  d.createObjectStore('settings',{keyPath:'key'});
+  d.createObjectStore('customers',{keyPath:'id',autoIncrement:true}).createIndex('ckey','ckey',{unique:true});
+  d.createObjectStore('medicines',{keyPath:'id',autoIncrement:true}).createIndex('name_key','name_key',{unique:true});
+  const v=d.createObjectStore('invoices',{keyPath:'serial'});v.createIndex('client_key','client_key',{unique:true});
+  d.createObjectStore('assets',{keyPath:'id'})};
+ q.onsuccess=()=>{db=q.result;db.onversionchange=()=>{try{db.close()}catch(e){}db=null};db.onclose=()=>{db=null};res(db)};
+ q.onerror=()=>rej(q.error||new Error('डेटाबेस नहीं खुला'));
+ q.onblocked=()=>rej(new Error('ऐप दूसरे टैब में खुला है। उसे बंद करके दोबारा खोलें।'))})}
+// one all-or-nothing transaction: if anything fails, nothing is saved
+async function tx(names,mode,fn){try{if(!db)await openDB();return await tx0(names,mode,fn)}catch(e){if(e&&(e.name==='InvalidStateError'||e.name==='UnknownError'||e.name==='TransactionInactiveError'||/clos|lost/i.test(String(e.message)))){db=null;await openDB();return tx0(names,mode,fn)}throw e}}
+function tx0(names,mode,fn){return new Promise((res,rej)=>{let t;const cn=db;try{t=db.transaction(names,mode)}catch(e){return rej(e)}
+ let out;const st=n=>t.objectStore(n);
+ // safety timer: if the phone's database stops answering, show a message instead of freezing forever
+ const to=setTimeout(()=>{try{t.abort()}catch(_){}try{cn.close()}catch(_){}if(db===cn)db=null;rej(new Error('डेटाबेस जवाब नहीं दे रहा। ऐप बंद करके दोबारा खोलें।'))},20000);
+ t.oncomplete=()=>{clearTimeout(to);res(out)};
+ t.onabort=()=>{clearTimeout(to);const e=t.error;rej(e&&e.name==='QuotaExceededError'?new Error('फ़ोन की जगह भरी है। जगह खाली करें, फिर दोबारा कोशिश करें।'):(e||new Error('सेव नहीं हो पाया')))};
+ Promise.resolve().then(()=>fn(st)).then(v=>{out=v}).catch(e=>{clearTimeout(to);rej(e);try{t.abort()}catch(_){}})})}
+const getAllSet=async st=>{const o={...DEFAULTS};(await rq(st('settings').getAll())).forEach(r=>{if(r.key in DEFAULTS)o[r.key]=r.value});return o};
+const getSettings=()=>tx(['settings'],'readonly',getAllSet);
+async function putSettings(b){
+ for(const k of['logo','signature'])if(k in b&&String(b[k]||'').length>700000)throw new Error('फोटो बहुत बड़ी है, छोटी फोटो चुनें');
+ await tx(['settings'],'readwrite',st=>{const s=st('settings');
+  Object.keys(DEFAULTS).filter(k=>k in b).forEach(k=>{const big=k==='logo'||k==='signature';
+   s.put({key:k,value:k==='prefix'?clip(b[k],6).replace(/[^A-Za-z0-9\/-]/g,''):big?String(b[k]||''):clip(b[k],k==='terms'?1500:300)})})});
+ return getSettings()}
+// logo/signature pictures are big: stored once and shared by all bills (saves space)
+async function packShop(st0,assets){const sh={...st0};
+ for(const[k,idk]of[['logo','logo_id'],['signature','sig_id']]){const v=sh[k];
+  if(v){const i='a'+hashStr(v);if(!(await rq(assets.getKey(i))))await rq(assets.put({id:i,data:v}));sh[idk]=i}
+  sh[k]=''}
+ return sh}
+async function readInvoice(r,assets){const shop={...r.shop};
+ if(shop.logo_id){const a=await rq(assets.get(shop.logo_id));shop.logo=a?a.data:''}
+ if(shop.sig_id){const a=await rq(assets.get(shop.sig_id));shop.signature=a?a.data:''}
+ return{...r,shop,interstate:!!r.interstate}}
+const byName=(a,b)=>String(a.name||'').localeCompare(String(b.name||''),undefined,{sensitivity:'base'});
+// ---- customers ----
+const custBody=b=>{const name=clip(b.name,100),mobile=clip(b.mobile,15).replace(/\D/g,'');
+ return{name,mobile,address:clip(b.address,250),gstin:clip(b.gstin,15).toUpperCase(),dl:clip(b.dl,50),ckey:mobile?'m:'+mobile:'n:'+name.toLowerCase()}};
+async function custUpsert(store,x,merge){const old=await rq(store.index('ckey').get(x.ckey));
+ if(!old){await rq(store.add({...x,updated:nowIso()}));return}
+ const n={...old,updated:nowIso()};
+ n.name=merge?(x.name||old.name):x.name;n.address=merge?(x.address||old.address):x.address;
+ n.gstin=merge?(x.gstin||old.gstin):x.gstin;n.dl=merge?(x.dl||old.dl):x.dl;
+ await rq(store.put(n))}
+async function custGet(q,all){const t=q.toLowerCase();
+ let r=await tx(['customers'],'readonly',st=>rq(st('customers').getAll()));
+ r=r.filter(x=>!t||String(x.name||'').toLowerCase().includes(t)||String(x.mobile||'').includes(t));
+ return all?r.sort(byName).slice(0,500):r.sort((a,b)=>String(b.updated).localeCompare(String(a.updated))).slice(0,8)}
+// ---- medicines ----
+// ---- invoices ----
+async function nextSerialIn(I,start){const c=await rq(I.openKeyCursor(null,'prev'));return Math.max((c?Number(c.key):0)+1,Number(start)||1)}
+async function saveInvoice(b){
+ const key=clip(b.client_key,80);if(!key)throw new Error('बिल की पहचान नहीं बनी, दोबारा कोशिश करें');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(clip(b.date,10)))throw new Error('तारीख़ सही नहीं है');
+ const L0=Array.isArray(b.lines)?b.lines.slice(0,60):[];
+ if(!L0.length)throw new Error('कम से कम एक दवाई चाहिए');
+ const fin=v=>Number.isFinite(Number(v));
+ for(const it of L0){if(!clip(it.name,150))throw new Error('दवाई का नाम खाली है');
+  if(!(Number(it.qty)>0))throw new Error('संख्या सही नहीं है: '+clip(it.name,40));
+  if(!fin(it.rate)||!fin(it.amt))throw new Error('भाव सही नहीं है: '+clip(it.name,40))}
+ const lines=L0.map(l=>({...l,name:clip(l.name,150),mrp:numOrNull(l.mrp),hsn:clip(l.hsn,20),pack:clip(l.pack,50),mfr:clip(l.mfr,100),batch:clip(l.batch,50),expiry:clip(l.expiry,10),free:clip(l.free,20),unit:l.unit==='strip'?'strip':'box'}));
+ const tot={gross:Number(b.gross),tax:Number(b.tax),discount:Number(b.discount),roundoff:Number(b.roundoff),total:Number(b.total)};
+ if(!Object.values(tot).every(Number.isFinite)||tot.total<0)throw new Error('बिल का कुल जोड़ सही नहीं है');
+ const cu=b.customer||{},cust={name:clip(cu.name,100),mobile:clip(cu.mobile,15),address:clip(cu.address,250),gstin:clip(cu.gstin,15).toUpperCase(),dl:clip(cu.dl,50),state:/^\d{2}$/.test(clip(cu.state,2))?clip(cu.state,2):''};
+ return tx(['invoices','customers','medicines','settings','assets'],'readwrite',async st=>{
+  const I=st('invoices'),A=st('assets');
+  const dup=await rq(I.index('client_key').get(key));
+  if(dup)return readInvoice(dup,A); // double-tap safe: same bill is never created twice
+  const S0=await getAllSet(st);
+  const serial=await nextSerialIn(I,S0.start_no);
+  const rec={serial,inv_no:S0.prefix+serial,client_key:key,date:b.date,customer:cust,shop:await packShop(S0,A),cust_name:cust.name,cust_mobile:cust.mobile,mode:b.mode==='excluded'?'excluded':'included',interstate:!!b.interstate,...tot,words:clip(b.words,300),lines,created:nowIso()};
+  await rq(I.add(rec));
+  if(cust.name||cust.mobile)await custUpsert(st('customers'),custBody(cust),true);
+  return readInvoice(rec,A)})}
+function invList(q){const t=q.toLowerCase(),c0=new Date();c0.setMonth(c0.getMonth()-6);
+ const cd=c0.getFullYear()+'-'+String(c0.getMonth()+1).padStart(2,'0')+'-'+String(c0.getDate()).padStart(2,'0');
+ return tx(['invoices'],'readonly',st=>new Promise((res,rej)=>{const out=[],c=st('invoices').openCursor(null,'prev');
+  c.onsuccess=()=>{const u=c.result;if(!u||out.length>=200)return res(out);const r=u.value;
+   const ok=t?[String(r.serial),r.inv_no,r.cust_name,r.cust_mobile].some(v=>String(v||'').toLowerCase().includes(t)):String(r.date)>=cd;
+   if(ok)out.push({id:r.serial,serial:r.serial,inv_no:r.inv_no,date:r.date,cust_name:r.cust_name,cust_mobile:r.cust_mobile,total:r.total});
+   u.continue()};
+  c.onerror=()=>rej(c.error)}))}
+function invGet(id){id=Number(id);if(!Number.isInteger(id)||id<1)return Promise.reject(new Error('बिल नहीं मिला'));
+ return tx(['invoices','assets'],'readonly',async st=>{const r=await rq(st('invoices').get(id));if(!r)throw new Error('बिल नहीं मिला');return readInvoice(r,st('assets'))})}
+const nextInfo=()=>tx(['invoices','settings'],'readonly',async st=>{const S0=await getAllSet(st);return{next:await nextSerialIn(st('invoices'),S0.start_no),prefix:S0.prefix}});
+// ---- backup / restore ----
+const dumpAll=()=>tx(STORES,'readonly',async st=>{const o={version:2,app:'vms',created:nowIso()};
+ for(const n of STORES)o[n]=await rq(st(n).getAll());o.settings=o.settings.filter(r=>r.key in DEFAULTS);return o});
+function convOld(b){const js=x=>{try{return JSON.parse(x)||{}}catch(e){return{}}},by={};
+ b.invoice_lines.forEach(l=>{(by[l.invoice_id]||(by[l.invoice_id]=[])).push(l)});
+ return{settings:b.settings.filter(r=>r&&r.key in DEFAULTS).map(r=>({key:r.key,value:String(r.value??'')})),
+  customers:b.customers,medicines:b.medicines,assets:[],
+  invoices:b.invoices.map(r=>({serial:Number(r.serial),inv_no:r.inv_no||String(r.serial),client_key:String(r.client_key||''),date:r.date,customer:js(r.customer_json),shop:js(r.shop_json),cust_name:r.cust_name||'',cust_mobile:r.cust_mobile||'',mode:r.mode==='excluded'?'excluded':'included',interstate:!!r.interstate,discount:Number(r.discount)||0,gross:Number(r.gross)||0,tax:Number(r.tax)||0,roundoff:Number(r.roundoff)||0,total:Number(r.total)||0,words:r.words||'',lines:(by[r.id]||[]).sort((a,c)=>(a.pos||0)-(c.pos||0)).map(l=>js(l.data_json)),created:r.created||''}))}}
+async function restoreAll(b){let d;
+ if(b&&b.version===2&&b.app==='vms'&&STORES.every(n=>Array.isArray(b[n])))d=b;
+ else if(b&&b.version===1&&['settings','customers','medicines','invoices','invoice_lines'].every(t=>Array.isArray(b[t])))d=convOld(b);
+ else throw new Error('बैकअप फ़ाइल सही नहीं है');
+ const ks=new Set(),ss=new Set();
+ for(const r of d.invoices){
+  if(!r||!Number.isInteger(r.serial)||r.serial<1||!r.client_key||!Array.isArray(r.lines)||!/^\d{4}-\d{2}-\d{2}$/.test(String(r.date)))throw new Error('बैकअप में कोई बिल ख़राब है');
+  if(ks.has(r.client_key)||ss.has(r.serial))throw new Error('बैकअप में एक बिल दो बार है');ks.add(r.client_key);ss.add(r.serial)}
+ await tx(STORES,'readwrite',async st=>{
+  for(const n of STORES)await rq(st(n).clear());
+  const A=st('assets');
+  for(const x of d.assets)if(x&&x.id)await rq(A.put(x));
+  for(const x of d.settings)if(x&&typeof x.key==='string'&&x.key in DEFAULTS)await rq(st('settings').put({key:x.key,value:String(x.value??'')}));
+  const seenC=new Set();for(const x of d.customers){if(!x||typeof x!=='object')continue;if(x.ckey){if(seenC.has(x.ckey))continue;seenC.add(x.ckey)}await rq(st('customers').put(x))}
+  for(const r of d.invoices){if(r.shop&&(r.shop.logo||r.shop.signature))r.shop=await packShop(r.shop,A);await rq(st('invoices').put(r))}})}
+// ---- one-time: bring over data the OLD online version kept on this phone ----
+async function migrateOld(){if(lsGet('mig_v3'))return;
+ try{
+  const cs=lsGet('c:/settings');
+  if(cs&&typeof cs==='object'&&!(await tx(['settings'],'readonly',st=>rq(st('settings').count())))){const b={};Object.keys(DEFAULTS).forEach(k=>{if(k in cs)b[k]=cs[k]});await putSettings(b)}
+  const cc=lsGet('c:/customers?all=1&q=');
+  if(Array.isArray(cc))for(const x of cc){if(!x||(!x.name&&!x.mobile))continue;try{await tx(['customers'],'readwrite',st=>custUpsert(st('customers'),custBody(x),false))}catch(e){}}
+  // bills made without internet that never reached the server: keep them safe here
+  for(const it of[...(lsGet('outbox')||[]),...(lsGet('outbox_bad')||[])]){const o=it&&it.local;
+   if(!o||!o.client_key||!Array.isArray(o.lines)||!o.lines.length)continue;
+   try{await tx(['invoices','assets','customers'],'readwrite',async st=>{const I=st('invoices');
+    if(await rq(I.index('client_key').get(String(o.client_key))))return;
+    let serial=Number(o.serial);if(!Number.isInteger(serial)||serial<1||await rq(I.getKey(serial)))serial=await nextSerialIn(I,1);
+    const cu=o.customer||{},sh=await packShop(o.shop||{},st('assets'));
+    await rq(I.add({serial,inv_no:(serial===Number(o.serial)&&o.inv_no)?String(o.inv_no):String(serial),client_key:String(o.client_key),date:o.date,customer:cu,shop:sh,cust_name:o.cust_name||cu.name||'',cust_mobile:o.cust_mobile||cu.mobile||'',mode:o.mode==='excluded'?'excluded':'included',interstate:!!o.interstate,discount:Number(o.discount)||0,gross:Number(o.gross)||0,tax:Number(o.tax)||0,roundoff:Number(o.roundoff)||0,total:Number(o.total)||0,words:o.words||'',lines:o.lines,created:nowIso()}));
+    if(cu.name||cu.mobile)await custUpsert(st('customers'),custBody(cu),true)})}catch(e){}}
+  lsSet('mig_v3',1)}catch(e){}}
+// ---- same paths the screens already use, now answered from the local database ----
+async function api(p,o={}){const m=(o.method||'GET').toUpperCase(),b=o.body||{},[path,qs]=p.split('?'),sp=new URLSearchParams(qs||''),q=sp.get('q')||'',all=!!sp.get('all'),id=Number(path.split('/')[2]);
+ if(path==='/settings'){if(m==='PUT'){const r=await putSettings(b);NX=null;return r}return getSettings()}
+ if(path==='/next')return nextInfo();
+ if(path==='/customers'&&m==='GET')return custGet(q,all);
+ if(path==='/customers'&&m==='POST'){const x=custBody(b);if(!x.name&&!x.mobile)throw new Error('नाम या मोबाइल लिखें');await tx(['customers'],'readwrite',st=>custUpsert(st('customers'),x,false));return{ok:true}}
+ if(path.startsWith('/customers/')&&m==='PUT'){const x=custBody(b);if(!x.name&&!x.mobile)throw new Error('नाम या मोबाइल लिखें');
+  await tx(['customers'],'readwrite',async st=>{const S=st('customers'),old=await rq(S.get(id));if(!old)throw new Error('ग्राहक नहीं मिला');
+   const d=await rq(S.index('ckey').get(x.ckey));if(d&&d.id!==id)throw new Error('इस नाम/मोबाइल का ग्राहक पहले से सूची में है');
+   await rq(S.put({...old,...x,updated:nowIso()}))});return{ok:true}}
+ if(path.startsWith('/customers/')&&m==='DELETE'){await tx(['customers'],'readwrite',st=>rq(st('customers').delete(id)));return{ok:true}}
+ if(path==='/invoices'&&m==='POST')return saveInvoice(b);
+ if(path==='/invoices'&&m==='GET')return invList(q);
+ if(path.startsWith('/invoices/')&&m==='GET')return invGet(id);
+ if(path==='/restore'&&m==='POST'){await restoreAll(o.body);NX=null;return{ok:true}}
+ throw new Error('अंदरूनी गड़बड़: '+p)}
+function saveBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),8000)}
+async function makeBackup(pre){const d=await dumpAll();saveBlob(new Blob([JSON.stringify(d)],{type:'application/json'}),(pre||'')+'vishal-backup-'+today()+'.json');lsSet('last_backup',Date.now())}
+async function doBackup(){try{await makeBackup();toast('✔ बैकअप फ़ोन में सेव हो गया');backupBar()}catch(e){say('बैकअप नहीं बन पाया: '+e.message)}}
+async function backupBar(){const el=document.getElementById('bk');if(!el)return;let n=0;
+ try{n=await tx(['invoices'],'readonly',st=>rq(st('invoices').count()))}catch(e){}
+ if(!n){el.innerHTML='';return}
+ const t=Number(lsGet('last_backup'))||0,days=t?Math.floor((Date.now()-t)/864e5):null,old=days===null||days>=7;
+ el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 2px 0;border-top:1px solid var(--line);font-size:15px;color:${old?'#b45f00':'#556'}"><span>${days===null?'⚠ बैकअप नहीं लिया':days<=0?'✔ आज बैकअप लिया':'बैकअप: '+days+' दिन पहले'}</span><button onclick="doBackup()" style="border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:6px 12px;font-size:15px;font-weight:700">💾 बैकअप लें</button></div>`}
+function modal(msg,btns){return new Promise(res=>{const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:20px;z-index:9';
+ d.innerHTML=`<div style="background:#fff;border-radius:18px;padding:20px;max-width:440px;width:100%;max-height:88vh;overflow:auto"><p style="font-size:23px;margin:0 0 10px;white-space:pre-line">${esc(msg)}</p>${btns.map((b,i)=>`<button class="btn ${b[1]}" data-i="${i}">${b[0]}</button>`).join('')}</div>`;
+ const fin=i=>{d.remove();const j=MODALS.indexOf(fin);if(j>=0)MODALS.splice(j,1);res(i)};MODALS.push(fin);d.onclick=e=>{const b=e.target.closest&&e.target.closest('[data-i]');if(b)fin(Number(b.dataset.i))};document.body.appendChild(d)})}
+const MODALS=[];
+const ask=m=>modal(m,[['हाँ','main'],['नहीं','']]).then(i=>i===0);
+const say=m=>modal(m,[['ठीक है','main']]);
+let S={},D=null,view='home',V=null,cache={cust:[],med:[]},NX=null;
+const UN={box:'बॉक्स',strip:'स्ट्रिप'},UE={box:'Box',strip:'Strip'};
+const uk=it=>it&&it.unit==='strip'?'strip':'box';
+const unitTxt=u=>u==='strip'?'💊 स्ट्रिप में बेच रहे हैं (टिक हटाएँ = बॉक्स)':'स्ट्रिप में बेचना है? टिक करें (अभी: 📦 बॉक्स)';
+const ZB='<button class=btn onclick="zoom()">🔍 पूरा बिल बड़ा / छोटा करें</button>';
+const autoBatch=()=>'TMP-'+String(new Date().getFullYear()).slice(2)+String(new Date().getMonth()+1).padStart(2,'0')+Math.random().toString(36).slice(2,5).toUpperCase();
+const blank=(dt)=>{const off=expRnd();return {name:'',qty:1,unit:'box',mrp:'',rate:'',rt:false,open:false,active:true,hsn:'30049099',pack:'',batch:autoBatch(),batch_status:'temp',exp_off:off,expiry:addMon(dt||(D?D.date:today()),off),expiry_status:'suggested',free:'',gst:'5',mfr:'',save:true}};
+function newDraft(){D={client_key:uuid(),date:today(),customer:{name:'',mobile:'',address:'',gstin:'',dl:'',state:''},interstate:false,dtype:'amt',mode:'included',discount:'',items:[],saved:null};D.items=[blank()]}
+const persist=()=>{try{if(D&&!D.saved)localStorage.setItem('draft',JSON.stringify(D))}catch(e){}};
+function go(v){history.pushState({v},'');show(v)}
+window.addEventListener('popstate',e=>{MODALS.slice().forEach(f=>f(-1));show(e.state&&e.state.v?e.state.v:'home')});
+window.addEventListener('resize',()=>fit());
+function show(v){
+ if(v==='cust'||v==='prod'||v==='prev'){
+  if(D.saved)v='prev';
+  else if(v==='prev'&&!D.items.some(i=>String(i.name||'').trim())){v='home';try{history.replaceState({v:'home'},'')}catch(e){}}}
+ else if(v==='old'&&!V)v='home';
+ const f=({home,cust:custScr,prod:prodScr,prev:prevScr,set:setScr,old:oldScr,list:listScr})[v]||home;
+ Z=false;view=v;f();window.scrollTo(0,0)}
+function listScr(){oldBillScr(lastQ)}
+const back=()=>history.back();
+const head=n=>`<div class=bar><button class=ghost onclick="back()">⬅ पीछे</button></div><div class=steps>${['ग्राहक','दवाइयाँ','बिल देखें'].map((t,i)=>`<span class="${i+1===n?'on':i+1<n?'done':''}">${i+1}. ${t}</span>`).join('')}</div>`;
+function fit(){const w=document.getElementById('wrap'),i=document.getElementById('inv');if(!w||!i)return;const s=Z?1:Math.min(1,(w.clientWidth-8)/760);w.style.overflowX=Z?'auto':'hidden';i.style.transformOrigin='top left';i.style.transform=`scale(${s})`;w.style.height=(i.offsetHeight*s+8)+'px'}
+
+
+const CALC=()=>calc(D.items,{mode:D.mode,interstate:D.interstate,discount:D.discount,dtype:D.dtype});
+const ST={'01':'Jammu & Kashmir','02':'Himachal Pradesh','03':'Punjab','04':'Chandigarh','05':'Uttarakhand','06':'Haryana','07':'Delhi','08':'Rajasthan','09':'Uttar Pradesh','10':'Bihar','11':'Sikkim','12':'Arunachal Pradesh','13':'Nagaland','14':'Manipur','15':'Mizoram','16':'Tripura','17':'Meghalaya','18':'Assam','19':'West Bengal','20':'Jharkhand','21':'Odisha','22':'Chhattisgarh','23':'Madhya Pradesh','24':'Gujarat','26':'Dadra & Nagar Haveli and Daman & Diu','27':'Maharashtra','29':'Karnataka','30':'Goa','31':'Lakshadweep','32':'Kerala','33':'Tamil Nadu','34':'Puducherry','35':'Andaman & Nicobar','36':'Telangana','37':'Andhra Pradesh','38':'Ladakh'};
+const shopSt=()=>(S.gstin||'').slice(0,2);
+const posOf=(o,sh)=>{const g=((o.customer&&o.customer.gstin)||'').slice(0,2),st=o.customer&&o.customer.state,me=((sh&&sh.gstin)||'').slice(0,2);return ST[g]?g:(ST[st]?st:me)};
+let Z=false;const zoom=()=>{Z=!Z;fit()};
+const stchg=v=>{D.customer.state=v;D.interstate=v!==shopSt();persist()};
+const pc=k=>{const m=cache.cust[k];if(!m)return;D.customer={name:m.name||'',mobile:m.mobile||'',address:m.address||'',gstin:m.gstin||'',dl:m.dl||'',state:''};D.interstate=false;gsin({value:D.customer.gstin});persist();fillCust()};
+const gset=(i,v)=>{D.items[i].gst=v;rows();upd();persist()};
+const gother=i=>{const it=D.items[i];if(['0','5','18'].includes(String(it.gst))){it.gst=''}rows();upd();persist();const e=document.getElementById('go'+i);if(e)e.focus()};
+const dt=t=>{D.dtype=t;D.discount='';prodScr();document.getElementById('opt').hidden=false};
+const summ=o=>{const L=arr(o.lines),dsc=L.reduce((a,l)=>a+(Number(l.disc)||0),0),inc=o.mode==='included';
+ return `<div class=sumc><b>${esc((o.customer&&o.customer.name)||'नगद ग्राहक')}</b>${L.map((l,n)=>`<div class=ln><span>${n+1}. ${esc(l.name)}<br><small>${l.qty} ${UN[uk(l)]} × ₹${Number(l.rate)} · GST ${l.gst_set?l.gst+'%':'—'}</small></span><b>${inr(l.amt)}</b></div>`).join('')}${dsc>0?`<div class=ln><span>छूट</span><b>- ${inr(dsc)}</b></div>`:''}<div class=ln><span>${inc?'(इसमें GST शामिल है)':'+ GST (ऊपर से जुड़ा)'}</span><b>${inr(o.tax)}</b></div><div class="ln gt"><span>कुल</span><b>${inr(o.total)}</b></div></div><button class=btn onclick="zoom()">🔍 पूरा बिल बड़ा / छोटा करें</button>`};
+// ---------- HOME ----------
+function home(){
+ const pf=pfill;pfill='';
+ app.innerHTML=`<div style="display:flex;flex-direction:column;min-height:calc(100vh - 150px)"><div style="display:flex;justify-content:flex-end;height:36px"><button onclick="go('set')" aria-label="सेटिंग" style="border:0;background:none;font-size:22px;opacity:.55;padding:4px 8px">⚙</button></div><h1 style="margin:8px 0 28px">🏥 ${esc(S.shop_name)}</h1><button class="btn main huge" onclick="newBill()">📝 नया बिल बनाएँ</button><button class="btn huge" style="margin-top:12px;background:var(--ink2,#f0f4ff);color:var(--ink)" onclick="go('list')">🔍 पुराने बिल देखें</button><div id=bk style="margin-top:auto"></div></div>`;backupBar();
+ if(pf)oldBillScr(pf)}
+
+let lastQ='',st,sq=0;
+function oldBillScr(prefill){prefill=prefill==null?'':String(prefill);
+ app.innerHTML=`<h1>🔍 पुराने बिल</h1>
+ <div class=item style="margin:0 0 14px"><label for=q style="display:block;margin:0 0 6px;font-weight:700;color:var(--ink)">ग्राहक का नंबर</label>
+  <input id=q type=search inputmode=tel enterkeyhint=search autocomplete=off style="width:100%;margin:0 0 10px" value="${esc(prefill)}" placeholder="ग्राहक का मोबाइल नंबर टाइप करें" onkeydown="if(event.key==='Enter')search(0)">
+  <button class="btn main" style="margin:0" onclick="search(0)">🔍 खोजें</button></div>
+ <h3 id=ht style="margin-top:8px"></h3><div id=list><p class=hint>ग्राहक का नंबर लिखकर "खोजें" दबाएँ। नंबर खाली छोड़कर दबाने पर पिछले 6 महीने के बिल दिखेंगे।</p></div>
+ <button class=ghost onclick="back()" style="margin-top:16px">← वापस</button>`;
+ if(prefill)search(0)}
+function search(d){clearTimeout(st);st=setTimeout(async()=>{const el=document.getElementById('q');if(!el)return;const t=el.value.trim();lastQ=t;const n=++sq;
+ try{const r=await api('/invoices?q='+encodeURIComponent(t));if(n!==sq)return;const L=document.getElementById('list'),H=document.getElementById('ht');if(!L||!H)return;
+ if(!Array.isArray(r))throw new Error('बिल की सूची नहीं मिली');
+ const tot=inr(r.reduce((a,i)=>a+Number(i.total||0),0));
+ H.textContent=r.length?(t?r.length+' बिल मिले, कुल '+tot:'पिछले 6 महीने के '+r.length+' बिल, कुल '+tot):(t?'कोई बिल नहीं मिला':'');
+ L.innerHTML=r.map(i=>`<div class=item onclick="openInv(${Number(i.id)})"><b>बिल नं. ${esc(i.inv_no||i.serial)}</b> · ${dmy(i.date)}<br>${esc(i.cust_name||'नगद ग्राहक')} ${esc(i.cust_mobile)}<div style="text-align:right;font-size:24px"><b>${inr(i.total)}</b></div></div>`).join('')||'<p>'+(t?'कोई बिल नहीं मिला।':'अभी कोई बिल नहीं बना।')+'</p>'}
+ catch(e){if(n!==sq)return;const L=document.getElementById('list');if(L)L.innerHTML='<p class=warn>'+esc(e.message)+'</p>'}},d==null?250:d)}
+function cleanDraft(d){try{if(!d||typeof d!=='object'||!Array.isArray(d.items)||!d.items.length)return null;
+ const dt=/^\d{4}-\d{2}-\d{2}$/.test(String(d.date))?d.date:today();
+ const n={client_key:String(d.client_key||uuid()),date:dt,customer:Object.assign({name:'',mobile:'',address:'',gstin:'',dl:'',state:''},d.customer&&typeof d.customer==='object'?d.customer:{}),interstate:!!d.interstate,dtype:d.dtype==='pct'?'pct':'amt',mode:'included',discount:d.discount==null?'':d.discount,items:[],saved:null};
+ n.items=d.items.slice(0,60).map(it=>Object.assign(blank(dt),it&&typeof it==='object'?it:{}));
+ n.items.forEach(it=>{it.name=String(it.name==null?'':it.name);it.qty=it.qty==null?1:it.qty;it.rate=it.rate==null?'':it.rate;it.gst=it.gst==null?'':it.gst});
+ return n}catch(e){return null}}
+let nbBusy=false;
+async function newBill(){if(nbBusy)return;nbBusy=true;try{let d=null;try{d=cleanDraft(JSON.parse(localStorage.getItem('draft')))}catch(e){}
+ if(d&&(String(d.customer.name||'').trim()||d.items.some(i=>i.name.trim()))){const i=await modal('पिछला अधूरा बिल मिला है। क्या करें?',[['वही बिल जारी रखें','main'],['नया बिल शुरू करें','']]);if(i===-1)return;if(i===0){D=d;dchg(today())}else newDraft()}else newDraft();go('cust')}finally{nbBusy=false}}
+async function openInv(id){try{V=await api('/invoices/'+id);go('old')}catch(e){say(e.message)}}
+
+// ---------- STEP 1 ----------
+function custScr(){const c=D.customer;
+ app.innerHTML=`${head(1)}<h2>ग्राहक का नाम</h2><input id=cn_name autocomplete=off value="${esc(c.name)}" oninput="cs('name',this)" onchange="pick('name')" placeholder="नाम (न लिखें तो भी चलेगा)">
+ <h2>मोबाइल नंबर</h2><input id=cn_mobile autocomplete=off inputmode=numeric value="${esc(c.mobile)}" oninput="cs('mobile',this)" onchange="pick('mobile')" placeholder="मोबाइल (ज़रूरी नहीं)"><div class=sug id=csg></div>
+ <button class=btn onclick="tgm()">➕ और जानकारी (पता, GSTIN, लाइसेंस, तारीख)</button>
+ <div id=more hidden><h2>पता</h2><input id=cn_addr value="${esc(c.address)}" oninput="D.customer.address=this.value;persist()">
+ <h2>GSTIN</h2><input id=gs value="${esc(c.gstin)}" oninput="gsin(this)" style="text-transform:uppercase">
+ <h2>ग्राहक का ड्रग लाइसेंस नं.</h2><input id=cn_dl value="${esc(c.dl)}" oninput="D.customer.dl=this.value;persist()">
+ <h2>बिल की तारीख</h2><input type=date value="${D.date}" onchange="dchg(this.value)">
+ <h2>ग्राहक का राज्य</h2><select id=stsel onchange="stchg(this.value)">${Object.entries(ST).map(([k,v])=>`<option value=${k} ${k===(c.state||shopSt())?'selected':''}>${v}</option>`).join('')}</select><p class=hint>दूसरे राज्य का ग्राहक हो तो IGST लगेगा। GSTIN लिखने पर राज्य अपने आप बदल जाता है।</p></div>
+ <button class="btn main huge" onclick="go('prod')">आगे बढ़ें ➡</button><p class=hint>नाम न हो तो भी आगे बढ़ सकते हैं।</p>`}
+const tgm=()=>{const m=document.getElementById('more');m.hidden=!m.hidden};
+function dchg(v){if(!/^\d{4}-\d{2}-\d{2}$/.test(String(v||''))){const e=document.querySelector('input[type=date]');if(e)e.value=D.date;return}D.date=v;D.items.forEach(it=>{if(it.expiry_status==='suggested'){if(it.exp_off==null)it.exp_off=expRnd();it.expiry=addMon(v,it.exp_off)}});persist()}
+let csq=0;async function cs(f,el){D.customer[f]=el.value;persist();const n=++csq;if(el.value.length<2){const z=document.getElementById('csg');if(z)z.innerHTML='';return}
+ try{const r=arr(await api('/customers?q='+encodeURIComponent(el.value)));if(n!==csq)return;cache.cust=r;
+ const cb=document.getElementById('csg');if(cb)cb.innerHTML=cache.cust.slice(0,4).map((x,k)=>`<button onclick="pc(${k})">👤 ${esc(x.name||'')} ${esc(x.mobile||'')}</button>`).join('')}catch(e){}}
+function pick(f){const v=D.customer[f];const m=cache.cust.find(x=>x[f]===v);if(!m)return;
+ D.customer={name:m.name||'',mobile:m.mobile||'',address:m.address||'',gstin:m.gstin||'',dl:m.dl||'',state:''};D.interstate=false;gsin({value:D.customer.gstin});persist();fillCust()}
+function fillCust(){const c=D.customer,f=(i,v)=>{const e=document.getElementById(i);if(e)e.value=v||''};f('cn_name',c.name);f('cn_mobile',c.mobile);f('cn_addr',c.address);f('gs',c.gstin);f('cn_dl',c.dl);const b=document.getElementById('stsel');if(b)b.value=c.state||shopSt();const g=document.getElementById('csg');if(g)g.innerHTML=''}
+function gsin(el){const g=el.value.toUpperCase().trim();D.customer.gstin=g;const c=g.slice(0,2);if(ST[c]){D.customer.state=c;D.interstate=c!==shopSt();const b=document.getElementById('stsel');if(b)b.value=c}persist()}
+
+// ---------- STEP 2 ----------
+function prodScr(){
+ if(!D.items.some(it=>it.active!==false))D.items[0].active=true;
+ app.innerHTML=`${head(2)}<div class=item id=gtop style="font-weight:700;margin-top:0"></div><div id=rows></div><button class="btn good" onclick="addRow()">➕ दूसरी दवाई जोड़ें</button>
+ <div class=sticky><div><div class=tl><span>कुल रकम:</span><b id=tot>₹ 0</b></div><button class="btn main" onclick="toPrev()">आगे: बिल देखें ➡</button></div></div>`;rows();upd();gxs()}
+const tgo=()=>{const m=document.getElementById('opt');m.hidden=!m.hidden};
+const gxs=()=>{const x=D.mode==='excluded',s=document.getElementById('gxs'),b=document.getElementById('obtn');const gt=document.getElementById('gtop');if(gt){gt.textContent=x?'🔴 GST रेट के ऊपर से अलग जुड़ेगा':'';gt.style.display=x?'':'none';gt.style.color='#c0392b'}
+ if(s){s.textContent=x?'चालू: GST रेट के ऊपर से अलग जुड़ेगा।':'बंद: GST आपके रेट के अंदर ही शामिल है (सामान्य)।';s.style.color=x?'#c0392b':'#157a3a';s.style.fontWeight=700}
+ if(b)b.textContent='⚙ छूट / GST विकल्प'+(x?'  —  🔴 GST अलग से':'');
+ if(x){const o=document.getElementById('opt');if(o)o.hidden=false}};
+async function gxToggle(el){if(el.checked){const ok=await ask('ध्यान दें: अब GST आपके रेट के ऊपर से अलग जुड़ेगा।\n\nजैसे ₹100 की दवाई पर 5% GST हो तो बिल ₹105 का बनेगा (₹100 + ₹5 GST)।\n\nपहले ₹100 में ही GST शामिल रहता था।\n\nक्या GST अलग से जोड़ें?');
+  if(!ok){el.checked=false;return}D.mode='excluded'}else D.mode='included';
+ gxs();upd();persist()}
+function rows(){document.getElementById('rows').innerHTML=D.items.map((it,i)=>{
+ const isActive=it.active!==false;
+ const unitLabel=uk(it)==='strip'?'💊 स्ट्रिप':'📦 बॉक्स';
+ // Condensed view for inactive items
+ if(!isActive){
+  return `<div class=row style="cursor:pointer;padding:10px 12px" onclick="activateRow(${i})">
+   <div style="display:flex;justify-content:space-between;align-items:center">
+    <div><b style="font-size:17px">${esc(it.name)||'दवाई नं. '+(i+1)}</b><br><span style="color:#666;font-size:15px">${esc(it.qty)} ${unitLabel}${it.rate?' · ₹'+esc(it.rate):''}</span></div>
+    <div style="text-align:right"><b id=a${i} style="font-size:20px">₹ 0</b><br><span style="color:#888;font-size:13px">टैप करें ✏</span></div>
+   </div>
+   <div class=warn id=w${i}></div>
+  </div>`}
+ // Expanded (active) view
+ const bs=it.batch_status==='temp'?'<span class=note>अस्थायी नंबर — कंपनी का बैच नंबर नहीं है</span>':it.batch_status==='confirmed'?'<span class=ok>✔ आपने पक्का किया</span>':'';
+ const es=it.expiry_status==='suggested'?'<span class=note>अपने-आप लगी तारीख (2–3 साल आगे) — पैक से मिलाकर सही करें</span>':it.expiry_status==='confirmed'?'<span class=ok>✔ पैक से पक्की की गई तारीख</span>':'';
+ return `<div class=row><div class=rh><b>दवाई नं. ${i+1}</b>${D.items.length>1?`<button class=x onclick="rmc(${i})">🗑 हटाएँ</button>`:''}</div>
+ <label>दवाई का नाम</label><input id=n${i} autocomplete=off placeholder="जैसे: Paracetamol 500" value="${esc(it.name)}" oninput="pn(${i},this)">
+ <label>संख्या और इकाई</label>
+ <div class=qrow>
+  <div class=stp><button onclick="qs(${i},-1)">−</button><input id=q${i} type=number inputmode=decimal value="${esc(it.qty)}" oninput="sf(${i},'qty',this.value)"><button onclick="qs(${i},1)">+</button></div>
+  <div class=ut><button class="${uk(it)==='box'?'on':''}" onclick="su(${i},false)">📦 बॉक्स</button><button class="${uk(it)==='strip'?'on':''}" onclick="su(${i},true)">💊 स्ट्रिप</button></div>
+ </div>
+ <div class="two fl"><div><label>MRP (प्रति ${UN[uk(it)]}) <span style="color:#888;font-weight:400;font-size:14px">— ज़रूरी नहीं</span></label><input type=number inputmode=decimal placeholder="खाली छोड़ सकते हैं" value="${esc(it.mrp)}" oninput="mr(${i},this.value)"></div>
+ <div><label>आपका भाव (प्रति ${UN[uk(it)]}) <span style="color:#c00;font-size:14px">*</span></label><input id=r${i} type=number inputmode=decimal placeholder="ज़रूरी — यहाँ भरें" value="${esc(it.rate)}" oninput="it_rt(${i},this.value)"></div></div>
+ <div class=warn id=w${i}></div><div class=amtline>रकम: <b id=a${i}>₹ 0</b></div>
+ <button class=btn onclick="tg(${i})">${it.open?'➖ जानकारी बंद करें':'➕ और जानकारी (बैच, एक्सपायरी, HSN…)'}</button>
+ ${it.open?`<div class=adv><label>GST कितना % लगाना है?</label><div class="opt2 opt3">${[0,5,18].map(g=>`<button class="pk ${String(it.gst)===String(g)?'on':''}" onclick="gset(${i},'${g}')">${g}%</button>`).join('')}<button class="pk ${!['0','5','18'].includes(String(it.gst))?'on':''}" onclick="gother(${i})">✏ और</button></div>${!['0','5','18'].includes(String(it.gst))?`<input id=go${i} type=number inputmode=decimal placeholder="GST % लिखें" value="${esc(it.gst)}" oninput="sf(${i},'gst',this.value)">`:''}<div class="two fl"><div><label>बैच नं. (पैक से देखकर)</label><input value="${esc(it.batch)}" placeholder="जैसे: VNL-2488" oninput="bt(${i},this.value)"></div>
+ <div><label>एक्सपायरी (महीना/साल)</label><input type=month value="${esc((it.expiry||'').slice(0,7))}" oninput="ex(${i},this.value)"></div></div>${bs}${es}${it.expiry_status==='suggested'?`<button class=btn onclick="cx(${i})" style="min-height:52px;font-size:18px">✔ पैक पर यही तारीख़ है</button>`:''}
+ <label>HSN कोड</label><input value="${esc(it.hsn)}" oninput="sf(${i},'hsn',this.value)">
+ </div>`:''}</div>`}).join('')}
+const tg=i=>{D.items[i].open=!D.items[i].open;rows();upd()};
+function activateRow(i){D.items.forEach((it,j)=>{it.active=(j===i)});rows();upd();persist();setTimeout(()=>{const e=document.getElementById('n'+i);if(e)e.scrollIntoView({block:'nearest'})},50)}
+function addRow(){if(D.items.length>=60){say('एक बिल में 60 से ज़्यादा दवाई नहीं जोड़ सकते। दूसरा बिल बनाएँ।');return}D.items.forEach(it=>it.active=false);D.items.push(blank());rows();upd();persist();const e=document.getElementById('n'+(D.items.length-1));if(e){e.focus();e.scrollIntoView({block:'center'})}}
+async function rmc(i){if(await ask('यह दवाई हटानी है?')){D.items.splice(i,1);if(!D.items.length)D.items.push(blank());rows();upd();persist()}}
+function qs(i,d){const it=D.items[i];it.qty=Math.max(1,(Number(it.qty)||0)+d);document.getElementById('q'+i).value=it.qty;upd();persist()}
+function su(i,c){D.items[i].unit=c?'strip':'box';rows();upd();persist()}
+function sf(i,k,v){D.items[i][k]=v;upd();persist()}
+function mr(i,v){const it=D.items[i];it.mrp=v;upd();persist()}
+function it_rt(i,v){const it=D.items[i];it.rate=v;it.rt=true;upd();persist()}
+function cx(i){D.items[i].expiry_status='confirmed';rows();upd();persist()}
+function bt(i,v){const it=D.items[i];it.batch=v;it.batch_status=v.trim()?(/^TMP-/.test(v)?'temp':'confirmed'):'';persist()}
+function ex(i,v){const it=D.items[i];it.expiry=v;it.expiry_status=v?'confirmed':'';persist()}
+let mt;function pn(i,el){D.items[i].name=el.value;persist()}
+function upd(){const r=CALC();
+ r.lines.forEach((l,i)=>{const a=document.getElementById('a'+i);if(a)a.textContent=inr(l.amt);
+  const t=document.getElementById('t'+i);if(t)t.textContent=`${l.cgst.toFixed(2)} / ${l.sgst.toFixed(2)} / ${l.igst.toFixed(2)}`;
+  const w=document.getElementById('w'+i);if(w)w.textContent=(Number(l.mrp)>0&&l.rate>Number(l.mrp))?'⚠ रेट MRP से ज़्यादा है! MRP से ऊपर बेचना मना है।':''});
+ const t=document.getElementById('tot');if(t)t.textContent=inr(r.total)}
+function toPrev(){{const keep=D.items.filter(it=>String(it.name).trim()||String(it.rate).trim()!=='');if(keep.length&&keep.length<D.items.length){D.items=keep;if(!D.items.some(x=>x.active))D.items[D.items.length-1].active=true;rows();upd()}}D.items.forEach(it=>{if(!it.expiry||(it.expiry_status==='suggested'&&it.exp_off==null)){it.exp_off=expRnd();it.expiry=addMon(D.date,it.exp_off);it.expiry_status='suggested'}});persist();for(let i=0;i<D.items.length;i++){const it=D.items[i];const f=()=>{const e=document.getElementById('n'+i);if(e)e.scrollIntoView({block:'center'})};
+ if(!it.name.trim()){f();return say(`दवाई नं. ${i+1} का नाम लिखें (या खाली दवाई हटा दें)।`)}
+ if(!(Number(it.qty)>0)){f();return say(`"${it.name}" की संख्या लिखें।`)}
+ if(it.rate===''||!(Number(it.rate)>=0)){f();return say(`"${it.name}" का भाव (रेट) लिखें।`)}
+ if(it.gst===''||!(Number(it.gst)>=0&&Number(it.gst)<=100)){f();return say(`"${it.name}" का GST % चुनें।`)}
+ if(Number(it.qty)>1e6||Number(it.qty)*Number(it.rate)>=1e9){f();return say(`"${it.name}" की संख्या या भाव बहुत ज़्यादा है, जाँच लें।`)}}
+ go('prev')}
+
+// ---------- INVOICE HTML ----------
+function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows.length<10)rows.push(null);const pc0=posOf(o,sh),pos=(o.interstate&&pc0===(sh.gstin||'').slice(0,2))?'Other State':(ST[pc0]||'')+' ('+pc0+')';
+ const money=v=>`<td class=rt>${Number(v||0).toFixed(2)}</td>`;
+ const f2=v=>Number(v||0).toFixed(2),us=l=>l.unit&&UE[l.unit]?' '+UE[l.unit]:'',es=e=>{const[y,m]=e.split('-');return m+'/'+y.slice(2)};
+ const cls={};[0,5,18].forEach(g=>cls[g]={t:0,d:0,c:0,s:0,i:0});
+ o.lines.forEach(l=>{const g=Number(l.gst)||0,x=cls[g]||(cls[g]={t:0,d:0,c:0,s:0,i:0}),tx=Number(l.taxable)||0,t0=l.t0!=null?Number(l.t0):(o.mode==='included'?r2(l.amt*100/(100+g)):Number(l.amt));x.t+=tx;x.d+=Math.max(0,t0-tx);x.c+=Number(l.cgst)||0;x.s+=Number(l.sgst)||0;x.i+=Number(l.igst)||0});
+ const ks=Object.keys(cls).map(Number).sort((a,b)=>a-b),ig=!!o.interstate,sm=k=>ks.reduce((s,g)=>s+cls[g][k],0);
+ const crow=(n,x)=>`<tr><td><b>${n}</b></td><td class=rt>${f2(x.t)}</td><td class=rt>${f2(x.d)}</td>${ig?`<td class=rt>${f2(x.i)}</td>`:`<td class=rt>${f2(x.c)}</td><td class=rt>${f2(x.s)}</td><td class=rt>${f2(x.c+x.s)}</td>`}</tr>`;
+ const classTbl=`<table class="pt ct" style="table-layout:auto"><tr><th>CLASS</th><th>TOTAL</th><th>DISC</th>${ig?'<th>IGST</th>':'<th>CGST</th><th>SGST</th><th>TOTAL GST</th>'}</tr>${ks.map(g=>crow('GST '+g+' %',cls[g])).join('')}${crow('TOTAL',{t:sm('t'),d:sm('d'),c:sm('c'),s:sm('s'),i:sm('i')})}</table>`;
+ const ro=Number(o.roundoff)||0,rn=Math.abs(ro).toFixed(2).split('.'),rsg=ro>0?'+':ro<0?'-':'';
+ const title=o.lines.length&&o.lines.every(l=>l.gst_set&&Number(l.gst)===0)?'Bill of Supply':'Tax Invoice';
+ const LS=o.lines,has=f=>LS.some(f),CS=[
+ {w:24,h:'SN',c:(l,n)=>`<td class=c>${n+1}</td>`},
+ {w:0,h:'Product Name',c:l=>`<td class=l>${esc(l.name)}</td>`},
+ {w:48,h:'Mfr.',on:has(l=>String(l.mfr||'').trim()),c:l=>`<td class=l>${esc(l.mfr)}</td>`},
+ {w:62,h:'HSN',on:has(l=>String(l.hsn||'').trim()),c:l=>`<td class=c>${esc(l.hsn)}</td>`},
+ {w:44,h:'Pack',on:has(l=>String(l.pack||'').trim()),c:l=>`<td class=c>${esc(l.pack)}</td>`},
+ {w:58,h:'Qty',c:l=>`<td class="c nw">${l.qty}${us(l)}</td>`},
+ {w:30,h:'Free',on:has(l=>String(l.free||'').trim()&&Number(l.free)!==0),c:l=>`<td class=c>${esc(l.free||0)}</td>`},
+ {w:86,h:'Batch',on:has(l=>String(l.batch||'').trim()),c:l=>`<td class="c nw">${l.batch?esc(l.batch):''}</td>`},
+ {w:42,h:'Exp.',on:has(l=>l.expiry),c:l=>`<td class="c nw">${l.expiry?es(l.expiry):''}</td>`},
+ {w:52,h:'M.R.P.',on:has(l=>l.mrp!=null&&l.mrp!==''),c:l=>l.mrp!=null&&l.mrp!==''?money(l.mrp):'<td></td>'},
+ {w:54,h:'Rate',c:l=>money(l.rate)},
+ {w:36,h:'Dis%',on:has(l=>(Number(l.disc)||0)>0),c:l=>`<td class=c>${l.amt>0?f2((l.disc||0)*100/l.amt):'0.00'}</td>`},
+ {w:34,h:'GST%',on:has(l=>l.gst_set),c:l=>`<td class=c>${l.gst_set?l.gst:''}</td>`},
+ {w:62,h:'Amount',c:l=>money(l.amt-(l.disc||0))}
+].filter(x=>x.on===undefined||x.on);{const fx=CS.filter(x=>x.w).reduce((t,x)=>t+x.w,0);CS.find(x=>!x.w).w=Math.max(110,752-fx)}
+const cg='<colgroup>'+CS.map(x=>`<col style="width:${x.w}px">`).join('')+'</colgroup>';
+ const sigb=sh.show_signatory==='1'&&sh.signatory?(sh.signature?`<img src="${esc(sh.signature)}" style="height:52px;display:block;margin:2px 0 2px auto">`:`<div class=sig>${esc(sh.signatory)}</div>`):'<div style="height:54px"></div>';
+ return `<div id=inv><div class=ti>${title}</div>
+ <div class=brand><img src="${esc(sh.logo||LOGO_DEFAULT)}"><div><div class=sn>${esc(sh.shop_name)}</div><div class=ad>${esc(sh.address)}${sh.pin?' - '+esc(sh.pin):''}</div>${sh.email?`<div class=ad style="font-size:11px;color:#5a6b92">${esc(sh.email)}</div>`:''}</div></div>
+ <table class=info><tr><td><span class=k>Drug Licence No.</span>${esc(sh.dl1)}<br>${esc(sh.dl2)}</td><td><span class=k>GSTIN</span>${esc(sh.gstin)}</td><td><span class=k>Mobile</span>${esc(sh.mobile)}</td></tr></table>
+ <table class=nb style="border-bottom:1.5px solid var(--ink)"><tr><td style="width:62%;padding:8px 12px;border-right:1px solid var(--ink)"><span class=k>Billed To</span><b style="font-size:13px">M/S ${esc(c.name||'Cash Customer')}</b>${c.mobile?'<br>Mob. '+esc(c.mobile):''}${c.address?'<br>'+esc(c.address):''}${c.gstin?'<br>GSTIN: '+esc(c.gstin):''}${c.dl?'<br>D/L No.: '+esc(c.dl):''}</td>
+ <td style="padding:8px 12px"><div class=kv><span>Invoice No.</span><b style="font-size:14px">${esc(o.inv_no||o.serial)}</b></div><div class=kv><span>Date</span><b>${dmy(o.date)}</b></div><div class=kv><span>Place of Supply</span><b>${pos}</b></div><div class=kv><span>Reverse Charge</span><b>No</b></div>${sh.transport?`<div class=kv><span>Transport</span><b>${esc(sh.transport)}</b></div>`:''}</td></tr></table>
+ <table class=pt>${cg}<tr>${CS.map(x=>`<th>${x.h}</th>`).join('')}</tr>
+ ${rows.map((l,n)=>l?`<tr>${CS.map(x=>x.c(l,n)).join('')}</tr>`:'<tr><td>&nbsp;</td>'+'<td></td>'.repeat(CS.length-1)+'</tr>').join('')}</table>
+ <table><tr><td style="width:56%;padding:0">${classTbl}<div style="padding:6px 8px"><span class=k>Total in Words</span><b>${esc(o.words)}</b><div class=sm style="margin-top:6px">${o.mode==='included'?'Prices GST included':'GST added extra'} · ${ig?'IGST':'CGST+SGST'}</div>${o.lines.some(l=>!l.gst_set)?'<div class=sm>GST rate not set for some products (taken as 0%)</div>':''}</div></td>
+ <td style="padding:0"><table class=tt style="table-layout:fixed"><colgroup><col><col style="width:96px"></colgroup><tr><td><b>Gross Amount</b></td>${money(o.gross)}</tr><tr><td><b>Tax</b></td>${money(o.tax)}</tr><tr><td><b>Discount</b></td>${money(o.discount)}</tr><tr><td><b>Rounded off (+/-)</b></td><td class=rt>${rsg}${rn.join('.')}</td></tr><tr class=gt><td><b>GRAND TOTAL</b></td>${money(o.total)}</tr></table></td></tr></table>
+ ${sh.terms?`<div class=sm style="padding:4px 10px">${esc(sh.terms)}</div>`:''}${sh.upi?`<div class=sm style="padding:2px 10px">UPI: ${esc(sh.upi)}${sh.pay_mobile?' · '+esc(sh.pay_mobile):''}</div>`:''}
+ <table class=nb style="border-top:1.5px solid var(--ink)"><tr><td style="width:50%;padding:8px 12px;vertical-align:bottom;height:92px"><div style="display:inline-block;min-width:190px;border-top:1px solid var(--ink);padding-top:3px;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Party Signature</div></td><td class=rt style="padding:8px 12px"><div style="font-size:12px;font-weight:700">For ${esc(sh.shop_name)}</div>${sigb}<div style="display:inline-block;min-width:190px;border-top:1px solid var(--ink);padding-top:3px;font-size:10.5px;font-weight:600;text-align:center">${sh.show_signatory==='1'&&sh.signatory?esc(sh.signatory)+' · ':''}Authorised Signatory</div></td></tr></table></div>`}
+
+// ---------- STEP 3 ----------
+async function prevScr(){
+ if(D.saved){app.innerHTML=actions(D.saved,true);fit();return}
+ // Use cached NX (fetched on boot). Invalidated after each save so next bill gets fresh number.
+ if(!NX){try{const z=await api('/next');if(z&&z.next!=null)NX={next:z.next,prefix:z.prefix||''}}catch(e){}}
+ let nx=NX||{next:'',prefix:''};
+ const r=CALC();
+ const o={serial:nx.next,inv_no:nx.prefix+nx.next,date:D.date,customer:D.customer,shop:S,...r,mode:D.mode,interstate:D.interstate};
+ app.innerHTML=`${head(3)}${ZB}<div class=wrap id=wrap>${invHTML(o)}</div><p class=hint>बिल नंबर शेयर करते ही पक्का होगा। एक बार देख लें, फिर शेयर करें — बिल अपने-आप सेव होगा, फोटो फोन में आएगी और WhatsApp खुलेगा।</p>
+ <button class="btn wa huge" style="font-size:22px" onclick="saveInv(true)">📲 बिल शेयर करें</button><button class=btn onclick="back()">✏️ बदलाव करें</button>`;fit()}
+const actions=(o,isNew)=>`<div class=bar><button class=ghost onclick="${isNew?'finish()':'back()'}">⬅ ${isNew?'होम':'पीछे'}</button></div>
+ ${isNew?`<div class=item style="background:#e3f6ea;border-color:#12803a"><b style="font-size:24px">✔ बिल नं. ${esc(o.inv_no||o.serial)} सेव हो गया</b></div>`:''}
+ ${ZB}<div class=wrap id=wrap>${invHTML(o)}</div>
+ <button class="btn wa huge" onclick="shareBill()">📲 बिल शेयर करें</button><button class=btn onclick="doWaPdf()">📎 PDF बिल भी भेजें</button><div class=two><button class=btn onclick="doPrint()">🖨 प्रिंट</button><button class=btn onclick="doPdf()">⬇ PDF</button></div>
+ ${isNew?'<button class="btn main" onclick="finish()">➕ नया बिल बनाएँ</button>':''}`;
+let saving=false;
+async function saveInv(wa){if(saving)return;{const t=CALC().total,c=D.customer;if(t>=50000&&!(c.name.trim()&&c.address.trim())){const k=await modal('₹50,000 या उससे ज़्यादा के बिल पर GST नियम से ग्राहक का नाम और पता लिखना ज़रूरी है।',[['नाम/पता भरने जाएँ','main'],['फिर भी सेव करें','']]);if(k===-1)return;if(k===0){go('cust');return}}}saving=true;try{const r=CALC();const b={client_key:D.client_key,date:D.date,customer:D.customer,mode:D.mode,interstate:D.interstate,lines:r.lines.map(({open,rt,...x})=>x),gross:r.gross,tax:r.tax,discount:r.discount,roundoff:r.roundoff,total:r.total,words:r.words};
+ D.saved=await api('/invoices',{method:'POST',body:b});
+ NX=null;try{localStorage.removeItem('draft')}catch(e){}prevScr();if(wa===true)await shareBill()}
+ catch(e){say('❌ बिल सेव नहीं हुआ!\n'+e.message+'\nफिर से दबाएँ — दो बार नहीं बनेगा।')}finally{saving=false}}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#111a33;color:#fff;padding:12px 18px;border-radius:12px;font-size:18px;z-index:10;max-width:88vw;text-align:center';document.body.appendChild(t);setTimeout(()=>t.remove(),3500)}
+// ---- bill picture / PDF: works with OR without internet (html2canvas is optional) ----
+let h2c=null;
+function loadH2C(){if(window.html2canvas)return Promise.resolve(true);if(h2c)return h2c;
+ h2c=new Promise(res=>{let done=false;const f=v=>{if(!done){done=true;res(v)}};const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';s.async=true;
+  s.onload=()=>f(!!window.html2canvas);s.onerror=()=>{h2c=null;f(false)};setTimeout(()=>{if(!done){h2c=null;f(false)}},6000);document.head.appendChild(s)});return h2c}
+function boxCanvas(el,sc){return new Promise((res,rej)=>{try{const W=el.offsetWidth,H=el.offsetHeight,c=el.cloneNode(true);c.style.transform='none';
+ const w=document.createElement('div'),sy=document.createElement('style');sy.textContent=document.querySelector('style').textContent;w.appendChild(sy);w.appendChild(c);
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'"><foreignObject x="0" y="0" width="'+W+'" height="'+H+'">'+new XMLSerializer().serializeToString(w)+'</foreignObject></svg>';
+ const im=new Image();im.onload=()=>{try{const cv=document.createElement('canvas');cv.width=W*sc;cv.height=H*sc;const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.scale(sc,sc);x.drawImage(im,0,0,W,H);res(cv)}catch(e){rej(e)}};
+ im.onerror=()=>rej(new Error('बिल की फोटो नहीं बन पाई'));im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}catch(e){rej(e)}})}
+async function invCanvas(){const el=document.getElementById('inv');if(!el)throw new Error('बिल स्क्रीन पर नहीं है');
+ try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2500))])}catch(e){}
+ try{fit()}catch(e){}await new Promise(r=>requestAnimationFrame(()=>setTimeout(r,60)));
+ const old=el.style.transform;el.style.transform='none';
+ try{if(await Promise.race([loadH2C(),new Promise(r=>setTimeout(()=>r(false),3000))])){
+   try{return await Promise.race([window.html2canvas(el,{scale:2,backgroundColor:'#fff'}),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),20000))])}catch(e){}}
+  return await boxCanvas(el,2)}finally{el.style.transform=old}}
+const toJpg=cv=>new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('फोटो नहीं बन पाई')),'image/jpeg',.95));
+async function pdfFromCanvas(cv){const jb=new Uint8Array(await(await toJpg(cv)).arrayBuffer());
+ const PW=595.28,PH=841.89,mm=2.834645669,w=cv.width,h=cv.height;let dw=200*mm,dh=h*dw/w;if(dh>287*mm){dh=287*mm;dw=w*dh/h}
+ const enc=new TextEncoder(),parts=[],offs=[];let len=0;const put=b=>{const u=typeof b==='string'?enc.encode(b):b;parts.push(u);len+=u.length};
+ const obj=(n,body)=>{offs[n]=len;put(n+' 0 obj\n'+body+'\nendobj\n')};
+ put('%PDF-1.4\n');obj(1,'<< /Type /Catalog /Pages 2 0 R >>');obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+ obj(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+PW+' '+PH+'] /Resources << /XObject << /Im0 4 0 R >> /ProcSet [/PDF /ImageC] >> /Contents 5 0 R >>');
+ offs[4]=len;put('4 0 obj\n<< /Type /XObject /Subtype /Image /Width '+w+' /Height '+h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jb.length+' >>\nstream\n');put(jb);put('\nendstream\nendobj\n');
+ const cs='q '+dw.toFixed(2)+' 0 0 '+dh.toFixed(2)+' '+(5*mm).toFixed(2)+' '+(PH-5*mm-dh).toFixed(2)+' cm /Im0 Do Q';
+ obj(5,'<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream');
+ const xr=len;let t='xref\n0 6\n0000000000 65535 f \n';for(let i=1;i<=5;i++)t+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+ put(t+'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF\n');return new Blob(parts,{type:'application/pdf'})}
+const pdfBlob=async()=>pdfFromCanvas(await invCanvas());
+let busy=false;const solo=fn=>async(...a)=>{if(busy)return;busy=true;try{return await fn(...a)}finally{busy=false}};
+const cur=()=>view==='old'?V:D.saved;
+const fname=()=>'Invoice-'+(cur().inv_no||cur().serial)+'.pdf';
+function waUrl(){const o=cur(),sh=o.shop||S,c=o.customer||{};let m=String(c.mobile||o.cust_mobile||'').replace(/\D/g,'');if(m.length===11&&m[0]==='0')m=m.slice(1);if(m.length===10)m='91'+m;
+ const L=arr(o.lines).map((l,n)=>`${n+1}. ${l.name} – ${l.qty} ${UE[uk(l)]} × ${l.rate} = ₹${Number(l.amt).toFixed(2).replace(/\.00$/,'')}`).join('\n');
+ const t=`*${sh.shop_name}*\nबिल नं. ${o.inv_no||o.serial} · ${dmy(o.date)}\n${c.name?'ग्राहक: '+c.name+'\n':''}\n${L}\n\n*कुल: ${inr(o.total)}*\nधन्यवाद! 🙏`;
+ return 'https://wa.me/'+(m.length>=11?m:'')+'?text='+encodeURIComponent(t)}
+const openWa=()=>{const u=waUrl();if(!window.open(u,'_blank'))location.href=u};
+// Share: bill photo auto-saves to the phone, then WhatsApp opens
+const shareBill=solo(async()=>{let ok=false;
+ try{saveBlob(await toJpg(await invCanvas()),'Invoice-'+(cur().inv_no||cur().serial)+'.jpg');ok=true}
+ catch(e){await say('बिल की फोटो फोन में सेव नहीं हो पाई: '+e.message)}
+ if(ok)toast('✔ बिल की फोटो फोन में सेव हो गई');
+ await new Promise(r=>setTimeout(r,700));openWa()});
+function finish(){newDraft();history.pushState({v:'home'},'');show('home')}
+const doPrint=()=>{if(document.getElementById('inv'))window.print()};
+const doPdf=solo(async()=>{try{saveBlob(await pdfBlob(),fname())}catch(e){say('PDF नहीं बन पाया: '+e.message)}});
+const doWa=openWa;
+const doWaPdf=solo(async()=>{let b;try{b=await pdfBlob()}catch(e){return say('PDF नहीं बन पाया: '+e.message)}
+ const text=`Dear Customer, thank you for shopping with ${S.shop_name}. Please find your bill attached.`;
+ try{const f=new File([b],fname(),{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text,title:fname()});return}}catch(e){if(e&&e.name==='AbortError')return}
+ saveBlob(b,fname());await say('इस फ़ोन में सीधे PDF भेजना नहीं हो पाया। PDF डाउनलोड हो गया है — WhatsApp खोलकर उसे खुद जोड़कर भेजें।');window.open('https://wa.me/?text='+encodeURIComponent(text))});
+function oldScr(){app.innerHTML=actions(V,false);fit()}
+
+// ---------- SETTINGS ----------
+const F=[['shop_name','दुकान का नाम'],['address','पता'],['pin','पिन कोड'],['mobile','मोबाइल नंबर'],['email','ईमेल'],['gstin','GSTIN (15 अंक)'],['dl1','ड्रग लाइसेंस नं. 1'],['dl2','ड्रग लाइसेंस नं. 2'],['signatory','सिग्नेचर करने वाले का नाम'],['start_no','बिल नंबर कहाँ से शुरू हो'],['prefix','बिल नंबर से पहले के अक्षर (ज़रूरी नहीं, 6 तक)'],['transport','ट्रांसपोर्ट'],['expiry_years','सुझाई एक्सपायरी (साल)'],['upi','UPI ID'],['pay_mobile','पेमेंट मोबाइल नंबर']];
+let stab_='shop',cq='',pfill='';
+const SHOPF=[['shop_name','दुकान का नाम'],['address','पता'],['pin','पिन कोड'],['mobile','मोबाइल नंबर'],['email','ईमेल'],['gstin','GSTIN (15 अंक)'],['dl1','ड्रग लाइसेंस नं. 1'],['dl2','ड्रग लाइसेंस नं. 2'],['signatory','सिग्नेचर करने वाले का नाम']];
+const fld=(k,l)=>`<label>${l}</label><input id=s_${k} value="${esc(S[k])}">`;
+const stabGo=t=>{stab_=t;setScr()};
+function setScr(){const tb=[['shop','🏪 दुकान'],['cust','👥 ग्राहक']];
+ app.innerHTML=`<div class=bar><button class=ghost onclick="back()">⬅ पीछे</button></div><h1>सेटिंग</h1><div class=opt2 style="grid-template-columns:repeat(2,1fr)">${tb.map(([k,l])=>`<button class="pk ${stab_===k?'on':''}" style="font-size:18px" onclick="stabGo('${k}')">${l}</button>`).join('')}</div><div id=tabc></div>`;
+ ({shop:tabShop,cust:tabCust})[stab_]()}
+function tabShop(){document.getElementById('tabc').innerHTML=`<h2>🏪 दुकान की जानकारी</h2><p class=hint>यहाँ बदलकर सेव करेंगे तो नए बिलों पर नई जानकारी आएगी। पुराने बिल जैसे थे वैसे रहेंगे।</p>${SHOPF.map(([k,l])=>fld(k,l)).join('')}<label>सिग्नेचर करने वाले का नाम बिल पर दिखाएँ</label><select id=s_show_signatory><option value=1 ${S.show_signatory==='1'?'selected':''}>हाँ</option><option value=0 ${S.show_signatory!=='1'?'selected':''}>नहीं</option></select><button class="btn main huge" onclick="saveSet('shop')">✅ दुकान की जानकारी सेव करें</button><h2>💾 डेटा की कॉपी (बैकअप)</h2><button class="btn good" onclick="doBackup()">⬇ बैकअप फ़ोन में सेव करें</button><label>बैकअप वापस डालें (.json) — अभी का सारा डेटा बदल जाएगा</label><input type=file accept=".json" onchange="restore(this)"><p class=hint style="margin-top:24px">सॉफ़्टवेयर वर्ज़न: ${APP_VERSION}</p>`}
+async function saveSet(g){if(!(document.getElementById('s_shop_name')||{value:'x'}).value.trim())return say('दुकान का नाम खाली नहीं हो सकता।');
+ const gv=(document.getElementById('s_gstin')||{value:''}).value.trim();if(gv&&gv.length!==15)return say('GSTIN 15 अक्षर का होना चाहिए, या खाली छोड़ दें।');
+ const keys=[...SHOPF.map(x=>x[0]),'show_signatory'];const b={};keys.forEach(k=>{const e=document.getElementById('s_'+k);if(e)b[k]=k==='gstin'?e.value.trim().toUpperCase():e.value});
+ try{S=await api('/settings',{method:'PUT',body:b});say('✅ सेव हो गया')}catch(e){say('सेव नहीं हुआ: '+e.message)}}
+function tabCust(){document.getElementById('tabc').innerHTML=`<h2>👥 नियमित ग्राहक</h2><p class=hint>यहाँ सेव किए ग्राहक बिल बनाते समय नाम या मोबाइल लिखते ही सुझाव में आ जाएँगे। बिल बनाने पर नए ग्राहक अपने आप भी जुड़ जाते हैं।</p><button class="btn good" onclick="custForm(null)">➕ नया ग्राहक जोड़ें</button><div id=cf></div><input placeholder="🔍 नाम या मोबाइल से ढूँढें" oninput="custList(this.value)"><div id=cl></div>`;custList('')}
+async function custList(t){cq=t||'';const L=document.getElementById('cl');try{const r=arr(await api('/customers?all=1&q='+encodeURIComponent(cq)));cache.cl=r;if(!document.getElementById('cl'))return;
+ L.innerHTML=r.map(x=>`<div class=item><b>${esc(x.name||'(नाम नहीं)')}</b> ${esc(x.mobile)}<br><span class=hint>${esc(x.address)}</span><button class=btn onclick="custForm(${x.id})">✏ बदलें</button></div>`).join('')||'<p>कोई ग्राहक नहीं मिला।</p>'}catch(e){if(L)L.innerHTML='<p class=warn>'+esc(e.message)+'</p>'}}
+let cedit=null;
+function custForm(id){const x=id?(cache.cl||[]).find(c=>c.id===id)||{}:{};cedit=id||null;const f=document.getElementById('cf');
+ f.innerHTML=`<div class=row><h3 style="margin-top:0">${id?'ग्राहक की जानकारी बदलें':'नया ग्राहक'}</h3><label>नाम</label><input id=c_name value="${esc(x.name)}"><label>मोबाइल</label><input id=c_mobile inputmode=numeric value="${esc(x.mobile)}"><label>पता</label><input id=c_address value="${esc(x.address)}"><label>GSTIN (ज़रूरी नहीं)</label><input id=c_gstin value="${esc(x.gstin)}" style="text-transform:uppercase"><label>ड्रग लाइसेंस नं. (ज़रूरी नहीं)</label><input id=c_dl value="${esc(x.dl)}"><button class="btn good" onclick="custSave()">✅ सेव करें</button>${id?`<button class=btn onclick="custBills(${id})">🧾 इस ग्राहक के सारे बिल देखें</button>`:''}${id?'<button class="btn danger" onclick="custDel()">🗑 यह ग्राहक हटाएँ</button>':''}<button class=btn onclick="custCancel()">रद्द करें</button></div>`;f.scrollIntoView({block:'start'})}
+const custBills=id=>{const x=(cache.cl||[]).find(c=>c.id===id);if(!x)return;history.pushState({v:'home'},'');oldBillScr(x.mobile||x.name||'')};
+const custCancel=()=>{cedit=null;document.getElementById('cf').innerHTML=''};
+async function custSave(){const g=k=>document.getElementById('c_'+k).value.trim();const b={name:g('name'),mobile:g('mobile'),address:g('address'),gstin:g('gstin').toUpperCase(),dl:g('dl')};
+ if(!b.name&&!b.mobile)return say('ग्राहक का नाम या मोबाइल लिखें।');
+ if(b.mobile&&!/^\d{10}$/.test(b.mobile))return say('मोबाइल नंबर 10 अंक का होना चाहिए।');
+ if(b.gstin&&!/^\d{2}[A-Z0-9]{13}$/.test(b.gstin))return say('GSTIN 15 अक्षर/अंक का होना चाहिए, या खाली छोड़ दें।');
+ try{await api(cedit?'/customers/'+cedit:'/customers',{method:cedit?'PUT':'POST',body:b});custCancel();await custList(cq);say('✅ ग्राहक सेव हो गया')}catch(e){say('सेव नहीं हुआ: '+e.message)}}
+async function custDel(){if(!await ask('यह ग्राहक सूची से हटाना है?\n(पुराने बिल नहीं हटेंगे)'))return;try{await api('/customers/'+cedit,{method:'DELETE'});custCancel();custList(cq)}catch(e){say(e.message)}}
+async function restore(el){const f=el.files&&el.files[0];el.value='';if(!f||!await ask('सच में Restore करें? अभी का सारा डेटा बदल जाएगा।'))return;
+ try{const bk=JSON.parse(await f.text());await makeBackup('purana-');await api('/restore',{method:'POST',body:bk});S=await api('/settings');say('डेटा वापस आ गया');setScr()}catch(e){say('डेटा वापस नहीं आया: '+e.message)}}
+
+Object.assign(window,{stabGo,custBills,custList,custForm,custSave,custDel,custCancel,stchg,pc,gset,gother,dt,zoom,go,back,search,oldBillScr,newBill,openInv,cs,pick,gsin,tgm,dchg,tgo,tg,activateRow,addRow,rmc,qs,su,cx,gxToggle,sf,mr,it_rt,bt,ex,pn,toPrev,saveInv,shareBill,doBackup,finish,doPrint,doPdf,doWa,doWaPdf,saveSet,restore,persist,upd});
+Object.defineProperty(window,'D',{get:()=>D,set:v=>{D=v}});
+// ===== Start: open the local database (no internet needed) =====
+(async()=>{try{await openDB();await migrateOld();S=await getSettings();NX=await nextInfo()}
+catch(e){app.innerHTML='<h1>🏥</h1><p class=warn style="text-align:center">डेटा खोलने में दिक्कत: '+esc(e.message)+'</p><button class="btn main" onclick="location.reload()">🔄 दोबारा खोलें</button>';return}
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+newDraft();history.replaceState({v:'home'},'');show('home');setTimeout(()=>{if(navigator.onLine!==false)loadH2C()},2500)})();
+</script></body></html>
