@@ -9,6 +9,7 @@
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:#111a33;font-size:21px;line-height:1.35}
 #app{max-width:760px;margin:0 auto;padding:12px 12px 130px}
 h1{font-size:28px;color:var(--ink);text-align:center;margin:8px 0 16px}h2{font-size:21px;margin:14px 0 2px;color:var(--ink)}h3{margin:16px 0 8px;color:var(--ink)}
+.mrow{display:flex;gap:8px;align-items:stretch}.mrow input{flex:1 1 0;margin:4px 0 8px}.cpb{flex:0 0 auto;width:112px;margin:4px 0 8px;border:0;border-radius:12px;background:#1f3a6e;color:#fff;font-size:18px;font-weight:800;line-height:1.25}
 input,select,textarea{width:100%;font-size:22px;padding:14px;border:2px solid var(--line);border-radius:12px;background:#fff;margin:4px 0 8px}
 label{font-size:18px;font-weight:700;color:#2b3858;display:block;margin-top:8px}
 .btn{display:block;width:100%;font-size:22px;padding:16px;min-height:64px;border:0;border-radius:14px;background:#dfe6f6;color:var(--ink);font-weight:700;margin:10px 0}
@@ -34,10 +35,10 @@ label{font-size:18px;font-weight:700;color:#2b3858;display:block;margin-top:8px}
 #inv{width:760px;border:2px solid var(--ink);color:#0f1b3a;font-family:Inter,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#fff;font-size:12px;line-height:1.35;font-variant-numeric:tabular-nums;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #inv table{border-collapse:collapse;width:100%}#inv td,#inv th{border:1px solid var(--ink);padding:4px 6px;vertical-align:top}
 #inv .pt{table-layout:fixed}#inv .pt th{font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;background:#eef2fa;padding:4px 2px;text-align:center;vertical-align:middle}
-#inv .pt td{font-size:10.5px;padding:3px 2px;height:22px}#inv .pt td.c{text-align:center}#inv .pt td.l{text-align:left;word-break:break-word}#inv .pt td.rt{padding-right:4px}#inv .nw{white-space:nowrap}
+#inv .pt td{font-size:10.5px;padding:3px 2px;height:20px}#inv .pt td.c{text-align:center}#inv .pt td.l{text-align:left;word-break:break-word}#inv .pt td.rt{padding-right:4px}#inv .nw{white-space:nowrap}
 #inv td table{margin:-1px;width:calc(100% + 2px)}#inv .nb td,#inv .nb th{border:0}
 #inv .ti{text-align:center;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:6px;border-bottom:1.5px solid var(--ink);background:#eef2fa}
-#inv .brand{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 10px 8px;text-align:center}#inv .brand img{height:46px}
+#inv .brand{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 10px 8px;text-align:center}#inv .brand img{height:50px;width:50px;border-radius:10px}
 #inv .sn{font-size:28px;font-weight:800;letter-spacing:.5px;color:var(--ink);text-transform:uppercase;line-height:1.1}#inv .ad{font-size:12.5px;font-weight:500;margin-top:3px}
 #inv .info{table-layout:fixed;border-top:1px solid var(--ink);border-bottom:1.5px solid var(--ink)}#inv .info td{border:0;border-right:1px solid var(--ink);padding:6px 10px;font-size:12px;font-weight:600}#inv .info td:last-child{border-right:0}
 #inv .k{display:block;font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#5a6b92;margin-bottom:1px}
@@ -45,7 +46,7 @@ label{font-size:18px;font-weight:700;color:#2b3858;display:block;margin-top:8px}
 #inv .sig{font-family:'Segoe Script','Bradley Hand','Apple Chancery','URW Chancery L',cursive;font-size:34px;font-weight:500;letter-spacing:-1.15px;line-height:1.05;color:#14234a;min-height:48px;padding:5px 2px 0 0;display:inline-block;transform:rotate(-2deg);transform-origin:right center;text-rendering:geometricPrecision}
 #inv td,#inv th{font-size:inherit}#inv .pt td.p,#inv .tt td.p{padding-left:1px;padding-right:1px;text-align:center}#inv .tt td{font-size:12px;padding:4px 6px}#inv .gt td{font-size:14px;font-weight:800;background:#eef2fa}
 .big-t{font-size:34px;font-weight:700;text-align:center}.rt{text-align:right}.sm{font-size:11px;color:#47598a}
-@page{size:A4;margin:8mm}
+@page{size:A4;margin:14mm}
 @media print{html,body{background:#fff!important;height:auto!important}body>*:not(#app){display:none!important}#app{max-width:none!important;padding:0!important;margin:0!important}#app>*:not(.wrap){display:none!important}.wrap{border:0!important;padding:0!important;overflow:visible!important;height:auto!important}#inv{position:static!important;width:100%!important;transform:none!important}}
 
 html{-webkit-text-size-adjust:100%}body{overflow-x:hidden;overflow-wrap:anywhere}
@@ -161,14 +162,97 @@ const inr=n=>'₹ '+Number(n).toFixed(2).replace(/\.00$/,'');
 const arr=x=>Array.isArray(x)?x:[];
 const svgURI=s=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);
 const xe=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-const LOGO_DEFAULT=svgURI('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1f3a6e"/><rect x="26" y="11" width="12" height="42" rx="3" fill="#fff"/><rect x="11" y="26" width="42" height="12" rx="3" fill="#fff"/><circle cx="32" cy="32" r="5.5" fill="#12803a"/></svg>');
+const LOGO_DEFAULT='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAACrElEQVR4nO3dwU0DMRBA0YDoA+oIPYVaKIo+6CSckDiTTSzPf6+AzcqZv/LJfno9X64niHpe/QKwkgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkPay+gWm+f76vOvz394/7vr8mqfX8+W6+iWmuPfw/yWEY9gCHeSRw7/i96YSwAFWDaMIbicA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBt1P0ATkt+jEl3E4wJwPA/3oQQRmyBDP8aE9Z9+wAm/Ak72339tw8AbiEA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKRtH8CE08l2tvv6bx8A3GJEALt/hXY1Yd3HHI57Ou1/TN8uJgz+r1EBrLIyvEnDuMKILRD8lwBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAAdYdUCtg3FvJwDSBHCQR3+Nff2P4X6Ag937rgCDfywBkGYLRJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYC0H/EAPKtmhX4yAAAAAElFTkSuQmCC';
 const genSig=n=>svgURI('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 70"><text x="8" y="43" font-family="Segoe Script,Bradley Hand,Apple Chancery,URW Chancery L,cursive" font-size="31" font-weight="500" letter-spacing="-1.1" fill="#14234a">'+xe(n)+'</text><path d="M12 57C62 53 112 61 166 54" stroke="#14234a" stroke-width="1.15" fill="none" stroke-linecap="round" opacity=".78"/></svg>');
 const lsGet=k=>{try{const v=localStorage.getItem(k);return v==null?undefined:JSON.parse(v)}catch(e){return undefined}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.12';
+const APP_VERSION='OFFLINE-1.19';
+// ---- Cloud Backup System (val.town SQLite) ----
+// Design principles:
+//   1. Every new page-load session = one backup attempt (no time-throttle)
+//   2. Runs fully in background — never blocks the UI
+//   3. Safe retry once if first attempt fails
+//   4. Each backup tagged with session_id + timestamp — server does INSERT OR REPLACE,
+//      so there is exactly ONE row per shop, no duplicates, no conflicts
+//   5. AbortSignal.timeout() polyfilled for old Android browsers
+
+const CLOUD_URL='https://ramkeshyadav--12bb1378d98e11f1a6291607ee4eb77e.web.val.run';
+
+// Unique ID for this shop (derived from GSTIN — stable across all sessions)
+function cloudShopId(){
+  try{const g=String(S&&S.gstin||'').trim().toUpperCase().replace(/\s/g,'');
+    return g.length>=10?'vms_'+g:'vms_default'}catch(e){return'vms_default'}
+}
+
+// AbortSignal.timeout polyfill for old browsers
+function _timeout(ms){
+  if(typeof AbortSignal!=='undefined'&&AbortSignal.timeout)return AbortSignal.timeout(ms);
+  const c=new AbortController();setTimeout(()=>c.abort(),ms);return c.signal;
+}
+
+// Core backup: dumps IndexedDB → sends to server
+// Returns {ok:true} or {ok:false, reason:string} — NEVER throws
+async function cloudBackup(){
+  if(!navigator.onLine)return{ok:false,reason:'offline'};
+  try{
+    const d=await dumpAll();
+    const session_id=uuid();
+    const payload=JSON.stringify({...d,_session:session_id,_sent:new Date().toISOString()});
+    const res=await fetch(CLOUD_URL+'/backup',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({shop_id:cloudShopId(),payload,session_id}),
+      signal:_timeout(15000)
+    });
+    if(!res.ok)return{ok:false,reason:'HTTP '+res.status};
+    const j=await res.json();
+    if(j&&j.ok){lsSet('vms_cloud_backup_at',Date.now());return{ok:true,backed_up_at:j.backed_up_at}}
+    return{ok:false,reason:(j&&j.error)||'server error'};
+  }catch(e){return{ok:false,reason:(e&&e.message)||'network error'}}
+}
+
+// Fetch latest backup from server
+// Returns server JSON or throws — caller must handle
+async function cloudFetch(){
+  const res=await fetch(
+    CLOUD_URL+'/backup?shop_id='+encodeURIComponent(cloudShopId()),
+    {signal:_timeout(15000)}
+  );
+  if(!res.ok)throw new Error('Server error: HTTP '+res.status);
+  return res.json();
+}
+
+// Called once per page-load, after DB is ready.
+// Runs silently in background. One retry after 30s if first attempt fails.
+// Uses a session flag so multiple rapid renders don't double-send.
+let _backupDone=false;
+async function autoCloudBackup(){
+  if(_backupDone)return;   // already ran this session
+  _backupDone=true;        // mark immediately — prevents any re-entry
+  if(!navigator.onLine){
+    // If offline now, listen for the moment internet comes back (once)
+    const handler=async()=>{
+      window.removeEventListener('online',handler);
+      await _doAutoBackup();
+    };
+    window.addEventListener('online',handler);
+    return;
+  }
+  await _doAutoBackup();
+}
+async function _doAutoBackup(){
+  try{
+    const r=await cloudBackup();
+    if(r.ok)return;
+    // First attempt failed — retry once after 30 seconds
+    setTimeout(async()=>{
+      try{await cloudBackup()}catch(e){}
+    },30000);
+  }catch(e){}
+}
 const uuid=()=>{try{if(crypto.randomUUID)return crypto.randomUUID()}catch(e){}return 'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10)};
 let errT=0;const oops=m=>{const n=Date.now();if(n-errT<4000)return;errT=n;try{toast(m)}catch(_){}};
 window.addEventListener('error',e=>{if(e&&/Script error|ResizeObserver/.test(String(e.message||'')))return;oops('⚠ कुछ गड़बड़ हुई। दोबारा दबाएँ, या ऐप बंद करके खोलें।')});
@@ -336,12 +420,8 @@ async function api(p,o={}){const m=(o.method||'GET').toUpperCase(),b=o.body||{},
  throw new Error('अंदरूनी गड़बड़: '+p)}
 function saveBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
 async function makeBackup(pre){const d=await dumpAll();saveBlob(new Blob([JSON.stringify(d)],{type:'application/json'}),(pre||'')+'vishal-backup-'+today()+'.json');lsSet('vms_last_backup',Date.now())}
-async function doBackup(){try{await makeBackup();toast('✔ बैकअप फ़ोन में सेव हो गया');backupBar()}catch(e){say('बैकअप नहीं बन पाया: '+e.message)}}
-async function backupBar(){const el=document.getElementById('bk');if(!el)return;let n=0;
- try{n=await tx(['invoices'],'readonly',st=>rq(st('invoices').count()))}catch(e){}
- if(!n){el.innerHTML='';return}
- const t=Number(lsGet('vms_last_backup')||lsGet('last_backup'))||0,days=t?Math.floor((Date.now()-t)/864e5):null,old=days===null||days>=7;
- el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 2px 0;border-top:1px solid var(--line);font-size:15px;color:${old?'#b45f00':'#556'}"><span>${days===null?'⚠ बैकअप नहीं लिया':days<=0?'✔ आज बैकअप लिया':'बैकअप: '+days+' दिन पहले'}</span><button onclick="doBackup()" style="border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:6px 12px;font-size:15px;font-weight:700">💾 बैकअप लें</button></div>`}
+async function doBackup(){try{await makeBackup();toast('✔ बैकअप फ़ोन में सेव हो गया')}catch(e){say('बैकअप नहीं बन पाया: '+e.message)}}
+function backupBar(){}
 function modal(msg,btns){return new Promise(res=>{const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:20px;z-index:9';
  d.innerHTML=`<div style="background:#fff;border-radius:18px;padding:20px;max-width:440px;width:100%;max-height:88vh;overflow:auto"><p style="font-size:23px;margin:0 0 10px;white-space:pre-line">${esc(msg)}</p>${btns.map((b,i)=>`<button class="btn ${b[1]}" data-i="${i}">${b[0]}</button>`).join('')}</div>`;
  const fin=i=>{d.remove();const j=MODALS.indexOf(fin);if(j>=0)MODALS.splice(j,1);res(i)};MODALS.push(fin);d.onclick=e=>{const b=e.target.closest&&e.target.closest('[data-i]');if(b)fin(Number(b.dataset.i))};document.body.appendChild(d)})}
@@ -363,6 +443,7 @@ window.addEventListener('resize',()=>fit());
 function show(v){
  if(v==='cust'||v==='prod'||v==='prev'){
   if(D.saved)v='prev';
+  else if((v==='prod'||v==='prev')&&custChk())v='cust';
   else if(v==='prev'&&!D.items.some(i=>String(i.name||'').trim())){v='home';try{history.replaceState({v:'home'},'')}catch(e){}}}
  else if(v==='old'&&!V)v='home';
  const f=({home,cust:custScr,prod:prodScr,prev:prevScr,set:setScr,old:oldScr,list:listScr})[v]||home;
@@ -383,13 +464,12 @@ const pc=k=>{const m=cache.cust[k];if(!m)return;D.customer={name:m.name||'',mobi
 const gset=(i,v)=>{D.items[i].gst=v;rows();upd();persist()};
 const gmode=(i,v)=>{D.items[i].gst_mode=v==='excluded'?'excluded':'included';rows();upd();persist()};
 const gother=i=>{const it=D.items[i];if(['0','5','18'].includes(String(it.gst))){it.gst=''}rows();upd();persist();const e=document.getElementById('go'+i);if(e)e.focus()};
-const dt=t=>{D.dtype=t;D.discount='';prodScr();document.getElementById('opt').hidden=false};
 const summ=o=>{const L=arr(o.lines),dsc=L.reduce((a,l)=>a+(Number(l.disc)||0),0),inc=o.mode==='included';
  return `<div class=sumc><b>${esc((o.customer&&o.customer.name)||'नगद ग्राहक')}</b>${L.map((l,n)=>`<div class=ln><span>${n+1}. ${esc(l.name)}<br><small>${l.qty} ${UN[uk(l)]} × ₹${Number(l.rate)} · GST ${l.gst_set?l.gst+'%':'—'}</small></span><b>${inr(l.amt)}</b></div>`).join('')}${dsc>0?`<div class=ln><span>छूट</span><b>- ${inr(dsc)}</b></div>`:''}<div class=ln><span>${inc?'(इसमें GST शामिल है)':'+ GST (ऊपर से जुड़ा)'}</span><b>${inr(o.tax)}</b></div><div class="ln gt"><span>कुल</span><b>${inr(o.total)}</b></div></div><button class=btn onclick="zoom()">🔍 पूरा बिल बड़ा / छोटा करें</button>`};
 // ---------- HOME ----------
 function home(){
  const pf=pfill;pfill='';
- app.innerHTML=`<div style="display:flex;flex-direction:column;min-height:calc(100vh - 150px)"><div style="display:flex;justify-content:flex-end;height:36px"><button onclick="go('set')" aria-label="सेटिंग" style="border:0;background:none;font-size:22px;opacity:.55;padding:4px 8px">⚙</button></div><h1 style="margin:8px 0 28px">🏥 ${esc(S.shop_name)}</h1><button class="btn main huge" onclick="newBill()">📝 नया बिल बनाएँ</button><button class="btn huge" style="margin-top:12px;background:var(--ink2,#f0f4ff);color:var(--ink)" onclick="go('list')">🔍 पुराने बिल देखें</button><div id=bk style="margin-top:auto"></div></div>`;backupBar();
+ app.innerHTML=`<div style="display:flex;flex-direction:column;min-height:calc(100vh - 150px)"><div style="display:flex;justify-content:flex-end;height:36px"><button onclick="go('set')" aria-label="सेटिंग" style="border:0;background:none;font-size:22px;opacity:.55;padding:4px 8px">⚙</button></div><h1 style="margin:8px 0 28px">🏥 ${esc(S.shop_name)}</h1><button class="btn main huge" onclick="newBill()">📝 नया बिल बनाएँ</button><button class="btn huge" style="margin-top:12px;background:var(--ink2,#f0f4ff);color:var(--ink)" onclick="go('list')">🔍 पुराने बिल देखें</button></div>`;
  if(pf)oldBillScr(pf)}
 
 let lastQ='',st,sq=0;
@@ -421,20 +501,39 @@ async function openInv(id){try{V=await api('/invoices/'+id);go('old')}catch(e){s
 
 // ---------- STEP 1 ----------
 function custScr(){const c=D.customer;
- app.innerHTML=`${head(1)}<h2>ग्राहक का नाम</h2><input id=cn_name autocomplete=off value="${esc(c.name)}" oninput="cs('name',this)" onchange="pick('name')" placeholder="नाम (न लिखें तो भी चलेगा)">
- <h2>मोबाइल नंबर</h2><input id=cn_mobile type=tel autocomplete=off inputmode=numeric maxlength=10 pattern="[0-9]{10}" value="${esc(String(c.mobile||'').replace(/\D/g,'').slice(0,10))}" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10);cs('mobile',this)" onchange="pick('mobile')" placeholder="10 अंकों का मोबाइल (ज़रूरी नहीं)"><div class=sug id=csg></div>
- <button class=btn onclick="tgm()">📋 और जानकारी (पता, GSTIN, लाइसेंस, तारीख)</button>
- <div id=more><h2>पता</h2><input id=cn_addr value="${esc(c.address)}" oninput="D.customer.address=this.value;persist()">
+ app.innerHTML=`${head(1)}<h2>ग्राहक का नाम <span style="color:#c0392b">*</span></h2><input id=cn_name autocomplete=off value="${esc(c.name)}" oninput="cs('name',this)" onchange="pick('name')" placeholder="ग्राहक का नाम लिखें (ज़रूरी)">
+ <h2>मोबाइल नंबर <span style="color:#c0392b">*</span></h2><div class=mrow><input id=cn_mobile type=tel autocomplete=off inputmode=numeric maxlength=10 pattern="[0-9]{10}" value="${esc(String(c.mobile||'').replace(/\D/g,'').slice(0,10))}" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10);cs('mobile',this)" onchange="pick('mobile')" placeholder="10 अंकों का नंबर">${CP?'<button class=cpb onclick="phonebook()">📒<br>फ़ोन बुक</button>':''}</div><div class=sug id=csg></div>
+ <button class=btn id=mbtn onclick="tgm()">${OPENMORE?'➖ जानकारी बंद करें':'📋 और जानकारी (पता, GSTIN, लाइसेंस, तारीख)'}</button>
+ <div id=more ${OPENMORE?'':'hidden'}><h2>पता</h2><input id=cn_addr value="${esc(c.address)}" oninput="D.customer.address=this.value;persist()">
  <h2>GSTIN</h2><input id=gs value="${esc(c.gstin)}" oninput="gsin(this)" style="text-transform:uppercase">
  <h2>ग्राहक का ड्रग लाइसेंस नं.</h2><input id=cn_dl value="${esc(c.dl)}" oninput="D.customer.dl=this.value;persist()">
  <h2>बिल की तारीख</h2><input type=date value="${D.date}" onchange="dchg(this.value)">
  <h2>डिलीवरी / Place of Supply राज्य</h2><select id=stsel onchange="stchg(this.value)">${Object.entries(ST).map(([k,v])=>`<option value=${k} ${k===(c.state||shopSt())?'selected':''}>${v}</option>`).join('')}</select><p class=hint>उत्तर प्रदेश में डिलीवरी पर CGST + SGST लगेगा। दूसरे राज्य में डिलीवरी हो तभी यहाँ सही राज्य चुनें; GSTIN का राज्य अपने-आप Place of Supply तय नहीं करता।</p></div>
- <button class="btn main huge" onclick="go('prod')">आगे बढ़ें ➡</button><p class=hint>नाम न हो तो भी आगे बढ़ सकते हैं।</p>`}
-const tgm=()=>{const m=document.getElementById('more');m.hidden=!m.hidden};
+ <button class="btn main huge" onclick="custNext()">आगे बढ़ें ➡</button>`;OPENMORE=false}
+let OPENMORE=false;
+const CP=!!(navigator.contacts&&navigator.contacts.select&&window.isSecureContext);
+const tel10=t=>{let d=String(t||'').replace(/\D/g,'');if(d.length>10&&d.startsWith('91'))d=d.slice(2);if(d.length>10&&d.startsWith('0'))d=d.replace(/^0+/,'');return d};
+async function phonebook(){
+ let r;try{r=await navigator.contacts.select(['name','tel'],{multiple:false})}catch(e){say('फ़ोन बुक नहीं खुल पाई। नंबर खुद टाइप कर दें।');return}
+ if(!r||!r.length)return;
+ const c=r[0],nm=((c.name||[])[0]||'').trim();
+ let nums=[...new Set((c.tel||[]).map(tel10).filter(x=>/^\d{10}$/.test(x)))];
+ if(!nums.length){say('इस नाम के साथ 10 अंकों का मोबाइल नंबर नहीं मिला। कोई दूसरा चुनें या खुद टाइप करें।');return}
+ let m=nums[0];
+ if(nums.length>1){const k=await modal((nm||'इस ग्राहक')+' के कई नंबर हैं। कौन सा लेना है?',nums.slice(0,4).map((x,i)=>[x,i?'':'main']).concat([['रद्द करें','']]));if(k<0||k>=Math.min(nums.length,4))return;m=nums[k]}
+ D.customer.mobile=m;if(nm)D.customer.name=nm;
+ try{const f=arr(await api('/customers?q='+m)).find(x=>String(x.mobile||'').replace(/\D/g,'')===m);if(f){D.customer={name:f.name||nm,mobile:m,address:f.address||'',gstin:f.gstin||'',dl:f.dl||'',state:''};D.interstate=false;gsin({value:D.customer.gstin})}}catch(e){}
+ persist();fillCust()}
+const tgm=()=>{const m=document.getElementById('more'),b=document.getElementById('mbtn');m.hidden=!m.hidden;if(b)b.textContent=m.hidden?'📋 और जानकारी (पता, GSTIN, लाइसेंस, तारीख)':'➖ जानकारी बंद करें'};
+function custChk(){const c=D.customer,n=String(c.name||'').trim(),m=String(c.mobile||'').replace(/\D/g,'');
+ if(!n)return{f:'cn_name',msg:'ग्राहक का नाम लिखना ज़रूरी है।'};
+ if(!/^\d{10}$/.test(m))return{f:'cn_mobile',msg:'ग्राहक का मोबाइल नंबर ठीक 10 अंक का लिखना ज़रूरी है।'};
+ const g=String(c.gstin||'').trim().toUpperCase();if(g&&!/^\d{2}[A-Z0-9]{13}$/.test(g))return{f:'gs',open:true,msg:'GSTIN 15 अक्षर/अंक का होना चाहिए, या खाली छोड़ दें।'};return null}
+function custNext(){const e=custChk();if(e){say(e.msg);const mo=document.getElementById('more');if(e.open&&mo&&mo.hidden)tgm();const i=document.getElementById(e.f);if(i){i.scrollIntoView({block:'center'});i.focus()}return}go('prod')}
 function dchg(v){if(!/^\d{4}-\d{2}-\d{2}$/.test(String(v||''))){const e=document.querySelector('input[type=date]');if(e)e.value=D.date;return}D.date=v;D.items.forEach(it=>{if(it.expiry_status==='suggested'){if(it.exp_off==null)it.exp_off=expRnd();it.expiry=addMon(v,it.exp_off)}});persist()}
 let csq=0;async function cs(f,el){D.customer[f]=el.value;persist();const n=++csq;if(el.value.length<2){const z=document.getElementById('csg');if(z)z.innerHTML='';return}
  try{const r=arr(await api('/customers?q='+encodeURIComponent(el.value)));if(n!==csq)return;cache.cust=r;
- const cb=document.getElementById('csg');if(cb)cb.innerHTML=cache.cust.slice(0,4).map((x,k)=>`<button onclick="pc(${k})">👤 ${esc(x.name||'')} ${esc(x.mobile||'')}</button>`).join('')}catch(e){}}
+ const cb=document.getElementById('csg');if(cb)cb.innerHTML=cache.cust.length?'<p class=hint style="margin:0">पहले के ग्राहक — नाम पर टैप करें:</p>'+cache.cust.slice(0,4).map((x,k)=>`<button onclick="pc(${k})"><span style="font-size:22px">👤 ${esc(x.name||'(नाम नहीं)')}</span><br><span style="font-size:18px;font-weight:600">📞 ${esc(x.mobile||'नंबर नहीं')}</span></button>`).join(''):''}catch(e){}}
 function pick(f){const v=D.customer[f];const m=cache.cust.find(x=>x[f]===v);if(!m)return;
  D.customer={name:m.name||'',mobile:String(m.mobile||'').replace(/\D/g,'').slice(0,10),address:m.address||'',gstin:m.gstin||'',dl:m.dl||'',state:''};D.interstate=false;gsin({value:D.customer.gstin});persist();fillCust()}
 function fillCust(){const c=D.customer,f=(i,v)=>{const e=document.getElementById(i);if(e)e.value=v||''};f('cn_name',c.name);f('cn_mobile',String(c.mobile||'').replace(/\D/g,'').slice(0,10));f('cn_addr',c.address);f('gs',c.gstin);f('cn_dl',c.dl);const b=document.getElementById('stsel');if(b)b.value=c.state||shopSt();const g=document.getElementById('csg');if(g)g.innerHTML=''}
@@ -445,14 +544,10 @@ function prodScr(){
  if(!D.items.some(it=>it.active!==false))D.items[0].active=true;
  app.innerHTML=`${head(2)}<div class=item id=gtop style="font-weight:700;margin-top:0"></div><div id=rows></div><button class="btn good" onclick="addRow()">➕ दूसरी दवाई जोड़ें</button>
  <div class=sticky><div><div class=tl><span>कुल रकम:</span><b id=tot>₹ 0</b></div><button class="btn main" onclick="toPrev()">आगे: बिल देखें ➡</button></div></div>`;rows();upd();gxs()}
-const tgo=()=>{const m=document.getElementById('opt');m.hidden=!m.hidden};
 const gxs=()=>{const x=D.mode==='excluded',s=document.getElementById('gxs'),b=document.getElementById('obtn');const gt=document.getElementById('gtop');if(gt){gt.textContent=x?'🔴 GST रेट के ऊपर से अलग जुड़ेगा':'';gt.style.display=x?'':'none';gt.style.color='#c0392b'}
  if(s){s.textContent=x?'चालू: GST रेट के ऊपर से अलग जुड़ेगा।':'बंद: GST आपके रेट के अंदर ही शामिल है (सामान्य)।';s.style.color=x?'#c0392b':'#157a3a';s.style.fontWeight=700}
  if(b)b.textContent='⚙ छूट / GST विकल्प'+(x?'  —  🔴 GST अलग से':'');
  if(x){const o=document.getElementById('opt');if(o)o.hidden=false}};
-async function gxToggle(el){if(el.checked){const ok=await ask('ध्यान दें: अब GST आपके रेट के ऊपर से अलग जुड़ेगा।\n\nजैसे ₹100 की दवाई पर 5% GST हो तो बिल ₹105 का बनेगा (₹100 + ₹5 GST)।\n\nपहले ₹100 में ही GST शामिल रहता था।\n\nक्या GST अलग से जोड़ें?');
-  if(!ok){el.checked=false;return}D.mode='excluded'}else D.mode='included';
- gxs();upd();persist()}
 function rows(){document.getElementById('rows').innerHTML=D.items.map((it,i)=>{
  const isActive=it.active!==false;
  const unitLabel=uk(it)==='strip'?'💊 स्ट्रिप':'📦 बॉक्स';
@@ -519,7 +614,7 @@ function toPrev(){{const keep=D.items.filter(it=>String(it.name).trim()||String(
  go('prev')}
 
 // ---------- INVOICE HTML ----------
-function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows.length<10)rows.push(null);const pc0=posOf(o,sh),pos=(o.interstate&&pc0===(sh.gstin||'').slice(0,2))?'Other State':(ST[pc0]||'')+' ('+pc0+')';
+function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows.length<8)rows.push(null);const pc0=posOf(o,sh),pos=(o.interstate&&pc0===(sh.gstin||'').slice(0,2))?'Other State':(ST[pc0]||'')+' ('+pc0+')';
  const money=v=>`<td class=rt>${Number(v||0).toFixed(2)}</td>`;
  const f2=v=>Number(v||0).toFixed(2),us=l=>l.unit&&UE[l.unit]?' '+UE[l.unit]:'',es=e=>{const[y,m]=e.split('-');return m+'/'+y.slice(2)};
  const cls={};[0,5,18].forEach(g=>cls[g]={t:0,d:0,c:0,s:0,i:0});
@@ -550,7 +645,7 @@ function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows
 const cg='<colgroup>'+CS.map(x=>`<col style="width:${x.w}px">`).join('')+'</colgroup>';
  const sigb=sh.show_signatory==='1'&&sh.signatory?(sh.signature?`<img src="${esc(sh.signature)}" style="height:52px;display:block;margin:2px 0 2px auto">`:`<div class=sig>${esc(sh.signatory)}</div>`):'<div style="height:54px"></div>';
  return `<div id=inv><div class=ti>${title}</div>
- <div class=brand><img src="${esc(sh.logo||LOGO_DEFAULT)}"><div><div class=sn>${esc(sh.shop_name)}</div><div class=ad>${esc(sh.address)}${sh.pin?' - '+esc(sh.pin):''}</div>${sh.email?`<div class=ad style="font-size:11px;color:#5a6b92">${esc(sh.email)}</div>`:''}</div></div>
+ <div class=brand><img src="${LOGO_DEFAULT}"><div><div class=sn>${esc(sh.shop_name)}</div><div class=ad>${esc(sh.address)}${sh.pin?' - '+esc(sh.pin):''}</div>${sh.email?`<div class=ad style="font-size:11px;color:#5a6b92">${esc(sh.email)}</div>`:''}</div></div>
  <table class=info><tr><td><span class=k>Drug Licence No.</span>${esc(sh.dl1)}<br>${esc(sh.dl2)}</td><td><span class=k>GSTIN</span>${esc(sh.gstin)}</td><td><span class=k>Mobile</span>${esc(sh.mobile)}</td></tr></table>
  <table class=nb style="border-bottom:1.5px solid var(--ink)"><tr><td style="width:62%;padding:8px 12px;border-right:1px solid var(--ink)"><span class=k>Billed To</span><b style="font-size:13px">M/S ${esc(c.name||'Cash Customer')}</b>${c.mobile?'<br>Mob. '+esc(c.mobile):''}${c.address?'<br>'+esc(c.address):''}${c.gstin?'<br>GSTIN: '+esc(c.gstin):''}${c.dl?'<br>D/L No.: '+esc(c.dl):''}</td>
  <td style="padding:8px 12px"><div class=kv><span>Invoice No.</span><b style="font-size:14px">${esc(o.inv_no||o.serial)}</b></div><div class=kv><span>Date</span><b>${dmy(o.date)}</b></div><div class=kv><span>Place of Supply</span><b>${pos}</b></div><div class=kv><span>Reverse Charge</span><b>No</b></div>${sh.transport?`<div class=kv><span>Transport</span><b>${esc(sh.transport)}</b></div>`:''}</td></tr></table>
@@ -577,7 +672,7 @@ const actions=(o,isNew)=>`<div class=bar><button class=ghost onclick="${isNew?'f
  <button class="btn wa huge" onclick="shareBill()">📲 बिल शेयर करें</button><button class=btn onclick="doWaPdf()">📎 PDF बिल भी भेजें</button><div class=two><button class=btn onclick="doPrint()">🖨 प्रिंट</button><button class=btn onclick="doPdf()">⬇ PDF</button></div>
  ${isNew?'<button class="btn main" onclick="finish()">➕ नया बिल बनाएँ</button>':''}`;
 let saving=false;
-async function saveInv(wa){if(saving)return;if(D.customer.mobile&&!/^\d{10}$/.test(String(D.customer.mobile)))return say('मोबाइल नंबर ठीक 10 अंक का होना चाहिए।');{const t=CALC().total,c=D.customer;if(t>=50000&&!(c.name.trim()&&c.address.trim())){const k=await modal('₹50,000 या उससे ज़्यादा के बिल पर GST नियम से ग्राहक का नाम और पता लिखना ज़रूरी है।',[['नाम/पता भरने जाएँ','main'],['फिर भी सेव करें','']]);if(k===-1)return;if(k===0){go('cust');return}}}saving=true;try{const r=CALC();const b={client_key:D.client_key,date:D.date,customer:D.customer,mode:D.mode,interstate:D.interstate,lines:r.lines.map(({open,rt,...x})=>x),gross:r.gross,tax:r.tax,discount:r.discount,roundoff:r.roundoff,total:r.total,words:r.words};
+async function saveInv(wa){if(saving)return;{const e=custChk();if(e){if(e.open)OPENMORE=true;say(e.msg);go('cust');return}}{const t=CALC().total,c=D.customer;if(t>=50000&&!(c.name.trim()&&c.address.trim())){const k=await modal('₹50,000 या उससे ज़्यादा के बिल पर GST नियम से ग्राहक का नाम और पता लिखना ज़रूरी है।',[['नाम/पता भरने जाएँ','main'],['फिर भी सेव करें','']]);if(k===-1)return;if(k===0){OPENMORE=true;go('cust');return}}}saving=true;try{const r=CALC();const b={client_key:D.client_key,date:D.date,customer:D.customer,mode:D.mode,interstate:D.interstate,lines:r.lines.map(({open,rt,...x})=>x),gross:r.gross,tax:r.tax,discount:r.discount,roundoff:r.roundoff,total:r.total,words:r.words};
  D.saved=await api('/invoices',{method:'POST',body:b});
  NX=null;try{localStorage.removeItem('vms_draft')}catch(e){}prevScr();if(wa===true)await shareBill()}
  catch(e){say('❌ बिल सेव नहीं हुआ!\n'+e.message+'\nफिर से दबाएँ — दो बार नहीं बनेगा।')}finally{saving=false}}
@@ -593,7 +688,9 @@ function boxCanvas(el,sc){return new Promise((res,rej)=>{try{const W=el.offsetWi
  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'"><foreignObject x="0" y="0" width="'+W+'" height="'+H+'">'+new XMLSerializer().serializeToString(w)+'</foreignObject></svg>';
  const im=new Image();im.onload=()=>{try{const cv=document.createElement('canvas');cv.width=W*sc;cv.height=H*sc;const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.scale(sc,sc);x.drawImage(im,0,0,W,H);res(cv)}catch(e){rej(e)}};
  im.onerror=()=>rej(new Error('बिल की फोटो नहीं बन पाई'));im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}catch(e){rej(e)}})}
-async function invCanvas(){const el=document.getElementById('inv');if(!el)throw new Error('बिल स्क्रीन पर नहीं है');
+function padCanvas(cv){const p=Math.round(cv.width*0.05),o=document.createElement('canvas');o.width=cv.width+2*p;o.height=cv.height+2*p;const x=o.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,o.width,o.height);x.drawImage(cv,p,p);return o}
+const invCanvas=async()=>padCanvas(await invCanvas0());
+async function invCanvas0(){const el=document.getElementById('inv');if(!el)throw new Error('बिल स्क्रीन पर नहीं है');
  try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2500))])}catch(e){}
  try{fit()}catch(e){}await new Promise(r=>requestAnimationFrame(()=>setTimeout(r,60)));
  const old=el.style.transform;el.style.transform='none';
@@ -602,13 +699,13 @@ async function invCanvas(){const el=document.getElementById('inv');if(!el)throw 
   return await boxCanvas(el,2)}finally{el.style.transform=old}}
 const toJpg=cv=>new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('फोटो नहीं बन पाई')),'image/jpeg',.95));
 async function pdfFromCanvas(cv){const jb=new Uint8Array(await(await toJpg(cv)).arrayBuffer());
- const PW=595.28,PH=841.89,mm=2.834645669,w=cv.width,h=cv.height;let dw=200*mm,dh=h*dw/w;if(dh>287*mm){dh=287*mm;dw=w*dh/h}
+ const PW=595.28,PH=841.89,mm=2.834645669,w=cv.width,h=cv.height;let dw=PW,dh=h*dw/w;if(dh>PH){dh=PH;dw=w*dh/h}
  const enc=new TextEncoder(),parts=[],offs=[];let len=0;const put=b=>{const u=typeof b==='string'?enc.encode(b):b;parts.push(u);len+=u.length};
  const obj=(n,body)=>{offs[n]=len;put(n+' 0 obj\n'+body+'\nendobj\n')};
  put('%PDF-1.4\n');obj(1,'<< /Type /Catalog /Pages 2 0 R >>');obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
  obj(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+PW+' '+PH+'] /Resources << /XObject << /Im0 4 0 R >> /ProcSet [/PDF /ImageC] >> /Contents 5 0 R >>');
  offs[4]=len;put('4 0 obj\n<< /Type /XObject /Subtype /Image /Width '+w+' /Height '+h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jb.length+' >>\nstream\n');put(jb);put('\nendstream\nendobj\n');
- const cs='q '+dw.toFixed(2)+' 0 0 '+dh.toFixed(2)+' '+(5*mm).toFixed(2)+' '+(PH-5*mm-dh).toFixed(2)+' cm /Im0 Do Q';
+ const cs='q '+dw.toFixed(2)+' 0 0 '+dh.toFixed(2)+' '+((PW-dw)/2).toFixed(2)+' '+(PH-dh).toFixed(2)+' cm /Im0 Do Q';
  obj(5,'<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream');
  const xr=len;let t='xref\n0 6\n0000000000 65535 f \n';for(let i=1;i<=5;i++)t+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
  put(t+'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF\n');return new Blob(parts,{type:'application/pdf'})}
@@ -670,7 +767,43 @@ function setScr(){const tb=[['shop','🏪 मालिक / दुकान'],['
  app.innerHTML=`<div class=bar><button class=ghost onclick="back()">⬅ पीछे</button></div><h1>⚙ सेटिंग</h1><div class=opt2 style="grid-template-columns:1fr 1fr;gap:10px">${tb.map(([k,l])=>`<button class="pk ${stab_===k?'on':''}" style="font-size:18px;min-height:62px" onclick="stabGo('${k}')">${l}</button>`).join('')}</div><div id=tabc></div>`;
  ({shop:tabShop,cust:tabCust,backup:tabBackup,view:tabView})[stab_]()}
 function tabShop(){document.getElementById('tabc').innerHTML=`<h2>🏪 मालिक / दुकान की पूरी जानकारी</h2><p class=hint>यह जानकारी नए बिल पर छपेगी। पुराने बिल सुरक्षित रहेंगे।</p>${SHOPF.map(([k,l])=>fld(k,l)).join('')}<label>सिग्नेचर करने वाले का नाम बिल पर दिखाएँ</label><select id=s_show_signatory><option value=1 ${S.show_signatory==='1'?'selected':''}>हाँ</option><option value=0 ${S.show_signatory!=='1'?'selected':''}>नहीं</option></select><button class="btn main huge" onclick="saveSet('shop')">✅ दुकान की जानकारी सेव करें</button>`}
-function tabBackup(){document.getElementById('tabc').innerHTML=`<h2>💾 डेटा बैकअप</h2><p class=hint>बैकअप में दुकान की जानकारी, ग्राहक, दवाइयाँ और पुराने बिल शामिल होंगे। इसे सुरक्षित जगह रखें।</p><button class="btn good huge" onclick="doBackup()">⬇ बैकअप फ़ोन में सेव करें</button><h3>बैकअप वापस डालें</h3><p class=warn>ध्यान दें: Restore करने पर अभी का डेटा बदल जाएगा। पहले बैकअप डाउनलोड कर लें।</p><label>बैकअप फ़ाइल चुनें (.json)</label><input type=file accept=".json" onchange="restore(this)"><p class=hint>सॉफ़्टवेयर वर्ज़न: ${APP_VERSION}</p>`}
+function tabBackup(){
+  const lastCloud=Number(lsGet('vms_cloud_backup_at')||0);
+  const cloudAgo=lastCloud?Math.floor((Date.now()-lastCloud)/60000):null;
+  const cloudStr=cloudAgo===null?'कभी नहीं':cloudAgo<2?'अभी हाल में':cloudAgo<60?cloudAgo+' मिनट पहले':Math.floor(cloudAgo/60)+' घंटे पहले';
+  const onlineColor=navigator.onLine?'#1a7a1a':'#b00';
+  const onlineText=navigator.onLine?'🟢 इंटरनेट चालू है':'🔴 इंटरनेट बंद है';
+  document.getElementById('tabc').innerHTML=`<h2>💾 डेटा बैकअप</h2><p class=hint>बैकअप में दुकान की जानकारी, ग्राहक, दवाइयाँ और पुराने बिल शामिल होंगे।</p><div style="background:var(--ink2,#f0f4ff);border-radius:10px;padding:14px;margin-bottom:16px"><b>☁ क्लाउड बैकअप (सर्वर)</b><p style="margin:6px 0 4px;font-size:.9em">आखिरी बार सर्वर पर: <b>${cloudStr}</b></p><p style="margin:4px 0 10px;font-size:.85em;color:${onlineColor}">${onlineText}</p><button class="btn good" onclick="manualCloudBackup()" id="cbtn">☁ अभी सर्वर पर बैकअप करें</button>&nbsp;<span id="cbst" style="font-size:.9em"></span></div><button class="btn good huge" onclick="doBackup()">⬇ बैकअप फ़ोन में सेव करें</button><h3>बैकअप वापस डालें</h3><p class=warn>ध्यान दें: Restore करने पर अभी का डेटा बदल जाएगा। पहले बैकअप ज़रूर डाउनलोड करें।</p><div style="background:var(--ink2,#f0f4ff);border-radius:10px;padding:14px;margin-bottom:16px"><b>☁ सर्वर से वापस लाएँ</b><p class=hint style="margin:6px 0 10px">अगर फ़ोन बदला हो या डेटा खो गया हो।</p><button class="btn" onclick="restoreFromCloud()" id="rcbtn">📥 सर्वर से Restore करें</button>&nbsp;<span id="rcst" style="font-size:.9em"></span></div><label>बैकअप फ़ाइल चुनें (.json)</label><input type=file accept=".json" onchange="restore(this)"><p class=hint>सॉफ़्टवेयर वर्ज़न: ${APP_VERSION}</p>`
+}
+async function manualCloudBackup(){
+  const btn=document.getElementById('cbtn'),st=document.getElementById('cbst');
+  if(!btn)return;
+  if(!navigator.onLine){if(st)st.textContent='❌ इंटरनेट नहीं है';return}
+  btn.disabled=true;if(st)st.textContent='⏳ हो रहा है…';
+  const r=await cloudBackup();
+  btn.disabled=false;
+  if(r.ok){lsSet('vms_cloud_backup_at',Date.now());if(st)st.textContent='✅ हो गया';tabBackup()}
+  else{if(st)st.textContent='❌ '+r.reason}
+}
+async function restoreFromCloud(){
+  const btn=document.getElementById('rcbtn'),st=document.getElementById('rcst');
+  if(!btn)return;
+  if(!navigator.onLine){if(st)st.textContent='❌ इंटरनेट नहीं है';return}
+  if(!await ask('सर्वर का डेटा वापस लाना है?\n\nध्यान दें: अभी का सारा डेटा हट जाएगा।\nपहले फ़ोन में बैकअप सेव कर लें।'))return;
+  btn.disabled=true;if(st)st.textContent='⏳ सर्वर से ला रहे हैं…';
+  try{
+    const j=await cloudFetch();
+    if(!j||!j.found){if(st)st.textContent='❌ सर्वर पर कोई बैकअप नहीं मिला';btn.disabled=false;return}
+    const bk=JSON.parse(j.payload);
+    await makeBackup('purana-');
+    await api('/restore',{method:'POST',body:bk});
+    S=await api('/settings');
+    if(st)st.textContent='✅ डेटा वापस आ गया';
+    btn.disabled=false;
+    say('✅ सर्वर से डेटा वापस आ गया');
+    setScr();
+  }catch(e){if(st)st.textContent='❌ '+e.message;btn.disabled=false;say('Restore नहीं हुआ: '+e.message)}
+}
 function tabView(){document.getElementById('tabc').innerHTML=`<h2>🧾 बिल का प्रकार चुनें</h2><p class=hint>यह सेटिंग आगे बनने वाले बिलों पर लागू होगी। पुराने बिल अपने पुराने रूप में रहेंगे।</p><div class=row><label class=sw style="font-size:20px"><span>अभी का बिल प्रकार</span><span>${S.bill_view==='simple'?'सिंपल':'डिटेल'}</span></label><div class=two><button class="btn ${S.bill_view!=='simple'?'main':''}" onclick="setBillView('detail')">📋 डिटेल बिल</button><button class="btn ${S.bill_view==='simple'?'main':''}" onclick="setBillView('simple')">🧾 सिंपल बिल</button></div><p class=hint>डिटेल: HSN, बैच और एक्सपायरी सहित।<br>सिंपल: HSN, बैच और एक्सपायरी बिल से छिपेंगे।</p></div>`}
 async function setBillView(v){try{S=await api('/settings',{method:'PUT',body:{bill_view:v==='simple'?'simple':'detail'}});tabView();say(S.bill_view==='simple'?'✅ सिंपल बिल चालू':'✅ डिटेल बिल चालू')}catch(e){say('सेटिंग सेव नहीं हुई: '+e.message)}}
 async function saveSet(g){if(!(document.getElementById('s_shop_name')||{value:'x'}).value.trim())return say('दुकान का नाम खाली नहीं हो सकता।');
@@ -694,12 +827,13 @@ async function custDel(){if(!await ask('यह ग्राहक सूची �
 async function restore(el){const f=el.files&&el.files[0];el.value='';if(!f||!await ask('सच में Restore करें? अभी का सारा डेटा बदल जाएगा।'))return;
  try{const bk=JSON.parse(await f.text());await makeBackup('purana-');await api('/restore',{method:'POST',body:bk});S=await api('/settings');say('डेटा वापस आ गया');setScr()}catch(e){say('डेटा वापस नहीं आया: '+e.message)}}
 
-Object.assign(window,{hsnSet,stabGo,setBillView,custBills,custList,custForm,custSave,custDel,custCancel,stchg,pc,gset,gother,dt,zoom,go,back,search,oldBillScr,newBill,openInv,cs,pick,gsin,tgm,dchg,tgo,tg,activateRow,addRow,rmc,qs,su,cx,gxToggle,sf,mr,it_rt,bt,ex,pn,toPrev,saveInv,shareBill,doBackup,finish,doPrint,doPdf,doWa,doWaPdf,saveSet,restore,persist,upd});
+Object.assign(window,{hsnSet,stabGo,setBillView,custBills,custList,custForm,custSave,custDel,custCancel,stchg,pc,gset,gother,zoom,go,back,search,oldBillScr,newBill,openInv,cs,pick,gsin,tgm,dchg,tg,activateRow,addRow,rmc,qs,su,cx,sf,mr,it_rt,bt,ex,pn,toPrev,saveInv,shareBill,doBackup,finish,doPrint,doPdf,doWa,doWaPdf,saveSet,restore,persist,upd});
 Object.defineProperty(window,'D',{get:()=>D,set:v=>{D=v}});
 // ===== Start: open the local database (no internet needed) =====
 (async()=>{try{await openDB();await migrateOld();S=await getSettings();NX=await nextInfo()}
 catch(e){app.innerHTML='<h1>🏥</h1><p class=warn style="text-align:center">डेटा खोलने में दिक्कत: '+esc(e.message)+'</p><button class="btn main" onclick="location.reload()">🔄 दोबारा खोलें</button>';return}
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
-try{newDraft();history.replaceState({v:'home'},'');show('home');if(window.__vmsUp)window.__vmsUp()}catch(e){console.error('VMS startup render error:',e);app.innerHTML='<h2>ऐप शुरू नहीं हो पाया</h2><p class=warn>'+esc(e&&e.message?e.message:'अज्ञात त्रुटि')+'</p><button class="btn main" onclick="location.reload()">🔄 दोबारा खोलें</button>';return}setTimeout(()=>{if(navigator.onLine!==false)loadH2C()},2500)})();
+try{newDraft();history.replaceState({v:'home'},'');show('home');if(window.__vmsUp)window.__vmsUp()}catch(e){console.error('VMS startup render error:',e);app.innerHTML='<h2>ऐप शुरू नहीं हो पाया</h2><p class=warn>'+esc(e&&e.message?e.message:'अज्ञात त्रुटि')+'</p><button class="btn main" onclick="location.reload()">🔄 दोबारा खोलें</button>';return}setTimeout(()=>{if(navigator.onLine!==false)loadH2C()},2500);
+setTimeout(()=>{autoCloudBackup()},3500)})();
 </script></body></html>
