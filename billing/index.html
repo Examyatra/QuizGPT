@@ -179,14 +179,14 @@ const arr=x=>Array.isArray(x)?x:[];
 const svgURI=s=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);
 const xe=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const LOGO_DEFAULT='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAACrElEQVR4nO3dwU0DMRBA0YDoA+oIPYVaKIo+6CSckDiTTSzPf6+AzcqZv/LJfno9X64niHpe/QKwkgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkPay+gWm+f76vOvz394/7vr8mqfX8+W6+iWmuPfw/yWEY9gCHeSRw7/i96YSwAFWDaMIbicA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBt1P0ATkt+jEl3E4wJwPA/3oQQRmyBDP8aE9Z9+wAm/Ak72339tw8AbiEA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKRtH8CE08l2tvv6bx8A3GJEALt/hXY1Yd3HHI57Ou1/TN8uJgz+r1EBrLIyvEnDuMKILRD8lwBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAAdYdUCtg3FvJwDSBHCQR3+Nff2P4X6Ag937rgCDfywBkGYLRJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYC0H/EAPKtmhX4yAAAAAElFTkSuQmCC';
-const genSig=n=>svgURI('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 70"><text x="8" y="43" font-family="Segoe Script,Bradley Hand,Apple Chancery,URW Chancery L,cursive" font-size="31" font-weight="500" letter-spacing="-1.1" fill="#14234a">'+xe(n)+'</text><path d="M12 57C62 53 112 61 166 54" stroke="#14234a" stroke-width="1.15" fill="none" stroke-linecap="round" opacity=".78"/></svg>');
-const PSIG=svgURI('<svg xmlns="http://www.w3.org/2000/svg" viewBox="76 24 650 286"><path d="M165 112C225 62 305 38 352 48C388 58 360 112 298 152C240 190 150 208 96 206 M262 86C244 142 214 212 190 254 M335 200C360 160 450 96 462 62C470 36 428 48 414 112C406 160 430 206 492 196 M492 196C560 186 600 150 656 152C712 154 716 214 640 226C560 238 400 250 300 268 M104 298C280 268 450 246 600 241" stroke="#14234a" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+const genSig=n=>svgURI('<svg xmlns="http://www.w3.org/2000/svg" width="280" height="70" viewBox="0 0 280 70"><text x="8" y="43" font-family="Segoe Script,Bradley Hand,Apple Chancery,URW Chancery L,cursive" font-size="31" font-weight="500" letter-spacing="-1.1" fill="#14234a">'+xe(n)+'</text><path d="M12 57C62 53 112 61 166 54" stroke="#14234a" stroke-width="1.15" fill="none" stroke-linecap="round" opacity=".78"/></svg>');
+const PSIG=svgURI('<svg xmlns="http://www.w3.org/2000/svg" width="650" height="286" viewBox="76 24 650 286"><path d="M165 112C225 62 305 38 352 48C388 58 360 112 298 152C240 190 150 208 96 206 M262 86C244 142 214 212 190 254 M335 200C360 160 450 96 462 62C470 36 428 48 414 112C406 160 430 206 492 196 M492 196C560 186 600 150 656 152C712 154 716 214 640 226C560 238 400 250 300 268 M104 298C280 268 450 246 600 241" stroke="#14234a" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
 const lsGet=k=>{try{const v=localStorage.getItem(k);return v==null?undefined:JSON.parse(v)}catch(e){return undefined}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.30';
+const APP_VERSION='OFFLINE-1.32';
 // ---- Cloud Backup (val.town SQLite) ----
 // सर्वर पर यही एक फिक्स जगह (ID): ऑटो-बैकअप, बटन वाला बैकअप और Restore तीनों इसी का इस्तेमाल करते हैं.
 // इसे कभी बदलना नहीं — बदलने पर पुराना बैकअप नहीं मिलेगा.
@@ -682,7 +682,7 @@ function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows
  const classTbl=`<table class="pt ct" style="table-layout:auto"><tr><th>GST RATE</th><th>TAXABLE</th><th>DISC.</th>${ig?'<th>IGST</th>':'<th>CGST</th><th>SGST</th><th>TOTAL TAX</th>'}</tr>${ks.map(g=>crow(rateLabel(g),cls[g])).join('')}${crow('TOTAL',{t:sm('t'),d:sm('d'),c:sm('c'),s:sm('s'),i:sm('i')})}</table>`;
  const gmS=new Set(o.lines.map(l=>(l.gst_mode||o.mode)==='excluded'?'x':'i')),gmTxt=gmS.size>1?'GST: included on some items, added extra on others':gmS.has('x')?'GST added extra':'Prices GST included';
  const ro=Number(o.roundoff)||0,rn=Math.abs(ro).toFixed(2).split('.'),rsg=ro>0?'+':ro<0?'-':'';
- const title=o.lines.length&&o.lines.every(l=>l.gst_set&&Number(l.gst)===0)?'Bill of Supply':'Tax Invoice';
+ const title='Sale Invoice';
  const LS=o.lines,has=f=>LS.some(f),detailBill=o.bill_view!=='simple',CS=[
  {w:24,h:'SN',c:(l,n)=>`<td class=c>${n+1}</td>`},
  {w:0,h:'Product Name',c:l=>`<td class=l>${esc(l.name)}</td>`},
