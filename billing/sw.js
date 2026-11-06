@@ -1,9 +1,9 @@
-/* Vishal Medical Store — Service Worker (OFFLINE-1.22)
+/* Vishal Medical Store — Service Worker (OFFLINE-1.24)
  * - App बिना इंटरनेट के भी खुले (सारी ज़रूरी files cache में)
  * - index.html: पहले नेट से नया लो, न मिले तो cache से (ताकि update आती रहे)
  * - सिर्फ अपनी site की GET files cache होती हैं; सर्वर बैकअप (val.run) को कभी नहीं छूता
  */
-const VER = 'vms-cache-1.22';
+const VER = 'vms-cache-1.24';
 const CORE = [
   './',
   './index.html',
@@ -39,8 +39,10 @@ self.addEventListener('fetch', e => {
   // पेज खोलना: network-first, फेल हो तो cache
   if (req.mode === 'navigate') {
     e.respondWith((async () => {
+      const net = fetch(req, { cache: 'no-cache' });
       try {
-        const res = await fetch(req, { cache: 'no-cache' });
+        // नेट धीमा हो तो 4 सेकंड बाद cache वाला पेज (ऐप अटके नहीं)
+        const res = await Promise.race([net, new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 4000))]);
         if (res && res.ok) {
           const c = await caches.open(VER);
           c.put('./index.html', res.clone()).catch(() => {});
@@ -48,8 +50,10 @@ self.addEventListener('fetch', e => {
         return res;
       } catch (err) {
         const c = await caches.open(VER);
-        return (await c.match('./index.html')) || (await c.match('./')) ||
-          new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+        const hit = (await c.match('./index.html')) || (await c.match('./'));
+        if (hit) { net.then(r => { if (r && r.ok) c.put('./index.html', r.clone()).catch(() => {}); }).catch(() => {}); return hit; }
+        try { return await net; } catch (e2) {}
+        return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
       }
     })());
     return;

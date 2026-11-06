@@ -169,7 +169,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.22';
+const APP_VERSION='OFFLINE-1.24';
 // ---- Cloud Backup (val.town SQLite) ----
 // सर्वर पर यही एक फिक्स जगह (ID): ऑटो-बैकअप, बटन वाला बैकअप और Restore तीनों इसी का इस्तेमाल करते हैं.
 // इसे कभी बदलना नहीं — बदलने पर पुराना बैकअप नहीं मिलेगा.
@@ -482,17 +482,22 @@ function custScr(){const c=D.customer;
 let OPENMORE=false;
 const CP=!!(navigator.contacts&&navigator.contacts.select&&window.isSecureContext);
 const tel10=t=>{let d=String(t||'').replace(/\D/g,'');if(d.length>10&&d.startsWith('91'))d=d.slice(2);if(d.length>10&&d.startsWith('0'))d=d.replace(/^0+/,'');return d};
+let PBB=false;
 async function phonebook(){
- let r;try{r=await navigator.contacts.select(['name','tel'],{multiple:false})}catch(e){say('फ़ोन बुक नहीं खुल पाई। नंबर खुद टाइप कर दें।');return}
+ if(PBB)return;PBB=true;
+ try{
+ persist();
+ let r;try{r=await navigator.contacts.select(['tel'],{multiple:false})}catch(e){say('फ़ोन बुक नहीं खुल पाई। नंबर खुद टाइप कर दें।');return}
  if(!r||!r.length)return;
- const c=r[0],nm=((c.name||[])[0]||'').trim();
+ const c=r[0];
  let nums=[...new Set((c.tel||[]).map(tel10).filter(x=>/^\d{10}$/.test(x)))];
- if(!nums.length){say('इस नाम के साथ 10 अंकों का मोबाइल नंबर नहीं मिला। कोई दूसरा चुनें या खुद टाइप करें।');return}
+ if(!nums.length){say('इस संपर्क के साथ 10 अंकों का मोबाइल नंबर नहीं मिला। कोई दूसरा चुनें या खुद टाइप करें।');return}
  let m=nums[0];
- if(nums.length>1){const k=await modal((nm||'इस ग्राहक')+' के कई नंबर हैं। कौन सा लेना है?',nums.slice(0,4).map((x,i)=>[x,i?'':'main']).concat([['रद्द करें','']]));if(k<0||k>=Math.min(nums.length,4))return;m=nums[k]}
- D.customer.mobile=m;if(nm)D.customer.name=nm;
- try{const f=arr(await api('/customers?q='+m)).find(x=>String(x.mobile||'').replace(/\D/g,'')===m);if(f){D.customer={name:f.name||nm,mobile:m,address:f.address||'',gstin:f.gstin||'',dl:f.dl||'',state:''};D.interstate=false;gsin({value:D.customer.gstin})}}catch(e){}
- persist();fillCust()}
+ if(nums.length>1){const k=await modal('इस संपर्क के कई नंबर हैं। कौन सा लेना है?',nums.slice(0,4).map((x,i)=>[x,i?'':'main']).concat([['रद्द करें','']]));if(k<0||k>=Math.min(nums.length,4))return;m=nums[k]}
+ D.customer.mobile=m; // फ़ोन बुक से सिर्फ़ नंबर आता है; नाम दुकानदार का टाइप किया हुआ ही रहेगा
+ try{const f=arr(await api('/customers?q='+m)).find(x=>String(x.mobile||'').replace(/\D/g,'')===m);if(f){const nm0=String(D.customer.name||'').trim();D.customer={name:nm0||f.name||'',mobile:m,address:f.address||'',gstin:f.gstin||'',dl:f.dl||'',state:''};D.interstate=false;gsin({value:D.customer.gstin})}}catch(e){}
+ persist();fillCust()
+ }finally{PBB=false}}
 const tgm=()=>{const m=document.getElementById('more'),b=document.getElementById('mbtn');m.hidden=!m.hidden;if(b)b.textContent=m.hidden?'📋 और जानकारी (पता, GSTIN, लाइसेंस, तारीख)':'➖ जानकारी बंद करें'};
 function custChk(){const c=D.customer,n=String(c.name||'').trim(),m=String(c.mobile||'').replace(/\D/g,'');
  if(!n)return{f:'cn_name',msg:'ग्राहक का नाम लिखना ज़रूरी है।'};
@@ -794,11 +799,41 @@ async function restore(el){const f=el.files&&el.files[0];el.value='';if(!f||!awa
 
 Object.assign(window,{hsnSet,stabGo,setBillView,custBills,custList,custForm,custSave,custDel,custCancel,stchg,pc,gset,gother,zoom,go,back,search,oldBillScr,newBill,openInv,cs,pick,gsin,tgm,dchg,tg,activateRow,addRow,rmc,qs,su,cx,sf,mr,it_rt,bt,ex,pn,toPrev,saveInv,shareBill,doBackup,finish,doPrint,doPdf,doWa,doWaPdf,saveSet,restore,persist,upd});
 Object.defineProperty(window,'D',{get:()=>D,set:v=>{D=v}});
+// ===== Reliability layer: error log + never lose the draft =====
+const vmsLog=(k,e)=>{try{const a=lsGet('vms_log')||[];a.push({t:new Date().toISOString(),k,m:String(e&&e.message||e).slice(0,200),v:APP_VERSION});lsSet('vms_log',a.slice(-20))}catch(x){}};
+window.addEventListener('error',e=>vmsLog('error',e.error||e.message));
+window.addEventListener('unhandledrejection',e=>vmsLog('promise',e.reason));
+const vmsFlush=()=>{try{persist()}catch(e){}};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')vmsFlush()});
+window.addEventListener('pagehide',vmsFlush);
 // ===== Start: open the local database (no internet needed) =====
 (async()=>{try{await openDB();await migrateOld();S=await getSettings();NX=await nextInfo()}
 catch(e){app.innerHTML='<h1>🏥</h1><p class=warn style="text-align:center">डेटा खोलने में दिक्कत: '+esc(e.message)+'</p><button class="btn main" onclick="location.reload()">🔄 दोबारा खोलें</button>';return}
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
-try{newDraft();history.replaceState({v:'home'},'');show('home');if(window.__vmsUp)window.__vmsUp()}catch(e){console.error('VMS startup render error:',e);app.innerHTML='<h2>ऐप शुरू नहीं हो पाया</h2><p class=warn>'+esc(e&&e.message?e.message:'अज्ञात त्रुटि')+'</p><button class="btn main" onclick="location.reload()">🔄 दोबारा खोलें</button>';return}setTimeout(()=>{if(navigator.onLine!==false)loadH2C()},2500);
-setTimeout(()=>{autoCloudBackup()},3500)})();
+if('serviceWorker' in navigator){
+ try{navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>{const u=(r.active||r.waiting||r.installing||{}).scriptURL||'';if(u&&r.scope===new URL('./',location.href).href&&!/\/sw\.js(\?|$)/.test(u))r.unregister()})).catch(()=>{})}catch(e){}
+ navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+}
+const vmsHash=t=>{let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)};
+let vcBusy=false;
+async function verChk(){if(vcBusy)return;vcBusy=true;try{
+ if(navigator.onLine===false||document.visibilityState!=='visible')return;
+ try{const rg=await navigator.serviceWorker.getRegistration();if(rg)rg.update().catch(()=>{})}catch(e){}
+ // सस्ता चेक: सिर्फ़ headers (HEAD). ?_= से CDN का पुराना cache भी बायपास होता है
+ const hr=await fetch('index.html?_='+Date.now(),{method:'HEAD',cache:'no-store'});if(!hr.ok)return;
+ const sig=[hr.headers.get('etag'),hr.headers.get('last-modified'),hr.headers.get('content-length')].join('|');
+ if(sig==='||'||lsGet('vms_sig')===sig)return;
+ const t=await(await fetch('index.html?_='+Date.now(),{cache:'no-store'})).text();
+ const m=t.match(/const APP_VERSION='([^']+)'/);if(!m)return;
+ const h=vmsHash(t),oh=lsGet('vms_h');
+ const need=m[1]!==APP_VERSION||(oh!==undefined&&oh!==h);
+ if(!need){lsSet('vms_sig',sig);lsSet('vms_h',h);return}
+ // बिल भरते समय/टाइप करते समय नहीं; होम पर खाली होते ही अपडेट (अगली जाँच में)
+ if(view!=='home'||MODALS.length||/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement||{}).tagName))return;
+ // रीलोड-लूप से बचाव: 2 मिनट में 3 से ज़्यादा auto-reload नहीं
+ const now=Date.now(),L=(lsGet('vms_rls')||[]).filter(x=>now-x<120000);if(L.length>=3)return;L.push(now);lsSet('vms_rls',L);
+ lsSet('vms_sig',sig);lsSet('vms_h',h);vmsFlush();
+ location.replace('index.html?v='+h)}catch(e){}finally{vcBusy=false}}
+try{newDraft();history.replaceState({v:'home'},'');show('home');if(window.__vmsUp)window.__vmsUp()}catch(e){console.error('VMS startup render error:',e);app.innerHTML='<h2>ऐप शुरू नहीं हो पाया</h2><p class=warn>'+esc(e&&e.message?e.message:'अज्ञात त्रुटि')+'</p><button class="btn main" onclick="location.reload()">🔄 दोबारा खोलें</button>';return}setTimeout(()=>{if(navigator.onLine!==false&&!(navigator.deviceMemory&&navigator.deviceMemory<=2))loadH2C()},2500);
+setTimeout(()=>{autoCloudBackup()},3500);setTimeout(verChk,4500);setInterval(verChk,45000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')verChk()});window.addEventListener('online',verChk);window.addEventListener('focus',verChk)})();
 </script></body></html>
