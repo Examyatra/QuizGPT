@@ -180,12 +180,13 @@ const svgURI=s=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);
 const xe=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const LOGO_DEFAULT='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAACrElEQVR4nO3dwU0DMRBA0YDoA+oIPYVaKIo+6CSckDiTTSzPf6+AzcqZv/LJfno9X64niHpe/QKwkgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkPay+gWm+f76vOvz394/7vr8mqfX8+W6+iWmuPfw/yWEY9gCHeSRw7/i96YSwAFWDaMIbicA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBt1P0ATkt+jEl3E4wJwPA/3oQQRmyBDP8aE9Z9+wAm/Ak72339tw8AbiEA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKRtH8CE08l2tvv6bx8A3GJEALt/hXY1Yd3HHI57Ou1/TN8uJgz+r1EBrLIyvEnDuMKILRD8lwBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAAdYdUCtg3FvJwDSBHCQR3+Nff2P4X6Ag937rgCDfywBkGYLRJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYA0AZAmANIEQJoASBMAaQIgTQCkCYC0H/EAPKtmhX4yAAAAAElFTkSuQmCC';
 const genSig=n=>svgURI('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 70"><text x="8" y="43" font-family="Segoe Script,Bradley Hand,Apple Chancery,URW Chancery L,cursive" font-size="31" font-weight="500" letter-spacing="-1.1" fill="#14234a">'+xe(n)+'</text><path d="M12 57C62 53 112 61 166 54" stroke="#14234a" stroke-width="1.15" fill="none" stroke-linecap="round" opacity=".78"/></svg>');
+const PSIG=svgURI('<svg xmlns="http://www.w3.org/2000/svg" viewBox="76 24 650 286"><path d="M165 112C225 62 305 38 352 48C388 58 360 112 298 152C240 190 150 208 96 206 M262 86C244 142 214 212 190 254 M335 200C360 160 450 96 462 62C470 36 428 48 414 112C406 160 430 206 492 196 M492 196C560 186 600 150 656 152C712 154 716 214 640 226C560 238 400 250 300 268 M104 298C280 268 450 246 600 241" stroke="#14234a" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
 const lsGet=k=>{try{const v=localStorage.getItem(k);return v==null?undefined:JSON.parse(v)}catch(e){return undefined}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.29';
+const APP_VERSION='OFFLINE-1.30';
 // ---- Cloud Backup (val.town SQLite) ----
 // सर्वर पर यही एक फिक्स जगह (ID): ऑटो-बैकअप, बटन वाला बैकअप और Restore तीनों इसी का इस्तेमाल करते हैं.
 // इसे कभी बदलना नहीं — बदलने पर पुराना बैकअप नहीं मिलेगा.
@@ -419,7 +420,7 @@ const uk=it=>it&&it.unit==='strip'?'strip':'box';
 const unitTxt=u=>u==='strip'?'💊 स्ट्रिप में बेच रहे हैं (टिक हटाएँ = बॉक्स)':'स्ट्रिप में बेचना है? टिक करें (अभी: 📦 बॉक्स)';
 const ZB='<button class=btn onclick="zoom()">🔍 पूरा बिल बड़ा / छोटा करें</button>';
 const autoBatch=()=>'TMP-'+String(new Date().getFullYear()).slice(2)+String(new Date().getMonth()+1).padStart(2,'0')+Math.random().toString(36).slice(2,5).toUpperCase();
-const blank=(dt)=>{const off=expRnd();return {name:'',qty:1,unit:'box',mrp:'',mrps:'',spb:'10',rate:'',rt:false,offp:'20',open:false,active:true,hsn:'',pack:'',batch:autoBatch(),batch_status:'temp',exp_off:off,expiry:addMon(dt||(D?D.date:today()),off),expiry_status:'suggested',free:'',gst:'5',gst_mode:'included',mfr:'',save:true}};
+const blank=(dt)=>{const off=expRnd();return {name:'',qty:1,unit:'box',mrp:'',mrps:'',spb:'10',rate:'',rt:false,offp:'20',open:false,active:true,hsn:'',pack:'',batch:autoBatch(),batch_status:'temp',exp_off:off,expiry:addMon(dt||(D?D.date:today()),off),expiry_status:'suggested',free:'',gst:'0',gst_mode:'included',mfr:'',save:true}};
 function newDraft(){D={client_key:uuid(),date:today(),customer:{name:'',mobile:'',address:'',gstin:'',dl:'',state:''},interstate:false,dtype:'amt',mode:'included',discount:'',items:[],saved:null};D.items=[blank()]}
 const persist=()=>{try{if(D&&!D.saved)localStorage.setItem('vms_draft',JSON.stringify(D))}catch(e){}};
 function go(v){history.pushState({v},'');show(v)}
@@ -699,7 +700,7 @@ function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows
  {w:62,h:'Amount',c:l=>money(l.amt-(l.disc||0))}
 ].filter(x=>(x.on===undefined||x.on)&& (detailBill||!['Batch','Exp.','HSN'].includes(x.h)));{const fx=CS.filter(x=>x.w).reduce((t,x)=>t+x.w,0);CS.find(x=>!x.w).w=Math.max(110,752-fx)}
 const cg='<colgroup>'+CS.map(x=>`<col style="width:${x.w}px">`).join('')+'</colgroup>';
- const sigb=sh.show_signatory==='1'&&sh.signatory?(sh.signature?`<img src="${esc(sh.signature)}" style="height:52px;display:block;margin:2px 0 2px auto">`:`<div class=sig>${esc(sh.signatory)}</div>`):'<div style="height:54px"></div>';
+ const sigb=sh.show_signatory==='1'?(sh.signature?`<img src="${esc(sh.signature)}" style="height:52px;display:block;margin:2px 0 2px auto">`:`<img src="${PSIG}" style="height:52px;display:block;margin:2px 0 2px auto">`):'<div style="height:54px"></div>';
  return `<div id=inv><div class=ti>${title}</div>
  <div class=brand><img src="${LOGO_DEFAULT}"><div><div class=sn>${esc(sh.shop_name)}</div><div class=ad>${esc(sh.address)}${sh.pin?' - '+esc(sh.pin):''}</div>${sh.email?`<div class=ad style="font-size:11px;color:#5a6b92">${esc(sh.email)}</div>`:''}</div></div>
  <table class=info><tr><td><span class=k>Drug Licence No.</span>${esc(sh.dl1)}<br>${esc(sh.dl2)}</td><td><span class=k>GSTIN</span>${esc(sh.gstin)}</td><td><span class=k>Mobile</span>${esc(sh.mobile)}</td></tr></table>
@@ -710,7 +711,7 @@ const cg='<colgroup>'+CS.map(x=>`<col style="width:${x.w}px">`).join('')+'</colg
  <table><tr><td style="width:56%;padding:0">${classTbl}<div style="padding:6px 8px"><span class=k>Total in Words</span><b>${esc(o.words)}</b><div class=sm style="margin-top:6px">${gmTxt} · ${ig?'IGST':'CGST+SGST'}</div>${o.lines.some(l=>!l.gst_set)?'<div class=sm>GST rate not set for some products (taken as 0%)</div>':''}</div></td>
  <td style="padding:0"><table class=tt style="table-layout:fixed"><colgroup><col><col style="width:96px"></colgroup><tr><td><b>Gross Amount</b></td>${money(o.gross)}</tr><tr><td><b>Tax</b></td>${money(o.tax)}</tr><tr><td><b>Discount</b></td>${money(o.discount)}</tr><tr><td><b>Rounded off (+/-)</b></td><td class=rt>${rsg}${rn.join('.')}</td></tr><tr class=gt><td><b>GRAND TOTAL</b></td>${money(o.total)}</tr></table></td></tr></table>
  ${sh.terms?`<div class=sm style="padding:4px 10px">${esc(sh.terms)}</div>`:''}${sh.upi?`<div class=sm style="padding:2px 10px">UPI: ${esc(sh.upi)}${sh.pay_mobile?' · '+esc(sh.pay_mobile):''}</div>`:''}
- <table class=nb style="border-top:1.5px solid var(--ink)"><tr><td style="width:50%;padding:8px 12px;vertical-align:bottom;height:92px"><div style="display:inline-block;min-width:190px;border-top:1px solid var(--ink);padding-top:3px;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Party Signature</div></td><td class=rt style="padding:8px 12px"><div style="font-size:12px;font-weight:700">For ${esc(sh.shop_name)}</div>${sigb}<div style="display:inline-block;min-width:190px;border-top:1px solid var(--ink);padding-top:3px;font-size:10.5px;font-weight:600;text-align:center">${sh.show_signatory==='1'&&sh.signatory?esc(sh.signatory)+' · ':''}Authorised Signatory</div></td></tr></table></div>`}
+ <table class=nb style="border-top:1.5px solid var(--ink)"><tr><td style="width:50%;padding:8px 12px;vertical-align:bottom;height:92px"><div style="display:inline-block;min-width:190px;border-top:1px solid var(--ink);padding-top:3px;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Party Signature</div></td><td class=rt style="padding:8px 12px"><div style="font-size:12px;font-weight:700">For ${esc(sh.shop_name)}</div>${sigb}<div style="display:inline-block;min-width:190px;border-top:1px solid var(--ink);padding-top:3px;font-size:10.5px;font-weight:600;text-align:center">&nbsp;</div></td></tr></table></div>`}
 
 // ---------- STEP 3 ----------
 async function prevScr(){
