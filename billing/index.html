@@ -19,7 +19,7 @@ label{font-size:18px;font-weight:700;color:#2b3858;display:block;margin-top:8px}
 .steps .on{background:var(--ink);color:#fff;font-weight:700}.steps .done{background:#cfead9;color:#145}
 .row{background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px;margin:14px 0}.rh{display:flex;justify-content:space-between;align-items:center}
 .x{background:#fde2e2;color:#a11;border:0;border-radius:10px;padding:10px 12px;font-size:17px;font-weight:700}
-.stp{display:grid;grid-template-columns:72px minmax(0,1fr) 72px;gap:8px;align-items:center;width:100%}.stp button{height:64px;width:100%;padding:0;font-size:34px;line-height:1;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:12px}.stp input{text-align:center;margin:0;padding:10px 4px;width:100%;color:var(--ink)!important;-webkit-text-fill-color:var(--ink);opacity:1;font-weight:800;font-size:26px;background:#fff}.qrow{display:flex;flex-direction:column;gap:10px;margin:6px 0 12px}.ut{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--ink);border-radius:12px;overflow:hidden;width:100%}.ut button{min-height:56px;padding:0 8px;font-size:18px;font-weight:700;border:0;background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap}.ut button+button{border-left:2px solid var(--ink)}.ut button.on{background:var(--ink);color:#fff}
+.stp{display:grid;grid-template-columns:52px minmax(0,1fr) 52px;gap:5px;align-items:center;width:100%}.stp button{height:54px;width:100%;padding:0;font-size:34px;line-height:1;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:12px}.stp input{text-align:center;margin:0;padding:10px 4px;width:100%;color:var(--ink)!important;-webkit-text-fill-color:var(--ink);opacity:1;font-weight:800;font-size:26px;background:#fff}.qrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:6px 0 10px;align-items:stretch}.ut{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--ink);border-radius:12px;overflow:hidden;width:100%}.ut button{min-height:54px;padding:0 8px;font-size:18px;font-weight:700;border:0;background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap}.ut button+button{border-left:2px solid var(--ink)}.ut button.on{background:var(--ink);color:#fff}
 .unit{display:flex;align-items:center;gap:12px;background:#eef3fd;border:2px solid var(--line);border-radius:12px;padding:12px;margin:6px 0 10px;font-size:19px;font-weight:700;color:var(--ink)}.unit input{width:32px;height:32px;margin:0;flex:none}
 .g4{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .sw{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 14px;margin:8px 0 4px;font-size:19px;font-weight:700;color:var(--ink)}.sw input{display:none}.sw i{width:68px;height:38px;border-radius:20px;background:#b9c1d3;position:relative;flex:none;transition:.15s}.sw i::after{content:'';position:absolute;top:4px;left:4px;width:30px;height:30px;border-radius:50%;background:#fff;transition:.15s}.sw input:checked+i{background:#c0392b}.sw input:checked+i::after{left:34px}
@@ -59,16 +59,27 @@ label{font-size:20px}.hint{font-size:18px}.note,.ok{font-size:17px}.steps span{f
 .pk.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .sug{display:grid;gap:8px;margin:0 0 10px}.sug button{text-align:left;padding:14px;min-height:60px;border:2px solid var(--good);background:#eaf7ef;border-radius:12px;font-size:20px;font-weight:700;color:#0d4a23}
 .sumc{background:#fff;border:3px solid var(--ink);border-radius:16px;padding:14px;margin:10px 0}.sumc .ln{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #dde3f0;font-size:21px}.sumc .gt{font-size:30px;font-weight:800;color:var(--ink);border:0;padding-top:12px}.sumc small{font-size:17px;color:#556}
+
+.gstbar{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:8px;align-items:end;margin:2px 0 8px}
+.gstgroup{min-width:0}.gstgroup>label{font-size:15px;margin:0 0 5px}
+.gstopts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.gstopts button,.gstmode button{min-height:42px;padding:5px 2px;border:1.5px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-size:15px;font-weight:800}
+.gstopts button.on,.gstmode button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gstmode{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.gstother{margin:5px 0 8px!important;min-height:46px}
+@media(max-width:390px){.qrow{grid-template-columns:1fr}.gstbar{grid-template-columns:1fr}.gstopts button,.gstmode button{min-height:40px}}
+.row{padding:10px;margin:9px 0}
+.row label{margin-top:6px}
 </style></head><body><div id="app"></div>
 <datalist id="ms"></datalist><datalist id="cn"></datalist><datalist id="cm"></datalist>
-<script type="module">
+<script>
 // ===== Calculation (runs fully in the browser) =====
 const r2 = (x) => Math.round((Number(x) + Number.EPSILON) * 100) / 100;
 
 function calc(items, { mode = 'included', interstate = false, discount = 0, dtype = 'amt' } = {}) {
   const base = (items || []).map((it) => {
     const qty = Number(it.qty) || 0, rate = Number(it.rate) || 0;
-    return { it, qty, rate, g: Number(it.gst) || 0, amt: r2(qty * rate) };
+    return { it, qty, rate, g: Number(it.gst) || 0, mode: it.gst_mode || mode, amt: r2(qty * rate) };
   });
   const sumAmt = r2(base.reduce((s, x) => s + x.amt, 0));
   const D = Math.min(Math.max(0, r2(dtype === 'pct' ? (sumAmt * Number(discount || 0)) / 100 : discount)), sumAmt); // discount cannot exceed bill
@@ -77,14 +88,15 @@ function calc(items, { mode = 'included', interstate = false, discount = 0, dtyp
     const d = i === base.length - 1 ? left : r2(sumAmt ? (D * x.amt) / sumAmt : 0);
     left = r2(left - d);
     const net = r2(x.amt - d);
-    const split = (v) => (mode === 'included' ? r2((v * 100) / (100 + x.g)) : v);
+    const lineMode = x.mode === 'excluded' ? 'excluded' : 'included';
+    const split = (v) => (lineMode === 'included' ? r2((v * 100) / (100 + x.g)) : v);
     const t0 = split(x.amt), tx = split(net);
-    const t = mode === 'included' ? r2(net - tx) : r2((net * x.g) / 100);
+    const t = lineMode === 'included' ? r2(net - tx) : r2((net * x.g) / 100);
     const cgst = interstate ? 0 : r2(t / 2);
     const sgst = interstate ? 0 : r2(t - cgst);
     const igst = interstate ? t : 0;
     gross = r2(gross + t0); taxable = r2(taxable + tx); tax = r2(tax + t);
-    return { ...x.it, qty: x.qty, rate: x.rate, gst: x.g, gst_set: x.it.gst !== '' && x.it.gst != null, amt: x.amt, disc: d, t0, taxable: tx, tax: t, cgst, sgst, igst };
+    return { ...x.it, gst_mode: lineMode, qty: x.qty, rate: x.rate, gst: x.g, gst_set: x.it.gst !== '' && x.it.gst != null, amt: x.amt, disc: d, t0, taxable: tx, tax: t, cgst, sgst, igst };
   });
   const disc = r2(gross - taxable);           // discount shown on bill (taxable value)
   const sub = r2(taxable + tax);              // = gross - discount + tax
@@ -146,7 +158,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.4';
+const APP_VERSION='OFFLINE-1.5';
 const uuid=()=>{try{if(crypto.randomUUID)return crypto.randomUUID()}catch(e){}return 'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10)};
 let errT=0;const oops=m=>{const n=Date.now();if(n-errT<4000)return;errT=n;try{toast(m)}catch(_){}};
 window.addEventListener('error',e=>{if(e&&/Script error|ResizeObserver/.test(String(e.message||'')))return;oops('⚠ कुछ गड़बड़ हुई। दोबारा दबाएँ, या ऐप बंद करके खोलें।')});
@@ -332,7 +344,7 @@ const uk=it=>it&&it.unit==='strip'?'strip':'box';
 const unitTxt=u=>u==='strip'?'💊 स्ट्रिप में बेच रहे हैं (टिक हटाएँ = बॉक्स)':'स्ट्रिप में बेचना है? टिक करें (अभी: 📦 बॉक्स)';
 const ZB='<button class=btn onclick="zoom()">🔍 पूरा बिल बड़ा / छोटा करें</button>';
 const autoBatch=()=>'TMP-'+String(new Date().getFullYear()).slice(2)+String(new Date().getMonth()+1).padStart(2,'0')+Math.random().toString(36).slice(2,5).toUpperCase();
-const blank=(dt)=>{const off=expRnd();return {name:'',qty:1,unit:'box',mrp:'',rate:'',rt:false,open:false,active:true,hsn:'30049099',pack:'',batch:autoBatch(),batch_status:'temp',exp_off:off,expiry:addMon(dt||(D?D.date:today()),off),expiry_status:'suggested',free:'',gst:'5',mfr:'',save:true}};
+const blank=(dt)=>{const off=expRnd();return {name:'',qty:1,unit:'box',mrp:'',rate:'',rt:false,open:false,active:true,hsn:'30049099',pack:'',batch:autoBatch(),batch_status:'temp',exp_off:off,expiry:addMon(dt||(D?D.date:today()),off),expiry_status:'suggested',free:'',gst:'5',gst_mode:'included',mfr:'',save:true}};
 function newDraft(){D={client_key:uuid(),date:today(),customer:{name:'',mobile:'',address:'',gstin:'',dl:'',state:''},interstate:false,dtype:'amt',mode:'included',discount:'',items:[],saved:null};D.items=[blank()]}
 const persist=()=>{try{if(D&&!D.saved)localStorage.setItem('vms_draft',JSON.stringify(D))}catch(e){}};
 function go(v){history.pushState({v},'');show(v)}
@@ -354,11 +366,12 @@ function fit(){const w=document.getElementById('wrap'),i=document.getElementById
 const CALC=()=>calc(D.items,{mode:D.mode,interstate:D.interstate,discount:D.discount,dtype:D.dtype});
 const ST={'01':'Jammu & Kashmir','02':'Himachal Pradesh','03':'Punjab','04':'Chandigarh','05':'Uttarakhand','06':'Haryana','07':'Delhi','08':'Rajasthan','09':'Uttar Pradesh','10':'Bihar','11':'Sikkim','12':'Arunachal Pradesh','13':'Nagaland','14':'Manipur','15':'Mizoram','16':'Tripura','17':'Meghalaya','18':'Assam','19':'West Bengal','20':'Jharkhand','21':'Odisha','22':'Chhattisgarh','23':'Madhya Pradesh','24':'Gujarat','26':'Dadra & Nagar Haveli and Daman & Diu','27':'Maharashtra','29':'Karnataka','30':'Goa','31':'Lakshadweep','32':'Kerala','33':'Tamil Nadu','34':'Puducherry','35':'Andaman & Nicobar','36':'Telangana','37':'Andhra Pradesh','38':'Ladakh'};
 const shopSt=()=>(S.gstin||'').slice(0,2);
-const posOf=(o,sh)=>{const g=((o.customer&&o.customer.gstin)||'').slice(0,2),st=o.customer&&o.customer.state,me=((sh&&sh.gstin)||'').slice(0,2);return ST[g]?g:(ST[st]?st:me)};
+const posOf=(o,sh)=>{const st=o.customer&&o.customer.state,me=((sh&&sh.gstin)||'').slice(0,2);return ST[st]?st:me};
 let Z=false;const zoom=()=>{Z=!Z;fit()};
 const stchg=v=>{D.customer.state=v;D.interstate=v!==shopSt();persist()};
 const pc=k=>{const m=cache.cust[k];if(!m)return;D.customer={name:m.name||'',mobile:String(m.mobile||'').replace(/\D/g,'').slice(0,10),address:m.address||'',gstin:m.gstin||'',dl:m.dl||'',state:''};D.interstate=false;gsin({value:D.customer.gstin});persist();fillCust()};
 const gset=(i,v)=>{D.items[i].gst=v;rows();upd();persist()};
+gmode=(i,v)=>{D.items[i].gst_mode=v==='excluded'?'excluded':'included';rows();upd();persist()};
 const gother=i=>{const it=D.items[i];if(['0','5','18'].includes(String(it.gst))){it.gst=''}rows();upd();persist();const e=document.getElementById('go'+i);if(e)e.focus()};
 const dt=t=>{D.dtype=t;D.discount='';prodScr();document.getElementById('opt').hidden=false};
 const summ=o=>{const L=arr(o.lines),dsc=L.reduce((a,l)=>a+(Number(l.disc)||0),0),inc=o.mode==='included';
@@ -405,7 +418,7 @@ function custScr(){const c=D.customer;
  <h2>GSTIN</h2><input id=gs value="${esc(c.gstin)}" oninput="gsin(this)" style="text-transform:uppercase">
  <h2>ग्राहक का ड्रग लाइसेंस नं.</h2><input id=cn_dl value="${esc(c.dl)}" oninput="D.customer.dl=this.value;persist()">
  <h2>बिल की तारीख</h2><input type=date value="${D.date}" onchange="dchg(this.value)">
- <h2>ग्राहक का राज्य</h2><select id=stsel onchange="stchg(this.value)">${Object.entries(ST).map(([k,v])=>`<option value=${k} ${k===(c.state||shopSt())?'selected':''}>${v}</option>`).join('')}</select><p class=hint>दूसरे राज्य का ग्राहक हो तो IGST लगेगा। GSTIN लिखने पर राज्य अपने आप बदल जाता है।</p></div>
+ <h2>डिलीवरी / Place of Supply राज्य</h2><select id=stsel onchange="stchg(this.value)">${Object.entries(ST).map(([k,v])=>`<option value=${k} ${k===(c.state||shopSt())?'selected':''}>${v}</option>`).join('')}</select><p class=hint>उत्तर प्रदेश में डिलीवरी पर CGST + SGST लगेगा। दूसरे राज्य में डिलीवरी हो तभी यहाँ सही राज्य चुनें; GSTIN का राज्य अपने-आप Place of Supply तय नहीं करता।</p></div>
  <button class="btn main huge" onclick="go('prod')">आगे बढ़ें ➡</button><p class=hint>नाम न हो तो भी आगे बढ़ सकते हैं।</p>`}
 const tgm=()=>{const m=document.getElementById('more');m.hidden=!m.hidden};
 function dchg(v){if(!/^\d{4}-\d{2}-\d{2}$/.test(String(v||''))){const e=document.querySelector('input[type=date]');if(e)e.value=D.date;return}D.date=v;D.items.forEach(it=>{if(it.expiry_status==='suggested'){if(it.exp_off==null)it.exp_off=expRnd();it.expiry=addMon(v,it.exp_off)}});persist()}
@@ -415,7 +428,7 @@ let csq=0;async function cs(f,el){D.customer[f]=el.value;persist();const n=++csq
 function pick(f){const v=D.customer[f];const m=cache.cust.find(x=>x[f]===v);if(!m)return;
  D.customer={name:m.name||'',mobile:String(m.mobile||'').replace(/\D/g,'').slice(0,10),address:m.address||'',gstin:m.gstin||'',dl:m.dl||'',state:''};D.interstate=false;gsin({value:D.customer.gstin});persist();fillCust()}
 function fillCust(){const c=D.customer,f=(i,v)=>{const e=document.getElementById(i);if(e)e.value=v||''};f('cn_name',c.name);f('cn_mobile',String(c.mobile||'').replace(/\D/g,'').slice(0,10));f('cn_addr',c.address);f('gs',c.gstin);f('cn_dl',c.dl);const b=document.getElementById('stsel');if(b)b.value=c.state||shopSt();const g=document.getElementById('csg');if(g)g.innerHTML=''}
-function gsin(el){const g=el.value.toUpperCase().trim();D.customer.gstin=g;const c=g.slice(0,2);if(ST[c]){D.customer.state=c;D.interstate=c!==shopSt();const b=document.getElementById('stsel');if(b)b.value=c}persist()}
+function gsin(el){D.customer.gstin=el.value.toUpperCase().trim();persist()}
 
 // ---------- STEP 2 ----------
 function prodScr(){
@@ -454,9 +467,14 @@ function rows(){document.getElementById('rows').innerHTML=D.items.map((it,i)=>{
  </div>
  <div class="two fl"><div><label>MRP (प्रति ${UN[uk(it)]}) <span style="color:#888;font-weight:400;font-size:14px">— ज़रूरी नहीं</span></label><input type=number inputmode=decimal placeholder="खाली छोड़ सकते हैं" value="${esc(it.mrp)}" oninput="mr(${i},this.value)"></div>
  <div><label>आपका भाव (प्रति ${UN[uk(it)]}) <span style="color:#c00;font-size:14px">*</span></label><input id=r${i} type=number inputmode=decimal placeholder="ज़रूरी — यहाँ भरें" value="${esc(it.rate)}" oninput="it_rt(${i},this.value)"></div></div>
+ <div class=gstbar>
+  <div class=gstgroup><label>GST प्रतिशत (Other में लागू दर लिखें)</label><div class=gstopts>${[0,5,18].map(g=>`<button class="${String(it.gst)===String(g)?'on':''}" onclick="gset(${i},'${g}')">${g}%</button>`).join('')}<button class="${!['0','5','18'].includes(String(it.gst))?'on':''}" onclick="gother(${i})">अन्य</button></div></div>
+  <div class=gstgroup><label>GST रेट</label><div class=gstmode><button class="${(it.gst_mode||D.mode||'included')==='included'?'on':''}" onclick="gmode(${i},'included')">Included</button><button class="${(it.gst_mode||D.mode||'included')==='excluded'?'on':''}" onclick="gmode(${i},'excluded')">Excluded</button></div></div>
+ </div>
+ ${!['0','5','18'].includes(String(it.gst))?`<input class=gstother type=number min=0 max=100 step=0.01 inputmode=decimal placeholder="GST प्रतिशत लिखें" value="${esc(it.gst)}" oninput="sf(${i},'gst',this.value)">`:''}
  <div class=warn id=w${i}></div><div class=amtline>रकम: <b id=a${i}>₹ 0</b></div>
  <button class=btn onclick="tg(${i})">${it.open?'➖ जानकारी बंद करें':'➕ और जानकारी (बैच, एक्सपायरी, HSN…)'}</button>
- ${it.open?`<div class=adv><label>GST कितना % लगाना है?</label><div class="opt2 opt3">${[0,5,18].map(g=>`<button class="pk ${String(it.gst)===String(g)?'on':''}" onclick="gset(${i},'${g}')">${g}%</button>`).join('')}<button class="pk ${!['0','5','18'].includes(String(it.gst))?'on':''}" onclick="gother(${i})">✏ और</button></div>${!['0','5','18'].includes(String(it.gst))?`<input id=go${i} type=number inputmode=decimal placeholder="GST % लिखें" value="${esc(it.gst)}" oninput="sf(${i},'gst',this.value)">`:''}<div class="two fl"><div><label>बैच नं. (पैक से देखकर)</label><input value="${esc(it.batch)}" placeholder="जैसे: VNL-2488" oninput="bt(${i},this.value)"></div>
+ ${it.open?`<div class=adv><div class="two fl"><div><label>बैच नं. (पैक से देखकर)</label><input value="${esc(it.batch)}" placeholder="जैसे: VNL-2488" oninput="bt(${i},this.value)"></div>
  <div><label>एक्सपायरी (महीना/साल)</label><input type=month value="${esc((it.expiry||'').slice(0,7))}" oninput="ex(${i},this.value)"></div></div>${bs}${es}${it.expiry_status==='suggested'?`<button class=btn onclick="cx(${i})" style="min-height:52px;font-size:18px">✔ पैक पर यही तारीख़ है</button>`:''}
  <label>HSN कोड</label><input value="${esc(it.hsn)}" oninput="sf(${i},'hsn',this.value)">
  </div>`:''}</div>`}).join('')}
@@ -494,7 +512,8 @@ function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows
  o.lines.forEach(l=>{const g=Number(l.gst)||0,x=cls[g]||(cls[g]={t:0,d:0,c:0,s:0,i:0}),tx=Number(l.taxable)||0,t0=l.t0!=null?Number(l.t0):(o.mode==='included'?r2(l.amt*100/(100+g)):Number(l.amt));x.t+=tx;x.d+=Math.max(0,t0-tx);x.c+=Number(l.cgst)||0;x.s+=Number(l.sgst)||0;x.i+=Number(l.igst)||0});
  const ks=Object.keys(cls).map(Number).sort((a,b)=>a-b),ig=!!o.interstate,sm=k=>ks.reduce((s,g)=>s+cls[g][k],0);
  const crow=(n,x)=>`<tr><td><b>${n}</b></td><td class=rt>${f2(x.t)}</td><td class=rt>${f2(x.d)}</td>${ig?`<td class=rt>${f2(x.i)}</td>`:`<td class=rt>${f2(x.c)}</td><td class=rt>${f2(x.s)}</td><td class=rt>${f2(x.c+x.s)}</td>`}</tr>`;
- const classTbl=`<table class="pt ct" style="table-layout:auto"><tr><th>CLASS</th><th>TOTAL</th><th>DISC</th>${ig?'<th>IGST</th>':'<th>CGST</th><th>SGST</th><th>TOTAL GST</th>'}</tr>${ks.map(g=>crow('GST '+g+' %',cls[g])).join('')}${crow('TOTAL',{t:sm('t'),d:sm('d'),c:sm('c'),s:sm('s'),i:sm('i')})}</table>`;
+ const rateLabel=g=>ig?`GST ${g}% (IGST ${g}%)`:`GST ${g}% (${f2(g/2)} + ${f2(g/2)})`;
+ const classTbl=`<table class="pt ct" style="table-layout:auto"><tr><th>GST RATE</th><th>TAXABLE</th><th>DISC.</th>${ig?'<th>IGST</th>':'<th>CGST</th><th>SGST</th><th>TOTAL TAX</th>'}</tr>${ks.map(g=>crow(rateLabel(g),cls[g])).join('')}${crow('TOTAL',{t:sm('t'),d:sm('d'),c:sm('c'),s:sm('s'),i:sm('i')})}</table>`;
  const ro=Number(o.roundoff)||0,rn=Math.abs(ro).toFixed(2).split('.'),rsg=ro>0?'+':ro<0?'-':'';
  const title=o.lines.length&&o.lines.every(l=>l.gst_set&&Number(l.gst)===0)?'Bill of Supply':'Tax Invoice';
  const LS=o.lines,has=f=>LS.some(f),CS=[
@@ -660,7 +679,7 @@ Object.defineProperty(window,'D',{get:()=>D,set:v=>{D=v}});
 // ===== Start: open the local database (no internet needed) =====
 (async()=>{try{await openDB();await migrateOld();S=await getSettings();NX=await nextInfo()}
 catch(e){app.innerHTML='<h1>🏥</h1><p class=warn style="text-align:center">डेटा खोलने में दिक्कत: '+esc(e.message)+'</p><button class="btn main" onclick="location.reload()">🔄 दोबारा खोलें</button>';return}
-try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
-newDraft();history.replaceState({v:'home'},'');show('home');setTimeout(()=>{if(navigator.onLine!==false)loadH2C()},2500)})();
+try{newDraft();history.replaceState({v:'home'},'');show('home')}catch(e){console.error('VMS startup render error:',e);app.innerHTML='<h2>ऐप शुरू नहीं हो पाया</h2><p class=warn>'+esc(e&&e.message?e.message:'अज्ञात त्रुटि')+'</p><button class="btn main" onclick="location.reload()">🔄 दोबारा खोलें</button>';return}setTimeout(()=>{if(navigator.onLine!==false)loadH2C()},2500)})();
 </script></body></html>

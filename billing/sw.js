@@ -1,6 +1,6 @@
 // Vishal Medical Store: opens with NO internet. Opens instantly from the saved copy;
 // if internet is there it quietly fetches the newest copy for next time.
-const C = 'vms-v20';
+const C = 'vms-v23';
 const LIBS = [
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Mrs+Saint+Delafield&display=swap'
