@@ -168,7 +168,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.11';
+const APP_VERSION='OFFLINE-1.12';
 const uuid=()=>{try{if(crypto.randomUUID)return crypto.randomUUID()}catch(e){}return 'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10)};
 let errT=0;const oops=m=>{const n=Date.now();if(n-errT<4000)return;errT=n;try{toast(m)}catch(_){}};
 window.addEventListener('error',e=>{if(e&&/Script error|ResizeObserver/.test(String(e.message||'')))return;oops('⚠ कुछ गड़बड़ हुई। दोबारा दबाएँ, या ऐप बंद करके खोलें।')});
@@ -366,7 +366,7 @@ function show(v){
   else if(v==='prev'&&!D.items.some(i=>String(i.name||'').trim())){v='home';try{history.replaceState({v:'home'},'')}catch(e){}}}
  else if(v==='old'&&!V)v='home';
  const f=({home,cust:custScr,prod:prodScr,prev:prevScr,set:setScr,old:oldScr,list:listScr})[v]||home;
- Z=false;view=v;f();window.scrollTo(0,0)}
+ if(v==='set'&&view!=='set')stab_='cust';Z=false;view=v;f();window.scrollTo(0,0)}
 function listScr(){oldBillScr(lastQ)}
 const back=()=>history.back();
 const head=n=>`<div class=bar><button class=ghost onclick="back()">⬅ पीछे</button></div><div class=steps>${['ग्राहक','दवाइयाँ','बिल देखें'].map((t,i)=>`<span class="${i+1===n?'on':i+1<n?'done':''}">${i+1}. ${t}</span>`).join('')}</div>`;
@@ -662,7 +662,7 @@ function oldScr(){app.innerHTML=actions(V,false);fit()}
 
 // ---------- SETTINGS ----------
 const F=[['shop_name','दुकान का नाम'],['address','पता'],['pin','पिन कोड'],['mobile','मोबाइल नंबर'],['email','ईमेल'],['gstin','GSTIN (15 अंक)'],['dl1','ड्रग लाइसेंस नं. 1'],['dl2','ड्रग लाइसेंस नं. 2'],['signatory','सिग्नेचर करने वाले का नाम'],['start_no','बिल नंबर कहाँ से शुरू हो'],['prefix','बिल नंबर से पहले के अक्षर (ज़रूरी नहीं, 6 तक)'],['transport','ट्रांसपोर्ट'],['expiry_years','सुझाई एक्सपायरी (साल)'],['upi','UPI ID'],['pay_mobile','पेमेंट मोबाइल नंबर']];
-let stab_='shop',cq='',pfill='';
+let stab_='cust',cq='',pfill='';
 const SHOPF=[['shop_name','दुकान का नाम'],['address','पता'],['pin','पिन कोड'],['mobile','मोबाइल नंबर'],['email','ईमेल'],['gstin','GSTIN (15 अंक)'],['dl1','ड्रग लाइसेंस नं. 1'],['dl2','ड्रग लाइसेंस नं. 2'],['signatory','सिग्नेचर करने वाले का नाम']];
 const fld=(k,l)=>`<label>${l}</label><input id=s_${k} value="${esc(S[k])}">`;
 const stabGo=t=>{stab_=t;setScr()};
