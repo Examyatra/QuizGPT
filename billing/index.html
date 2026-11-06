@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="hi"><head><meta charset="utf-8">
+<html lang="hi"><head><meta charset="utf-8"><meta name="color-scheme" content="light only">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <link rel="manifest" href="manifest.json"><meta name="theme-color" content="#1f3a6e"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="VMS Billing">
 <title>Vishal Medical Store – Billing</title>
 <style>
-:root{--ink:#1f3a6e;--bg:#f6f7fb;--line:#b8c2d8;--good:#12803a}
+:root{color-scheme:light;--ink:#1f3a6e;--bg:#f6f7fb;--line:#b8c2d8;--good:#12803a}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:#111a33;font-size:21px;line-height:1.35}
 #app{max-width:760px;margin:0 auto;padding:12px 12px 130px}
 h1{font-size:28px;color:var(--ink);text-align:center;margin:8px 0 16px}h2{font-size:21px;margin:14px 0 2px;color:var(--ink)}h3{margin:16px 0 8px;color:var(--ink)}
@@ -70,8 +70,18 @@ label{font-size:20px}.hint{font-size:18px}.note,.ok{font-size:17px}.steps span{f
 @media(max-width:390px){.qrow{grid-template-columns:1fr}.gstbar{grid-template-columns:1fr}.gstopts button,.gstmode button{min-height:40px}}
 .row{padding:10px;margin:9px 0}
 .row label{margin-top:6px}
-</style></head><body><div id="app"></div>
-<datalist id="ms"></datalist><datalist id="cn"></datalist><datalist id="cm"></datalist>
+</style></head><body><script>
+(function(){var up=false;window.__vmsUp=function(){up=true};
+function show(t){var a=document.getElementById('app');if(!a||up)return;
+a.innerHTML='<div style="padding:20px;font:18px/1.4 sans-serif;color:#111a33;background:#fff;border:2px solid #a11;border-radius:12px;margin:16px">'+
+'<b style="color:#a11">ऐप शुरू नहीं हो पाया</b><br>'+String(t).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})+
+'<br><br>Chrome ब्राउज़र में खोलकर देखें। यह संदेश किसी को दिखाएँ।</div>'}
+window.addEventListener('error',function(e){if(up)return;show((e&&e.message?e.message:'error')+(e&&e.lineno?' (line '+e.lineno+')':''))});
+window.addEventListener('unhandledrejection',function(e){if(up)return;show(e&&e.reason&&e.reason.message?e.reason.message:'startup error')});
+setTimeout(function(){if(!up)show('ऐप 10 सेकंड में शुरू नहीं हुआ। शायद यह ब्राउज़र/व्यूअर डेटा सेव नहीं करने देता।')},10000)})();
+</script>
+<div id="app"><p style="padding:24px;font:20px sans-serif;color:#1f3a6e;text-align:center">⏳ ऐप खुल रहा है…</p></div>
+<datalist id="hsl"><option value="3004">3004 – दवाइयाँ (टैबलेट/सिरप/इंजेक्शन, रिटेल पैक)</option><option value="3005">3005 – पट्टी, कॉटन, ड्रेसिंग</option><option value="3006">3006 – फर्स्ट-एड, कॉन्ट्रासेप्टिव आदि</option><option value="3002">3002 – वैक्सीन / ब्लड प्रोडक्ट</option><option value="9018">9018 – सिरिंज, नीडल, मेडिकल उपकरण</option><option value="3306">3306 – मुँह/दाँत की सफ़ाई</option><option value="2106">2106 – फूड सप्लीमेंट</option></datalist><datalist id="ms"></datalist><datalist id="cn"></datalist><datalist id="cm"></datalist>
 <script>
 // ===== Calculation (runs fully in the browser) =====
 const r2 = (x) => Math.round((Number(x) + Number.EPSILON) * 100) / 100;
@@ -143,14 +153,14 @@ function addYears(iso, years = 2) {
 const expRnd=()=>(Number(S&&S.expiry_years)||2)*12+Math.floor(Math.random()*13);
 const addMon=(iso,m)=>{const[y,mo]=iso.split('-').map(Number);const t=y*12+(mo-1)+m;return Math.floor(t/12)+'-'+String(t%12+1).padStart(2,'0')};
 const app=document.getElementById('app');
-const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const dmy=iso=>iso?iso.split('-').reverse().join('-'):'';
 const rnd=()=>Math.random().toString(36).slice(2,6).toUpperCase();
 const inr=n=>'₹ '+Number(n).toFixed(2).replace(/\.00$/,'');
 const arr=x=>Array.isArray(x)?x:[];
 const svgURI=s=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);
-const xe=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const xe=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const LOGO_DEFAULT=svgURI('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1f3a6e"/><rect x="26" y="11" width="12" height="42" rx="3" fill="#fff"/><rect x="11" y="26" width="42" height="12" rx="3" fill="#fff"/><circle cx="32" cy="32" r="5.5" fill="#12803a"/></svg>');
 const genSig=n=>svgURI('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 70"><text x="8" y="43" font-family="Segoe Script,Bradley Hand,Apple Chancery,URW Chancery L,cursive" font-size="31" font-weight="500" letter-spacing="-1.1" fill="#14234a">'+xe(n)+'</text><path d="M12 57C62 53 112 61 166 54" stroke="#14234a" stroke-width="1.15" fill="none" stroke-linecap="round" opacity=".78"/></svg>');
 const lsGet=k=>{try{const v=localStorage.getItem(k);return v==null?undefined:JSON.parse(v)}catch(e){return undefined}};
@@ -158,31 +168,31 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.6';
+const APP_VERSION='OFFLINE-1.9';
 const uuid=()=>{try{if(crypto.randomUUID)return crypto.randomUUID()}catch(e){}return 'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10)};
 let errT=0;const oops=m=>{const n=Date.now();if(n-errT<4000)return;errT=n;try{toast(m)}catch(_){}};
 window.addEventListener('error',e=>{if(e&&/Script error|ResizeObserver/.test(String(e.message||'')))return;oops('⚠ कुछ गड़बड़ हुई। दोबारा दबाएँ, या ऐप बंद करके खोलें।')});
 window.addEventListener('unhandledrejection',()=>oops('⚠ कुछ गड़बड़ हुई। दोबारा दबाएँ।'));
-const DEFAULTS={shop_name:'VISHAL MEDICAL STORE',address:'Jaffarpur, Paranapur Road, Jaffarpur, Azamgarh, Uttar Pradesh',pin:'276001',mobile:'9450994540',email:'svup50@gmail.com',gstin:'09ACTPY4775H2ZH',dl1:'UP5020B000159',dl2:'UP5021B000159',signatory:'Ramkesh Yadav',show_signatory:'1',start_no:'5001',prefix:'',transport:'SELF',terms:'',upi:'',pay_mobile:'',logo:'',signature:'',autosave:'1',expiry_years:'2',bill_view:'detail'};
+const DEFAULTS={shop_name:'VISHAL MEDICAL STORE',address:'Jaffarpur, Paranapur Road, Azamgarh, Uttar Pradesh',pin:'276001',mobile:'9450994540',email:'svup50@gmail.com',gstin:'09ACTPY4775H2ZH',dl1:'UP5020B000159',dl2:'UP5021B000159',signatory:'Ramkesh Yadav',show_signatory:'1',start_no:'5001',prefix:'',transport:'SELF',terms:'',upi:'',pay_mobile:'',logo:'',signature:'',autosave:'1',expiry_years:'2',bill_view:'detail'};
 const STORES=['settings','customers','medicines','invoices','assets'];
 let db=null;
 const rq=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
-const clip=(v,n)=>String(v??'').trim().slice(0,n);
+const clip=(v,n)=>String(v==null?'':v).trim().slice(0,n);
 const numOrNull=v=>(v===''||v==null||isNaN(Number(v))?null:Number(v));
 const nowIso=()=>new Date().toISOString();
 const hashStr=s=>{let a=0xdeadbeef,b=0x41c6ce57;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);a=Math.imul(a^c,2654435761);b=Math.imul(b^c,1597334677)}a=Math.imul(a^(a>>>16),2246822507)^Math.imul(b^(b>>>13),3266489909);b=Math.imul(b^(b>>>16),2246822507)^Math.imul(a^(a>>>13),3266489909);return(4294967296*(2097151&b)+(a>>>0)).toString(36)+'-'+s.length};
 function openDB(){return new Promise((res,rej)=>{
  if(!window.indexedDB)return rej(new Error('इस फ़ोन के ब्राउज़र में डेटा सेव करने की सुविधा नहीं है। Chrome में खोलें।'));
- let q;try{q=indexedDB.open('vms-billing',1)}catch(e){return rej(e)}
+ let q;const dbt=setTimeout(()=>rej(new Error('डेटाबेस नहीं खुला (समय समाप्त)। इस ब्राउज़र/व्यूअर में डेटा सेव नहीं हो सकता — Chrome में खोलें।')),10000);try{q=indexedDB.open('vms-billing',1)}catch(e){clearTimeout(dbt);return rej(e)}
  q.onupgradeneeded=()=>{const d=q.result;
   d.createObjectStore('settings',{keyPath:'key'});
   d.createObjectStore('customers',{keyPath:'id',autoIncrement:true}).createIndex('ckey','ckey',{unique:true});
   d.createObjectStore('medicines',{keyPath:'id',autoIncrement:true}).createIndex('name_key','name_key',{unique:true});
   const v=d.createObjectStore('invoices',{keyPath:'serial'});v.createIndex('client_key','client_key',{unique:true});
   d.createObjectStore('assets',{keyPath:'id'})};
- q.onsuccess=()=>{db=q.result;db.onversionchange=()=>{try{db.close()}catch(e){}db=null};db.onclose=()=>{db=null};res(db)};
- q.onerror=()=>rej(q.error||new Error('डेटाबेस नहीं खुला'));
- q.onblocked=()=>rej(new Error('ऐप दूसरे टैब में खुला है। उसे बंद करके दोबारा खोलें।'))})}
+ q.onsuccess=()=>{clearTimeout(dbt);db=q.result;db.onversionchange=()=>{try{db.close()}catch(e){}db=null};db.onclose=()=>{db=null};res(db)};
+ q.onerror=()=>{clearTimeout(dbt);rej(q.error||new Error('डेटाबेस नहीं खुला'))};
+ q.onblocked=()=>{clearTimeout(dbt);rej(new Error('ऐप दूसरे टैब में खुला है। उसे बंद करके दोबारा खोलें।'))}})}
 // one all-or-nothing transaction: if anything fails, nothing is saved
 async function tx(names,mode,fn){try{if(!db)await openDB();return await tx0(names,mode,fn)}catch(e){if(e&&(e.name==='InvalidStateError'||e.name==='UnknownError'||e.name==='TransactionInactiveError'||/clos|lost/i.test(String(e.message)))){db=null;await openDB();return tx0(names,mode,fn)}throw e}}
 function tx0(names,mode,fn){return new Promise((res,rej)=>{let t;const cn=db;try{t=db.transaction(names,mode)}catch(e){return rej(e)}
@@ -267,7 +277,7 @@ const dumpAll=()=>tx(STORES,'readonly',async st=>{const o={version:2,app:'vms',c
  for(const n of STORES)o[n]=await rq(st(n).getAll());o.settings=o.settings.filter(r=>r.key in DEFAULTS);return o});
 function convOld(b){const js=x=>{try{return JSON.parse(x)||{}}catch(e){return{}}},by={};
  b.invoice_lines.forEach(l=>{(by[l.invoice_id]||(by[l.invoice_id]=[])).push(l)});
- return{settings:b.settings.filter(r=>r&&r.key in DEFAULTS).map(r=>({key:r.key,value:String(r.value??'')})),
+ return{settings:b.settings.filter(r=>r&&r.key in DEFAULTS).map(r=>({key:r.key,value:String(r.value==null?'':r.value)})),
   customers:b.customers,medicines:b.medicines,assets:[],
   invoices:b.invoices.map(r=>({serial:Number(r.serial),inv_no:r.inv_no||String(r.serial),client_key:String(r.client_key||''),date:r.date,customer:js(r.customer_json),shop:js(r.shop_json),cust_name:r.cust_name||'',cust_mobile:r.cust_mobile||'',mode:r.mode==='excluded'?'excluded':'included',interstate:!!r.interstate,discount:Number(r.discount)||0,gross:Number(r.gross)||0,tax:Number(r.tax)||0,roundoff:Number(r.roundoff)||0,total:Number(r.total)||0,words:r.words||'',lines:(by[r.id]||[]).sort((a,c)=>(a.pos||0)-(c.pos||0)).map(l=>js(l.data_json)),created:r.created||''}))}}
 async function restoreAll(b){let d;
@@ -282,7 +292,7 @@ async function restoreAll(b){let d;
   for(const n of STORES)await rq(st(n).clear());
   const A=st('assets');
   for(const x of d.assets)if(x&&x.id)await rq(A.put(x));
-  for(const x of d.settings)if(x&&typeof x.key==='string'&&x.key in DEFAULTS)await rq(st('settings').put({key:x.key,value:String(x.value??'')}));
+  for(const x of d.settings)if(x&&typeof x.key==='string'&&x.key in DEFAULTS)await rq(st('settings').put({key:x.key,value:String(x.value==null?'':x.value)}));
   const seenC=new Set();for(const x of d.customers){if(!x||typeof x!=='object')continue;if(x.ckey){if(seenC.has(x.ckey))continue;seenC.add(x.ckey)}await rq(st('customers').put(x))}
   for(const r of d.invoices){if(r.shop&&(r.shop.logo||r.shop.signature))r.shop=await packShop(r.shop,A);await rq(st('invoices').put(r))}})}
 // ---- one-time: bring over data the OLD online version kept on this phone ----
@@ -371,7 +381,7 @@ let Z=false;const zoom=()=>{Z=!Z;fit()};
 const stchg=v=>{D.customer.state=v;D.interstate=v!==shopSt();persist()};
 const pc=k=>{const m=cache.cust[k];if(!m)return;D.customer={name:m.name||'',mobile:String(m.mobile||'').replace(/\D/g,'').slice(0,10),address:m.address||'',gstin:m.gstin||'',dl:m.dl||'',state:''};D.interstate=false;gsin({value:D.customer.gstin});persist();fillCust()};
 const gset=(i,v)=>{D.items[i].gst=v;rows();upd();persist()};
-gmode=(i,v)=>{D.items[i].gst_mode=v==='excluded'?'excluded':'included';rows();upd();persist()};
+const gmode=(i,v)=>{D.items[i].gst_mode=v==='excluded'?'excluded':'included';rows();upd();persist()};
 const gother=i=>{const it=D.items[i];if(['0','5','18'].includes(String(it.gst))){it.gst=''}rows();upd();persist();const e=document.getElementById('go'+i);if(e)e.focus()};
 const dt=t=>{D.dtype=t;D.discount='';prodScr();document.getElementById('opt').hidden=false};
 const summ=o=>{const L=arr(o.lines),dsc=L.reduce((a,l)=>a+(Number(l.disc)||0),0),inc=o.mode==='included';
@@ -475,7 +485,8 @@ function rows(){document.getElementById('rows').innerHTML=D.items.map((it,i)=>{
  <div class=warn id=w${i}></div><div class=amtline>रकम: <b id=a${i}>₹ 0</b></div>
  <button class=btn onclick="tg(${i})">${it.open?'➖ जानकारी बंद करें':'➕ और जानकारी (बैच, एक्सपायरी…)'}</button>
  ${it.open?`<div class=adv><div class="two fl"><div><label>बैच नं. (पैक से देखकर)</label><input value="${esc(it.batch)}" placeholder="जैसे: VNL-2488" oninput="bt(${i},this.value)"></div>
- <div><label>एक्सपायरी (महीना/साल)</label><input type=month value="${esc((it.expiry||'').slice(0,7))}" oninput="ex(${i},this.value)"></div></div>${bs}${es}${it.expiry_status==='suggested'?`<button class=btn onclick="cx(${i})" style="min-height:52px;font-size:18px">✔ पैक पर यही तारीख़ है</button>`:''}
+ <div><label>HSN नं. (4 / 6 / 8 अंक)</label><input type=text inputmode=numeric maxlength=8 list=hsl value="${esc(it.hsn)}" placeholder="जैसे: 3004" oninput="hsnSet(${i},this)"></div>
+  <div><label>एक्सपायरी (महीना/साल)</label><input type=month value="${esc((it.expiry||'').slice(0,7))}" oninput="ex(${i},this.value)"></div></div>${bs}${es}${it.expiry_status==='suggested'?`<button class=btn onclick="cx(${i})" style="min-height:52px;font-size:18px">✔ पैक पर यही तारीख़ है</button>`:''}
  
  </div>`:''}</div>`}).join('')}
 const tg=i=>{D.items[i].open=!D.items[i].open;rows();upd()};
@@ -490,7 +501,9 @@ function it_rt(i,v){const it=D.items[i];it.rate=v;it.rt=true;upd();persist()}
 function cx(i){D.items[i].expiry_status='confirmed';rows();upd();persist()}
 function bt(i,v){const it=D.items[i];it.batch=v;it.batch_status=v.trim()?(/^TMP-/.test(v)?'temp':'confirmed'):'';persist()}
 function ex(i,v){const it=D.items[i];it.expiry=v;it.expiry_status=v?'confirmed':'';persist()}
-let mt;function pn(i,el){D.items[i].name=el.value;persist()}
+const hsnKey=n=>String(n||'').trim().toLowerCase().replace(/\s+/g,' ');
+function hsnSet(i,el){const it=D.items[i],v=el.value.replace(/\D/g,'').slice(0,8);if(el.value!==v)el.value=v;it.hsn=v;const k=hsnKey(it.name);if(k&&/^(\d{4}|\d{6}|\d{8})$/.test(v)){const m=lsGet('hsn_map')||{};m[k]=v;lsSet('hsn_map',m)}persist()}
+let mt;function pn(i,el){const it=D.items[i];it.name=el.value;if(!String(it.hsn||'').trim()){const m=lsGet('hsn_map')||{},v=m[hsnKey(el.value)];if(v){it.hsn=v;const e=el.closest('.row')&&el.closest('.row').querySelector('input[list=hsl]');if(e)e.value=v}}persist()}
 function upd(){const r=CALC();
  r.lines.forEach((l,i)=>{const a=document.getElementById('a'+i);if(a)a.textContent=inr(l.amt);
   const t=document.getElementById('t'+i);if(t)t.textContent=`${l.cgst.toFixed(2)} / ${l.sgst.toFixed(2)} / ${l.igst.toFixed(2)}`;
@@ -499,6 +512,7 @@ function upd(){const r=CALC();
 function toPrev(){{const keep=D.items.filter(it=>String(it.name).trim()||String(it.rate).trim()!=='');if(keep.length&&keep.length<D.items.length){D.items=keep;if(!D.items.some(x=>x.active))D.items[D.items.length-1].active=true;rows();upd()}}D.items.forEach(it=>{if(!it.expiry||(it.expiry_status==='suggested'&&it.exp_off==null)){it.exp_off=expRnd();it.expiry=addMon(D.date,it.exp_off);it.expiry_status='suggested'}});persist();for(let i=0;i<D.items.length;i++){const it=D.items[i];const f=()=>{const e=document.getElementById('n'+i);if(e)e.scrollIntoView({block:'center'})};
  if(!it.name.trim()){f();return say(`दवाई नं. ${i+1} का नाम लिखें (या खाली दवाई हटा दें)।`)}
  if(!(Number(it.qty)>0)){f();return say(`"${it.name}" की संख्या लिखें।`)}
+  if(String(it.hsn||'').trim()&&!/^(\d{4}|\d{6}|\d{8})$/.test(String(it.hsn).trim())){f();return say(`"${it.name}" का HSN 4, 6 या 8 अंक का होना चाहिए (या खाली छोड़ें)।`)}
  if(it.rate===''||!(Number(it.rate)>=0)){f();return say(`"${it.name}" का भाव (रेट) लिखें।`)}
  if(it.gst===''||!(Number(it.gst)>=0&&Number(it.gst)<=100)){f();return say(`"${it.name}" का GST % चुनें।`)}
  if(Number(it.qty)>1e6||Number(it.qty)*Number(it.rate)>=1e9){f();return say(`"${it.name}" की संख्या या भाव बहुत ज़्यादा है, जाँच लें।`)}}
@@ -514,12 +528,14 @@ function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows
  const crow=(n,x)=>`<tr><td><b>${n}</b></td><td class=rt>${f2(x.t)}</td><td class=rt>${f2(x.d)}</td>${ig?`<td class=rt>${f2(x.i)}</td>`:`<td class=rt>${f2(x.c)}</td><td class=rt>${f2(x.s)}</td><td class=rt>${f2(x.c+x.s)}</td>`}</tr>`;
  const rateLabel=g=>ig?`GST ${g}% (IGST ${g}%)`:`GST ${g}% (${f2(g/2)} + ${f2(g/2)})`;
  const classTbl=`<table class="pt ct" style="table-layout:auto"><tr><th>GST RATE</th><th>TAXABLE</th><th>DISC.</th>${ig?'<th>IGST</th>':'<th>CGST</th><th>SGST</th><th>TOTAL TAX</th>'}</tr>${ks.map(g=>crow(rateLabel(g),cls[g])).join('')}${crow('TOTAL',{t:sm('t'),d:sm('d'),c:sm('c'),s:sm('s'),i:sm('i')})}</table>`;
+ const gmS=new Set(o.lines.map(l=>(l.gst_mode||o.mode)==='excluded'?'x':'i')),gmTxt=gmS.size>1?'GST: included on some items, added extra on others':gmS.has('x')?'GST added extra':'Prices GST included';
  const ro=Number(o.roundoff)||0,rn=Math.abs(ro).toFixed(2).split('.'),rsg=ro>0?'+':ro<0?'-':'';
  const title=o.lines.length&&o.lines.every(l=>l.gst_set&&Number(l.gst)===0)?'Bill of Supply':'Tax Invoice';
  const LS=o.lines,has=f=>LS.some(f),detailBill=o.bill_view!=='simple',CS=[
  {w:24,h:'SN',c:(l,n)=>`<td class=c>${n+1}</td>`},
  {w:0,h:'Product Name',c:l=>`<td class=l>${esc(l.name)}</td>`},
- {w:48,h:'Mfr.',on:has(l=>String(l.mfr||'').trim()),c:l=>`<td class=l>${esc(l.mfr)}</td>`},
+ {w:56,h:'HSN',on:has(l=>String(l.hsn||'').trim()),c:l=>`<td class="c nw">${esc(l.hsn)}</td>`},
+  {w:48,h:'Mfr.',on:has(l=>String(l.mfr||'').trim()),c:l=>`<td class=l>${esc(l.mfr)}</td>`},
  {w:44,h:'Pack',on:has(l=>String(l.pack||'').trim()),c:l=>`<td class=c>${esc(l.pack)}</td>`},
  {w:58,h:'Qty',c:l=>`<td class="c nw">${l.qty}${us(l)}</td>`},
  {w:30,h:'Free',on:has(l=>String(l.free||'').trim()&&Number(l.free)!==0),c:l=>`<td class=c>${esc(l.free||0)}</td>`},
@@ -530,7 +546,7 @@ function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows
  {w:36,h:'Dis%',on:has(l=>(Number(l.disc)||0)>0),c:l=>`<td class=c>${l.amt>0?f2((l.disc||0)*100/l.amt):'0.00'}</td>`},
  {w:34,h:'GST%',on:has(l=>l.gst_set),c:l=>`<td class=c>${l.gst_set?l.gst:''}</td>`},
  {w:62,h:'Amount',c:l=>money(l.amt-(l.disc||0))}
-].filter(x=>(x.on===undefined||x.on)&& (detailBill||!['Batch','Exp.'].includes(x.h)));{const fx=CS.filter(x=>x.w).reduce((t,x)=>t+x.w,0);CS.find(x=>!x.w).w=Math.max(110,752-fx)}
+].filter(x=>(x.on===undefined||x.on)&& (detailBill||!['Batch','Exp.','HSN'].includes(x.h)));{const fx=CS.filter(x=>x.w).reduce((t,x)=>t+x.w,0);CS.find(x=>!x.w).w=Math.max(110,752-fx)}
 const cg='<colgroup>'+CS.map(x=>`<col style="width:${x.w}px">`).join('')+'</colgroup>';
  const sigb=sh.show_signatory==='1'&&sh.signatory?(sh.signature?`<img src="${esc(sh.signature)}" style="height:52px;display:block;margin:2px 0 2px auto">`:`<div class=sig>${esc(sh.signatory)}</div>`):'<div style="height:54px"></div>';
  return `<div id=inv><div class=ti>${title}</div>
@@ -540,7 +556,7 @@ const cg='<colgroup>'+CS.map(x=>`<col style="width:${x.w}px">`).join('')+'</colg
  <td style="padding:8px 12px"><div class=kv><span>Invoice No.</span><b style="font-size:14px">${esc(o.inv_no||o.serial)}</b></div><div class=kv><span>Date</span><b>${dmy(o.date)}</b></div><div class=kv><span>Place of Supply</span><b>${pos}</b></div><div class=kv><span>Reverse Charge</span><b>No</b></div>${sh.transport?`<div class=kv><span>Transport</span><b>${esc(sh.transport)}</b></div>`:''}</td></tr></table>
  <table class=pt>${cg}<tr>${CS.map(x=>`<th>${x.h}</th>`).join('')}</tr>
  ${rows.map((l,n)=>l?`<tr>${CS.map(x=>x.c(l,n)).join('')}</tr>`:'<tr><td>&nbsp;</td>'+'<td></td>'.repeat(CS.length-1)+'</tr>').join('')}</table>
- <table><tr><td style="width:56%;padding:0">${classTbl}<div style="padding:6px 8px"><span class=k>Total in Words</span><b>${esc(o.words)}</b><div class=sm style="margin-top:6px">${o.mode==='included'?'Prices GST included':'GST added extra'} · ${ig?'IGST':'CGST+SGST'}</div>${o.lines.some(l=>!l.gst_set)?'<div class=sm>GST rate not set for some products (taken as 0%)</div>':''}</div></td>
+ <table><tr><td style="width:56%;padding:0">${classTbl}<div style="padding:6px 8px"><span class=k>Total in Words</span><b>${esc(o.words)}</b><div class=sm style="margin-top:6px">${gmTxt} · ${ig?'IGST':'CGST+SGST'}</div>${o.lines.some(l=>!l.gst_set)?'<div class=sm>GST rate not set for some products (taken as 0%)</div>':''}</div></td>
  <td style="padding:0"><table class=tt style="table-layout:fixed"><colgroup><col><col style="width:96px"></colgroup><tr><td><b>Gross Amount</b></td>${money(o.gross)}</tr><tr><td><b>Tax</b></td>${money(o.tax)}</tr><tr><td><b>Discount</b></td>${money(o.discount)}</tr><tr><td><b>Rounded off (+/-)</b></td><td class=rt>${rsg}${rn.join('.')}</td></tr><tr class=gt><td><b>GRAND TOTAL</b></td>${money(o.total)}</tr></table></td></tr></table>
  ${sh.terms?`<div class=sm style="padding:4px 10px">${esc(sh.terms)}</div>`:''}${sh.upi?`<div class=sm style="padding:2px 10px">UPI: ${esc(sh.upi)}${sh.pay_mobile?' · '+esc(sh.pay_mobile):''}</div>`:''}
  <table class=nb style="border-top:1.5px solid var(--ink)"><tr><td style="width:50%;padding:8px 12px;vertical-align:bottom;height:92px"><div style="display:inline-block;min-width:190px;border-top:1px solid var(--ink);padding-top:3px;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Party Signature</div></td><td class=rt style="padding:8px 12px"><div style="font-size:12px;font-weight:700">For ${esc(sh.shop_name)}</div>${sigb}<div style="display:inline-block;min-width:190px;border-top:1px solid var(--ink);padding-top:3px;font-size:10.5px;font-weight:600;text-align:center">${sh.show_signatory==='1'&&sh.signatory?esc(sh.signatory)+' · ':''}Authorised Signatory</div></td></tr></table></div>`}
@@ -653,7 +669,7 @@ function setScr(){const tb=[['shop','🏪 मालिक / दुकान'],['
  ({shop:tabShop,cust:tabCust,backup:tabBackup,view:tabView})[stab_]()}
 function tabShop(){document.getElementById('tabc').innerHTML=`<h2>🏪 मालिक / दुकान की पूरी जानकारी</h2><p class=hint>यह जानकारी नए बिल पर छपेगी। पुराने बिल सुरक्षित रहेंगे।</p>${SHOPF.map(([k,l])=>fld(k,l)).join('')}<label>सिग्नेचर करने वाले का नाम बिल पर दिखाएँ</label><select id=s_show_signatory><option value=1 ${S.show_signatory==='1'?'selected':''}>हाँ</option><option value=0 ${S.show_signatory!=='1'?'selected':''}>नहीं</option></select><button class="btn main huge" onclick="saveSet('shop')">✅ दुकान की जानकारी सेव करें</button>`}
 function tabBackup(){document.getElementById('tabc').innerHTML=`<h2>💾 डेटा बैकअप</h2><p class=hint>बैकअप में दुकान की जानकारी, ग्राहक, दवाइयाँ और पुराने बिल शामिल होंगे। इसे सुरक्षित जगह रखें।</p><button class="btn good huge" onclick="doBackup()">⬇ बैकअप फ़ोन में सेव करें</button><h3>बैकअप वापस डालें</h3><p class=warn>ध्यान दें: Restore करने पर अभी का डेटा बदल जाएगा। पहले बैकअप डाउनलोड कर लें।</p><label>बैकअप फ़ाइल चुनें (.json)</label><input type=file accept=".json" onchange="restore(this)"><p class=hint>सॉफ़्टवेयर वर्ज़न: ${APP_VERSION}</p>`}
-function tabView(){document.getElementById('tabc').innerHTML=`<h2>🧾 बिल का प्रकार चुनें</h2><p class=hint>यह सेटिंग आगे बनने वाले बिलों पर लागू होगी। पुराने बिल अपने पुराने रूप में रहेंगे।</p><div class=row><label class=sw style="font-size:20px"><span>अभी का बिल प्रकार</span><span>${S.bill_view==='simple'?'सिंपल':'डिटेल'}</span></label><div class=two><button class="btn ${S.bill_view!=='simple'?'main':''}" onclick="setBillView('detail')">📋 डिटेल बिल</button><button class="btn ${S.bill_view==='simple'?'main':''}" onclick="setBillView('simple')">🧾 सिंपल बिल</button></div><p class=hint>डिटेल: बैच और एक्सपायरी सहित। HSN कॉलम नहीं दिखेगा।<br>सिंपल: बैच और एक्सपायरी भी बिल से छिपाएगा।</p></div>`}
+function tabView(){document.getElementById('tabc').innerHTML=`<h2>🧾 बिल का प्रकार चुनें</h2><p class=hint>यह सेटिंग आगे बनने वाले बिलों पर लागू होगी। पुराने बिल अपने पुराने रूप में रहेंगे।</p><div class=row><label class=sw style="font-size:20px"><span>अभी का बिल प्रकार</span><span>${S.bill_view==='simple'?'सिंपल':'डिटेल'}</span></label><div class=two><button class="btn ${S.bill_view!=='simple'?'main':''}" onclick="setBillView('detail')">📋 डिटेल बिल</button><button class="btn ${S.bill_view==='simple'?'main':''}" onclick="setBillView('simple')">🧾 सिंपल बिल</button></div><p class=hint>डिटेल: HSN, बैच और एक्सपायरी सहित।<br>सिंपल: HSN, बैच और एक्सपायरी बिल से छिपेंगे।</p></div>`}
 async function setBillView(v){try{S=await api('/settings',{method:'PUT',body:{bill_view:v==='simple'?'simple':'detail'}});tabView();say(S.bill_view==='simple'?'✅ सिंपल बिल चालू':'✅ डिटेल बिल चालू')}catch(e){say('सेटिंग सेव नहीं हुई: '+e.message)}}
 async function saveSet(g){if(!(document.getElementById('s_shop_name')||{value:'x'}).value.trim())return say('दुकान का नाम खाली नहीं हो सकता।');
  const gv=(document.getElementById('s_gstin')||{value:''}).value.trim();if(gv&&gv.length!==15)return say('GSTIN 15 अक्षर का होना चाहिए, या खाली छोड़ दें।');
@@ -676,12 +692,12 @@ async function custDel(){if(!await ask('यह ग्राहक सूची �
 async function restore(el){const f=el.files&&el.files[0];el.value='';if(!f||!await ask('सच में Restore करें? अभी का सारा डेटा बदल जाएगा।'))return;
  try{const bk=JSON.parse(await f.text());await makeBackup('purana-');await api('/restore',{method:'POST',body:bk});S=await api('/settings');say('डेटा वापस आ गया');setScr()}catch(e){say('डेटा वापस नहीं आया: '+e.message)}}
 
-Object.assign(window,{stabGo,setBillView,custBills,custList,custForm,custSave,custDel,custCancel,stchg,pc,gset,gother,dt,zoom,go,back,search,oldBillScr,newBill,openInv,cs,pick,gsin,tgm,dchg,tgo,tg,activateRow,addRow,rmc,qs,su,cx,gxToggle,sf,mr,it_rt,bt,ex,pn,toPrev,saveInv,shareBill,doBackup,finish,doPrint,doPdf,doWa,doWaPdf,saveSet,restore,persist,upd});
+Object.assign(window,{hsnSet,stabGo,setBillView,custBills,custList,custForm,custSave,custDel,custCancel,stchg,pc,gset,gother,dt,zoom,go,back,search,oldBillScr,newBill,openInv,cs,pick,gsin,tgm,dchg,tgo,tg,activateRow,addRow,rmc,qs,su,cx,gxToggle,sf,mr,it_rt,bt,ex,pn,toPrev,saveInv,shareBill,doBackup,finish,doPrint,doPdf,doWa,doWaPdf,saveSet,restore,persist,upd});
 Object.defineProperty(window,'D',{get:()=>D,set:v=>{D=v}});
 // ===== Start: open the local database (no internet needed) =====
 (async()=>{try{await openDB();await migrateOld();S=await getSettings();NX=await nextInfo()}
 catch(e){app.innerHTML='<h1>🏥</h1><p class=warn style="text-align:center">डेटा खोलने में दिक्कत: '+esc(e.message)+'</p><button class="btn main" onclick="location.reload()">🔄 दोबारा खोलें</button>';return}
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
-try{newDraft();history.replaceState({v:'home'},'');show('home')}catch(e){console.error('VMS startup render error:',e);app.innerHTML='<h2>ऐप शुरू नहीं हो पाया</h2><p class=warn>'+esc(e&&e.message?e.message:'अज्ञात त्रुटि')+'</p><button class="btn main" onclick="location.reload()">🔄 दोबारा खोलें</button>';return}setTimeout(()=>{if(navigator.onLine!==false)loadH2C()},2500)})();
+try{newDraft();history.replaceState({v:'home'},'');show('home');if(window.__vmsUp)window.__vmsUp()}catch(e){console.error('VMS startup render error:',e);app.innerHTML='<h2>ऐप शुरू नहीं हो पाया</h2><p class=warn>'+esc(e&&e.message?e.message:'अज्ञात त्रुटि')+'</p><button class="btn main" onclick="location.reload()">🔄 दोबारा खोलें</button>';return}setTimeout(()=>{if(navigator.onLine!==false)loadH2C()},2500)})();
 </script></body></html>
