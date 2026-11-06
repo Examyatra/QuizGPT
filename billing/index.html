@@ -169,7 +169,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.24';
+const APP_VERSION='OFFLINE-1.25';
 // ---- Cloud Backup (val.town SQLite) ----
 // सर्वर पर यही एक फिक्स जगह (ID): ऑटो-बैकअप, बटन वाला बैकअप और Restore तीनों इसी का इस्तेमाल करते हैं.
 // इसे कभी बदलना नहीं — बदलने पर पुराना बैकअप नहीं मिलेगा.
@@ -471,7 +471,7 @@ async function openInv(id){try{V=await api('/invoices/'+id);go('old')}catch(e){s
 // ---------- STEP 1 ----------
 function custScr(){const c=D.customer;
  app.innerHTML=`${head(1)}<h2>ग्राहक का नाम <span style="color:#c0392b">*</span></h2><input id=cn_name autocomplete=off value="${esc(c.name)}" oninput="cs('name',this)" onchange="pick('name')" placeholder="ग्राहक का नाम लिखें (ज़रूरी)">
- <h2>मोबाइल नंबर <span style="color:#c0392b">*</span></h2><div class=mrow><input id=cn_mobile type=tel autocomplete=off inputmode=numeric maxlength=10 pattern="[0-9]{10}" value="${esc(String(c.mobile||'').replace(/\D/g,'').slice(0,10))}" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10);cs('mobile',this)" onchange="pick('mobile')" placeholder="10 अंकों का नंबर">${CP?'<button class=cpb onclick="phonebook()">📒<br>फ़ोन बुक</button>':''}</div><div class=sug id=csg></div>
+ <h2>मोबाइल नंबर <span style="color:#c0392b">*</span></h2><div class=mrow><input id=cn_mobile type=tel autocomplete=off inputmode=numeric maxlength=10 pattern="[0-9]{10}" value="${esc(String(c.mobile||'').replace(/\D/g,'').slice(0,10))}" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10);cs('mobile',this)" onchange="pick('mobile')" placeholder="10 अंकों का नंबर"><button class=cpb onclick="phonebook()">📒<br>फ़ोन बुक</button></div><div class=sug id=csg></div>
  <button class=btn id=mbtn onclick="tgm()">${OPENMORE?'➖ जानकारी बंद करें':'📋 और जानकारी (पता, GSTIN, लाइसेंस, तारीख)'}</button>
  <div id=more ${OPENMORE?'':'hidden'}><h2>पता</h2><input id=cn_addr value="${esc(c.address)}" oninput="D.customer.address=this.value;persist()">
  <h2>GSTIN</h2><input id=gs value="${esc(c.gstin)}" oninput="gsin(this)" style="text-transform:uppercase">
@@ -480,24 +480,61 @@ function custScr(){const c=D.customer;
  <h2>डिलीवरी / Place of Supply राज्य</h2><select id=stsel onchange="stchg(this.value)">${Object.entries(ST).map(([k,v])=>`<option value=${k} ${k===(c.state||shopSt())?'selected':''}>${v}</option>`).join('')}</select><p class=hint>उत्तर प्रदेश में डिलीवरी पर CGST + SGST लगेगा। दूसरे राज्य में डिलीवरी हो तभी यहाँ सही राज्य चुनें; GSTIN का राज्य अपने-आप Place of Supply तय नहीं करता।</p></div>
  <button class="btn main huge" onclick="custNext()">आगे बढ़ें ➡</button>`;OPENMORE=false}
 let OPENMORE=false;
-const CP=!!(navigator.contacts&&navigator.contacts.select&&window.isSecureContext);
 const tel10=t=>{let d=String(t||'').replace(/\D/g,'');if(d.length>10&&d.startsWith('91'))d=d.slice(2);if(d.length>10&&d.startsWith('0'))d=d.replace(/^0+/,'');return d};
-let PBB=false;
+// ---------- फ़ोन बुक (ऐप के अंदर की अपनी सूची; फ़ोन के picker पर निर्भर नहीं) ----------
+// स्रोत: (1) फ़ोन से एक बार लाई गई .vcf फ़ाइल के संपर्क, (2) दुकान के पहले के ग्राहक।
+const pbLoad=()=>{const a=lsGet('vms_pb');return Array.isArray(a)?a.filter(x=>x&&/^\d{10}$/.test(String(x.m))):[]};
+function qpDec(t){try{const by=[];const x=String(t);for(let i=0;i<x.length;i++){if(x[i]==='='&&/^[0-9A-Fa-f]{2}$/.test(x.substr(i+1,2))){by.push(parseInt(x.substr(i+1,2),16));i+=2}else{const c=x.charCodeAt(i);if(c<128)by.push(c);else new TextEncoder().encode(x[i]).forEach(v=>by.push(v))}}return new TextDecoder('utf-8').decode(new Uint8Array(by))}catch(e){return String(t)}}
+function parseVcf(txt){const out=[];const raw=String(txt||'').replace(/\r\n?/g,'\n').split('\n'),lines=[];
+ for(let i=0;i<raw.length;i++){let l=raw[i];
+  while(/QUOTED-PRINTABLE/i.test(l)&&/=\s*$/.test(l)&&i+1<raw.length){l=l.replace(/=\s*$/,'')+raw[++i]}
+  if(/^[ \t]/.test(l)&&lines.length)lines[lines.length-1]+=l.slice(1);else lines.push(l)}
+ let cur=null;
+ for(const l of lines){const u=l.toUpperCase();
+  if(u.startsWith('BEGIN:VCARD')){cur={n:'',fn:'',t:[]};continue}
+  if(u.startsWith('END:VCARD')){if(cur){const nm=(cur.fn||cur.n||'').trim();cur.t.forEach(t=>{const m=tel10(t);if(/^\d{10}$/.test(m))out.push({n:nm,m})})}cur=null;continue}
+  if(!cur)continue;const k=l.indexOf(':');if(k<0)continue;const head=l.slice(0,k),val=l.slice(k+1),key=head.split(';')[0].toUpperCase().replace(/^.*\./,'');
+  const dv=/QUOTED-PRINTABLE/i.test(head)?qpDec(val):val;
+  if(key==='FN')cur.fn=dv;else if(key==='N')cur.n=dv.split(';').map(x=>x.trim()).filter(Boolean).reverse().join(' ');else if(key==='TEL')cur.t.push(dv)}
+ return out}
+let PBB=false,PBL=[],PBN=60;
 async function phonebook(){
  if(PBB)return;PBB=true;
  try{
- persist();
- let r;try{r=await navigator.contacts.select(['tel'],{multiple:false})}catch(e){say('फ़ोन बुक नहीं खुल पाई। नंबर खुद टाइप कर दें।');return}
- if(!r||!r.length)return;
- const c=r[0];
- let nums=[...new Set((c.tel||[]).map(tel10).filter(x=>/^\d{10}$/.test(x)))];
- if(!nums.length){say('इस संपर्क के साथ 10 अंकों का मोबाइल नंबर नहीं मिला। कोई दूसरा चुनें या खुद टाइप करें।');return}
- let m=nums[0];
- if(nums.length>1){const k=await modal('इस संपर्क के कई नंबर हैं। कौन सा लेना है?',nums.slice(0,4).map((x,i)=>[x,i?'':'main']).concat([['रद्द करें','']]));if(k<0||k>=Math.min(nums.length,4))return;m=nums[k]}
- D.customer.mobile=m; // फ़ोन बुक से सिर्फ़ नंबर आता है; नाम दुकानदार का टाइप किया हुआ ही रहेगा
- try{const f=arr(await api('/customers?q='+m)).find(x=>String(x.mobile||'').replace(/\D/g,'')===m);if(f){const nm0=String(D.customer.name||'').trim();D.customer={name:nm0||f.name||'',mobile:m,address:f.address||'',gstin:f.gstin||'',dl:f.dl||'',state:''};D.interstate=false;gsin({value:D.customer.gstin})}}catch(e){}
- persist();fillCust()
- }finally{PBB=false}}
+  persist();
+  let saved=[];try{saved=arr(await api('/customers?all=1&q=')).map(x=>({n:String(x.name||''),m:String(x.mobile||'').replace(/\D/g,'').slice(-10)})).filter(x=>/^\d{10}$/.test(x.m))}catch(e){}
+  const mk=()=>{const seen=new Set(),all=[];[...pbLoad(),...saved].forEach(x=>{if(seen.has(x.m))return;seen.add(x.m);all.push({n:String(x.n||''),m:x.m})});all.sort((a,b)=>(a.n||'~').localeCompare(b.n||'~'));return all};
+  PBL=mk();
+  const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;background:#fff;z-index:9;display:flex;flex-direction:column;padding:12px;box-sizing:border-box';
+  d.innerHTML='<div style="display:flex;gap:8px;align-items:center"><h2 style="margin:0;flex:1">📒 फ़ोन बुक</h2><button class=btn id=pbx style="margin:0;width:auto;padding:10px 18px">✖ बंद करें</button></div><input id=pbq type=search autocomplete=off placeholder="नाम या नंबर खोजें" style="margin:10px 0"><div id=pbn class=hint style="margin:0 0 6px"></div><div id=pbl style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch"></div><div style="padding-top:8px"><label class=btn style="display:block;text-align:center;margin:0">📥 फ़ोन के संपर्क जोड़ें (.vcf फ़ाइल)<input id=pbf type=file accept=".vcf,text/vcard,text/x-vcard,text/directory" hidden></label></div>';
+  const fin=()=>{d.remove();const j=MODALS.indexOf(fin);if(j>=0)MODALS.splice(j,1)};MODALS.push(fin);
+  const q=d.querySelector('#pbq'),lst=d.querySelector('#pbl'),nn=d.querySelector('#pbn');
+  const draw=()=>{const t=q.value.trim().toLowerCase(),td=t.replace(/\D/g,'');
+   const r=PBL.filter(x=>!t||String(x.n).toLowerCase().includes(t)||(td&&x.m.includes(td)));
+   nn.textContent=PBL.length?(r.length+' संपर्क'+(t?' मिले':'')):'';
+   if(!PBL.length){lst.innerHTML='<p>अभी कोई संपर्क नहीं है।<br>नीचे बटन से फ़ोन के संपर्क की .vcf फ़ाइल चुनें (सिर्फ़ एक बार)।</p>';return}
+   if(!r.length){lst.innerHTML='<p>कोई संपर्क नहीं मिला।</p>';return}
+   lst.innerHTML=r.slice(0,PBN).map(x=>`<button class=btn data-m="${x.m}" style="text-align:left;margin:0 0 6px;width:100%"><span style="font-size:22px">👤 ${esc(x.n||'(नाम नहीं)')}</span><br><span style="font-size:20px;font-weight:700">📞 ${x.m}</span></button>`).join('')+(r.length>PBN?'<button class=btn data-more="1" style="width:100%">और दिखाएँ ('+(r.length-PBN)+' बाकी)</button>':'')};
+  q.oninput=()=>{PBN=60;draw()};
+  lst.onclick=e=>{const b=e.target.closest&&e.target.closest('button');if(!b)return;
+   if(b.dataset.more){PBN+=100;draw();return}
+   const m=b.dataset.m;if(!/^\d{10}$/.test(m||''))return;
+   fin();pbFill(m)};
+  d.querySelector('#pbx').onclick=fin;
+  d.querySelector('#pbf').onchange=async e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
+   try{const rows=parseVcf(await f.text());if(!rows.length){say('इस फ़ाइल में कोई 10 अंकों का मोबाइल नंबर नहीं मिला।');return}
+    const have=new Map(pbLoad().map(x=>[x.m,x]));rows.forEach(x=>{have.set(x.m,{n:x.n,m:x.m})});
+    const all=[...have.values()];lsSet('vms_pb',all);
+    if((lsGet('vms_pb')||[]).length!==all.length){say('फ़ोन में जगह कम है, संपर्क सेव नहीं हो पाए।');return}
+    PBL=mk();PBN=60;draw();say('✅ '+rows.length+' संपर्क जुड़ गए।')}catch(err){say('फ़ाइल पढ़ी नहीं जा सकी। दूसरी .vcf फ़ाइल चुनें।')}};
+  document.body.appendChild(d);draw()
+ }catch(e){say('फ़ोन बुक नहीं खुल पाई। नंबर खुद टाइप कर दें।')}
+ finally{PBB=false}}
+async function pbFill(m){
+ // सिर्फ़ नंबर भरता है; नाम दुकानदार का टाइप किया हुआ ही रहेगा
+ try{const f=arr(await api('/customers?q='+m)).find(x=>String(x.mobile||'').replace(/\D/g,'')===m);
+  if(f){const nm0=String(D.customer.name||'').trim();D.customer={name:nm0||f.name||'',mobile:m,address:f.address||'',gstin:f.gstin||'',dl:f.dl||'',state:''};D.interstate=false;gsin({value:D.customer.gstin})}}catch(e){}
+ D.customer.mobile=m;persist();fillCust()}
 const tgm=()=>{const m=document.getElementById('more'),b=document.getElementById('mbtn');m.hidden=!m.hidden;if(b)b.textContent=m.hidden?'📋 और जानकारी (पता, GSTIN, लाइसेंस, तारीख)':'➖ जानकारी बंद करें'};
 function custChk(){const c=D.customer,n=String(c.name||'').trim(),m=String(c.mobile||'').replace(/\D/g,'');
  if(!n)return{f:'cn_name',msg:'ग्राहक का नाम लिखना ज़रूरी है।'};
