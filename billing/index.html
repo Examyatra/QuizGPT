@@ -158,12 +158,12 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.5';
+const APP_VERSION='OFFLINE-1.6';
 const uuid=()=>{try{if(crypto.randomUUID)return crypto.randomUUID()}catch(e){}return 'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10)};
 let errT=0;const oops=m=>{const n=Date.now();if(n-errT<4000)return;errT=n;try{toast(m)}catch(_){}};
 window.addEventListener('error',e=>{if(e&&/Script error|ResizeObserver/.test(String(e.message||'')))return;oops('⚠ कुछ गड़बड़ हुई। दोबारा दबाएँ, या ऐप बंद करके खोलें।')});
 window.addEventListener('unhandledrejection',()=>oops('⚠ कुछ गड़बड़ हुई। दोबारा दबाएँ।'));
-const DEFAULTS={shop_name:'VISHAL MEDICAL STORE',address:'Jaffarpur, Paranapur Road, Jaffarpur, Azamgarh, Uttar Pradesh',pin:'276001',mobile:'9450994540',email:'svup50@gmail.com',gstin:'09ACTPY4775H2ZH',dl1:'UP5020B000159',dl2:'UP5021B000159',signatory:'Ramkesh Yadav',show_signatory:'1',start_no:'5001',prefix:'',transport:'SELF',terms:'',upi:'',pay_mobile:'',logo:'',signature:'',autosave:'1',expiry_years:'2'};
+const DEFAULTS={shop_name:'VISHAL MEDICAL STORE',address:'Jaffarpur, Paranapur Road, Jaffarpur, Azamgarh, Uttar Pradesh',pin:'276001',mobile:'9450994540',email:'svup50@gmail.com',gstin:'09ACTPY4775H2ZH',dl1:'UP5020B000159',dl2:'UP5021B000159',signatory:'Ramkesh Yadav',show_signatory:'1',start_no:'5001',prefix:'',transport:'SELF',terms:'',upi:'',pay_mobile:'',logo:'',signature:'',autosave:'1',expiry_years:'2',bill_view:'detail'};
 const STORES=['settings','customers','medicines','invoices','assets'];
 let db=null;
 const rq=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
@@ -247,7 +247,7 @@ async function saveInvoice(b){
   if(dup)return readInvoice(dup,A); // double-tap safe: same bill is never created twice
   const S0=await getAllSet(st);
   const serial=await nextSerialIn(I,S0.start_no);
-  const rec={serial,inv_no:S0.prefix+serial,client_key:key,date:b.date,customer:cust,shop:await packShop(S0,A),cust_name:cust.name,cust_mobile:cust.mobile,mode:b.mode==='excluded'?'excluded':'included',interstate:!!b.interstate,...tot,words:clip(b.words,300),lines,created:nowIso()};
+  const rec={serial,inv_no:S0.prefix+serial,client_key:key,date:b.date,customer:cust,shop:await packShop(S0,A),cust_name:cust.name,cust_mobile:cust.mobile,mode:b.mode==='excluded'?'excluded':'included',bill_view:S0.bill_view==='simple'?'simple':'detail',interstate:!!b.interstate,...tot,words:clip(b.words,300),lines,created:nowIso()};
   await rq(I.add(rec));
   if(cust.name||cust.mobile)await custUpsert(st('customers'),custBody(cust),true);
   return readInvoice(rec,A)})}
@@ -344,7 +344,7 @@ const uk=it=>it&&it.unit==='strip'?'strip':'box';
 const unitTxt=u=>u==='strip'?'💊 स्ट्रिप में बेच रहे हैं (टिक हटाएँ = बॉक्स)':'स्ट्रिप में बेचना है? टिक करें (अभी: 📦 बॉक्स)';
 const ZB='<button class=btn onclick="zoom()">🔍 पूरा बिल बड़ा / छोटा करें</button>';
 const autoBatch=()=>'TMP-'+String(new Date().getFullYear()).slice(2)+String(new Date().getMonth()+1).padStart(2,'0')+Math.random().toString(36).slice(2,5).toUpperCase();
-const blank=(dt)=>{const off=expRnd();return {name:'',qty:1,unit:'box',mrp:'',rate:'',rt:false,open:false,active:true,hsn:'30049099',pack:'',batch:autoBatch(),batch_status:'temp',exp_off:off,expiry:addMon(dt||(D?D.date:today()),off),expiry_status:'suggested',free:'',gst:'5',gst_mode:'included',mfr:'',save:true}};
+const blank=(dt)=>{const off=expRnd();return {name:'',qty:1,unit:'box',mrp:'',rate:'',rt:false,open:false,active:true,hsn:'',pack:'',batch:autoBatch(),batch_status:'temp',exp_off:off,expiry:addMon(dt||(D?D.date:today()),off),expiry_status:'suggested',free:'',gst:'5',gst_mode:'included',mfr:'',save:true}};
 function newDraft(){D={client_key:uuid(),date:today(),customer:{name:'',mobile:'',address:'',gstin:'',dl:'',state:''},interstate:false,dtype:'amt',mode:'included',discount:'',items:[],saved:null};D.items=[blank()]}
 const persist=()=>{try{if(D&&!D.saved)localStorage.setItem('vms_draft',JSON.stringify(D))}catch(e){}};
 function go(v){history.pushState({v},'');show(v)}
@@ -473,10 +473,10 @@ function rows(){document.getElementById('rows').innerHTML=D.items.map((it,i)=>{
  </div>
  ${!['0','5','18'].includes(String(it.gst))?`<input class=gstother type=number min=0 max=100 step=0.01 inputmode=decimal placeholder="GST प्रतिशत लिखें" value="${esc(it.gst)}" oninput="sf(${i},'gst',this.value)">`:''}
  <div class=warn id=w${i}></div><div class=amtline>रकम: <b id=a${i}>₹ 0</b></div>
- <button class=btn onclick="tg(${i})">${it.open?'➖ जानकारी बंद करें':'➕ और जानकारी (बैच, एक्सपायरी, HSN…)'}</button>
+ <button class=btn onclick="tg(${i})">${it.open?'➖ जानकारी बंद करें':'➕ और जानकारी (बैच, एक्सपायरी…)'}</button>
  ${it.open?`<div class=adv><div class="two fl"><div><label>बैच नं. (पैक से देखकर)</label><input value="${esc(it.batch)}" placeholder="जैसे: VNL-2488" oninput="bt(${i},this.value)"></div>
  <div><label>एक्सपायरी (महीना/साल)</label><input type=month value="${esc((it.expiry||'').slice(0,7))}" oninput="ex(${i},this.value)"></div></div>${bs}${es}${it.expiry_status==='suggested'?`<button class=btn onclick="cx(${i})" style="min-height:52px;font-size:18px">✔ पैक पर यही तारीख़ है</button>`:''}
- <label>HSN कोड</label><input value="${esc(it.hsn)}" oninput="sf(${i},'hsn',this.value)">
+ 
  </div>`:''}</div>`}).join('')}
 const tg=i=>{D.items[i].open=!D.items[i].open;rows();upd()};
 function activateRow(i){D.items.forEach((it,j)=>{it.active=(j===i)});rows();upd();persist();setTimeout(()=>{const e=document.getElementById('n'+i);if(e)e.scrollIntoView({block:'nearest'})},50)}
@@ -516,11 +516,10 @@ function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows
  const classTbl=`<table class="pt ct" style="table-layout:auto"><tr><th>GST RATE</th><th>TAXABLE</th><th>DISC.</th>${ig?'<th>IGST</th>':'<th>CGST</th><th>SGST</th><th>TOTAL TAX</th>'}</tr>${ks.map(g=>crow(rateLabel(g),cls[g])).join('')}${crow('TOTAL',{t:sm('t'),d:sm('d'),c:sm('c'),s:sm('s'),i:sm('i')})}</table>`;
  const ro=Number(o.roundoff)||0,rn=Math.abs(ro).toFixed(2).split('.'),rsg=ro>0?'+':ro<0?'-':'';
  const title=o.lines.length&&o.lines.every(l=>l.gst_set&&Number(l.gst)===0)?'Bill of Supply':'Tax Invoice';
- const LS=o.lines,has=f=>LS.some(f),CS=[
+ const LS=o.lines,has=f=>LS.some(f),detailBill=o.bill_view!=='simple',CS=[
  {w:24,h:'SN',c:(l,n)=>`<td class=c>${n+1}</td>`},
  {w:0,h:'Product Name',c:l=>`<td class=l>${esc(l.name)}</td>`},
  {w:48,h:'Mfr.',on:has(l=>String(l.mfr||'').trim()),c:l=>`<td class=l>${esc(l.mfr)}</td>`},
- {w:62,h:'HSN',on:has(l=>String(l.hsn||'').trim()),c:l=>`<td class=c>${esc(l.hsn)}</td>`},
  {w:44,h:'Pack',on:has(l=>String(l.pack||'').trim()),c:l=>`<td class=c>${esc(l.pack)}</td>`},
  {w:58,h:'Qty',c:l=>`<td class="c nw">${l.qty}${us(l)}</td>`},
  {w:30,h:'Free',on:has(l=>String(l.free||'').trim()&&Number(l.free)!==0),c:l=>`<td class=c>${esc(l.free||0)}</td>`},
@@ -531,7 +530,7 @@ function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows
  {w:36,h:'Dis%',on:has(l=>(Number(l.disc)||0)>0),c:l=>`<td class=c>${l.amt>0?f2((l.disc||0)*100/l.amt):'0.00'}</td>`},
  {w:34,h:'GST%',on:has(l=>l.gst_set),c:l=>`<td class=c>${l.gst_set?l.gst:''}</td>`},
  {w:62,h:'Amount',c:l=>money(l.amt-(l.disc||0))}
-].filter(x=>x.on===undefined||x.on);{const fx=CS.filter(x=>x.w).reduce((t,x)=>t+x.w,0);CS.find(x=>!x.w).w=Math.max(110,752-fx)}
+].filter(x=>(x.on===undefined||x.on)&& (detailBill||!['Batch','Exp.'].includes(x.h)));{const fx=CS.filter(x=>x.w).reduce((t,x)=>t+x.w,0);CS.find(x=>!x.w).w=Math.max(110,752-fx)}
 const cg='<colgroup>'+CS.map(x=>`<col style="width:${x.w}px">`).join('')+'</colgroup>';
  const sigb=sh.show_signatory==='1'&&sh.signatory?(sh.signature?`<img src="${esc(sh.signature)}" style="height:52px;display:block;margin:2px 0 2px auto">`:`<div class=sig>${esc(sh.signatory)}</div>`):'<div style="height:54px"></div>';
  return `<div id=inv><div class=ti>${title}</div>
@@ -649,15 +648,18 @@ let stab_='shop',cq='',pfill='';
 const SHOPF=[['shop_name','दुकान का नाम'],['address','पता'],['pin','पिन कोड'],['mobile','मोबाइल नंबर'],['email','ईमेल'],['gstin','GSTIN (15 अंक)'],['dl1','ड्रग लाइसेंस नं. 1'],['dl2','ड्रग लाइसेंस नं. 2'],['signatory','सिग्नेचर करने वाले का नाम']];
 const fld=(k,l)=>`<label>${l}</label><input id=s_${k} value="${esc(S[k])}">`;
 const stabGo=t=>{stab_=t;setScr()};
-function setScr(){const tb=[['shop','🏪 दुकान'],['cust','👥 ग्राहक']];
- app.innerHTML=`<div class=bar><button class=ghost onclick="back()">⬅ पीछे</button></div><h1>सेटिंग</h1><div class=opt2 style="grid-template-columns:repeat(2,1fr)">${tb.map(([k,l])=>`<button class="pk ${stab_===k?'on':''}" style="font-size:18px" onclick="stabGo('${k}')">${l}</button>`).join('')}</div><div id=tabc></div>`;
- ({shop:tabShop,cust:tabCust})[stab_]()}
-function tabShop(){document.getElementById('tabc').innerHTML=`<h2>🏪 दुकान की जानकारी</h2><p class=hint>यहाँ बदलकर सेव करेंगे तो नए बिलों पर नई जानकारी आएगी। पुराने बिल जैसे थे वैसे रहेंगे।</p>${SHOPF.map(([k,l])=>fld(k,l)).join('')}<label>सिग्नेचर करने वाले का नाम बिल पर दिखाएँ</label><select id=s_show_signatory><option value=1 ${S.show_signatory==='1'?'selected':''}>हाँ</option><option value=0 ${S.show_signatory!=='1'?'selected':''}>नहीं</option></select><button class="btn main huge" onclick="saveSet('shop')">✅ दुकान की जानकारी सेव करें</button><h2>💾 डेटा की कॉपी (बैकअप)</h2><button class="btn good" onclick="doBackup()">⬇ बैकअप फ़ोन में सेव करें</button><label>बैकअप वापस डालें (.json) — अभी का सारा डेटा बदल जाएगा</label><input type=file accept=".json" onchange="restore(this)"><p class=hint style="margin-top:24px">सॉफ़्टवेयर वर्ज़न: ${APP_VERSION}</p>`}
+function setScr(){const tb=[['shop','🏪 मालिक / दुकान'],['cust','👥 ग्राहक सूची'],['backup','💾 बैकअप'],['view','🧾 बिल प्रकार']];
+ app.innerHTML=`<div class=bar><button class=ghost onclick="back()">⬅ पीछे</button></div><h1>⚙ सेटिंग</h1><div class=opt2 style="grid-template-columns:1fr 1fr;gap:10px">${tb.map(([k,l])=>`<button class="pk ${stab_===k?'on':''}" style="font-size:18px;min-height:62px" onclick="stabGo('${k}')">${l}</button>`).join('')}</div><div id=tabc></div>`;
+ ({shop:tabShop,cust:tabCust,backup:tabBackup,view:tabView})[stab_]()}
+function tabShop(){document.getElementById('tabc').innerHTML=`<h2>🏪 मालिक / दुकान की पूरी जानकारी</h2><p class=hint>यह जानकारी नए बिल पर छपेगी। पुराने बिल सुरक्षित रहेंगे।</p>${SHOPF.map(([k,l])=>fld(k,l)).join('')}<label>सिग्नेचर करने वाले का नाम बिल पर दिखाएँ</label><select id=s_show_signatory><option value=1 ${S.show_signatory==='1'?'selected':''}>हाँ</option><option value=0 ${S.show_signatory!=='1'?'selected':''}>नहीं</option></select><button class="btn main huge" onclick="saveSet('shop')">✅ दुकान की जानकारी सेव करें</button>`}
+function tabBackup(){document.getElementById('tabc').innerHTML=`<h2>💾 डेटा बैकअप</h2><p class=hint>बैकअप में दुकान की जानकारी, ग्राहक, दवाइयाँ और पुराने बिल शामिल होंगे। इसे सुरक्षित जगह रखें।</p><button class="btn good huge" onclick="doBackup()">⬇ बैकअप फ़ोन में सेव करें</button><h3>बैकअप वापस डालें</h3><p class=warn>ध्यान दें: Restore करने पर अभी का डेटा बदल जाएगा। पहले बैकअप डाउनलोड कर लें।</p><label>बैकअप फ़ाइल चुनें (.json)</label><input type=file accept=".json" onchange="restore(this)"><p class=hint>सॉफ़्टवेयर वर्ज़न: ${APP_VERSION}</p>`}
+function tabView(){document.getElementById('tabc').innerHTML=`<h2>🧾 बिल का प्रकार चुनें</h2><p class=hint>यह सेटिंग आगे बनने वाले बिलों पर लागू होगी। पुराने बिल अपने पुराने रूप में रहेंगे।</p><div class=row><label class=sw style="font-size:20px"><span>अभी का बिल प्रकार</span><span>${S.bill_view==='simple'?'सिंपल':'डिटेल'}</span></label><div class=two><button class="btn ${S.bill_view!=='simple'?'main':''}" onclick="setBillView('detail')">📋 डिटेल बिल</button><button class="btn ${S.bill_view==='simple'?'main':''}" onclick="setBillView('simple')">🧾 सिंपल बिल</button></div><p class=hint>डिटेल: बैच और एक्सपायरी सहित। HSN कॉलम नहीं दिखेगा।<br>सिंपल: बैच और एक्सपायरी भी बिल से छिपाएगा।</p></div>`}
+async function setBillView(v){try{S=await api('/settings',{method:'PUT',body:{bill_view:v==='simple'?'simple':'detail'}});tabView();say(S.bill_view==='simple'?'✅ सिंपल बिल चालू':'✅ डिटेल बिल चालू')}catch(e){say('सेटिंग सेव नहीं हुई: '+e.message)}}
 async function saveSet(g){if(!(document.getElementById('s_shop_name')||{value:'x'}).value.trim())return say('दुकान का नाम खाली नहीं हो सकता।');
  const gv=(document.getElementById('s_gstin')||{value:''}).value.trim();if(gv&&gv.length!==15)return say('GSTIN 15 अक्षर का होना चाहिए, या खाली छोड़ दें।');
  const keys=[...SHOPF.map(x=>x[0]),'show_signatory'];const b={};keys.forEach(k=>{const e=document.getElementById('s_'+k);if(e)b[k]=k==='gstin'?e.value.trim().toUpperCase():e.value});
  try{S=await api('/settings',{method:'PUT',body:b});say('✅ सेव हो गया')}catch(e){say('सेव नहीं हुआ: '+e.message)}}
-function tabCust(){document.getElementById('tabc').innerHTML=`<h2>👥 नियमित ग्राहक</h2><p class=hint>यहाँ सेव किए ग्राहक बिल बनाते समय नाम या मोबाइल लिखते ही सुझाव में आ जाएँगे। बिल बनाने पर नए ग्राहक अपने आप भी जुड़ जाते हैं।</p><button class="btn good" onclick="custForm(null)">➕ नया ग्राहक जोड़ें</button><div id=cf></div><input placeholder="🔍 नाम या मोबाइल से ढूँढें" oninput="custList(this.value)"><div id=cl></div>`;custList('')}
+function tabCust(){document.getElementById('tabc').innerHTML=`<h2>👥 ग्राहक सूची</h2><p class=hint>सेव किए ग्राहक बिल बनाते समय नाम या मोबाइल लिखते ही सुझाव में आएँगे। नए ग्राहक बिल बनाने पर अपने-आप जुड़ सकते हैं।</p><button class="btn good" onclick="custForm(null)">➕ नया ग्राहक जोड़ें</button><div id=cf></div><input placeholder="🔍 नाम या मोबाइल से ढूँढें" oninput="custList(this.value)"><div id=cl></div>`;custList('')}
 async function custList(t){cq=t||'';const L=document.getElementById('cl');try{const r=arr(await api('/customers?all=1&q='+encodeURIComponent(cq)));cache.cl=r;if(!document.getElementById('cl'))return;
  L.innerHTML=r.map(x=>`<div class=item><b>${esc(x.name||'(नाम नहीं)')}</b> ${esc(x.mobile)}<br><span class=hint>${esc(x.address)}</span><button class=btn onclick="custForm(${x.id})">✏ बदलें</button></div>`).join('')||'<p>कोई ग्राहक नहीं मिला।</p>'}catch(e){if(L)L.innerHTML='<p class=warn>'+esc(e.message)+'</p>'}}
 let cedit=null;
@@ -674,7 +676,7 @@ async function custDel(){if(!await ask('यह ग्राहक सूची �
 async function restore(el){const f=el.files&&el.files[0];el.value='';if(!f||!await ask('सच में Restore करें? अभी का सारा डेटा बदल जाएगा।'))return;
  try{const bk=JSON.parse(await f.text());await makeBackup('purana-');await api('/restore',{method:'POST',body:bk});S=await api('/settings');say('डेटा वापस आ गया');setScr()}catch(e){say('डेटा वापस नहीं आया: '+e.message)}}
 
-Object.assign(window,{stabGo,custBills,custList,custForm,custSave,custDel,custCancel,stchg,pc,gset,gother,dt,zoom,go,back,search,oldBillScr,newBill,openInv,cs,pick,gsin,tgm,dchg,tgo,tg,activateRow,addRow,rmc,qs,su,cx,gxToggle,sf,mr,it_rt,bt,ex,pn,toPrev,saveInv,shareBill,doBackup,finish,doPrint,doPdf,doWa,doWaPdf,saveSet,restore,persist,upd});
+Object.assign(window,{stabGo,setBillView,custBills,custList,custForm,custSave,custDel,custCancel,stchg,pc,gset,gother,dt,zoom,go,back,search,oldBillScr,newBill,openInv,cs,pick,gsin,tgm,dchg,tgo,tg,activateRow,addRow,rmc,qs,su,cx,gxToggle,sf,mr,it_rt,bt,ex,pn,toPrev,saveInv,shareBill,doBackup,finish,doPrint,doPdf,doWa,doWaPdf,saveSet,restore,persist,upd});
 Object.defineProperty(window,'D',{get:()=>D,set:v=>{D=v}});
 // ===== Start: open the local database (no internet needed) =====
 (async()=>{try{await openDB();await migrateOld();S=await getSettings();NX=await nextInfo()}
