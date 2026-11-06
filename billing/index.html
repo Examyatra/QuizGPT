@@ -168,12 +168,12 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.9';
+const APP_VERSION='OFFLINE-1.11';
 const uuid=()=>{try{if(crypto.randomUUID)return crypto.randomUUID()}catch(e){}return 'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10)};
 let errT=0;const oops=m=>{const n=Date.now();if(n-errT<4000)return;errT=n;try{toast(m)}catch(_){}};
 window.addEventListener('error',e=>{if(e&&/Script error|ResizeObserver/.test(String(e.message||'')))return;oops('⚠ कुछ गड़बड़ हुई। दोबारा दबाएँ, या ऐप बंद करके खोलें।')});
 window.addEventListener('unhandledrejection',()=>oops('⚠ कुछ गड़बड़ हुई। दोबारा दबाएँ।'));
-const DEFAULTS={shop_name:'VISHAL MEDICAL STORE',address:'Jaffarpur, Paranapur Road, Azamgarh, Uttar Pradesh',pin:'276001',mobile:'9450994540',email:'svup50@gmail.com',gstin:'09ACTPY4775H2ZH',dl1:'UP5020B000159',dl2:'UP5021B000159',signatory:'Ramkesh Yadav',show_signatory:'1',start_no:'5001',prefix:'',transport:'SELF',terms:'',upi:'',pay_mobile:'',logo:'',signature:'',autosave:'1',expiry_years:'2',bill_view:'detail'};
+const DEFAULTS={shop_name:'VISHAL MEDICAL STORE',address:'Jaffarpur, Paranapur Road, Azamgarh, Uttar Pradesh',pin:'276001',mobile:'9450994540',email:'svup50@gmail.com',gstin:'09ACTPY4775H2ZH',dl1:'UP5020B000159',dl2:'UP5021B000159',signatory:'Ramkesh Yadav',show_signatory:'1',start_no:'5001',prefix:'',transport:'SELF',terms:'',upi:'',pay_mobile:'',logo:'',signature:'',autosave:'1',expiry_years:'2',bill_view:'simple'};
 const STORES=['settings','customers','medicines','invoices','assets'];
 let db=null;
 const rq=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
@@ -423,8 +423,8 @@ async function openInv(id){try{V=await api('/invoices/'+id);go('old')}catch(e){s
 function custScr(){const c=D.customer;
  app.innerHTML=`${head(1)}<h2>ग्राहक का नाम</h2><input id=cn_name autocomplete=off value="${esc(c.name)}" oninput="cs('name',this)" onchange="pick('name')" placeholder="नाम (न लिखें तो भी चलेगा)">
  <h2>मोबाइल नंबर</h2><input id=cn_mobile type=tel autocomplete=off inputmode=numeric maxlength=10 pattern="[0-9]{10}" value="${esc(String(c.mobile||'').replace(/\D/g,'').slice(0,10))}" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10);cs('mobile',this)" onchange="pick('mobile')" placeholder="10 अंकों का मोबाइल (ज़रूरी नहीं)"><div class=sug id=csg></div>
- <button class=btn onclick="tgm()">➕ और जानकारी (पता, GSTIN, लाइसेंस, तारीख)</button>
- <div id=more hidden><h2>पता</h2><input id=cn_addr value="${esc(c.address)}" oninput="D.customer.address=this.value;persist()">
+ <button class=btn onclick="tgm()">📋 और जानकारी (पता, GSTIN, लाइसेंस, तारीख)</button>
+ <div id=more><h2>पता</h2><input id=cn_addr value="${esc(c.address)}" oninput="D.customer.address=this.value;persist()">
  <h2>GSTIN</h2><input id=gs value="${esc(c.gstin)}" oninput="gsin(this)" style="text-transform:uppercase">
  <h2>ग्राहक का ड्रग लाइसेंस नं.</h2><input id=cn_dl value="${esc(c.dl)}" oninput="D.customer.dl=this.value;persist()">
  <h2>बिल की तारीख</h2><input type=date value="${D.date}" onchange="dchg(this.value)">
@@ -568,7 +568,7 @@ async function prevScr(){
  if(!NX){try{const z=await api('/next');if(z&&z.next!=null)NX={next:z.next,prefix:z.prefix||''}}catch(e){}}
  let nx=NX||{next:'',prefix:''};
  const r=CALC();
- const o={serial:nx.next,inv_no:nx.prefix+nx.next,date:D.date,customer:D.customer,shop:S,...r,mode:D.mode,interstate:D.interstate};
+ const o={serial:nx.next,inv_no:nx.prefix+nx.next,date:D.date,customer:D.customer,shop:S,bill_view:S.bill_view==='simple'?'simple':'detail',...r,mode:D.mode,interstate:D.interstate};
  app.innerHTML=`${head(3)}${ZB}<div class=wrap id=wrap>${invHTML(o)}</div><p class=hint>बिल नंबर शेयर करते ही पक्का होगा। एक बार देख लें, फिर शेयर करें — बिल अपने-आप सेव होगा, फोटो फोन में आएगी और WhatsApp खुलेगा।</p>
  <button class="btn wa huge" style="font-size:22px" onclick="saveInv(true)">📲 बिल शेयर करें</button><button class=btn onclick="back()">✏️ बदलाव करें</button>`;fit()}
 const actions=(o,isNew)=>`<div class=bar><button class=ghost onclick="${isNew?'finish()':'back()'}">⬅ ${isNew?'होम':'पीछे'}</button></div>
@@ -615,7 +615,14 @@ async function pdfFromCanvas(cv){const jb=new Uint8Array(await(await toJpg(cv)).
 const pdfBlob=async()=>pdfFromCanvas(await invCanvas());
 let busy=false;const solo=fn=>async(...a)=>{if(busy)return;busy=true;try{return await fn(...a)}finally{busy=false}};
 const cur=()=>view==='old'?V:D.saved;
-const fname=()=>'Invoice-'+(cur().inv_no||cur().serial)+'.pdf';
+// File name = Customer name + today's date + time of generation, e.g. Ramesh_Kumar_06-11-2026_14-35-20.jpg
+// (so the bill can be found in the phone gallery by searching the customer's name)
+function billFileName(ext){const o=cur()||{},c=o.customer||{};
+ let n=String(c.name||o.cust_name||'').normalize('NFC').replace(/[\\/:*?"<>|#%&{}$!'@`=+~;,\u0000-\u001f]/g,' ').replace(/\s+/g,' ').trim().replace(/\./g,'').slice(0,30).trim().replace(/ /g,'_');
+ if(!n)n='Cash_Customer';
+ const d=new Date(),p=x=>String(x).padStart(2,'0');
+ return n+'_'+p(d.getDate())+'-'+p(d.getMonth()+1)+'-'+d.getFullYear()+'_'+p(d.getHours())+'-'+p(d.getMinutes())+'-'+p(d.getSeconds())+'.'+ext}
+const fname=()=>billFileName('pdf');
 function waUrl(){const o=cur(),sh=o.shop||S,c=o.customer||{};let m=String(c.mobile||o.cust_mobile||'').replace(/\D/g,'');if(m.length===11&&m[0]==='0')m=m.slice(1);if(m.length===10)m='91'+m;
  const L=arr(o.lines).map((l,n)=>`${n+1}. ${l.name} – ${l.qty} ${UE[uk(l)]} × ${l.rate} = ₹${Number(l.amt).toFixed(2).replace(/\.00$/,'')}`).join('\n');
  const t=`*${sh.shop_name}*\nबिल नं. ${o.inv_no||o.serial} · ${dmy(o.date)}\n${c.name?'ग्राहक: '+c.name+'\n':''}\n${L}\n\n*कुल: ${inr(o.total)}*\nधन्यवाद! 🙏`;
@@ -629,12 +636,7 @@ window.addEventListener('online',()=>{try{toast('✔ इंटरनेट व�
 // Share: create a collision-proof filename, start the JPG download, then hand off to WhatsApp.
 // The browser does not expose a reliable download-complete event; the short handoff delay
 // lets the download request start before navigating away.
-function uniqueJpgName(){
- const d=new Date(),p=n=>String(n).padStart(2,'0');
- const stamp=d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds())+'-'+String(d.getMilliseconds()).padStart(3,'0');
- let random='';try{random=crypto.randomUUID().replace(/-/g,'').slice(0,10)}catch(e){random=Math.random().toString(36).slice(2,12)}
- return 'Invoice-'+stamp+'-'+random+'.jpg';
-}
+function uniqueJpgName(){return billFileName('jpg')}
 const shareBill=solo(async()=>{
  try{
   if(!cur())throw new Error('बिल उपलब्ध नहीं है।');
