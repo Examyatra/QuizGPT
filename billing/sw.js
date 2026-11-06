@@ -1,9 +1,9 @@
-/* Vishal Medical Store — Service Worker (OFFLINE-1.19)
+/* Vishal Medical Store — Service Worker (OFFLINE-1.22)
  * - App बिना इंटरनेट के भी खुले (सारी ज़रूरी files cache में)
  * - index.html: पहले नेट से नया लो, न मिले तो cache से (ताकि update आती रहे)
  * - सिर्फ अपनी site की GET files cache होती हैं; सर्वर बैकअप (val.run) को कभी नहीं छूता
  */
-const VER = 'vms-cache-1.19';
+const VER = 'vms-cache-1.22';
 const CORE = [
   './',
   './index.html',

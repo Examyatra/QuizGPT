@@ -169,90 +169,59 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.19';
-// ---- Cloud Backup System (val.town SQLite) ----
-// Design principles:
-//   1. Every new page-load session = one backup attempt (no time-throttle)
-//   2. Runs fully in background — never blocks the UI
-//   3. Safe retry once if first attempt fails
-//   4. Each backup tagged with session_id + timestamp — server does INSERT OR REPLACE,
-//      so there is exactly ONE row per shop, no duplicates, no conflicts
-//   5. AbortSignal.timeout() polyfilled for old Android browsers
-
+const APP_VERSION='OFFLINE-1.22';
+// ---- Cloud Backup (val.town SQLite) ----
+// सर्वर पर यही एक फिक्स जगह (ID): ऑटो-बैकअप, बटन वाला बैकअप और Restore तीनों इसी का इस्तेमाल करते हैं.
+// इसे कभी बदलना नहीं — बदलने पर पुराना बैकअप नहीं मिलेगा.
 const CLOUD_URL='https://ramkeshyadav--12bb1378d98e11f1a6291607ee4eb77e.web.val.run';
-
-// Unique ID for this shop (derived from GSTIN — stable across all sessions)
-function cloudShopId(){
-  try{const g=String(S&&S.gstin||'').trim().toUpperCase().replace(/\s/g,'');
-    return g.length>=10?'vms_'+g:'vms_default'}catch(e){return'vms_default'}
-}
-
-// AbortSignal.timeout polyfill for old browsers
-function _timeout(ms){
-  if(typeof AbortSignal!=='undefined'&&AbortSignal.timeout)return AbortSignal.timeout(ms);
-  const c=new AbortController();setTimeout(()=>c.abort(),ms);return c.signal;
-}
-
-// Core backup: dumps IndexedDB → sends to server
-// Returns {ok:true} or {ok:false, reason:string} — NEVER throws
+const CLOUD_SHOP='vms-49f52a638320011dd1131c9b';
+function _timeout(ms){if(typeof AbortSignal!=='undefined'&&AbortSignal.timeout)return AbortSignal.timeout(ms);const c=new AbortController();setTimeout(()=>c.abort(),ms);return c.signal}
+// कारण -> सीधी हिंदी
+function cloudWhy(r){r=String(r||'');
+ if(r==='offline')return'इंटरनेट बंद है।';
+ if(r==='empty')return'अभी फ़ोन में कोई डेटा नहीं है, इसलिए बैकअप नहीं भेजा।';
+ if(r==='empty_data_rejected')return'फ़ोन का डेटा खाली है, इसलिए सर्वर का पुराना बैकअप सुरक्षित रखा गया।';
+ if(/404/.test(r))return'सर्वर नहीं मिला (404)। main.ts सही से val.town पर लगी है या नहीं देखें।';
+ return'सर्वर से जुड़ नहीं पाए। थोड़ी देर बाद फिर कोशिश करें।'}
+// फ़ोन का सारा डेटा सर्वर पर भेजो. कभी throw नहीं करता.
 async function cloudBackup(){
-  if(!navigator.onLine)return{ok:false,reason:'offline'};
-  try{
-    const d=await dumpAll();
-    const session_id=uuid();
-    const payload=JSON.stringify({...d,_session:session_id,_sent:new Date().toISOString()});
-    const res=await fetch(CLOUD_URL+'/backup',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({shop_id:cloudShopId(),payload,session_id}),
-      signal:_timeout(15000)
-    });
-    if(!res.ok)return{ok:false,reason:'HTTP '+res.status};
-    const j=await res.json();
-    if(j&&j.ok){lsSet('vms_cloud_backup_at',Date.now());return{ok:true,backed_up_at:j.backed_up_at}}
-    return{ok:false,reason:(j&&j.error)||'server error'};
-  }catch(e){return{ok:false,reason:(e&&e.message)||'network error'}}
-}
-
-// Fetch latest backup from server
-// Returns server JSON or throws — caller must handle
+ if(!navigator.onLine)return{ok:false,reason:'offline'};
+ try{
+  const d=await dumpAll();
+  const count=(d.invoices||[]).length+(d.customers||[]).length+(d.medicines||[]).length;
+  if(!count)return{ok:false,reason:'empty'};
+  const res=await fetch(CLOUD_URL+'/backup',{method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({shop_id:CLOUD_SHOP,payload:JSON.stringify(d),count,session_id:uuid()}),signal:_timeout(40000)});
+  let j=null;try{j=await res.json()}catch(e){}
+  if(j&&j.ok){lsSet('vms_cloud_backup_at',Date.now());return{ok:true}}
+  return{ok:false,reason:(j&&j.error)||('HTTP '+res.status)};
+ }catch(e){return{ok:false,reason:(e&&e.message)||'network'}}}
 async function cloudFetch(){
-  const res=await fetch(
-    CLOUD_URL+'/backup?shop_id='+encodeURIComponent(cloudShopId()),
-    {signal:_timeout(15000)}
-  );
-  if(!res.ok)throw new Error('Server error: HTTP '+res.status);
-  return res.json();
-}
-
-// Called once per page-load, after DB is ready.
-// Runs silently in background. One retry after 30s if first attempt fails.
-// Uses a session flag so multiple rapid renders don't double-send.
+ const res=await fetch(CLOUD_URL+'/backup?shop_id='+encodeURIComponent(CLOUD_SHOP),{signal:_timeout(40000)});
+ if(!res.ok)throw new Error('HTTP '+res.status);
+ let j;try{j=await res.json()}catch(e){throw new Error('सर्वर का जवाब समझ नहीं आया। दोबारा कोशिश करें।')}
+ return j}
+// ऐप खुलने पर अपने-आप, चुपचाप, एक बार. नेट न हो तो नेट आते ही.
 let _backupDone=false;
 async function autoCloudBackup(){
-  if(_backupDone)return;   // already ran this session
-  _backupDone=true;        // mark immediately — prevents any re-entry
+ if(_backupDone)return;_backupDone=true;
+ const run=async()=>{try{const r=await cloudBackup();if(!r.ok&&r.reason!=='empty'&&r.reason!=='empty_data_rejected')setTimeout(()=>{cloudBackup().catch(()=>{})},30000)}catch(e){}};
+ if(!navigator.onLine){const h=()=>{window.removeEventListener('online',h);run()};window.addEventListener('online',h);return}
+ await run()}
+// बिल सेव होने के बाद 8 सेकंड में चुपचाप बैकअप (debounced).
+// अगर नेट नहीं है तो नेट आने पर होगा — कभी throw नहीं करता.
+// Timer और online-listener दोनों cancel होते हैं अगर दोबारा call हो.
+let _billBackupTimer=null,_billOnlineH=null;
+function scheduleBackup(){
+ if(_billBackupTimer)clearTimeout(_billBackupTimer);
+ if(_billOnlineH){window.removeEventListener('online',_billOnlineH);_billOnlineH=null}
+ _billBackupTimer=setTimeout(async()=>{
+  _billBackupTimer=null;
   if(!navigator.onLine){
-    // If offline now, listen for the moment internet comes back (once)
-    const handler=async()=>{
-      window.removeEventListener('online',handler);
-      await _doAutoBackup();
-    };
-    window.addEventListener('online',handler);
-    return;
-  }
-  await _doAutoBackup();
-}
-async function _doAutoBackup(){
-  try{
-    const r=await cloudBackup();
-    if(r.ok)return;
-    // First attempt failed — retry once after 30 seconds
-    setTimeout(async()=>{
-      try{await cloudBackup()}catch(e){}
-    },30000);
-  }catch(e){}
-}
+   _billOnlineH=()=>{_billOnlineH=null;window.removeEventListener('online',_billOnlineH);cloudBackup().catch(()=>{})};
+   window.addEventListener('online',_billOnlineH);return}
+  cloudBackup().catch(()=>{})
+ },8000)}
 const uuid=()=>{try{if(crypto.randomUUID)return crypto.randomUUID()}catch(e){}return 'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10)};
 let errT=0;const oops=m=>{const n=Date.now();if(n-errT<4000)return;errT=n;try{toast(m)}catch(_){}};
 window.addEventListener('error',e=>{if(e&&/Script error|ResizeObserver/.test(String(e.message||'')))return;oops('⚠ कुछ गड़बड़ हुई। दोबारा दबाएँ, या ऐप बंद करके खोलें।')});
@@ -674,7 +643,9 @@ const actions=(o,isNew)=>`<div class=bar><button class=ghost onclick="${isNew?'f
 let saving=false;
 async function saveInv(wa){if(saving)return;{const e=custChk();if(e){if(e.open)OPENMORE=true;say(e.msg);go('cust');return}}{const t=CALC().total,c=D.customer;if(t>=50000&&!(c.name.trim()&&c.address.trim())){const k=await modal('₹50,000 या उससे ज़्यादा के बिल पर GST नियम से ग्राहक का नाम और पता लिखना ज़रूरी है।',[['नाम/पता भरने जाएँ','main'],['फिर भी सेव करें','']]);if(k===-1)return;if(k===0){OPENMORE=true;go('cust');return}}}saving=true;try{const r=CALC();const b={client_key:D.client_key,date:D.date,customer:D.customer,mode:D.mode,interstate:D.interstate,lines:r.lines.map(({open,rt,...x})=>x),gross:r.gross,tax:r.tax,discount:r.discount,roundoff:r.roundoff,total:r.total,words:r.words};
  D.saved=await api('/invoices',{method:'POST',body:b});
- NX=null;try{localStorage.removeItem('vms_draft')}catch(e){}prevScr();if(wa===true)await shareBill()}
+ NX=null;try{localStorage.removeItem('vms_draft')}catch(e){}
+ scheduleBackup(); // बिल सेव होते ही 8s में चुपचाप सर्वर पर बैकअप
+ prevScr();if(wa===true)await shareBill()}
  catch(e){say('❌ बिल सेव नहीं हुआ!\n'+e.message+'\nफिर से दबाएँ — दो बार नहीं बनेगा।')}finally{saving=false}}
 function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#111a33;color:#fff;padding:12px 18px;border-radius:12px;font-size:18px;z-index:10;max-width:88vw;text-align:center';document.body.appendChild(t);setTimeout(()=>t.remove(),3500)}
 // ---- bill picture / PDF: works with OR without internet (html2canvas is optional) ----
@@ -710,7 +681,8 @@ async function pdfFromCanvas(cv){const jb=new Uint8Array(await(await toJpg(cv)).
  const xr=len;let t='xref\n0 6\n0000000000 65535 f \n';for(let i=1;i<=5;i++)t+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
  put(t+'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF\n');return new Blob(parts,{type:'application/pdf'})}
 const pdfBlob=async()=>pdfFromCanvas(await invCanvas());
-let busy=false;const solo=fn=>async(...a)=>{if(busy)return;busy=true;try{return await fn(...a)}finally{busy=false}};
+// solo: हर function का अपना busy flag — एक बटन दबाने से दूसरा बटन नहीं रुकेगा
+const solo=fn=>{let busy=false;return async(...a)=>{if(busy)return;busy=true;try{return await fn(...a)}finally{busy=false}}};
 const cur=()=>view==='old'?V:D.saved;
 // File name = Customer name + today's date + time of generation, e.g. Ramesh_Kumar_06-11-2026_14-35-20.jpg
 // (so the bill can be found in the phone gallery by searching the customer's name)
@@ -768,42 +740,35 @@ function setScr(){const tb=[['shop','🏪 मालिक / दुकान'],['
  ({shop:tabShop,cust:tabCust,backup:tabBackup,view:tabView})[stab_]()}
 function tabShop(){document.getElementById('tabc').innerHTML=`<h2>🏪 मालिक / दुकान की पूरी जानकारी</h2><p class=hint>यह जानकारी नए बिल पर छपेगी। पुराने बिल सुरक्षित रहेंगे।</p>${SHOPF.map(([k,l])=>fld(k,l)).join('')}<label>सिग्नेचर करने वाले का नाम बिल पर दिखाएँ</label><select id=s_show_signatory><option value=1 ${S.show_signatory==='1'?'selected':''}>हाँ</option><option value=0 ${S.show_signatory!=='1'?'selected':''}>नहीं</option></select><button class="btn main huge" onclick="saveSet('shop')">✅ दुकान की जानकारी सेव करें</button>`}
 function tabBackup(){
-  const lastCloud=Number(lsGet('vms_cloud_backup_at')||0);
-  const cloudAgo=lastCloud?Math.floor((Date.now()-lastCloud)/60000):null;
-  const cloudStr=cloudAgo===null?'कभी नहीं':cloudAgo<2?'अभी हाल में':cloudAgo<60?cloudAgo+' मिनट पहले':Math.floor(cloudAgo/60)+' घंटे पहले';
-  const onlineColor=navigator.onLine?'#1a7a1a':'#b00';
-  const onlineText=navigator.onLine?'🟢 इंटरनेट चालू है':'🔴 इंटरनेट बंद है';
-  document.getElementById('tabc').innerHTML=`<h2>💾 डेटा बैकअप</h2><p class=hint>बैकअप में दुकान की जानकारी, ग्राहक, दवाइयाँ और पुराने बिल शामिल होंगे।</p><div style="background:var(--ink2,#f0f4ff);border-radius:10px;padding:14px;margin-bottom:16px"><b>☁ क्लाउड बैकअप (सर्वर)</b><p style="margin:6px 0 4px;font-size:.9em">आखिरी बार सर्वर पर: <b>${cloudStr}</b></p><p style="margin:4px 0 10px;font-size:.85em;color:${onlineColor}">${onlineText}</p><button class="btn good" onclick="manualCloudBackup()" id="cbtn">☁ अभी सर्वर पर बैकअप करें</button>&nbsp;<span id="cbst" style="font-size:.9em"></span></div><button class="btn good huge" onclick="doBackup()">⬇ बैकअप फ़ोन में सेव करें</button><h3>बैकअप वापस डालें</h3><p class=warn>ध्यान दें: Restore करने पर अभी का डेटा बदल जाएगा। पहले बैकअप ज़रूर डाउनलोड करें।</p><div style="background:var(--ink2,#f0f4ff);border-radius:10px;padding:14px;margin-bottom:16px"><b>☁ सर्वर से वापस लाएँ</b><p class=hint style="margin:6px 0 10px">अगर फ़ोन बदला हो या डेटा खो गया हो।</p><button class="btn" onclick="restoreFromCloud()" id="rcbtn">📥 सर्वर से Restore करें</button>&nbsp;<span id="rcst" style="font-size:.9em"></span></div><label>बैकअप फ़ाइल चुनें (.json)</label><input type=file accept=".json" onchange="restore(this)"><p class=hint>सॉफ़्टवेयर वर्ज़न: ${APP_VERSION}</p>`
-}
+ const t=Number(lsGet('vms_cloud_backup_at')||0);
+ const when=t?new Date(t).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):'अभी तक नहीं हुआ';
+ document.getElementById('tabc').innerHTML=`<h2>☁ डेटा बैकअप</h2><p class=hint>आखिरी बैकअप: <b>${when}</b><br>ऐप खोलने पर, इंटरनेट हो तो बैकअप अपने-आप हो जाता है।</p><button class="btn good huge" id=cbtn onclick="manualCloudBackup()">☁ सर्वर पर बैकअप करें</button><button class="btn huge" id=rcbtn style="margin-top:14px" onclick="restoreFromCloud()">📥 सर्वर से वापस लाएँ</button><p class=hint style="margin-top:18px">सॉफ़्टवेयर वर्ज़न: ${APP_VERSION}</p>`}
 async function manualCloudBackup(){
-  const btn=document.getElementById('cbtn'),st=document.getElementById('cbst');
-  if(!btn)return;
-  if(!navigator.onLine){if(st)st.textContent='❌ इंटरनेट नहीं है';return}
-  btn.disabled=true;if(st)st.textContent='⏳ हो रहा है…';
-  const r=await cloudBackup();
-  btn.disabled=false;
-  if(r.ok){lsSet('vms_cloud_backup_at',Date.now());if(st)st.textContent='✅ हो गया';tabBackup()}
-  else{if(st)st.textContent='❌ '+r.reason}
-}
+ const b=document.getElementById('cbtn');if(b){b.disabled=true;b.textContent='⏳ बैकअप हो रहा है…'}
+ const r=await cloudBackup();
+ if(r.ok){tabBackup();await say('✅ बैकअप सर्वर पर हो गया')}
+ else{if(b){b.disabled=false;b.textContent='☁ सर्वर पर बैकअप करें'}await say('❌ बैकअप नहीं हुआ।\n'+cloudWhy(r.reason))}}
 async function restoreFromCloud(){
-  const btn=document.getElementById('rcbtn'),st=document.getElementById('rcst');
-  if(!btn)return;
-  if(!navigator.onLine){if(st)st.textContent='❌ इंटरनेट नहीं है';return}
-  if(!await ask('सर्वर का डेटा वापस लाना है?\n\nध्यान दें: अभी का सारा डेटा हट जाएगा।\nपहले फ़ोन में बैकअप सेव कर लें।'))return;
-  btn.disabled=true;if(st)st.textContent='⏳ सर्वर से ला रहे हैं…';
-  try{
-    const j=await cloudFetch();
-    if(!j||!j.found){if(st)st.textContent='❌ सर्वर पर कोई बैकअप नहीं मिला';btn.disabled=false;return}
-    const bk=JSON.parse(j.payload);
-    await makeBackup('purana-');
-    await api('/restore',{method:'POST',body:bk});
-    S=await api('/settings');
-    if(st)st.textContent='✅ डेटा वापस आ गया';
-    btn.disabled=false;
-    say('✅ सर्वर से डेटा वापस आ गया');
-    setScr();
-  }catch(e){if(st)st.textContent='❌ '+e.message;btn.disabled=false;say('Restore नहीं हुआ: '+e.message)}
-}
+ if(!navigator.onLine)return say('❌ इंटरनेट बंद है।');
+ const b=document.getElementById('rcbtn');if(b){b.disabled=true;b.textContent='⏳ देख रहे हैं…'}
+ const reset=()=>{if(b){b.disabled=false;b.textContent='📥 सर्वर से वापस लाएँ'}};
+ try{
+  const j=await cloudFetch();
+  if(!j||!j.found){reset();return say('सर्वर पर अभी कोई बैकअप नहीं मिला।')}
+  const when=new Date(j.backed_up_at).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});
+  if(!await ask('सर्वर का बैकअप ('+when+') वापस लाना है?\n\nफ़ोन का अभी का डेटा इससे बदल जाएगा।')){reset();return}
+  const bk=JSON.parse(j.payload);
+  try{await makeBackup('purana-')}catch(e){}
+  await api('/restore',{method:'POST',body:bk});
+  S=await api('/settings');NX=null;
+  // Restore के बाद cache ताज़ा करो (पुराने ग्राहक/दवाई UI में न दिखें)
+  cache={cust:[],med:[]};
+  // _backupDone reset: ताकि अगला backup trigger हो सके (नया restored data server पर जाए)
+  _backupDone=false;
+  // 3 सेकंड बाद restored data server पर भी sync हो जाए
+  setTimeout(()=>{autoCloudBackup()},3000);
+  reset();setScr();await say('✅ डेटा वापस आ गया')
+ }catch(e){reset();await say('❌ डेटा वापस नहीं आया।\n'+cloudWhy(e&&e.message))}}
 function tabView(){document.getElementById('tabc').innerHTML=`<h2>🧾 बिल का प्रकार चुनें</h2><p class=hint>यह सेटिंग आगे बनने वाले बिलों पर लागू होगी। पुराने बिल अपने पुराने रूप में रहेंगे।</p><div class=row><label class=sw style="font-size:20px"><span>अभी का बिल प्रकार</span><span>${S.bill_view==='simple'?'सिंपल':'डिटेल'}</span></label><div class=two><button class="btn ${S.bill_view!=='simple'?'main':''}" onclick="setBillView('detail')">📋 डिटेल बिल</button><button class="btn ${S.bill_view==='simple'?'main':''}" onclick="setBillView('simple')">🧾 सिंपल बिल</button></div><p class=hint>डिटेल: HSN, बैच और एक्सपायरी सहित।<br>सिंपल: HSN, बैच और एक्सपायरी बिल से छिपेंगे।</p></div>`}
 async function setBillView(v){try{S=await api('/settings',{method:'PUT',body:{bill_view:v==='simple'?'simple':'detail'}});tabView();say(S.bill_view==='simple'?'✅ सिंपल बिल चालू':'✅ डिटेल बिल चालू')}catch(e){say('सेटिंग सेव नहीं हुई: '+e.message)}}
 async function saveSet(g){if(!(document.getElementById('s_shop_name')||{value:'x'}).value.trim())return say('दुकान का नाम खाली नहीं हो सकता।');
