@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Y ai build: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
+<!-- Y ai build: exam-fixed-59 (8-unit limit now also checks the PDF page RANGE before extraction (same rule as images: more than 8 -> Exam Yatri off, Gemini on). Earlier: exam-fixed-58 (Exam Yatri limit: more than 8 extracted pages or more than 8 uploaded images -> Exam Yatri is greyed out and blocked (tap + Start), Gemini is auto-selected, a note explains why; Exam Yatri comes back automatically when the input shrinks to 8 or less, unless the student chose another site herself). Earlier: exam-fixed-57 (ALWAYS-SHOW-PAGE: one resolver for every mode (ChatGPT / Claude / Gemini / Exam Yatri API): evidence page -> segment page -> AI PG confirmed in notes -> content search of the notes -> AI PG -> notes page range; tolerant PG parsing ("PG 12", "**PG:** p.12", en-dash ranges); player shows Page N after the question mark in every mode). Earlier: exam-fixed-56 (Page number: Exam Yatri path no longer blanks the AI PG when evidence is not matched (last-resort keeps AI digits); player shows "Page N" after the question in every mode, also from srcPages). Earlier: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1672,6 +1672,9 @@ body::before{content:"";position:fixed;inset:-15% -10%;z-index:-1;pointer-events
   background:linear-gradient(var(--panel-raised),var(--panel-raised)) padding-box,var(--grad-main) border-box;
   box-shadow:0 6px 20px rgba(160,80,255,.28);transition:transform .15s,box-shadow .2s}
 .ey-main:active{transform:scale(.98)}
+.ey-main.ey-off{opacity:.45;filter:grayscale(.7);box-shadow:none !important;cursor:not-allowed}
+.ey-limit-note{margin:8px 2px 0;padding:9px 12px;border-radius:12px;font-size:.78rem;line-height:1.35;font-weight:600;color:var(--ink);background:color-mix(in srgb,#f59e0b 16%,transparent);border:1px solid color-mix(in srgb,#f59e0b 45%,transparent)}
+.ey-limit-note[hidden]{display:none}
 .ey-main.active{color:#fff;background:var(--grad-main) padding-box,var(--grad-main) border-box;box-shadow:0 10px 28px rgba(192,75,255,.55),inset 0 1px 0 rgba(255,255,255,.3)}
 .ey-main .dot{background:#fff !important;box-shadow:0 0 8px rgba(255,255,255,.8)}
 .ey-main:not(.active) .dot{background:#a855f7 !important;box-shadow:none}
@@ -2103,6 +2106,7 @@ body::before{opacity:.8}
           </button>
           <div class="ey-menu" id="eyMenu" role="listbox" aria-label="AI model" hidden></div>
         </div>
+        <div class="ey-limit-note" id="eyLimitNote" hidden></div>
       </div>
       <div class="row">
         <div class="field">
@@ -2660,7 +2664,9 @@ selectMethod('manual');   // only the AI-website method is offered
 
 // --- Website AI selector (Gemini / ChatGPT / Claude = manual copy+open flow; Exam Yatri = direct API via Val Town) ---
 document.querySelectorAll('.site-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', (ev) => {
+    if (btn.dataset.ey && eyOverLimit()) { eyLimitSync(); try { eyPopup('Exam Yatri band hai', eyLimitMsg(eyUnits())); } catch (e) {} return; }
+    if (ev && ev.isTrusted) eyForcedOff = false;   // a real tap on a site = the student's own choice
     const wasEy = eyActive;
     document.querySelectorAll('.site-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -2753,6 +2759,7 @@ function renderImgThumbs() {
   const strip = document.getElementById('imgPreviewStrip');
   const row = document.getElementById('imgThumbRow');
   const countLabel = document.getElementById('imgCountLabel');
+  try { eyLimitSync(); } catch (e) {}
   if (!selectedImages.length) { strip.style.display = 'none'; row.innerHTML = ''; return; }
   strip.style.display = 'block';
   warmOcrIfOffline();
@@ -3090,6 +3097,7 @@ function applyPageMode(reset) {
   updatePagePreview();
 }
 function updatePagePreview() {
+  try { eyLimitSync(); } catch (e) {}
   const el = document.getElementById('pagePreview');
   const infoEl = document.getElementById('pagePreviewInfo');
   if (!el || !currentPdf) return;
@@ -3285,6 +3293,7 @@ function countExtractedPages(txt) {
   return m ? m.length : 0;
 }
 function autoSetQuestionCount() {
+  try { eyLimitSync(); } catch (e) {}
   try {
     const pages = countExtractedPages(rawExtractedText || (resultText && resultText.value));
     if (!pages) return;
@@ -5238,6 +5247,8 @@ function yaiTagToLegacy(raw) {
     if (/^[ \t>*_`]*##[ \t]*Q[ \t]*\d+[ \t]*##/.test(line)) { flush(); out.push(line); continue; }
     if (!cur) { if (!afterEnd) out.push(line); continue; }
     if (!t) continue;
+    const pgL = line.match(/^[ \t>*_`]*(?:PG|PAGES?|PAGE[ \t]*NO\.?|PG\.?)[ \t]*[*_`]*[ \t]*[:\uFF1A=\-\u2013]?[ \t]*[*_`]*[ \t]*(?:pp?\.?[ \t]*)?(\d[\d,&\-\u2013\s]*)[ \t]*[*_`]*$/i);
+    if (pgL) { cur.f.PG = pgL[1].trim(); cur.last = 'PG'; cur.dead = false; continue; }   // a page line is never lost, even without the colon
     const m = line.match(TAG);
     if (m) {
       const raw = m[1], key0 = raw.toUpperCase(), key = YAI_ALIAS[key0] || key0;
@@ -5831,7 +5842,65 @@ function eyVerifyEv(ev, hint) {
   return hits.length ? pick(hits) : verifyEvidence(ev);   // OCR-typo case: the existing fuzzy search
 }
 // Evidence not found anywhere: show only a page that really exists (claimed segment's page, else the AI's PG if it is a real page), otherwise none.
-function eyFallbackPage(hint) { return hint.segPages.length ? hint.segPages.join(', ') : hint.aiPages.join(', '); }
+function eyFallbackPage(hint, raw) {   // kept for compatibility: seg page -> notes-confirmed AI page -> AI digits
+  if (hint.segPages.length) return hint.segPages.join(', ');
+  if (hint.aiPages.length) return hint.aiPages.join(', ');
+  return pgDigits(raw && (raw.source_page || raw.page)).slice(0, 3).join(', ');
+}
+/* ===== ALWAYS-SHOW-PAGE resolver (same for ChatGPT / Claude / Gemini / Exam Yatri API / pasted text) =====
+   Order of trust:  1 page proven by the question's own evidence line in the notes
+                    2 page of the segment ([S..] marker) the AI says it used (app-made marker)
+                    3 the AI's own PG, if that page really exists in the notes
+                    4 CONTENT SEARCH: the page of the notes that shares the most words with question + answer + concept + evidence
+                    5 the AI's own PG, even if it cannot be checked (no notes loaded / no page markers)
+                    6 the page range of the notes ("Pages 3-40") when nothing else is possible
+   Result: a question shows a page whenever the AI wrote one OR the notes are in the app. */
+function pgDigits(v) {   // "Page 12", "p.12", "12–14", "12, 45", "pp. 3 & 7" -> ["12"] / ["12-14"] / ["12","45"] / ["3","7"]
+  const t = (Array.isArray(v) ? v.join(',') : String(v == null ? '' : v)).replace(/[\u2010-\u2015\u2212]/g, '-');
+  const m = t.match(/\d+(?:\s*-\s*\d+)?/g) || [];
+  return [...new Set(m.map(x => x.replace(/\s+/g, '')))];
+}
+const PG_STOP = new Set(['which', 'following', 'statement', 'statements', 'correct', 'incorrect', 'about', 'regarding', 'true', 'false', 'there', 'their', 'these', 'those', 'where', 'while', 'would', 'should', 'could', 'other', 'above', 'below', 'only', 'both', 'none', 'except', 'best', 'most', 'least', 'commonly', 'common', 'used', 'following']);
+function pgQueryText(raw, question) {
+  const bits = [question, raw.concept, raw.explanation, raw.correct_answer, raw.answer];
+  const o = raw.options ?? raw.choices;
+  if (Array.isArray(o)) o.forEach(x => bits.push(x && typeof x === 'object' ? (x.text || x.option || '') : x));
+  else if (o && typeof o === 'object') Object.values(o).forEach(x => bits.push(x));
+  [].concat(raw.source_evidence || []).forEach(x => bits.push(x));
+  return bits.filter(x => x != null && typeof x !== 'object').join(' ');
+}
+function pgSearch(text) {   // best page of the notes for this question's words; null when nothing convincing
+  if (!_srcIdx || !_srcIdx.length) return null;
+  const seen = new Set(), words = [];
+  String(text || '').toLowerCase().replace(/[^a-z0-9\u0900-\u097F]+/g, ' ').split(' ').forEach(w => {
+    if (w.length >= 4 && !PG_STOP.has(w) && !seen.has(w)) { seen.add(w); words.push(w); }
+  });
+  if (words.length < 2) return null;
+  let best = null, bestScore = 0, second = 0;
+  for (const pg of _srcIdx) {
+    let sc = 0;
+    for (const w of words) if (pg.t.includes(w)) sc += Math.min(w.length, 9);   // longer (rarer) words weigh more
+    if (sc > bestScore) { second = bestScore; bestScore = sc; best = pg; } else if (sc > second) second = sc;
+  }
+  const need = Math.max(14, Math.round(words.length * 2.2));   // at least ~2-3 real shared words
+  return best && bestScore >= need ? String(best.n) : null;
+}
+function resolvePageAlways(raw, ver, hint, question) {
+  const real = new Set((_srcIdx || []).map(p => String(p.n)));
+  const ai = pgDigits([raw.source_page, raw.page, raw.pg, raw.page_number, raw.pages].filter(x => x != null && x !== ''));
+  if (ver && ver.page) return { page: pgDigits(ver.page).join(', '), how: 'evidence' };
+  if (hint && hint.segPages && hint.segPages.length) return { page: hint.segPages.join(', '), how: 'segment' };
+  const aiReal = ai.filter(x => real.has(x.split('-')[0]));
+  if (aiReal.length) return { page: aiReal.slice(0, 3).join(', '), how: 'ai-confirmed' };
+  const found = pgSearch(pgQueryText(raw, question));
+  if (found) return { page: found, how: 'search' };
+  if (ai.length) return { page: ai.slice(0, 3).join(', '), how: 'ai' };
+  if (_srcIdx && _srcIdx.length) {
+    const ns = _srcIdx.map(p => parseInt(p.n)).filter(Number.isFinite);
+    if (ns.length) { const lo = Math.min(...ns), hi = Math.max(...ns); return { page: lo === hi ? String(lo) : lo + '-' + hi, how: 'range' }; }
+  }
+  return { page: '', how: '' };
+}
 function verifyEvidence(ev) {
   if (!_srcIdx || !_srcIdx.length) return { state: 'na' };
   const e = flatTxt(ev);
@@ -5994,7 +6063,7 @@ function normalizeQuiz(parsed) {
       else if (a0 !== undefined && a0 !== null && String(a0).trim() && !/^\s*\(?[A-Fa-f]\)?\s*$/.test(String(a0))) { type = 'fill'; lastDrop.fixed++; }
     }
     const _claim = String(raw.seg || '').match(/S\d+/gi) || [], _sp = _segCache.plan;
-    const eyPg = typeof eyActive !== 'undefined' && eyActive, _hint = eyPg ? eyPageHint(raw, _claim, _sp) : null;   // Exam Yatri: app-decided pages
+    const eyPg = typeof eyActive !== 'undefined' && eyActive, _hint = eyPageHint(raw, _claim, _sp);   // page hints (segment page + notes-confirmed AI page) for every mode
     const vers = [].concat(raw.source_evidence).map(ev => {   // page from the segment the AI claimed first (exact), else search the whole text
       const f = flatTxt(ev);
       if (_sp && _claim.length && f.length >= 8) {
@@ -6006,8 +6075,8 @@ function normalizeQuiz(parsed) {
     });
     const pgs = [...new Set(vers.map(v => v.page).filter(Boolean))];
     const ver = vers.some(v => v.state === 'no') ? { state: 'no' } : vers.every(v => v.state === 'na') ? { state: 'na' } : { state: 'yes', page: pgs.join(', '), n: pgs.length };
-    if (ver.page) raw.source_page = ver.page;   // real page from the text, not the AI's guess
-    else if (eyPg) raw.source_page = raw.page = eyFallbackPage(_hint);   // Exam Yatri: evidence not found -> never show a page number that does not exist in the notes
+    const _pgR = resolvePageAlways(raw, ver, _hint, question);   // ALWAYS a page: evidence -> segment -> AI (confirmed) -> content search -> AI -> notes range
+    raw.source_page = raw.page = _pgR.page;
     const diffRaw = String(raw.difficulty || '').toLowerCase().trim();
     const base = {
       question, type,
@@ -6016,7 +6085,7 @@ function normalizeQuiz(parsed) {
       pearl: raw.pearl || raw.high_yield || raw.tip || '',
       concept: stripAiNoise(String(raw.concept || '')).trim()
     };
-    base.verified = ver.state; base.pagesUsed = ver.n || 0; base.num = Number.isFinite(nRaw) ? nRaw : null; base.page = String(raw.source_page || raw.page || '').replace(/[^0-9,&\s-]/g, '').replace(/\s+/g, ' ').trim(); base.srcPages = ver.page ? String(ver.page).split(/,\s*/) : [];
+    base.verified = ver.state; base.pagesUsed = ver.n || 0; base.num = Number.isFinite(nRaw) ? nRaw : null; base.page = String(raw.source_page || raw.page || '').replace(/[^0-9,&\s-]/g, '').replace(/\s+/g, ' ').trim(); base.pageHow = _pgR.how; base.srcPages = ver.page ? String(ver.page).split(/,\s*/) : [];
     // Keep the exact source line(s) this question was built from, so a later part can be told
     // "this line is already used" instead of relying only on the AI remembering the question text.
     base.srcEvidence = [].concat(raw.source_evidence || []).map(x => String(x || '').trim()).filter(Boolean);
@@ -6367,6 +6436,47 @@ function eyToggleMenu() { const m = document.getElementById('eyMenu'); if (m && 
 document.addEventListener('click', e => { if (!e.target.closest || !e.target.closest('#eyWrap')) eyCloseMenu(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') eyCloseMenu(); });
 
+/* ---- Exam Yatri size limit: more than EY_MAX_UNITS pages (extracted text) or images (uploaded) -> Exam Yatri is switched off, Gemini is selected ---- */
+const EY_MAX_UNITS = 8;
+let eyForcedOff = false;   // true while WE moved the student from Exam Yatri to Gemini because of the size limit
+function eyUnits() {       // how many pages / images the quiz would be built from
+  let n = 0;
+  try { if (typeof uploadMode !== 'undefined' && uploadMode === 'img' && selectedImages) n = selectedImages.length; } catch (e) {}
+  let rng = 0;   // PDF: pages selected in the range boxes (checked BEFORE extraction, same 8-page rule as images)
+  try {
+    if (typeof uploadMode !== 'undefined' && uploadMode === 'pdf' && typeof currentPdf !== 'undefined' && currentPdf) {
+      const f = resolvePage(pageFrom.value), t2 = resolvePage(pageTo.value);
+      if (f !== null && t2 !== null && f >= 1 && t2 >= f) rng = t2 - f + 1;
+    }
+  } catch (e) {}
+  n = Math.max(n, rng);
+  let pg = 0;
+  try { pg = countExtractedPages((typeof rawExtractedText !== 'undefined' && rawExtractedText) || (resultText && resultText.value) || ''); } catch (e) {}
+  return Math.max(n, pg);
+}
+function eyOverLimit() { return eyUnits() > EY_MAX_UNITS; }
+function eyLimitMsg(n) { return 'Aapne ' + n + ' pages/images use kiye hain. Exam Yatri sirf ' + EY_MAX_UNITS + ' tak pages ya images ke liye hai, isliye ise band kar diya hai. Gemini select hai (ChatGPT / Claude bhi use kar sakte ho).'; }
+function eyPickSite(isEy) {   // programmatic selection of Exam Yatri or Gemini (same effect as a tap, without opening menus)
+  document.querySelectorAll('.site-btn').forEach(b => b.classList.remove('active'));
+  if (isEy) { const b = document.getElementById('eyPick'); if (b) b.classList.add('active'); eySetActive(true, true); return; }
+  const g = [...document.querySelectorAll('.site-btn')].find(b => !b.dataset.ey && /gemini/i.test(b.dataset.url || '')) || document.querySelector('.site-btn:not([data-ey])');
+  if (g) { g.classList.add('active'); selectedAiUrl = g.dataset.url; }
+  eyCloseMenu(); eySetActive(false, true);
+}
+function eyLimitSync() {
+  const btn = document.getElementById('eyPick'), note = document.getElementById('eyLimitNote');
+  if (!btn) return;
+  const n = eyUnits(), over = n > EY_MAX_UNITS;
+  btn.classList.toggle('ey-off', over); btn.setAttribute('aria-disabled', over ? 'true' : 'false');
+  if (note) { note.hidden = !over; note.textContent = over ? '\u26A0\uFE0F ' + eyLimitMsg(n) : ''; }
+  if (over) {
+    if (eyActive) { eyPickSite(false); eyForcedOff = true; try { showToast('Exam Yatri band: ' + n + ' pages/images (max ' + EY_MAX_UNITS + '). Gemini select ho gaya.'); } catch (e) {} }
+  } else if (eyForcedOff) {   // the big input is gone: give Exam Yatri back, but only if the student did not choose another site meanwhile
+    eyForcedOff = false;
+    const cur = document.querySelector('.site-btn.active');
+    if (!eyActive && cur && /gemini/i.test(cur.dataset.url || '')) eyPickSite(true);
+  }
+}
 function eySetActive(on, noLoad) {
   eyActive = !!on;
   const nq = document.getElementById('numQuestionsManual'); if (nq) { if (eyActive) { nq.max = EY_MAX_Q; eyEnforceCap(nq); } else nq.removeAttribute('max'); }
@@ -6656,6 +6766,7 @@ window.eyPromptStats = function () {
 // Same prompts as the copy-paste flow (getManualPromptText / buildTopupPrompt), but sent by the app itself.
 let eyStarting = false;   // one start at a time: a double tap used to launch a 2nd full request that orphaned the 1st (double tokens) and made the Cancel button lose the live one
 async function generateQuizWithEY(mode) {
+  if (eyOverLimit()) { eyLimitSync(); try { eyPopup('Exam Yatri band hai', eyLimitMsg(eyUnits())); } catch (e) {} return; }
   if (eyStarting) return;
   eyStarting = true;
   try { await _generateQuizWithEY(mode); } finally { eyStarting = false; }
@@ -6912,9 +7023,11 @@ function renderQuestion() {
   qTextNode.textContent = structureStem(q.question);
   quizQuestionText.appendChild(qTextNode);
   renderMath(quizQuestionText);
-  if (q.page) {
+  const _pgTxt = String(q.page || (q.srcPages && q.srcPages.length ? q.srcPages.join(', ') : '')).trim();
+  if (_pgTxt) {
     const sp = document.createElement('span');
-    sp.textContent = '\u00A0\u00A0' + (/[,&-]/.test(q.page) ? '\uD83D\uDCD6 Pages ' : '\uD83D\uDCD6 Page ') + q.page;
+    sp.className = 'q-page-tag';
+    sp.textContent = '\u00A0\u00A0' + (/[,&-]/.test(_pgTxt) ? '\uD83D\uDCD6 Pages ' : '\uD83D\uDCD6 Page ') + _pgTxt;
     sp.style.cssText = 'font-size:.85em;font-weight:700;opacity:.9;white-space:nowrap;';
     quizQuestionText.appendChild(sp);
   }
@@ -7142,6 +7255,7 @@ function startFreshWithNewPdf() {
   fileInput.value = '';
   selectedImages = []; renderImgThumbs();
   if (resultText) resultText.value = '';
+  try { eyLimitSync(); } catch (e) {}
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -8158,6 +8272,7 @@ function saveExtractedText(from, to, text) {
 (function () {
   let tmr = null;
   resultText.addEventListener('input', () => {
+    try { eyLimitSync(); } catch (e) {}
     clearTimeout(tmr);
     tmr = setTimeout(() => {
       if (!currentTextId) return;
@@ -8399,7 +8514,8 @@ function setUiMode(m) {
 }
 document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => setUiMode(b.dataset.m)));
 setUiMode(localStorage.getItem('yai_mode2') === 'exam' ? 'exam' : 'revision');
-eySetActive(true, true);   // Exam Yatri is the default AI
+eySetActive(true, true);   // Exam Yatri is the default AI (switched to Gemini automatically when the input is more than EY_MAX_UNITS pages/images)
+eyLimitSync();
 eyRenderModels();   // cached list shows instantly; it is refreshed silently only when missing or older than EY_MODELS_TTL
 { let at = 0; try { at = Number(localStorage.getItem('yai_ey_models_at')) || 0; } catch (e) {} if (!eyModels || Date.now() - at > EY_MODELS_TTL) eyLoadModels(true, true); }
 try { document.documentElement.style.setProperty('--yp-delay', '-' + (Math.random() * 60).toFixed(1) + 's'); } catch (e) {}   // different background shade on every visit
