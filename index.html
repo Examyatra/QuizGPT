@@ -4107,6 +4107,7 @@ function eyBuildPrompt(o) {
   t.push('Exam: ' + exam + '. Quiz language: ' + langText + ' (' + L.note + ').');
   if (o.topup) t.push('TOP-UP: I already have ' + o.got + ' of ' + o.N + ' questions. Write ' + count + ' NEW ones. ' + (o.topup === 'uncovered' ? 'These pages still have NO questions: cover them first and spread the questions over ALL of them.' : 'Cover high-yield points that are not asked yet, from new angles.'));
   else if (o.P > 1) t.push('This is PART ' + o.i + ' of ' + o.P + ' of one quiz of ' + o.N + ' questions; the other parts cover other segments / pages, so write ONLY this part.');
+  { const _w = String(o.src || '').split(/\s+/).filter(Boolean).length; if (_w && _w < (o.N || count) * 40) t.push('SHORT NOTES: the notes are small compared with the number of questions asked. Still write EXACTLY the requested number. Ask about EVERY distinct fact, number, term, definition, cause, exception, comparison and example in the text. The same line may give several questions only if each tests a DIFFERENT fact or asks about a different part of it (different correct answer). Never stop early and never write fewer.'); }
   t.push('Write EXACTLY ' + count + ' questions, numbered =Q' + startN + ' through =Q' + endN + '. Never stop early and never ask whether to continue.');
   if (plan) t.push('TYPE PLAN (mandatory; ' + (rev ? 'write TYPE: tf for true_false and TYPE: fill for fill_blank' : 'set TYPE for tf') + '): ' + plan.map((x, i) => 'Q' + (startN + i) + ': ' + x.type + (x.truth ? ' (statement must be ' + x.truth.toUpperCase() + ')' : '')).join(', ') + '.');
   if (segs) {
@@ -4126,14 +4127,15 @@ function eyTok(q) {
   if (!s) { s = new Set(String(q.question || '').toLowerCase().split(/[^a-z0-9\u0900-\u097F]+/).filter(w => w.length > 2)); _eyTokMap.set(q, s); }
   return s;
 }
-function eyNearDup(a, b) {
+const eyAnsOf = q => String((q.answers && q.answers[0]) || (q.options && q.options[q.correctIndex] && q.options[q.correctIndex].text) || '').toLowerCase().trim();
+function eyNearDup(a, b) {   // only a REAL repeat: nearly identical stem AND the same answer (same source line / different answer is a different question)
   const x = eyTok(a), y = eyTok(b);
   if (!x.size || !y.size) return false;
   let n = 0; x.forEach(w => { if (y.has(w)) n++; });
   const j = n / (x.size + y.size - n);
-  if (j >= 0.8) return true;
-  const ea = flatTxt((a.srcEvidence || [])[0]), eb = flatTxt((b.srcEvidence || [])[0]);
-  return ea.length >= 14 && ea === eb && j >= 0.45;   // same source line AND a similar stem
+  if (j < 0.8) return false;
+  const ca = eyAnsOf(a), cb = eyAnsOf(b);
+  return !(ca && cb && ca !== cb);
 }
 function eyDedupe(list) {
   if (!EY_DEDUPE) return list || [];
@@ -6363,7 +6365,7 @@ document.getElementById('cancelAiBtn').addEventListener('click', backFromGenerat
    Add a new company in Val Town -> it shows up here automatically.
    ===================================================================== */
 const EY_MAX_Q = 100;   // max questions per Exam Yatri quiz
-const EY_PART_Q = 15;   // questions per background part. Every call re-sends ~15k chars of instructions, so fewer/bigger parts = fewer tokens (100 questions: 10 -> 7 calls). 15 questions is ~4k output tokens, well under the gateway's 8192 cap. Lower it if a model starts cutting replies
+const EY_PART_Q = 10;   // questions per background part. RELIABILITY FIRST: a 10-question call finishes fast, so a weak phone/Wi-Fi connection rarely drops it (was 15).
 const EY_FIRST_Q = 10;   // quiz starts as soon as this many questions are ready; the rest is generated in the background
 const EY_SLICE_NOTES = true;   // token saver: each part is sent ONLY the notes segments assigned to it (before: the whole notes in every part). false = old behaviour
 const EY_EFFORT = { exam: 'medium', revision: 'medium' };   // reasoning depth sent to the gateway per quiz mode (instant | low | medium | high). Only models that support it use it (see main.ts)
@@ -6373,7 +6375,12 @@ const EY_RACE_FIRST = false;   // API-call saver: true = part 1 is sent to 2 dif
 const EY_TOPUP_GAP = 2;   // API-call saver: a quiz of 40+ questions that is short by this many or fewer is accepted as is (a whole extra call + full instructions for 1-2 questions is not worth it). Quizzes under 40 still get exact top-ups
 const EY_EXCL_KEEP = 20;   // token saver: 'already made' stems sent to a part whose notes segments are already disjoint (was the last 100)
 const EY_MODELS_TTL = 6 * 3600 * 1000;   // the gateway's model list is a constant: refetch at most every 6 h, not on every page load
-const EY_PARALLEL = 5;   // background parts generated at the same time (1 = old one-by-one)
+const EY_PARALLEL = 3;   // background parts generated at the same time (3 = gentler on a weak phone connection than 5)
+const EY_TOPUP_ROUNDS = 5;   // top-up rounds when the AI gave fewer questions than asked (was 3)
+const EY_BG_AUTO_TRIES = 6;   // silent automatic retries of the background run before the student is asked to tap retry
+const EY_ASK_TRIES = 5;       // attempts per API call (network drop / gateway busy / empty reply are all retried)
+const EY_FETCH_TIMEOUT = 70000;   // one attempt that hangs longer than this is cut and retried (gateway itself stops at 55 s)
+const EY_AUTO_MODEL = [{ id: 'auto', label: 'Exam Yatri', provider: 'Exam Yatri' }];   // the gateway ignores the model name; used when /models cannot be read
 const EY_LEAN_PROMPT = true;   // token saver + fewer contradictions: Exam Yatri-only wording trims in the prompt (copy-paste AI sites never see them). false = old wording
 // Appended to every Exam Yatri request: a short self-check that raises question quality without changing the app's own prompt.
 const EY_GATE = '\n\nFINAL QUALITY GATE (silent; the output format stays exactly as specified above, nothing added): (1) Re-solve every question from its EV line only; if that evidence does not prove the marked answer, or two options can be defended, rewrite the question. (2) Drop any question that is trivial, trick-worded, or about page numbers/headings. (3) If space runs short, shorten CON - never drop questions - and finish the output completely.';
@@ -6512,8 +6519,8 @@ function eyRenderModels() {
 }
 // quiet = true: never popup (background refresh). Returns true when a usable model list exists.
 async function eyLoadModels(force, quiet) {
-  if (eyModels && !force) { eyRenderModels(); return true; }
-  if (eyLoading) return !!eyModels;
+  if (eyModels && eyModels.length && !force) { eyRenderModels(); return true; }
+  if (eyLoading) return !!(eyModels && eyModels.length);
   eyLoading = true;
   try {
     if (!/^https:\/\//.test(EY_API_URL) || /REPLACE_WITH/.test(EY_API_URL)) throw new Error('Exam Yatri abhi set nahi hai (admin ko batao).');
@@ -6528,34 +6535,71 @@ async function eyLoadModels(force, quiet) {
     eyRenderModels();
     return true;
   } catch (e) {
-    eyRenderModels();   // keeps the last known list (if any) usable
-    if (!quiet) eyPopup('Exam Yatri connect nahi hua', eyFriendly(e), () => { eyLoadModels(true, false); });
-    return !!eyModels;
+    // The gateway picks the AI by itself and ignores the model name, so a failed / empty model list must NEVER stop a student:
+    // keep the last known list, else use the built-in "auto" entry (not saved, so the real list is fetched again next time). No popup.
+    if (!eyModels || !eyModels.length) eyModels = EY_AUTO_MODEL.slice();
+    eyRenderModels();
+    return true;
   } finally { eyLoading = false; }
 }
 
+function eySleep(ms, signal) {
+  return new Promise((res, rej) => {
+    if (signal && signal.aborted) return rej(new DOMException('Aborted', 'AbortError'));
+    const ab = () => { clearTimeout(t); rej(new DOMException('Aborted', 'AbortError')); };
+    const t = setTimeout(() => { if (signal) signal.removeEventListener('abort', ab); res(); }, ms);
+    if (signal) signal.addEventListener('abort', ab, { once: true });
+  });
+}
+function eyWaitOnline(signal) {   // phone offline: wait (max 25 s) for the connection to come back instead of burning attempts
+  if (typeof navigator === 'undefined' || navigator.onLine !== false) return Promise.resolve();
+  return new Promise((res, rej) => {
+    let t = null;
+    const done = () => { clearTimeout(t); window.removeEventListener('online', done); if (signal) signal.removeEventListener('abort', ab); res(); };
+    const ab = () => { clearTimeout(t); window.removeEventListener('online', done); rej(new DOMException('Aborted', 'AbortError')); };
+    window.addEventListener('online', done, { once: true });
+    if (signal) signal.addEventListener('abort', ab, { once: true });
+    t = setTimeout(done, 25000);
+  });
+}
+// One API call that survives a flaky connection: every attempt has its own timeout, network drops / timeouts / gateway 5xx / 429 / empty replies are
+// retried with growing pauses (EY_ASK_TRIES attempts). Only the student's Cancel and real client errors (400 / 403 / 404 / 413) stop it at once.
 async function eyAsk(prompt, signal, effortOverride, race) {
-  for (let a = 0; a < 5; a++) {
+  const body = JSON.stringify({ model: eyModel || 'auto', prompt: (prompt.indexOf('QUALITY GATE (silent, before you finish)') >= 0 ? prompt : prompt + EY_GATE), effort: effortOverride || eyEffort, race: !!race });
+  let lastErr = null;
+  for (let a = 0; a < EY_ASK_TRIES; a++) {
+    if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
     try {
-      let r;
+      await eyWaitOnline(signal);
+      const ctl = new AbortController(); let timedOut = false;
+      const onAbort = () => ctl.abort();
+      if (signal) signal.addEventListener('abort', onAbort, { once: true });
+      const tm = setTimeout(() => { timedOut = true; ctl.abort(); }, EY_FETCH_TIMEOUT);
+      let r, d;
       try {
-        r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: eyModel, prompt: (prompt.indexOf('QUALITY GATE (silent, before you finish)') >= 0 ? prompt : prompt + EY_GATE), effort: effortOverride || eyEffort, race: !!race }), signal });
-      } catch (ne) {
-        if (ne.name === 'AbortError') throw ne;
-        throw new Error('Network error');
-      }
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) { const err = new Error(d.error || ('HTTP ' + r.status)); err.status = r.status; err.retryAfter = Number(d.retryAfter) || 0; err.gw = !!d.error; throw err; }   // gw = the answer came from our gateway (it already tried several AIs)
+        try {
+          r = await fetch(EY_API_URL + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: ctl.signal });
+        } catch (ne) {
+          if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
+          throw new Error(timedOut ? 'Network error (timeout)' : 'Network error');
+        }
+        d = await r.json().catch(() => ({}));
+      } finally { clearTimeout(tm); if (signal) signal.removeEventListener('abort', onAbort); }
+      if (!r.ok) { const err = new Error(d.error || ('HTTP ' + r.status)); err.status = r.status; err.retryAfter = Number(d.retryAfter) || 0; err.gw = !!d.error; throw err; }
       if (!d.text) throw new Error('AI ne khaali jawab diya');
       return d.text;
     } catch (e) {
       if (e.name === 'AbortError' || (signal && signal.aborted)) throw e;
-      const busy = e.status === 429 && e.retryAfter > 0;   // gateway says every AI is at its rate limit and when one frees up: wait that long (up to 3 times) instead of failing
-      const transient = !e.status || e.status === 429 || (e.status >= 500 && e.status !== 504 && !e.gw);   // a 5xx the GATEWAY wrote already went through up to 4 AIs: resending would repeat all of it (double tokens). Only platform-level 5xx / network errors are resent   // 504 = the gateway already spent its whole time budget: a resend would only pay twice
-      if ((a < 1 || (busy && a < 4)) && transient) { await new Promise(res => setTimeout(res, busy ? Math.min(e.retryAfter, 15) * 1000 + 300 : 800 + a * 1200)); continue; }
-      throw e;
+      lastErr = e;
+      const st = e.status || 0;
+      if ([400, 403, 404, 413].includes(st) || a === EY_ASK_TRIES - 1) throw e;   // a retry cannot help / out of attempts
+      let wait = [1200, 3000, 6000, 10000][a] || 10000;
+      if (st === 429 && e.retryAfter > 0) wait = Math.min(e.retryAfter, 20) * 1000 + 300;   // gateway says when a rate-limited AI is free again
+      try { if (genOn) genSet('Network / AI slow hai \u2014 dobara koshish ' + (a + 2) + '/' + EY_ASK_TRIES + '\u2026', null); } catch (x) {}
+      await eySleep(wait, signal);
     }
   }
+  throw lastErr;
 }
 
 // true when a top-up call is worth its cost: big quizzes (40+) accept a tiny shortfall, small ones stay exact
@@ -6565,7 +6609,7 @@ function eyParsedList() { const p = lenientParse(collectedRaw); return p ? norma
 /* ---------- Background generation: quiz starts after the first small part, the rest streams in while the student plays ---------- */
 let eyBg = null;          // the running background job (null = nothing running)
 let eyWantNext = false;   // student pressed Next on the last READY question and is waiting for more
-const eyBgActive = () => !!(eyBg && !eyBg.stopped && !eyBg.failed && !eyBg.done);
+const eyBgActive = () => !!(eyBg && !eyBg.stopped && !eyBg.done && (!eyBg.failed || eyBg.retrying));   // an automatic retry that is scheduled counts as still running
 const eyQKey = q => String(q.question || '').toLowerCase().replace(/\s+/g, ' ').trim() + '||' + String((q.answers && q.answers[0]) || (q.options && q.options[q.correctIndex] && q.options[q.correctIndex].text) || '').toLowerCase().trim();
 function eyParseNew(reply) { const p = lenientParse(reply); return p ? normalizeQuiz(p) : []; }
 function eyProgressText() { return 'Q ' + (currentQ + 1) + ' / ' + quizData.length + (eyBgActive() ? ' \u23F3' : ''); }
@@ -6582,8 +6626,8 @@ function eyPaintStatus() {
     el.addEventListener('click', () => { if (eyBg && eyBg.failed) eyRetryBg(); });
   }
   el.hidden = false;
-  el.classList.toggle('bad', !!eyBg.failed);
-  el.textContent = eyBg.failed
+  el.classList.toggle('bad', !!eyBg.failed && !eyBg.retrying);
+  el.textContent = (eyBg.failed && !eyBg.retrying)
     ? '\u26A0\uFE0F ' + quizData.length + '/' + eyBg.total + ' ready \u2014 baaki sawal nahi ban paye. Tap karke dobara try karo'
     : '\u23F3 Baaki sawal ban rahe hain\u2026 ' + quizData.length + '/' + eyBg.total + ' ready';
 }
@@ -6636,47 +6680,55 @@ function eyBgFinish(run) {
 }
 function eyRetryBg() {
   const run = eyBg; if (!run || !run.failed) return;
+  clearTimeout(run.timer); run.retrying = false;
   run.failed = false; eyPaintStatus(); eyRefreshChrome();
   eyRunBackground(run);
 }
+// connection came back / student returned to the tab: retry right now instead of waiting for the next timer
+function eyKick() { const r = eyBg; if (r && r.failed && !r.running && !r.stopped) eyRetryBg(); }
+window.addEventListener('online', eyKick);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) eyKick(); });
+
+// Background parts. Every part is independent: one failing part never stops the others, finished parts are appended at once (any order),
+// the missing parts are retried automatically (EY_BG_AUTO_TRIES times, growing pauses, instantly when the phone is back online) and only
+// after that the student is asked to tap retry. Top-up trouble never discards the questions already made.
 async function eyRunBackground(run) {
   if (run.running) return;
   run.running = true;
   const sig = run.ctl.signal, live = () => eyBg === run && !run.stopped;
   try {
-    // 1) remaining parts: up to EY_PARALLEL at the same time; replies are appended in part order
-    run.res = run.res || {};
-    const todo = []; for (let i = run.k; i <= run.parts.length; i++) if (!(i in run.res)) todo.push(i);
-    let firstErr = null, ti = 0;
-    const flush = () => {
-      while (run.k <= run.parts.length && (run.k in run.res)) {
-        const reply = run.res[run.k]; delete run.res[run.k];
-        collectedRaw += (collectedRaw ? '\n' : '') + reply;
-        eyAppendQuestions(eyParseNew(reply));
-        run.k++;
-      }
-    };
+    run.doneP = run.doneP || new Set();
+    const todo = []; for (let i = 2; i <= run.parts.length; i++) if (!run.doneP.has(i)) todo.push(i);
+    let ti = 0, lastErr = null;
     const worker = async () => {
-      while (!firstErr && live()) {
+      while (live()) {
         const i = todo[ti++]; if (i === undefined) return;
         try {
-          lastRequestedCount = run.N; manualPartsPlan = run.parts; manualPartsExpected = run.parts.length;
-          // part 2 shares pages with part 1 (starter split) and must see its questions: it is built after part 1 is in collectedRaw
-          const reply = await eyAsk(getManualPromptText(run.mode, i, run.frozen), sig);
-          if (!live()) return;
-          run.res[i] = reply; flush();
-        } catch (e) { if (!firstErr) firstErr = e; }
+          let got = 0;
+          for (let tr = 0; tr < 2 && !got; tr++) {   // a reply that holds no readable question is asked once more
+            lastRequestedCount = run.N; manualPartsPlan = run.parts; manualPartsExpected = run.parts.length;
+            const reply = await eyAsk(getManualPromptText(run.mode, i, run.frozen), sig);
+            if (!live()) return;
+            collectedRaw += (collectedRaw ? '\n' : '') + reply;
+            const list = eyParseNew(reply);
+            got = list.length ? 1 : 0;
+            if (got) { eyAppendQuestions(list); run.doneP.add(i); }
+          }
+          if (!got) lastErr = new Error(t('aiParseError'));
+        } catch (e) { if (e && e.name === 'AbortError') return; lastErr = e; }
       }
     };
     await Promise.all(Array.from({ length: Math.max(1, Math.min(EY_PARALLEL, todo.length)) }, worker));
     if (!live()) return;
-    if (firstErr) throw firstErr;
-    flush();
-    // 2) top-up rounds (same rule as before) if the AI gave fewer questions than asked
-    while (eyShort(run.N, quizData.length) && run.round < MANUAL_MAX_ROUNDS) {
+    const missing = todo.filter(i => !run.doneP.has(i));
+    if (missing.length) throw (lastErr || new Error('Network error'));
+    // top-up rounds if the AI gave fewer questions than asked; a failing top-up is not an error: the quiz already has its questions
+    while (eyShort(run.N, quizData.length) && run.round < EY_TOPUP_ROUNDS) {
       if (!live()) return;
       lastRequestedCount = run.N; manualRound = run.round;
-      const reply = await eyAsk(buildTopupPrompt(quizData.slice(), run.mode), sig);
+      let reply;
+      try { reply = await eyAsk(buildTopupPrompt(quizData.slice(), run.mode), sig); }
+      catch (te) { if (te && te.name === 'AbortError') return; break; }
       if (!live()) return;
       run.round++;
       collectedRaw += '\n' + reply;
@@ -6685,7 +6737,14 @@ async function eyRunBackground(run) {
     if (live()) eyBgFinish(run);
   } catch (err) {
     if (!live() || (err && err.name === 'AbortError')) return;
-    run.failed = true; eyUnwait();
+    run.failed = true; run.auto = (run.auto || 0) + 1;
+    if (run.auto <= EY_BG_AUTO_TRIES) {   // silent automatic retry: the student keeps playing (or keeps waiting) and just sees the status line
+      run.retrying = true; eyPaintStatus(); eyRefreshChrome();
+      clearTimeout(run.timer);
+      run.timer = setTimeout(() => { if (eyBg === run && !run.stopped && run.failed) eyRetryBg(); }, Math.min(3000 * run.auto, 15000));
+      return;
+    }
+    run.retrying = false; run.auto = 0; eyUnwait();
     eyPaintStatus(); eyRefreshChrome();
     eyPopup('Baaki sawal nahi ban paye', eyFriendly(err) + '  (' + quizData.length + '/' + run.N + ' sawal ready hain \u2014 quiz chalta rahega.)', () => eyRetryBg());
   } finally { run.running = false; }
@@ -6780,9 +6839,9 @@ async function _generateQuizWithEY(mode) {
   const nEl = document.getElementById('numQuestionsManual');
   if (Date.now() - eyCapAt < 800) return;   // cap popup just opened (Start tap raced the field's blur): wait for the student
   if (eyEnforceCap(nEl)) return;            // over the cap: popup + number set to EY_MAX_Q; the student taps Start again
-  if (!eyModels) { await eyLoadModels(true, false); }
-  const mdl = eyModels && eyModels.find(x => x.id === eyModel);
-  if (!mdl) { if (eyModels && eyModels.length > 1) eyOpenMenu(); return; }
+  if (!eyModels || !eyModels.length) { await eyLoadModels(true, true); }
+  let mdl = eyModels && eyModels.find(x => x.id === eyModel);
+  if (!mdl) { mdl = (eyModels && eyModels[0]) || EY_AUTO_MODEL[0]; eyModel = mdl.id; }   // students never pick a model: the gateway chooses the AI
 
   resetPromptState();                                   // clean slate (collectedRaw, parts plan) + stops any older background run
   const first = getManualPromptText(pmode, 1);          // also plans the parts and sets lastRequestedCount
@@ -6793,7 +6852,12 @@ async function _generateQuizWithEY(mode) {
   const sig = aiAbortController.signal;
   try {
     aiGenSub.textContent = P > 1 ? `Part 1 / ${P} (first ${frozen.parts[0].q} questions)...` : t('genSub');
-    const reply1 = await eyAsk(first, sig, EY_FIRST_EFFORT, EY_RACE_FIRST);   // race (optional, off by default): same request goes to 2 AIs at once
+    let reply1 = '';
+    for (let tr = 0; tr < 3; tr++) {   // an unreadable reply (not a network problem) is asked again, up to 3 times
+      reply1 = await eyAsk(first, sig, EY_FIRST_EFFORT, EY_RACE_FIRST);   // race (optional, off by default): same request goes to 2 AIs at once
+      if (eyDedupe(eyParseNew(reply1)).length) break;
+      if (tr < 2) aiGenSub.textContent = 'AI ka jawab samajh nahi aaya \u2014 dobara try ho raha hai\u2026';
+    }
     collectedRaw += (collectedRaw ? '\n' : '') + reply1;
 
     if (P > 1) {
@@ -6810,9 +6874,9 @@ async function _generateQuizWithEY(mode) {
 
     // single part (small quiz): same as before, top-up first, then start
     let list = eyParsedList();
-    while (eyShort(lastRequestedCount, list.length) && manualRound < MANUAL_MAX_ROUNDS) {
+    while (eyShort(lastRequestedCount, list.length) && manualRound < EY_TOPUP_ROUNDS) {
       aiGenSub.textContent = `Top-up: ${list.length} / ${lastRequestedCount}...`;
-      const reply = await eyAsk(buildTopupPrompt(list, pmode), sig);
+      let reply; try { reply = await eyAsk(buildTopupPrompt(list, pmode), sig); } catch (te) { if (te && te.name === 'AbortError') throw te; break; }   // top-up trouble keeps the questions already made
       manualRound++;
       collectedRaw += '\n' + reply;
       const nl = eyParsedList();
