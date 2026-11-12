@@ -1,1040 +1,133 @@
 <!DOCTYPE html>
-<html lang="hi">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AI Gateway · Admin Control Center</title>
+<!-- Gateway Checking v2.0 (2026-11-13) -->
+<html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gateway Checking v2.0</title>
 <style>
-:root{
-  --bg:#f5f6f8;--surface:#fff;--surface2:#eef0f4;--line:#e1e4ea;--tx:#161a22;--mut:#6a7282;
-  --acc:#3d4fe0;--acc-tx:#fff;--ok:#12805c;--ok-bg:#e3f5ee;--bad:#c42b3a;--bad-bg:#fdebed;--warn:#b26a00;
-  --shadow:0 1px 2px rgba(20,26,40,.06);
-}
-@media (prefers-color-scheme:dark){:root{
-  --bg:#0f1218;--surface:#171b24;--surface2:#1f2430;--line:#283040;--tx:#e8ebf2;--mut:#8a93a6;
-  --acc:#7b8cff;--acc-tx:#0d1020;--ok:#4fd1a1;--ok-bg:#12302a;--bad:#ff7b87;--bad-bg:#35181d;--warn:#f0b250;--shadow:none;
-}}
+:root{--bg:#f5f6f8;--sf:#fff;--s2:#eef0f4;--ln:#e1e4ea;--tx:#161a22;--mu:#6a7282;--ac:#3d4fe0;--ok:#12805c;--bad:#c42b3a;--wn:#b26a00}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1218;--sf:#171b24;--s2:#1f2430;--ln:#283040;--tx:#e8ebf2;--mu:#8a93a6;--ac:#7b8cff;--ok:#4fd1a1;--bad:#ff7b87;--wn:#f0b250}}
 *{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  padding:env(safe-area-inset-top,0px) 0 0}
-button,input,select,textarea{font:inherit;color:inherit}
-button{cursor:pointer}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-.wrap{max-width:760px;margin:0 auto;padding:0 16px 190px}
-
-/* header */
-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 0 14px}
-h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em}
-.sub{color:var(--mut);font-size:13px;margin-top:2px}
-.iconbtn{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;box-shadow:var(--shadow)}
-.iconbtn:hover{background:var(--surface2)}
-.iconbtn:disabled{opacity:.55;cursor:default}
-
-/* connection panel */
-.conn{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:var(--shadow)}
-.conn[hidden]{display:none}
-.lbl{display:block;font-size:12.5px;font-weight:600;color:var(--mut);margin-bottom:6px}
-.conn input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px}
-.conn .actions{display:flex;align-items:center;gap:12px;margin-top:10px}
-.status{font-size:13px;color:var(--mut)}
-
-/* stats */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);margin-bottom:16px}
-.stat{padding:12px 14px;border-left:1px solid var(--line)}
-.stat:first-child{border-left:0}
-.stat b{display:block;font-size:22px;line-height:1.1;font-weight:700;font-variant-numeric:tabular-nums}
-.stat span{font-size:12.5px;color:var(--mut)}
-.stat.ok b{color:var(--ok)}.stat.bad b{color:var(--bad)}
-.stat{cursor:pointer;transition:background .15s}.stat:hover{background:var(--surface2)}
-.toast{position:fixed;z-index:1000;top:calc(env(safe-area-inset-top,0px) + 12px);left:50%;transform:translateX(-50%);width:min(92vw,520px);padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:0 12px 36px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
-.toast.show{opacity:1;transform:translate(-50%,0)}.toast.ok{border-left:4px solid var(--ok)}.toast.bad{border-left:4px solid var(--bad)}.toast .th{font-weight:700}.toast .tb{font-size:13px;color:var(--mut);margin-top:3px;max-height:100px;overflow:auto;overflow-wrap:anywhere}
-.detailveil{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:18px}
-.detailbox{width:min(100%,560px);max-height:80vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
-.detailhead{display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:-14px;background:var(--surface);padding:4px 0 10px}
-.detailitem{display:flex;justify-content:space-between;gap:12px;padding:10px 2px;border-top:1px solid var(--line);font-size:13px}
-.detailitem button{background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12px}
-
-
-/* tabs */
-.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:14px;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:10px 12px;color:var(--mut);font-weight:600;font-size:14.5px;white-space:nowrap}
-.tab:hover{color:var(--tx)}
-.tab.on{color:var(--acc);border-bottom-color:var(--acc)}
-.tab i{font-style:normal;font-weight:600;font-size:12px;background:var(--surface2);color:var(--mut);border-radius:20px;padding:1px 8px;margin-left:6px}
-.tab.on i{background:var(--acc);color:var(--acc-tx)}
-
-/* company header + models */
-.cohead{display:flex;justify-content:space-between;align-items:baseline;margin:0 2px 10px}
-.cohead h2{margin:0;font-size:17px}
-.cohead span{font-size:13px;color:var(--mut)}
-.list{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
-.m{padding:12px 14px;border-top:1px solid var(--line)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top,0) 0 40px}
+.w{max-width:760px;margin:0 auto;padding:0 14px}
+h1{font-size:20px;margin:16px 0 4px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:12px;margin:10px 0}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:9px 11px;margin:3px 0}
+button{background:var(--s2);border:1px solid var(--ln);border-radius:10px;padding:8px 12px;font-weight:600;cursor:pointer}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff}
+button:disabled{opacity:.5}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.st{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:8px;text-align:center;cursor:pointer}
+.st.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}
+.st b{display:block;font-size:20px}.st span{font-size:11.5px;color:var(--mu)}
+.m{display:flex;gap:10px;align-items:center;padding:10px 4px;border-top:1px solid var(--ln)}
 .m:first-child{border-top:0}
-.top{display:flex;align-items:center;gap:12px}
-.dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:var(--mut);opacity:.45}
-.m[data-s=ok] .dot{background:var(--ok);opacity:1}
-.m[data-s=bad] .dot{background:var(--bad);opacity:1}
-.m[data-s=skip] .dot{background:none;border:2px solid var(--warn);opacity:1}
-.m[data-s=load] .dot{background:var(--warn);opacity:1;animation:pulse 1s ease-in-out infinite}
-@keyframes pulse{50%{opacity:.25}}
-@media (prefers-reduced-motion:reduce){.m[data-s=load] .dot{animation:none}}
-.info{flex:1;min-width:0}
-.name{font-weight:600;font-size:14.5px;overflow-wrap:anywhere}
-.meta{font-size:12.5px;color:var(--mut)}
-.ctl{display:flex;align-items:center;gap:8px}
-.ctl select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:13px}
-.send{background:var(--acc);color:var(--acc-tx);border:0;border-radius:9px;padding:7px 14px;font-weight:600;font-size:13.5px}
-.send:disabled{opacity:.5;cursor:default}
-.out{margin:10px 0 0 22px;border-radius:10px;border:1px solid var(--line);background:var(--bg);overflow:hidden}
-.out[hidden]{display:none}
-.oh{display:flex;justify-content:space-between;gap:8px;padding:6px 12px;font-size:12.5px;font-weight:600;border-bottom:1px solid var(--line)}
-.out.ok .oh{background:var(--ok-bg);color:var(--ok);border-color:transparent}
-.out.bad .oh{background:var(--bad-bg);color:var(--bad);border-color:transparent}
-.out.load .oh{color:var(--warn)}
-.ob{padding:10px 12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:320px;overflow:auto}
-.empty{padding:36px 16px;text-align:center;color:var(--mut)}
-
-/* composer */
-.composer{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
-  padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
-.cin{max-width:760px;margin:0 auto}
-.cin textarea{width:100%;resize:none;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:46px;max-height:140px;font-size:15px}
-.crow{display:flex;gap:8px;margin-top:8px}
-.crow button{flex:1;border-radius:10px;padding:10px 12px;font-weight:600;font-size:14px}
-.crow .pri{background:var(--acc);color:var(--acc-tx);border:0}
-.crow .sec{background:var(--surface2);border:1px solid var(--line)}
-.crow button:disabled{opacity:.5;cursor:default}
-.hint{font-size:12px;color:var(--mut);margin-top:6px}
-@media (max-width:480px){.stat{padding:10px}.stat b{font-size:19px}.out{margin-left:0}.top{flex-wrap:wrap}.ctl{margin-left:22px}}
-
-/* v4: key chips, filters, gateway rows */
-.conn input+.lbl{margin-top:10px}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin:0 2px 10px}
-.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;box-shadow:var(--shadow)}
-.chip.on{border-color:var(--acc);color:var(--acc)}
-.chip.bad{color:var(--bad)}
-.kinfo{margin:0 2px 10px;font-size:13px;color:var(--mut)}
-.kerr{margin:0 0 10px;border:1px solid var(--line);border-radius:10px;background:var(--bad-bg);color:var(--bad);padding:10px 12px;font-size:13.5px;overflow-wrap:anywhere;white-space:pre-wrap}
-.filt{display:flex;gap:10px;align-items:center;margin:0 2px 10px}
-.filt input[type=search]{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px}
-.filt label{font-size:13px;color:var(--mut);white-space:nowrap;display:flex;gap:6px;align-items:center}
-.star{color:var(--warn);margin-left:6px;font-weight:700}
-.tag{font-size:12px;font-weight:600;border-radius:20px;padding:2px 9px;background:var(--surface2);color:var(--mut);white-space:nowrap}
-.tag.ok{background:var(--ok-bg);color:var(--ok)}.tag.bad{background:var(--bad-bg);color:var(--bad)}
-.note{margin:0 2px 10px;font-size:12.5px;color:var(--warn)}
-/* v5: per-company colour, key buttons, gateway cards */
-.cohead{border-left:4px solid var(--c,var(--acc));padding-left:10px;gap:4px 12px;flex-wrap:wrap}
-.cohead span{text-align:left}
-.chip.on{border-color:var(--c,var(--acc))}
-.send[data-s=ok]{background:var(--ok)}.send[data-s=bad]{background:var(--bad)}.send[data-s=load]{background:var(--warn)}
-.send.kb{min-width:44px;padding:7px 10px}
-.outs .out{margin-top:8px}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:0 0 12px}
-.card{text-align:left;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--c);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:2px}
-.card.on{outline:2px solid var(--c)}
-.card b{font-size:14px}.card span{font-size:12px;color:var(--mut)}
-.kpills{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
-.kpills i{font-style:normal;font-size:11px;font-weight:600;border-radius:20px;padding:1px 7px;background:var(--ok-bg);color:var(--ok)}
-.kpills i.bad{background:var(--bad-bg);color:var(--bad)}
-.cob{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:8px;color:#fff;background:var(--c);vertical-align:1px}
-.bar{height:4px;border-radius:4px;background:var(--surface2);margin:5px 0 3px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--c)}
-.tag.warn{background:#fff3df;color:var(--warn)}
-.m.paid{opacity:.55}
-.gerr{font-size:12px;color:var(--bad);overflow-wrap:anywhere}
-.chips.tiers .chip{padding:5px 10px;font-size:12.5px}
-/* name-tier badges: HIGH / MID / LOW based on model name keywords */
-.ntag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:5px;padding:1px 6px;margin-left:6px;vertical-align:1px;letter-spacing:.02em}
-.ntag.h{background:#dbeafe;color:#1d4ed8}
-.ntag.m{background:#fef9c3;color:#92400e}
-.ntag.l{background:#f1f5f9;color:#64748b}
-.ntag.f{background:#dcfce7;color:#166534}
-@media(prefers-color-scheme:dark){
-  .ntag.h{background:#1e3a5f;color:#93c5fd}
-  .ntag.m{background:#3b2f00;color:#fcd34d}
-  .ntag.l{background:#1e2330;color:#94a3b8}
-  .ntag.f{background:#12301f;color:#86efac}
-}
-/* name-tier filter chips in company tab */
-.ntfilt{display:flex;gap:6px;flex-wrap:wrap;margin:0 2px 10px;align-items:center}
-.ntfilt span{font-size:12px;color:var(--mut);font-weight:600}
-.qcard{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:10px 12px;margin:0 0 12px;box-shadow:var(--shadow)}
-.qhead{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:6px}
-.qrow{padding:8px 0;border-top:1px solid var(--line);font-size:13px}
-.qline{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
-.qtxt{overflow-wrap:anywhere}
-.qmut{color:var(--mut);font-size:12.5px;overflow-wrap:anywhere}
-.qbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin:5px 0 2px}
-.qbar i{display:block;height:100%;background:var(--ok)}
-.qbar.low i{background:var(--warn)}.qbar.out i{background:var(--bad)}
-.qbtn{border:1px solid var(--line);background:var(--surface);color:inherit;border-radius:8px;padding:4px 9px;font-size:12.5px;font-weight:600;flex:0 0 auto}
-.qbtn:disabled{opacity:.5}
-.qm{margin:4px 0 6px}.qm .qline{font-size:12.5px}
-.qsum{font-size:12.5px;color:var(--mut);margin:2px 0 6px;overflow-wrap:anywhere}
-.qkey{margin-top:6px;font-size:12.5px;color:var(--mut)}
-</style>
-
-<style id="organized-dashboard-theme">
-:root{
-  color-scheme:dark;
-  --bg:#0b0f17;--surface:#141b27;--surface2:#1b2534;--line:#293548;
-  --tx:#edf3fc;--mut:#96a5ba;--acc:#8b95ff;--acc-tx:#0b1020;
-  --ok:#48d6a5;--ok-bg:#10372e;--bad:#ff7889;--bad-bg:#3b1d27;--warn:#f4bd62;
-  --shadow:0 12px 34px rgba(0,0,0,.18);
-}
-html,body{background:var(--bg);color:var(--tx)}
-body{font-size:14px;background:
- radial-gradient(ellipse at 12% -10%,rgba(92,104,220,.12),transparent 38%),
- radial-gradient(ellipse at 100% 0%,rgba(31,178,151,.07),transparent 30%),var(--bg)}
-.wrap{max-width:1120px;padding:0 20px 150px}
-header{position:sticky;top:0;z-index:50;padding:17px 0 15px;background:rgba(11,15,23,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(41,53,72,.7);margin-bottom:18px}
-h1{font-size:clamp(20px,3vw,26px);letter-spacing:-.035em}
-.sub{font-size:12.5px;margin-top:4px;max-width:75ch;overflow-wrap:anywhere}
-.iconbtn{border-radius:11px;background:var(--surface);border-color:var(--line);padding:10px 14px}
-#gear{white-space:nowrap}
-.settings-panel{padding:20px;margin:0 0 18px;border-radius:18px;background:linear-gradient(145deg,#172233,#121a26);border-color:#34435a}
-.settings-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
-.settings-title h2{margin:2px 0 3px;font-size:18px}
-.settings-title p,.field-help{margin:0;color:var(--mut);font-size:12px}
-.eyebrow{font-size:10px;letter-spacing:.14em;font-weight:800;color:var(--acc)}
-.secure-mark{font-size:11px;color:var(--ok);background:var(--ok-bg);border-radius:99px;padding:5px 9px;white-space:nowrap}
-.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.field{min-width:0}
-.field input{width:100%;background:#0d1420;border:1px solid #34435a;border-radius:11px;padding:12px 13px;font-size:14px}
-.field-help{margin-top:6px;line-height:1.45}
-.optional{font-weight:500;color:var(--mut)}
-.settings-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:17px}
-.primary-action{background:var(--acc);color:#10152b;border:0}
-.setup-help{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);color:var(--mut);font-size:12px}
-.setup-help summary{cursor:pointer;color:#c5d0e2;font-weight:650}
-.setup-help ol{padding-left:20px;line-height:1.8}
-.security-note{padding:9px 11px;border-radius:9px;background:#251f18;color:#e9c58d}
-.stats{grid-template-columns:repeat(4,minmax(0,1fr));border-radius:16px;overflow:hidden;margin:0 0 20px;background:rgba(20,27,39,.94)}
-.stat{padding:15px 16px;text-align:left;min-width:0}
-.stat b{font-size:25px;margin-bottom:5px}
-.stat span{font-size:12px;letter-spacing:.01em}
-.tabs{gap:7px;border:0;margin:0 0 18px;padding:0 0 5px}
-.tab{border:1px solid var(--line);border-radius:11px;margin:0;padding:9px 13px;background:var(--surface);font-size:13px}
-.tab.on{background:#242b4b;border-color:#737fff;color:#c4caff}
-.tab i{background:#263247;color:#d0d9e8}
-.cohead{margin:0 0 13px;padding:13px 15px;border:1px solid var(--line);border-left:4px solid var(--c,var(--acc));border-radius:13px;background:var(--surface)}
-.cohead h2{font-size:17px}
-.cohead span{font-size:12px}
-.chips{gap:7px;margin:0 0 12px}
-.chip{border-radius:10px;padding:8px 11px;background:var(--surface);border-color:var(--line);font-size:12.5px}
-.chip.on{background:#252c4c;border-color:var(--acc);color:#d3d7ff}
-.kinfo{font-size:12px;margin:0 2px 12px}
-.filt{margin:0 0 11px;gap:12px}
-.filt input[type=search]{background:var(--surface);border-color:var(--line);border-radius:11px;padding:11px 13px}
-.filt label{padding:8px 11px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
-.ntfilt{padding:9px 10px;background:rgba(20,27,39,.65);border:1px solid var(--line);border-radius:12px}
-.model-state-filters{margin-top:10px}
-.list{border-radius:16px;background:rgba(20,27,39,.88);border-color:var(--line)}
-.m{padding:15px 16px;border-top-color:#253247}
-.m:first-child{padding-top:15px}
-.top{align-items:flex-start;gap:12px}
-.dot{margin-top:7px}
-.name{font-size:14px;line-height:1.55}
-.meta{font-size:12px;line-height:1.55;margin-top:3px}
-.ctl{margin-left:auto}
-.send{border-radius:10px;padding:9px 14px;white-space:nowrap}
-.out{margin:12px 0 0 22px;border-radius:12px;background:#0e1520}
-.out .oh{padding:9px 12px}
-.out .ob{font-size:13px;line-height:1.6}
-.tag{border-radius:8px;padding:4px 8px;font-size:11px}
-.cards{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:11px}
-.card{border-radius:14px;padding:13px 14px;background:var(--surface);gap:5px}
-.card b{font-size:14px}
-.card span{font-size:11.5px;line-height:1.5}
-.qcard,.key-health-card{border-radius:14px;background:var(--surface);border-color:var(--line);padding:13px}
-.note,.kerr{border-radius:10px;padding:10px 12px}
-.empty{padding:42px 16px}
-.composer{background:rgba(15,21,32,.96);backdrop-filter:blur(18px);border-top:1px solid #2b374a;padding:11px 16px calc(11px + env(safe-area-inset-bottom,0px))}
-.cin{max-width:1080px}
-.crow{gap:10px;margin:0}
-.crow button{border-radius:12px;padding:12px 10px;font-size:13px;min-height:48px}
-.crow .pri{background:#737fff;color:#0b1020}
-.crow .sec{background:#1a2433;border-color:#2c3a50}
-.action-hint{display:none}
-.toast{background:#172131;border-color:#35445a;color:var(--tx)}
-.detailbox{background:var(--surface);border-color:var(--line);border-radius:16px}
-.detailhead{background:var(--surface)}
-@media(max-width:700px){
- .wrap{padding:0 13px 138px}
- header{padding:13px 0 12px;margin-bottom:14px}
- .settings-grid{grid-template-columns:1fr}
- .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
- .stat{border-bottom:1px solid var(--line)}
- .stat:nth-child(3){border-left:0}
- .stat:nth-child(n+3){border-bottom:0}
- .stat b{font-size:22px}
- .tabs{overflow-x:auto;flex-wrap:nowrap}
- .tab{padding:9px 11px}
- .cohead{align-items:flex-start}
- .top{flex-wrap:wrap}
- .ctl{margin-left:22px}
- .send.kb{min-width:88px}
- .composer{padding-left:10px;padding-right:10px}
- .crow{display:grid;grid-template-columns:1fr 1fr 1fr}
- .crow button{font-size:11.5px;padding:9px 5px;line-height:1.35}
- .settings-actions .status{flex-basis:100%}
-}
-@media(max-width:390px){
- .wrap{padding-left:10px;padding-right:10px}
- .crow{grid-template-columns:1fr 1fr}
- .crow #smart{grid-column:1/-1}
- .settings-title{display:block}
- .secure-mark{display:inline-block;margin-top:9px}
-}
-</style>
-
-</head>
-<body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>AI Gateway Control Center</h1>
-      <div class="sub" id="msg">Gateway se connect ho raha hai…</div>
-    </div>
-    <button class="iconbtn" id="gear" aria-expanded="false">⚙ Settings</button>
-  </header>
-
-  <section class="conn settings-panel" id="conn" hidden aria-label="Connection settings">
-    <div class="settings-title">
-      <div><div class="eyebrow">ADMIN CONFIGURATION</div><h2>Connection settings</h2><p>Gateway URL और Admin Token यहाँ सेव करें। अगली बार अपने-आप लोड होंगे।</p></div>
-      <span class="secure-mark">🔒 Private</span>
-    </div>
-    <div class="settings-grid">
-      <div class="field">
-        <label class="lbl" for="url">Val Town Gateway URL</label>
-        <input id="url" placeholder="https://your-val-name.web.val.run" autocomplete="url" inputmode="url">
-        <div class="field-help">अपने Gateway Val का Public URL डालें।</div>
-      </div>
-      <div class="field">
-        <label class="lbl" for="adminToken">Admin Token <span class="optional">optional</span></label>
-        <input id="adminToken" type="password" placeholder="AI_ADMIN_TOKEN" autocomplete="current-password">
-        <div class="field-help">यह वही Secret होना चाहिए जो Val Town Env Vars में AI_ADMIN_TOKEN के रूप में सेट है।</div>
-      </div>
-    </div>
-    <div class="settings-actions">
-      <button class="iconbtn primary-action" id="load">↻ Save & Connect</button>
-      <button class="iconbtn" id="forgetToken" type="button">Forget saved token</button>
-      <span class="status" id="connNote" role="status"></span>
-    </div>
-    <details class="setup-help">
-      <summary>Connection setup और troubleshooting</summary>
-      <ol>
-        <li>Val Town में Gateway Val खोलें और उसका सही <b>.web.val.run</b> URL यहाँ डालें।</li>
-        <li>Val Town → Settings → Env vars में <b>AI_ADMIN_TOKEN</b> सेट हो तो वही Token यहाँ डालें।</li>
-        <li><b>Save & Connect</b> दबाएँ। Dashboard <b>/admin/models</b> और <b>/status</b> से डेटा लोड करेगा।</li>
-        <li>401/403 आए तो Token, URL और <b>AI_ALLOWED_ORIGINS</b> जाँचें।</li>
-      </ol>
-      <p class="security-note">सुरक्षा: Token इस Browser के localStorage में सेव होगा। केवल अपने निजी और भरोसेमंद डिवाइस पर इस्तेमाल करें; साझा डिवाइस पर “Forget saved token” दबाएँ।</p>
-    </details>
-  </section>
-
-  <div class="stats" id="sum"></div>
-  <nav class="tabs" id="tabs" aria-label="Companies"></nav>
-  <div id="list"></div>
+.d{width:10px;height:10px;border-radius:50%;background:var(--mu);flex:none}
+.working .d{background:var(--ok)}.recheck .d{background:var(--wn)}.neverWorked .d{background:var(--bad)}
+.busy .d{animation:pl 1s infinite}@keyframes pl{50%{opacity:.2}}
+.i{flex:1;min-width:0}.n{font-weight:600;overflow-wrap:anywhere}.t{font-size:12px;color:var(--mu);overflow-wrap:anywhere}
+.m button{padding:5px 9px;font-size:12.5px}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:10px;font-size:13px;max-height:300px;overflow:auto}
+#note{font-size:13px;color:var(--mu)}#note.e{color:var(--bad)}
+</style></head><body><div class="w">
+<h1>AI Gateway · Checking <small style="font-size:12px;color:var(--mu)">v2.0</small></h1><div id="note">Token daalo aur Connect dabao.</div>
+<div class="card">
+  <input id="url" placeholder="Worker URL" inputmode="url">
+  <input id="tk" type="password" placeholder="Admin token">
+  <div class="row"><button class="p" id="go">Connect / Refresh</button></div>
 </div>
-
-<div class="composer">
-  <div class="cin">
-    <div class="crow">
-      <button class="pri" id="co" disabled>Test shown models</button>
-      <button class="sec" id="all" disabled>Test all ★ models</button>
-      <button class="sec" id="smart" disabled>🧠 Smart test</button>
-    </div>
-    <div class="hint action-hint">Test controls · selected company / gateway pool / smart discovery</div>
-  </div>
+<div class="stats" id="stats"></div>
+<div class="card">
+  <div class="row"><input id="q" placeholder="Model dhoondo…"><select id="pv"><option value="">Sab providers</option></select></div>
+  <div class="row"><button class="p" id="all" disabled>Dikhe hue sab test karo</button><button id="stop" disabled>Stop</button></div>
+  <div id="prog" class="t"></div>
 </div>
-
-<style>
-.key-health-card{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--surface)}
-.key-health-card .top{justify-content:space-between;flex-wrap:wrap}
-.key-health-controls{margin-top:10px;flex-wrap:wrap}
-.key-health-controls select{min-width:0;flex:1;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:13px}
-.key-health-controls .send{background:var(--acc);color:var(--acc-tx);border:0;border-radius:9px;padding:8px 12px;font-weight:600}
-</style>
+<div class="card" id="chat" hidden>
+  <div class="n" id="cm"></div>
+  <textarea id="cp" rows="3">2+2 kitna hota hai? Ek line mein jawab do.</textarea>
+  <div class="row"><button class="p" id="send">Bhejo</button><button id="cx">Band</button></div>
+  <pre id="co" hidden></pre>
+</div>
+<div class="card" id="list"></div>
+</div>
 <script>
-const DEFAULT_URL = 'https://vishalyadav--ac9af586d5c311f1ac7a1607ee4eb77e.web.val.run';
-const $ = (id) => document.getElementById(id);
-
-/* ---------- model name tier helpers (mirrors score() logic in main.ts) ---------- */
-function nameScore(id) {
-  const s = id.toLowerCase();
-  let tier = 10;
-  if (/opus|ultra|max|\bpro\b|large|heavy|maverick|\br1\b|\bo[1-4]\b|\b4o\b|405b|\b[7-9]\db\b|\b[1-9]\d{2,}b\b|\d{3,}b/.test(s)) tier = 30;
-  else if (/sonnet|medium|plus|turbo|flash|scout|balanced/.test(s)) tier = 20;
-  if (/\bmini|\bnano|\blite|\btiny|\bmicro|\bsmall|\bhaiku|\bbase|\bedge|\bexpress|\b[1-9]b\b|\b1\db\b/.test(s)) tier = 6;
-  return tier;
+const $=i=>document.getElementById(i);
+const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,v)}catch(e){return ''}};
+$('url').value=ls('ey_url')||'https://examyatri-gateway.vyup2987.workers.dev';$('tk').value=ls('ey_tk');
+const CATS=[['working','✅ Working'],['recheck','⚠ Re-check'],['neverWorked','❌ Fail'],['toTest','⏳ Baaki']];
+let rows=[],filt='working',stop=false,busy=false,sel=null;
+const note=(t,e)=>{$('note').textContent=t;$('note').className=e?'e':''};
+async function api(m,p,b){
+  const r=await fetch($('url').value.trim().replace(/\/+$/,'')+p,{method:m,headers:{'content-type':'application/json','x-admin-token':$('tk').value.trim()},body:b?JSON.stringify(b):undefined});
+  let j={};try{j=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(j.error||'HTTP '+r.status);return j;
 }
-function nameTierLabel(id) {
-  const t = nameScore(id);
-  if (t >= 30) return { cls: 'h', txt: 'HIGH' };
-  if (t >= 20) return { cls: 'm', txt: 'MID' };
-  if (t <= 6)  return { cls: 'l', txt: 'LOW' };
-  return null; // tier=10 = no keyword found, no badge
+const ago=t=>{if(!t)return 'kabhi nahi';const m=Math.round((Date.now()-t)/6e4);return m<60?m+' min pehle':m<1440?Math.round(m/60)+' ghante pehle':Math.round(m/1440)+' din pehle'};
+function shown(){
+  const q=$('q').value.trim().toLowerCase(),pv=$('pv').value;
+  return rows.filter(r=>r.cat===filt&&(!pv||r.model.startsWith(pv+'|'))&&(!q||r.model.toLowerCase().includes(q)));
 }
-const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
-
-let provs = [];          // /admin/models : company -> keys -> models each key can see
-let board = [];          // /status : gateway leaderboard (real traffic ratings)
-let dbOn = null;
-let gwCo = '', gwTier = '', keyState = {}, bidx = {};   // gateway tab filters + per-company key rest state
-const res = {};          // rid -> 'ok' | 'bad'
-const outs = {};         // rid -> {kind, head, text, right}
-const refs = {};         // rid -> {row, out}  (only for rows currently on screen)
-let cur = null;          // current tab: company id or '@gw' / '@keys'
-const curKey = {};       // company id -> chosen key index
-let q = '', starOnly = false, ntFilter = '', modelView = 'working', busy = false, stopReq = false, shown = [];
-
-try {
-  $('url').value = localStorage.getItem('ey_test_url') || DEFAULT_URL;
-  $('adminToken').value = localStorage.getItem('ey_admin_token') || '';
-} catch (e) {
-  $('url').value = DEFAULT_URL;
-  $('adminToken').value = '';
+function draw(){
+  $('stats').replaceChildren(...CATS.map(([c,l])=>{
+    const d=document.createElement('div');d.className='st'+(c===filt?' on':'');
+    d.innerHTML='<b>'+rows.filter(r=>r.cat===c).length+'</b><span>'+l+'</span>';
+    d.onclick=()=>{filt=c;draw()};return d}));
+  const s=shown(),box=$('list');box.replaceChildren();
+  if(!s.length){box.textContent='Is list mein kuch nahi.';}
+  s.slice(0,200).forEach(r=>{
+    const [pid,...mm]=r.model.split('|'),d=document.createElement('div');
+    d.className='m '+r.cat+(r.busy?' busy':'');
+    const i=document.createElement('div');i.className='i';
+    const n=document.createElement('div');n.className='n';n.textContent=mm.join('|');
+    const t=document.createElement('div');t.className='t';
+    t.textContent=pid+(r.lat?' · '+(r.lat/1000).toFixed(1)+'s':'')+' · '+ago(r.tested)+(r.err?' · '+r.err:'');
+    i.append(n,t);
+    const b1=document.createElement('button');b1.textContent='Test';b1.disabled=busy;b1.onclick=()=>run([r.model]);
+    const b2=document.createElement('button');b2.textContent='Chat';b2.onclick=()=>openChat(r.model);
+    d.append(document.createElement('span'),i,b1,b2);d.firstChild.className='d';box.append(d);
+  });
+  if(s.length>200){const x=document.createElement('div');x.className='t';x.textContent='Pehle 200 dikh rahe hain ('+s.length+' mein se). Search/provider se chhota karo.';box.append(x)}
+  $('all').disabled=busy||!s.length;$('stop').disabled=!busy;
 }
-const cacheBoard = () => { try { localStorage.setItem('ey_board_cache', JSON.stringify(board.map((b) => ({ id: b.id, provider: b.provider, model: b.model, ok: b.ok, fail: b.fail, tier: b.tier, updated: b.updated, nextCheck: b.nextCheck, rating: b.rating, avgSec: b.avgSec })))); } catch (e) {} };
-const base = () => $('url').value.trim().replace(/\/+$/, '');
-const authHeaders = (extra = {}) => {
-  const h = { ...extra };
-  const token = $('adminToken')?.value?.trim();
-  if (token) h['x-admin-token'] = token;
-  return h;
+async function load(){
+  note('Load ho raha hai…');
+  try{
+    const j=await api('GET','/admin/status');
+    rows=[];for(const c in j.lists)for(const x of j.lists[c])rows.push({...x,cat:c});
+    const sel=$('pv'),v=sel.value;sel.length=1;
+    j.providers.forEach(p=>sel.add(new Option(p.id,p.id)));sel.value=v;
+    ls('ey_url',$('url').value.trim());ls('ey_tk',$('tk').value.trim());
+    note('Connected · '+j.providers.length+' providers, '+rows.length+' models');draw();
+  }catch(e){note(e.message==='Unauthorized'?'Token galat hai':e.message,1)}
+}
+async function run(keys){
+  if(busy)return;busy=true;stop=false;
+  for(let i=0;i<keys.length&&!stop;i+=12){
+    const part=keys.slice(i,i+12);
+    rows.forEach(r=>{if(part.includes(r.model))r.busy=true});draw();
+    $('prog').textContent='Test chal raha hai: '+Math.min(i+12,keys.length)+' / '+keys.length;
+    try{
+      const j=await api('POST','/admin/test',{models:part});
+      for(const k in j.results){const r=rows.find(x=>x.model===k),v=j.results[k];
+        if(r)Object.assign(r,v);else rows.push({model:k,...v})}
+    }catch(e){note(e.message,1);stop=true}
+    rows.forEach(r=>{r.busy=false});draw();
+  }
+  busy=false;$('prog').textContent=stop?'Roka gaya':'Test poora hua';draw();
+}
+function openChat(k){sel=k;$('chat').hidden=false;$('cm').textContent=k;$('co').hidden=true;$('chat').scrollIntoView({behavior:'smooth'})}
+$('send').onclick=async()=>{
+  const [p,...m]=sel.split('|'),o=$('co');o.hidden=false;o.textContent='Wait…';$('send').disabled=true;
+  try{const j=await api('POST','/admin/chat',{provider:p,model:m.join('|'),prompt:$('cp').value});
+    o.textContent=j.ok?'('+(j.ms/1000).toFixed(1)+'s)\n\n'+(j.text||'[khaali reply]'):'Error ('+(j.ms/1000).toFixed(1)+'s): '+j.error}
+  catch(e){o.textContent=e.message}
+  $('send').disabled=false;
 };
-const rid = (p, k, m) => p.id + ':' + m + '|' + (k.n - 1);
-
-/* ---------- data helpers ---------- */
-function modelsFor(p, k) {
-  const set = new Set(k.ok ? k.chat : []);
-  p.forced.forEach((m) => set.add(m));
-  const all = [...set];
-  const pool = p.pool.filter((m) => set.has(m));
-  const rest = all.filter((m) => !p.pool.includes(m)).sort();
-  return [...pool, ...rest];
-}
-const isStar = (p, m) => p.pool.includes(m);
-function unionCount(p) { const s = new Set(); p.keys.forEach((k) => modelsFor(p, k).forEach((m) => s.add(m))); return s.size; }
-
-function showToast(kind, title, message, duration = 4000) {
-  let node = $('testToast');
-  if (!node) { node = el('div', 'toast'); node.id = 'testToast'; document.body.appendChild(node); }
-  clearTimeout(node._hideTimer);
-  node.className = 'toast ' + (kind === 'ok' ? 'ok' : 'bad');
-  node.innerHTML = '';
-  node.appendChild(el('div', 'th', title));
-  node.appendChild(el('div', 'tb', String(message || '').slice(0, 700)));
-  requestAnimationFrame(() => node.classList.add('show'));
-  node._hideTimer = setTimeout(() => node.classList.remove('show'), duration);
-}
-function showSummaryDetail(bucket, label) {
-  const items = [];
-  provs.forEach((p) => {
-    const names = [...new Set([...(p.ranked || []), ...(p.forced || []), ...p.keys.flatMap((k) => modelsFor(p, k))])];
-    names.forEach((m) => { if (modelBucket(p.id, m) === bucket) items.push({ p, m }); });
-  });
-  const veil = el('div', 'detailveil'), panel = el('div', 'detailbox');
-  const head = el('div', 'detailhead'); head.appendChild(el('b', '', label + ' · ' + items.length));
-  const close = el('button', 'iconbtn', 'Close'); close.onclick = () => veil.remove(); head.appendChild(close); panel.appendChild(head);
-  if (!items.length) panel.appendChild(el('div', 'empty', 'Is category me abhi koi model nahi.'));
-  items.forEach(({p,m}) => {
-    const row = el('div', 'detailitem'); row.appendChild(el('span', '', p.label + ' · ' + m));
-    const actions = el('div', 'ctl');
-    const go = el('button', '', 'Open'); go.onclick = () => { veil.remove(); cur = p.id; modelView = bucket; q = m; render(); };
-    actions.appendChild(go);
-    const usableKey = p.keys.find((k) => k.ok && modelsFor(p, k).includes(m));
-    if (usableKey && bucket !== 'unavailable') {
-      const retry = el('button', 'send', '↻ Retest');
-      retry.onclick = async () => {
-        veil.remove();
-        cur = p.id; modelView = bucket; q = m; render();
-        retry.disabled = true; retry.textContent = 'Testing…';
-        await testOne(p, usableKey, m, null, false);
-      };
-      actions.appendChild(retry);
-    }
-    row.appendChild(actions); panel.appendChild(row);
-  });
-  veil.addEventListener('click', (e) => { if (e.target === veil) veil.remove(); });
-  veil.appendChild(panel); document.body.appendChild(veil);
-}
-
-function summary() {
-  const counts = { working: 0, retest: 0, never: 0, untested: 0, unavailable: 0 };
-  const seen = new Set();
-  provs.forEach((p) => [...new Set([...(p.ranked || []), ...(p.forced || []), ...p.keys.flatMap((k) => modelsFor(p, k))])].forEach((m) => {
-    const id = p.id + ':' + m; if (seen.has(id)) return; seen.add(id);
-    const bucket = modelBucket(p.id, m); counts[bucket] = (counts[bucket] || 0) + 1;
-  }));
-  const box = $('sum'); box.innerHTML = '';
-  [['Working', counts.working, 'ok', 'working'], ['Needs recheck', counts.retest, '', 'retest'], ['Never worked', counts.never, 'bad', 'never'], ['To test', counts.untested, '', 'untested']].forEach(([l, n, c, bucket]) => {
-    const item = el('button', 'stat ' + c); item.type = 'button'; item.appendChild(el('b', '', n)); item.appendChild(el('span', '', l));
-    item.setAttribute('aria-label', l + ': ' + n + '. Tap to see models');
-    item.onclick = () => showSummaryDetail(bucket, l);
-    box.appendChild(item);
-  });
-}
-
-/* ---------- helpers ---------- */
-const coColor = (id) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 360; return 'hsl(' + h + ' 62% 48%)'; };
-const fmtRest = (s) => s < 90 ? s + 's' : s < 5400 ? Math.round(s / 60) + ' min' : s < 172800 ? (Math.round(s / 360) / 10) + ' ghante' : Math.round(s / 86400) + ' din';
-const dbRec = (pid, m) => bidx[pid + ':' + m] || null;
-const isDone = (pid, m) => { const b = dbRec(pid, m); return !!(b && b.ok + b.fail > 0); };   // already tested: result lives in Val Town SQLite
-const fmtDay = (t) => t ? new Date(t).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '';
-function dbState(pid, m) {
-  const b = dbRec(pid, m); if (!b || !(b.ok + b.fail > 0)) return 'idle';
-  if (b.last === 'busy' && !b.ok) return 'idle';
-  if (b.tier === 'limited') return 'skip';
-  if (b.tier === 'paid' || b.tier === 'dead' || b.tier === 'resting') return 'bad';
-  return b.ok > 0 ? 'ok' : 'bad';
-}
-function modelBucket(pid, m) {
-  const b = dbRec(pid, m);
-  if (!b || !(b.ok + b.fail > 0)) return 'untested';
-  if (b.tier === 'paid' || b.cost === 'paid') return 'unavailable';
-  // A key/account/rate-limit error is inconclusive; do not label the model broken.
-  const lastOk = Number(b.lastOk || b.last_ok || 0), lastFail = Number(b.lastFail || b.last_fail || 0);
-  const lastTag = String(b.last || ''), why = String(b.why || '');
-  // Provider capacity / high-demand messages are temporary. A model with no
-  // prior success stays untested; a previously working model goes to recheck.
-  if (lastTag === 'busy') return b.ok > 0 ? 'retest' : 'untested';
-  // HTTP 403/429 can be either model-level or key-level; use the backend's classified reason.
-  const accountIssue = /^(401|quota|account|billing|credits)/i.test(lastTag) || /key\/account problem.*model NOT blamed/i.test(why);
-  if (b.ok > 0 && !accountIssue && (lastFail > lastOk || b.tier === 'slow' || b.tier === 'dead' || b.tier === 'resting')) return 'retest';
-  if (b.ok > 0) return 'working';
-  return 'never';
-}
-function modelBucketLabel(bucket) {
-  return bucket === 'working' ? 'Working' : bucket === 'retest' ? 'Previously working · retest' : bucket === 'never' ? 'Never worked' : bucket === 'untested' ? 'Not tested yet' : 'Unavailable';
-}
-function rowState(pid, m) {
-  let st = 'idle';
-  for (const r0 in outs) {
-    if (!r0.startsWith(pid + ':' + m + '|')) continue;
-    const kd = outs[r0].kind;
-    if (kd === 'load') return 'load';
-    if (kd === 'ok') st = 'ok'; else if (kd === 'bad' && st !== 'ok') st = 'bad';
-  }
-  return st === 'idle' ? dbState(pid, m) : st;
-}
-
-/* ---------- output box under a row ---------- */
-function paintOut(r0) {
-  const f = refs[r0]; if (!f) return;
-  const r = outs[r0];
-  if (f.kb) f.kb.dataset.s = r ? r.kind : '';
-  f.row.dataset.s = rowState(f.row.dataset.p, f.row.dataset.m);
-  if (!r) { f.out.hidden = true; return; }
-  f.out.hidden = false; f.out.className = 'out ' + r.kind; f.out.innerHTML = '';
-  const h = el('div', 'oh'); h.appendChild(el('span', '', r.head)); if (r.right) h.appendChild(el('span', '', r.right));
-  f.out.appendChild(h); f.out.appendChild(el('div', 'ob', r.text));
-}
-function setOut(r0, kind, head, text, right) { outs[r0] = { kind, head, text, right }; paintOut(r0); }
-
-let rt = null;   // after tests the gateway ratings changed: quietly re-read /status
-function softRefresh() {
-  clearTimeout(rt);
-  rt = setTimeout(async () => {
-    try {
-      const { j } = await getJson('/status');
-      if (j && Array.isArray(j.leaderboard)) { board = j.leaderboard; dbOn = j.db; keyState = j.keyState || {}; cacheBoard(); if (cur === '@gw' || !busy) render(); else updateButtons(); }
-    } catch (e) {}
-  }, 1500);
-}
-
-/* ---------- rendering ---------- */
-function render() {
-  bidx = {}; board.forEach((b) => { bidx[b.id] = b; });
-  const tabs = $('tabs'); tabs.innerHTML = '';
-  if (cur !== '@gw' && cur !== '@keys' && !provs.some((p) => p.id === cur)) cur = provs.length ? provs[0].id : (board.length ? '@gw' : null);
-  provs.forEach((p) => {
-    const t = el('button', 'tab' + (p.id === cur ? ' on' : ''), p.label);
-    t.appendChild(el('i', '', unionCount(p)));
-    t.onclick = () => { cur = p.id; render(); };
-    tabs.appendChild(t);
-  });
-  if (provs.length) {
-    const blockedN = Object.values(keyState).flat().filter((k) => k.permanent || k.restSec > 0).length;
-    const t = el('button', 'tab' + (cur === '@keys' ? ' on' : ''), '🔐 Key Health');
-    if (blockedN) t.appendChild(el('i', '', blockedN));
-    t.onclick = () => { cur = '@keys'; render(); };
-    tabs.appendChild(t);
-  }
-  if (board.length) {
-    const t = el('button', 'tab' + (cur === '@gw' ? ' on' : ''), '📊 Gateway');
-    t.appendChild(el('i', '', gwRows().length));
-    t.onclick = () => { cur = '@gw'; render(); };
-    tabs.appendChild(t);
-  }
-  for (const k in refs) delete refs[k];
-  const box = $('list'); box.innerHTML = '';
-  shown = [];
-  if (!cur) {
-    box.appendChild(el('div', 'empty', 'Koi company nahi mili. Val Town env me AI_<NAAM>_KEY aur AI_<NAAM>_ENDPOINT check karo.'));
-  } else if (cur === '@gw') renderGateway(box);
-  else if (cur === '@keys') renderKeyHealth(box);
-  else renderCompany(box, provs.find((p) => p.id === cur));
-  summary(); updateButtons();
-}
-
-function renderCompany(box, p) {
-  let ki = curKey[p.id] ?? -1; if (ki >= p.keys.length) ki = -1; curKey[p.id] = ki;
-  const sel = ki < 0 ? p.keys : [p.keys[ki]];
-  const col = coColor(p.id);
-  const bm = bidx;
-  const head = el('div', 'cohead'); head.style.setProperty('--c', col); head.appendChild(el('h2', '', p.label));
-  head.appendChild(el('span', '', [p.host, p.format, p.keys.length + ' key', p.auto ? 'auto discovery' : 'forced models'].filter(Boolean).join(' · ')));
-  box.appendChild(head);
-
-  const chips = el('div', 'chips'); chips.style.setProperty('--c', col);
-  const mk = (txt, on, bad, fn) => { const c = el('button', 'chip' + (on ? ' on' : '') + (bad ? ' bad' : ''), txt); c.onclick = fn; chips.appendChild(c); };
-  if (p.keys.length > 1) mk('Sab keys (' + p.keys.length + ')', ki < 0, false, () => { curKey[p.id] = -1; render(); });
-  p.keys.forEach((kk, i) => mk('Key ' + kk.n + (kk.ok ? ' ✅ ' + kk.chat.length : ' ❌ ' + (kk.status || 'err')), p.keys.length === 1 || ki === i, !kk.ok, () => { curKey[p.id] = i; render(); }));
-  box.appendChild(chips);
-
-  sel.filter((k) => !k.ok).forEach((k) => box.appendChild(el('div', 'kerr', 'Key ' + k.n + ': model list nahi mili (HTTP ' + (k.status || 'network') + ', ' + k.ms + 'ms)\n' + (k.error || 'no details'))));
-  if (sel.some((k) => !k.ok) && p.forced.length) box.appendChild(el('div', 'note', 'Forced models (AI_' + p.id + '_MODELS) neeche test ke liye diye hain.'));
-
-  const sets = sel.map((k) => new Set(modelsFor(p, k)));
-  const order = [...new Set(sel.flatMap((k) => modelsFor(p, k)))];
-  const names = [...p.pool.filter((m) => order.includes(m)), ...order.filter((m) => !p.pool.includes(m)).sort()];
-  box.appendChild(el('div', 'kinfo', names.length + ' models' + (sel.length > 1 ? ' (model ko ek representative key se test kiya jayega; result compatible keys par shared hoga)' : '') + ' · ★ ' + p.pool.length + ' gateway pool me'));
-
-  const filt = el('div', 'filt');
-  const si = el('input'); si.type = 'search'; si.placeholder = 'Model dhundo…'; si.value = q; si.setAttribute('aria-label', 'Model dhundo');
-  const lb = el('label'); const cb = el('input'); cb.type = 'checkbox'; cb.checked = starOnly; lb.appendChild(cb); lb.appendChild(document.createTextNode('Sirf ★'));
-  filt.appendChild(si); filt.appendChild(lb); box.appendChild(filt);
-  // name-tier filter chips
-  const ntrow = el('div', 'ntfilt'); ntrow.appendChild(el('span', '', 'Naam tier:'));
-  [['', 'Sab'], ['h', '🔵 HIGH'], ['m', '🟡 MID'], ['l', '⚪ LOW'], ['?', '— Pata nahi']].forEach(([k, lbl]) => {
-    const c = el('button', 'chip' + (ntFilter === k ? ' on' : ''), lbl);
-    c.style.setProperty('--c', col);
-    c.onclick = () => { ntFilter = k; render(); };
-    ntrow.appendChild(c);
-  });
-  box.appendChild(ntrow);
-  const bucketCounts = { working: 0, retest: 0, never: 0, untested: 0, unavailable: 0 };
-  names.forEach((m) => { const b = modelBucket(p.id, m); bucketCounts[b] = (bucketCounts[b] || 0) + 1; });
-  const stateFilters = el('div', 'chips model-state-filters');
-  [['working', '✓ Working'], ['retest', '↻ Retest'], ['never', '✕ Never worked'], ['untested', '○ Not tested']].forEach(([key, label]) => {
-    const c = el('button', 'chip' + (modelView === key ? ' on' : ''), label + ' ' + bucketCounts[key]);
-    c.onclick = () => { modelView = key; render(); };
-    stateFilters.appendChild(c);
-  });
-  box.appendChild(stateFilters);
-  if (bucketCounts.unavailable) box.appendChild(el('div', 'note', bucketCounts.unavailable + ' confirmed paid models hidden. Never-worked models stay in their own tab and are not automatically tested again.'));
-  const listHost = el('div'); box.appendChild(listHost);
-  const draw = () => {
-    for (const r0 in refs) delete refs[r0];
-    listHost.innerHTML = '';
-    const ms = names.filter((m) => {
-      const bucket = modelBucket(p.id, m);
-      if (bucket !== modelView) return false;
-      if (starOnly && !isStar(p, m)) return false;
-      if (q && !m.toLowerCase().includes(q.toLowerCase())) return false;
-      if (ntFilter) {
-        const nt = nameTierLabel(m);
-        const cls = nt ? nt.cls : '?';
-        if (cls !== ntFilter) return false;
-      }
-      return true;
-    });
-    shown = [];
-    if (!ms.length) { listHost.appendChild(el('div', 'empty', modelView === 'working' ? 'Abhi koi proven working model nahi. Smart Test se discovery shuru karo.' : modelView === 'retest' ? 'Abhi kisi previously-working model ko retest ki zarurat nahi.' : modelView === 'never' ? 'Abhi koi failed model record nahi hai.' : 'Sab discovered models test ho chuke hain.')); updateButtons(); return; }
-    const list = el('div', 'list');
-    ms.forEach((m) => {
-      const ks = sel.filter((k, i) => sets[i].has(m));
-      const d = el('div', 'm'); d.dataset.p = p.id; d.dataset.m = m; d.style.setProperty('--c', col);
-      const top = el('div', 'top'); top.appendChild(el('span', 'dot'));
-      const info = el('div', 'info'); const nm = el('div', 'name', m); if (isStar(p, m)) nm.appendChild(el('span', 'star', '★'));
-      const nt = nameTierLabel(m); if (nt) { const nb = el('span', 'ntag ' + nt.cls, nt.txt); nm.appendChild(nb); }
-      { const bf = bm[p.id + ':' + m]; if (bf && bf.cost === 'free' && bf.ok > 0) nm.appendChild(el('span', 'ntag f', '🆓 FREE ✔')); else if (FREE_NAME.test(m)) nm.appendChild(el('span', 'ntag f', 'free?')); }
-      info.appendChild(nm);
-      const b0 = bm[p.id + ':' + m]; const pd = !!(b0 && (b0.tier === 'paid' || b0.tier === 'dead')); if (pd) d.classList.add('paid');
-      const done = isDone(p.id, m); const bucket = modelBucket(p.id, m);
-      nm.appendChild(el('span', 'ntag ' + (bucket === 'working' ? 'f' : bucket === 'retest' ? 'm' : 'x'), modelBucketLabel(bucket)));
-      info.appendChild(el('div', 'meta', 'Key ' + ks.map((k) => k.n).join(', ') + ' pe available · ' + (pd ? (b0.tier === 'dead' ? '☠ band: jawab nahi deta' : '💰 paid') + ' · gateway ise nahi aazmata' + (b0.nextCheck ? ' · agla test ' + fmtDay(b0.nextCheck) : '') : b0 ? 'gateway: rating ' + b0.rating + (b0.avgSec != null ? ' · ' + b0.avgSec + 's' : '') + ' · ' + (b0.tier || '') + (done ? ' · ✔ tested ' + fmtDay(b0.updated) : '') : 'gateway pool ke bahar')));
-      top.appendChild(info);
-      const ctl = el('div', 'ctl'); const outs2 = el('div', 'outs');
-      const testKey = ks[0]; // one representative key per company+model; no per-key model retest loop
-      if (testKey) {
-        const r0 = rid(p, testKey, m);
-        const b = el('button', 'send kb', bucket === 'retest' || bucket === 'never' ? '↻ Retest' : 'Test');
-        b.title = 'Ek available key se test; model verdict compatible keys par shared hoga';
-        b.onclick = () => testOne(p, testKey, m, b);
-        ctl.appendChild(b);
-        const out = el('div', 'out'); out.hidden = true; outs2.appendChild(out);
-        ks.forEach((k) => { refs[rid(p, k, m)] = { row: d, out, kb: b }; });
-        const kh = testKey.history && testKey.history[m];
-        if (kh && kh.status) {
-          const good = kh.status === 'working', bad = kh.status === 'failed';
-          if (good || bad) setOut(r0, good ? 'ok' : 'bad', (good ? 'Working' : 'Failed') + ' · shared model status', (kh.error || (good ? 'Company-level model verdict: this model works on compatible keys.' : 'Company-level model verdict: this model failed on a compatible key.')) + (kh.testedAt ? ' · ' + new Date(kh.testedAt).toLocaleString() : ''), kh.ms ? (kh.ms / 1000).toFixed(1) + 's' : '');
-          else setOut(r0, 'bad', kh.status === 'account_error' ? 'Key/account error · Key ' + testKey.n : 'Inconclusive · Key ' + testKey.n, kh.error || kh.tag || 'Is key ka result model verdict nahi hai.', kh.testedAt ? new Date(kh.testedAt).toLocaleString() : '');
-        }
-        if (!pd && !done) shown.push({ p, k: testKey, m });
-      }
-      top.appendChild(ctl); d.appendChild(top); d.appendChild(outs2);
-      list.appendChild(d);
-    });
-    listHost.appendChild(list);
-    ms.forEach((m) => sel.forEach((k) => paintOut(rid(p, k, m))));
-    updateButtons();
-  };
-  si.addEventListener('input', () => { q = si.value; draw(); });
-  cb.addEventListener('change', () => { starOnly = cb.checked; draw(); });
-  draw();
-}
-
-function gwRows() {
-  const rows = board.map((b) => ({
-    ...b,
-    prov: b.provider || b.id.split(':')[0],
-    mdl: b.model || b.id.slice(b.id.indexOf(':') + 1),
-    tier: b.tier || (String(b.state).startsWith('resting') ? 'resting' : b.elite ? 'elite' : (b.ok + b.fail > 0 ? 'ok' : 'new')),
-    rest: b.restSec != null ? b.restSec : (parseInt(String(b.state).replace(/\D/g, '')) || 0),
-  }));
-  const have = new Set(board.map((b) => b.id));
-  provs.forEach((p) => {   // every other attached chat model: not in the gateway shortlist (yet)
-    (p.ranked || [...new Set(p.keys.flatMap((k) => k.chat))]).forEach((m) => {
-      if (!have.has(p.id + ':' + m)) rows.push({ id: p.id + ':' + m, prov: p.id, label: p.label, mdl: m, tier: 'out', rank: null, rating: null, ok: 0, fail: 0, avgSec: null, last: '-', lastErr: '', consec: 0, keys: p.keys.length, rest: 0, elite: false });
-    });
-  });
-  return rows;
-}
-const TIERS = { dead: ['☠ Band', 'bad'], elite: ['⭐ Elite', 'ok'], ok: ['✓ Theek', 'ok'], new: ['🆕 Naya', ''], slow: ['🐢 Slow', 'warn'], resting: ['⛔ Block', 'bad'], limited: ['⏸ Limit', 'warn'], paid: ['💰 Paid', 'bad'], out: ['⚪ Pool ke bahar', ''] };
-function renderGateway(box) {
-  const rows = gwRows();
-  const head = el('div', 'cohead'); head.appendChild(el('h2', '', 'Gateway leaderboard'));
-  head.appendChild(el('span', '', 'asli requests + tester ki rating, best pehle')); box.appendChild(head);
-  if (dbOn === false) box.appendChild(el('div', 'note', 'SQLite nahi mila: ratings sirf memory me hain (val restart pe reset).'));
-
-  // one card per company: how many models work / are new / are blocked, avg speed, key rest state. Tap = filter.
-  const co = {};
-  rows.forEach((r) => {
-    const c = co[r.prov] || (co[r.prov] = { label: r.label || r.prov, n: 0, live: 0, fresh: 0, rest: 0, out: 0, sec: [] });
-    c.n++;
-    if (r.tier === 'out') c.out++; else if (r.tier === 'resting' || r.tier === 'paid' || r.tier === 'limited') c.rest++; else if (r.tier === 'new') c.fresh++; else c.live++;
-    if (r.avgSec != null && r.tier !== 'resting') c.sec.push(r.avgSec);
-  });
-  const cards = el('div', 'cards');
-  Object.keys(co).sort().forEach((id) => {
-    const c = co[id]; const d = el('button', 'card' + (gwCo === id ? ' on' : '')); d.style.setProperty('--c', coColor(id));
-    d.appendChild(el('b', '', c.label));
-    d.appendChild(el('span', '', c.live + ' chal · ' + c.fresh + ' naye · ' + c.rest + ' block' + (c.out ? ' · ' + c.out + ' bahar' : '')));
-    d.appendChild(el('span', '', c.sec.length ? '⚡ avg ' + (c.sec.reduce((a, b) => a + b, 0) / c.sec.length).toFixed(1) + 's' : 'speed abhi pata nahi'));
-    const ks = keyState[id] || [];
-    if (ks.length) { const kp = el('div', 'kpills'); ks.forEach((k) => kp.appendChild(el('i', k.restSec > 0 || k.limSec > 0 ? 'bad' : '', 'K' + k.n + (k.restSec > 0 ? ' ⏸ ' + fmtRest(k.restSec) : k.limSec > 0 ? ' ⏸ ' + (k.worst || 'limit') + ' ' + fmtRest(k.limSec) : k.pct >= 60 ? ' ⚠ ' + k.pct + '%' : ' ✓')))); d.appendChild(kp); }
-    d.onclick = () => { gwCo = gwCo === id ? '' : id; render(); };
-    cards.appendChild(d);
-  });
-  box.appendChild(cards);
-
-  const base = rows.filter((r) => !gwCo || r.prov === gwCo);
-  const tc = el('div', 'chips tiers');
-  [['', 'Sab'], ['elite', '⭐ Elite'], ['ok', '✓ Theek'], ['new', '🆕 Naye'], ['slow', '🐢 Slow'], ['resting', '⛔ Block'], ['limited', '⏸ Limit'], ['paid', '💰 Paid'], ['out', '⚪ Bahar']].forEach(([k, l]) => {
-    const n = k ? base.filter((r) => r.tier === k).length : base.length;
-    const c = el('button', 'chip' + (gwTier === k ? ' on' : ''), l + ' ' + n); c.onclick = () => { gwTier = k; render(); }; tc.appendChild(c);
-  });
-  box.appendChild(tc);
-
-  const list = el('div', 'list');
-  const vis = base.filter((r) => !gwTier || r.tier === gwTier);
-  if (!vis.length) list.appendChild(el('div', 'empty', 'Is filter me koi model nahi.'));
-  vis.forEach((r) => {
-    const d = el('div', 'm'); d.style.setProperty('--c', coColor(r.prov)); const top = el('div', 'top');
-    d.dataset.s = (r.tier === 'resting' || r.tier === 'paid') ? 'bad' : r.tier === 'limited' ? 'skip' : (r.ok > 0 ? 'ok' : 'idle');
-    top.appendChild(el('span', 'dot'));
-    const info = el('div', 'info'); const nm = el('div', 'name', (r.rank ? r.rank + '. ' : '– ') + r.mdl);
-    if (r.elite) nm.appendChild(el('span', 'star', '★'));
-    nm.appendChild(el('span', 'cob', r.label || r.prov)); info.appendChild(nm);
-    const bar = el('div', 'bar'); const f = el('i'); f.style.width = Math.max(2, Math.min(100, r.rating)) + '%'; bar.appendChild(f); if (r.rating != null) info.appendChild(bar);
-    const sp = r.avgSec == null ? 'speed ?' : (r.avgSec <= 6 ? '⚡ ' : r.avgSec >= 20 ? '🐢 ' : '') + r.avgSec + 's';
-    if (r.cost === 'free' && r.ok > 0) nm.appendChild(el('span', 'ntag f', '🆓 FREE ✔'));
-    info.appendChild(el('div', 'meta', r.tier === 'out' ? 'Pool ke bahar: gateway abhi ise use nahi karta. Company tab me test karo, achha nikla to pool me aa jayega.' : 'rating ' + r.rating + ' · ok ' + r.ok + ' / fail ' + r.fail + ' · ' + sp + ' · last ' + r.last + ' · ' + r.keys + ' key' + (r.ok + r.fail ? '' : ' · abhi tak test nahi hua')));
-    if (r.tier === 'paid') info.appendChild(el('div', 'gerr', '💰 Test me paid nikla (company ki saari keys ke liye). Ab ye apne aap dobara test nahi hota. Tum manually test karo aur ye jawab de de, to turant 🆓 Free ho jayega.')); else if (r.tier === 'resting') info.appendChild(el('div', 'gerr', '⛔ ' + fmtRest(r.rest) + ' tak band (lagatar ' + (r.consec || 1) + ' fail)' + (r.lastErr ? ' — ' + r.lastErr : '')));
-    else if (r.tier === 'limited') info.appendChild(el('div', 'gerr', '⏸ Provider ne temporary rate-limit diya hai; cooldown ke baad student traffic dobara try kar sakta hai.'));
-    else if (r.lastErr && r.consec) info.appendChild(el('div', 'gerr', 'pichhli galti: ' + r.lastErr));
-    top.appendChild(info);
-    const t = TIERS[r.tier] || TIERS.ok; top.appendChild(el('span', 'tag ' + t[1], t[0]));
-    d.appendChild(top); list.appendChild(d);
-  });
-  box.appendChild(list);
-}
-
-/* ---------- loading ---------- */
-async function getJson(path) {
-  const r = await fetch(base() + path, { headers: authHeaders() });
-  let j = null; try { j = await r.json(); } catch (e) {}
-  return { status: r.status, j };
-}
-function showConn(note) { $('conn').hidden = false; $('gear').setAttribute('aria-expanded', 'true'); $('connNote').textContent = note || ''; }
-
-async function load() {
-  const u = base(); if (!u) return;
-  try {
-    localStorage.setItem('ey_test_url', u);
-    const savedToken = $('adminToken').value.trim();
-    if (savedToken) localStorage.setItem('ey_admin_token', savedToken);
-    else localStorage.removeItem('ey_admin_token');
-  } catch (e) {}
-  $('connNote').textContent = 'Settings saved in this browser.';
-  $('msg').textContent = 'Load ho raha hai (har key ki model list mangi ja rahi hai)…'; $('load').disabled = true; $('load').textContent = 'Connecting…'; $('connNote').textContent = '';
-  const [rm, rs] = await Promise.allSettled([getJson('/admin/models'), getJson('/status')]);
-  Object.keys(res).forEach((k) => delete res[k]); Object.keys(outs).forEach((k) => delete outs[k]);
-  provs = []; board = []; dbOn = null; keyState = {};
-  if (rs.status === 'fulfilled' && rs.value.j && Array.isArray(rs.value.j.leaderboard)) { board = rs.value.j.leaderboard; dbOn = rs.value.j.db; keyState = rs.value.j.keyState || {}; cacheBoard(); }
-  else { try { const c = JSON.parse(localStorage.getItem('ey_board_cache') || 'null'); if (Array.isArray(c)) board = c; } catch (e) {} }   // Val not reachable: show the last saved ticks
-  let err = '';
-  if (rm.status === 'rejected') err = '❌ Val se connect nahi hua: URL check karo (ya network / CORS).';
-  else if (rm.value.status === 401 || rm.value.status === 403) err = '🔒 Ye page apni website ke origin se khula hona chahiye (jo Val Town env AI_ALLOWED_ORIGINS me hai). Is file ko wahi hosting par daalo, file se ya kisi aur site se nahi chalega.';
-  else if (!rm.value.j || !Array.isArray(rm.value.j.providers)) err = '⚠️ Val me purana main.ts chal raha hai (/admin/models nahi mila). Latest main.ts deploy karo.';
-  else provs = rm.value.j.providers;
-  if (err) { $('msg').textContent = err; showConn(location.protocol === 'file:' ? 'Abhi page file:// se khula hai: hosting par upload karke kholo.' : ''); }
-  else {
-    const keys = provs.reduce((a, p) => a + p.keys.length, 0), good = provs.reduce((a, p) => a + p.keys.filter((k) => k.ok).length, 0);
-    $('msg').textContent = provs.length ? provs.length + ' companies · ' + good + '/' + keys + ' keys ki list mili' : '⚠️ Koi company set nahi hai. Env vars check karo.';
-  }
-  $('load').disabled = false; $('load').textContent = '↻ Save & Connect';
-  render();
-}
-
-/* ---------- persistent API-key health + manual recovery ---------- */
-function renderKeyHealth(box) {
-  const head = el('div', 'cohead');
-  head.appendChild(el('b', '', 'API Key Health & Recovery'));
-  head.appendChild(el('span', '', 'Blocked keys ki live list · manual test se recovery'));
-  box.appendChild(head);
-  const rows = [];
-  provs.forEach((p) => (keyState[p.id] || []).forEach((st) => rows.push({ p, st })));
-  rows.sort((a, b) => Number(b.st.permanent) - Number(a.st.permanent) || b.st.restSec - a.st.restSec || b.st.failures - a.st.failures);
-  if (!rows.length) { box.appendChild(el('div', 'empty', 'Abhi koi API key configured nahi hai.')); return; }
-  const blocked = rows.filter((x) => x.st.permanent || x.st.restSec > 0);
-  box.appendChild(el('div', 'kinfo', blocked.length + ' blocked / resting keys · ' + (rows.length - blocked.length) + ' active keys. Secret API key kabhi page par show nahi hoti.'));
-  rows.forEach(({ p, st }) => {
-    const card = el('div', 'm key-health-card');
-    const top = el('div', 'top');
-    top.appendChild(el('div', 'name', p.label + ' · Key ' + st.n));
-    const status = st.permanent ? '⛔ PERMANENT BLOCK' : st.restSec > 0 ? '⏳ RESTING' : '✅ ACTIVE';
-    top.appendChild(el('span', 'tag ' + (st.permanent || st.restSec > 0 ? 'bad' : 'ok'), status)); card.appendChild(top);
-    const detail = st.permanent ? '3 consecutive account-level failures. Automatic routing se excluded.' : st.restSec > 0 ? 'Failure count: ' + st.failures + ' · Unlock in ' + fmtRest(st.restSec) + (st.restUntil ? ' · ' + new Date(st.restUntil).toLocaleString() : '') : 'Failure count: ' + st.failures + ' · No active quarantine';
-    card.appendChild(el('div', 'meta', detail));
-    const models = (p.keys[st.n - 1]?.chat || []).filter(Boolean);
-    const forced = p.forced || [];
-    const options = [...new Set([...models, ...forced])];
-    if (!options.length) { card.appendChild(el('div', 'qmut', 'Is key par manually test karne ke liye model discovery unavailable hai. Reload karke dobara dekho.')); }
-    else {
-      const controls = el('div', 'ctl key-health-controls');
-      const select = el('select'); select.style.flex = '1';
-      options.forEach((m) => { const o = document.createElement('option'); o.value = m; o.textContent = m; select.appendChild(o); });
-      const btn = el('button', 'send', st.permanent || st.restSec > 0 ? '🧪 Test & recover' : '🧪 Manual test');
-      btn.onclick = async () => {
-        btn.disabled = true; btn.textContent = 'Testing…';
-        try {
-          const r = await fetch(base() + '/test', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ target: p.id + ':' + select.value, key: st.n - 1, prompt: 'Hi', record: false }) });
-          const j = await r.json().catch(() => ({}));
-          if (j.ok) $('msg').textContent = '✅ ' + p.label + ' Key ' + st.n + ' recovered. Successful manual test ne quarantine + failure count reset kar diya.';
-          else $('msg').textContent = '⚠️ Manual test failed: ' + (j.error || j.cls || 'unknown error') + (j.status ? ' (HTTP ' + j.status + ')' : '');
-        } catch (e) { $('msg').textContent = '⚠️ Manual test network error: ' + e.message; }
-        try { const { j: fresh } = await getJson('/status'); if (fresh?.keyState) keyState = fresh.keyState; } catch (e) {}
-        render();
-      };
-      controls.appendChild(select); controls.appendChild(btn); card.appendChild(controls);
-    }
-    box.appendChild(card);
-  });
-}
-
-/* ---------- testing ---------- */
-async function testOne(p, k, m, btn, auto) {
-  if (btn && isDone(p.id, m) && !Object.keys(outs).some((x) => x.startsWith(p.id + ':' + m + '|')) && !confirm('Ye model pehle hi test ho chuka hai (result saved). Phir bhi test karu?')) return;
-  const r0 = rid(p, k, m), msgText = 'Hi';
-  setOut(r0, 'load', 'Response aa raha hai…', '');
-  if (btn) btn.disabled = true;
-  const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 50000);
-  let verdict = 'transient', discoveryShared = false;   // model-level verdicts are shared; auth/quota errors stay key-scoped
-  try {
-    const r = await fetch(base() + '/test', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ target: p.id + ':' + m, key: k.n - 1, availableKeys: p.keys.filter(kk => modelsFor(p, kk).includes(m)).map(kk => kk.n - 1), prompt: msgText }), signal: ctl.signal });
-    const j = await r.json();
-    if (j.ok) { verdict = 'ok'; discoveryShared = !!j.discoveryShared; res[r0] = 'ok'; setOut(r0, 'ok', 'Working' + (j.cost === 'free' ? ' · 🆓 Free' : ''), j.text, (j.ms / 1000).toFixed(1) + 's · key ' + j.key + (j.recorded ? ' · 💾 saved' : '')); showToast('ok', '✓ Working · ' + p.label + ' / ' + m, (j.text || 'Key ne successful response diya.') + ' · ' + (j.ms / 1000).toFixed(1) + 's · Key ' + j.key); }
-    else { verdict = j.tag === 'busy' ? 'busy' : (j.cls || 'transient'); discoveryShared = !!j.discoveryShared; res[r0] = 'bad'; const busy = verdict === 'busy'; setOut(r0, 'bad', (busy ? 'Temporarily busy · retry later' : 'Failed') + (j.status ? ' · HTTP ' + j.status : '') + ' · key ' + (j.key || k.n) + (j.state === 'paid' ? ' · 💰 Paid' : ''), j.error || 'unknown', j.ms ? (j.ms / 1000).toFixed(1) + 's' : ''); showToast('bad', '⚠ ' + (busy ? 'Model capacity busy' : verdict === 'account' ? 'Key/account issue' : verdict === 'model' ? 'Model failed' : 'Inconclusive') + ' · ' + p.label + ' / ' + m, (j.error || 'Test failed') + (j.status ? ' · HTTP ' + j.status : '') + ' · Key ' + (j.key || k.n)); }
-  } catch (e) {
-    res[r0] = 'bad';
-    const errText = e.name === 'AbortError' ? 'Timeout: 50s me response nahi aaya.' : e.message;
-    setOut(r0, 'bad', 'Failed', errText);
-    showToast('bad', '⚠ Test connection failed · ' + p.label + ' / ' + m, errText);
-  }
-  clearTimeout(tm);
-  if (btn) btn.disabled = false;
-  // Every model-level success/definite failure is shared across compatible keys; auth/quota/transient errors stay with the selected key.
-  if (discoveryShared && (verdict === 'ok' || verdict === 'model')) {
-    p.keys.forEach((k2) => {
-      if (k2.n === k.n || !modelsFor(p, k2).includes(m)) return;
-      const r2 = rid(p, k2, m); if (outs[r2] && outs[r2].kind !== 'load') return;
-      setOut(r2, verdict === 'ok' ? 'ok' : 'bad', (verdict === 'ok' ? 'Working' : 'Failed') + ' · shared model verdict from key ' + k.n, 'First discovery result is key par bhi available hai; duplicate API call nahi ki gayi.', '');
-    });
-  }
-  if (!busy) { summary(); softRefresh(); }
-  if ((verdict === 'account' || verdict === 'transient') && auto && !stopReq) {   // key/account or inconclusive network result: try another eligible key once
-    const k2 = p.keys.find((kk) => kk.ok && kk.n !== k.n && modelsFor(p, kk).includes(m) && !outs[rid(p, kk, m)]);
-    if (k2) await testOne(p, k2, m, null, true);
-  }
-}
-
-async function runAll(items) {
-  if (!items.length || busy) return;
-  if (items.length > 25 && !confirm(items.length + ' tests chalenge (har ek chhota request). Chalu karu?')) return;
-  busy = true; stopReq = false; updateButtons();
-  const queue = items.slice(); let done = 0;
-  const worker = async () => { while (queue.length && !stopReq) { const it = queue.shift(); await testOne(it.p, it.k, it.m, null, true); done++; $('msg').textContent = 'Test chal raha hai… ' + done + '/' + items.length; } };
-  await Promise.all([worker(), worker(), worker()]);
-  const wasStopped = stopReq; busy = false; stopReq = false;
-  try {
-    const { j } = await getJson('/status');
-    if (j && Array.isArray(j.leaderboard)) { board = j.leaderboard; dbOn = j.db; keyState = j.keyState || {}; cacheBoard(); }
-  } catch (e) {}
-  $('msg').textContent = wasStopped ? 'Roka gaya: ' + done + '/' + items.length + ' test hue.' : 'Discovery batch complete: ' + done + '/' + items.length + '. Results saved; failed models auto-repeat nahi honge.';
-  render();
-}
-// Smart Test = 90% new discovery + 10% previously-working health sample.
-// Ratio examples: 10 tests => 9 new + 1 old; max batch 12 => 11 new + 1 old.
-// A provider:model is a single company-wide record, even when visible under multiple API keys.
-// It is selected/tested once through one representative key; its model verdict is shared across all keys.
-// Select up to 2 DIFFERENT models per API key, rotating across keys/providers.
-// Never-worked failures and models moved to Retest by student traffic are NOT auto-retried.
-const SMART_MAX = 12, SMART_PER_KEY = 2;
-const FREE_NAME = /(^|[^a-z0-9])free([^a-z0-9]|$)/i, LOOKS_PAID = /(^|[^a-z0-9])(pro|ultra|max|opus|premium|plus|turbo|large)([^a-z0-9]|$)/i;
-function hintOf(p, m) { let h = null; (p.keys || []).forEach((k) => { const v = k.hint && k.hint[m]; if (v === true) h = true; else if (v === false && h !== true) h = false; }); return h; }
-function lane(pid, m) {
-  const p = provs.find((x) => x.id === pid), h = p ? hintOf(p, m) : null, b = dbRec(pid, m);
-  if ((b && b.cost === 'free') || FREE_NAME.test(m) || h === true) return 0;
-  return h === false || LOOKS_PAID.test(m) ? 1.6 : 1;
-}
-function smartPlan() {
-  const candidates = { fresh: new Map(), old: new Map() };
-  const keyId = (p, k) => p.id + '|' + (k.n - 1);
-  // Build a candidate queue for every configured API key. A model listed under several keys
-  // is still tested only once per provider; the first eligible key is used as its representative.
-  provs.forEach((p) => {
-    p.keys.forEach((k) => {
-      if (!k.ok) return;
-      const id = keyId(p, k);
-      const models = [...new Set([...modelsFor(p, k), ...(p.forced || [])])];
-      models.forEach((m) => {
-        const b = dbRec(p.id, m);
-        if (b && (b.tier === 'paid' || b.cost === 'paid' || b.tier === 'limited')) return;
-        const tested = !!(b && Number(b.ok || 0) + Number(b.fail || 0) > 0) || Object.keys(outs).some((r0) => r0.startsWith(p.id + ':' + m + '|'));
-        if (!tested) {
-          if (!candidates.fresh.has(id)) candidates.fresh.set(id, { p, k, models: [] });
-          candidates.fresh.get(id).models.push({ m, pri: lane(p.id, m) });
-          return;
-        }
-        // 10% health sample: only models with a proven prior success that are still classified Working.
-        // A model already failing after student traffic is intentionally left for Manual Retest.
-        if (b && Number(b.ok || 0) > 0 && modelBucket(p.id, m) === 'working') {
-          if (!candidates.old.has(id)) candidates.old.set(id, { p, k, models: [] });
-          candidates.old.get(id).models.push({ m, pri: 0, updated: Number(b.updated || 0) });
-        }
-      });
-    });
-  });
-  const sortQueues = (map, old) => [...map.entries()].map(([id, q]) => {
-    const unique = new Map(); q.models.forEach((x) => { if (!unique.has(x.m)) unique.set(x.m, x); });
-    q.models = [...unique.values()].sort((a, b) => old
-      ? (a.updated - b.updated) || (scoreSafe(b.m) - scoreSafe(a.m))
-      : (a.pri - b.pri) || (scoreSafe(b.m) - scoreSafe(a.m)));
-    q.id = id; q.at = 0;
-    return q;
-  });
-  const freshQ = sortQueues(candidates.fresh, false), oldQ = sortQueues(candidates.old, true);
-  const keyUsage = new Map(); // shared across 90/10 lanes: max 2 distinct provider:model tests per API key
-  const take = (queues, limit, already, perKeyLimit = SMART_PER_KEY) => {
-    const picked = [], seen = already || new Set();
-    if (!queues.length) return picked;
-    let progress = true, cursor = 0;
-    try { cursor = Number(localStorage.getItem('ey_smart_key_cursor') || 0) % queues.length; } catch (_) {}
-    while (picked.length < limit && progress) {
-      progress = false;
-      const roundStart = cursor; let nextCursor = cursor;
-      for (let step = 0; step < queues.length; step++) {
-        if (picked.length >= limit) break;
-        const qi = (roundStart + step) % queues.length, q = queues[qi];
-        if ((keyUsage.get(q.id) || 0) >= perKeyLimit) continue;
-        while (q.at < q.models.length && seen.has(q.p.id + ':' + q.models[q.at].m)) q.at++;
-        if (q.at >= q.models.length) continue;
-        const x = q.models[q.at++], id = q.p.id + ':' + x.m;
-        if (seen.has(id)) continue;
-        seen.add(id); keyUsage.set(q.id, (keyUsage.get(q.id) || 0) + 1); picked.push({ p: q.p, k: q.k, m: x.m }); progress = true;
-        nextCursor = (qi + 1) % queues.length;
-      }
-      cursor = nextCursor;
-    }
-    try { localStorage.setItem('ey_smart_key_cursor', String(cursor)); } catch (_) {}
-    return picked;
-  };
-  const totalFresh = new Set(freshQ.flatMap((q) => q.models.map((x) => q.p.id + ':' + x.m))).size;
-  const totalOld = new Set(oldQ.flatMap((q) => q.models.map((x) => q.p.id + ':' + x.m))).size;
-  const freshTarget = Math.min(SMART_MAX, Math.round(SMART_MAX * 0.9)); // 10 => 9; 12 => 11
-  const oldTarget = SMART_MAX - freshTarget; // 10 => 1; 12 => 1
-  const used = new Set();
-  let fresh = take(freshQ, freshTarget, used, 1);
-  let old = take(oldQ, oldTarget, used, SMART_PER_KEY);
-  // If one lane is short, use remaining slots from the other lane; never pull Never-worked or failed models.
-  if (fresh.length < freshTarget && old.length < oldTarget) {
-    old = old.concat(take(oldQ, SMART_MAX - fresh.length - old.length, used, SMART_PER_KEY));
-  }
-  if (fresh.length + old.length < SMART_MAX) {
-    fresh = fresh.concat(take(freshQ, SMART_MAX - fresh.length - old.length, used, SMART_PER_KEY));
-  }
-  return {
-    items: [...fresh, ...old],
-    fresh: fresh.length,
-    old: old.length,
-    totalFresh,
-    totalOld,
-    total: totalFresh + totalOld,
-  };
-}
-function scoreSafe(m) { try { return nameScore(m); } catch (_) { return 0; } }
-
-function starItems() {
-  const out = [];
-  provs.forEach((p) => p.keys.forEach((k) => { modelsFor(p, k).forEach((m) => { if (isStar(p, m) && p.keys.find((kk) => kk.ok && modelsFor(p, kk).includes(m)) === k && !isDone(p.id, m) && !(bidx[p.id + ':' + m] && ['paid', 'dead', 'limited'].includes(bidx[p.id + ':' + m].tier))) out.push({ p, k, m }); }); }));
-  return out;
-}
-function updateButtons() {
-  const gw = cur === '@gw', n = starItems().length;
-  $('co').disabled = busy || gw || !shown.length;
-  $('co').textContent = 'Test shown (' + shown.length + ')';
-  $('all').disabled = !busy && !n;
-  $('all').textContent = busy ? '⏹ Stop' : 'Test all ★ (' + n + ')';
-  const sp = smartPlan(), sm = sp.items.length;
-  $('smart').disabled = !busy && !sm;
-  $('smart').textContent = busy ? '⏹ Stop' : sm ? '🧠 Smart Test (' + sp.fresh + ' new / ' + sp.old + ' retest)' : '✓ Smart Test complete';
-  $('load').disabled = busy;
-}
-
-$('load').onclick = load;
-$('forgetToken').onclick = () => {
-  try { localStorage.removeItem('ey_admin_token'); } catch (e) {}
-  $('adminToken').value = '';
-  $('connNote').textContent = 'Saved Admin Token removed from this browser.';
-  showToast('ok', 'Saved token removed', 'Gateway URL and database data were not changed.');
-};
-$('gear').onclick = () => {
-  const h = !$('conn').hidden;
-  $('conn').hidden = h;
-  $('gear').setAttribute('aria-expanded', String(!h));
-  if (!h) $('url').focus();
-};
-$('co').onclick = () => runAll(shown.slice());
-$('all').onclick = () => { if (busy) { stopReq = true; return; } runAll(starItems()); };
-$('smart').onclick = () => { if (busy) { stopReq = true; return; } runAll(smartPlan().items); };
-summary();
-load();
-</script>
-</body>
-</html>
+$('cx').onclick=()=>{$('chat').hidden=true};
+$('go').onclick=load;$('q').oninput=draw;$('pv').onchange=draw;
+$('all').onclick=()=>run(shown().map(r=>r.model));
+$('stop').onclick=()=>{stop=true};
+if($('tk').value)load();
+</script></body></html>
