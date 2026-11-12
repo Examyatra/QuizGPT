@@ -1,133 +1,183 @@
 <!DOCTYPE html>
-<!-- Gateway Checking v2.0 (2026-11-13) -->
+<!-- Gateway Checking v2.1 (2026-11-13) -->
 <html lang="hi"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Gateway Checking v2.0</title>
+<title>Gateway Checking v2.1</title>
 <style>
-:root{--bg:#f5f6f8;--sf:#fff;--s2:#eef0f4;--ln:#e1e4ea;--tx:#161a22;--mu:#6a7282;--ac:#3d4fe0;--ok:#12805c;--bad:#c42b3a;--wn:#b26a00}
-@media(prefers-color-scheme:dark){:root{--bg:#0f1218;--sf:#171b24;--s2:#1f2430;--ln:#283040;--tx:#e8ebf2;--mu:#8a93a6;--ac:#7b8cff;--ok:#4fd1a1;--bad:#ff7b87;--wn:#f0b250}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top,0) 0 40px}
-.w{max-width:760px;margin:0 auto;padding:0 14px}
-h1{font-size:20px;margin:16px 0 4px}
-.card{background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:12px;margin:10px 0}
-input,select,textarea,button{font:inherit;color:inherit}
-input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:9px 11px;margin:3px 0}
-button{background:var(--s2);border:1px solid var(--ln);border-radius:10px;padding:8px 12px;font-weight:600;cursor:pointer}
-button.p{background:var(--ac);border-color:var(--ac);color:#fff}
-button:disabled{opacity:.5}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.row>*{flex:1}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.st{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:8px;text-align:center;cursor:pointer}
-.st.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}
-.st b{display:block;font-size:20px}.st span{font-size:11.5px;color:var(--mu)}
-.m{display:flex;gap:10px;align-items:center;padding:10px 4px;border-top:1px solid var(--ln)}
-.m:first-child{border-top:0}
-.d{width:10px;height:10px;border-radius:50%;background:var(--mu);flex:none}
+:root{--bg:#f4f5f8;--sf:#fff;--s2:#eceef3;--ln:#dfe2e9;--tx:#161a22;--mu:#667085;--ac:#3d4fe0;--ok:#12805c;--wn:#b26a00;--bad:#c42b3a;--nv:#6a7282}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1117;--sf:#171b24;--s2:#212735;--ln:#2a3242;--tx:#e8ebf2;--mu:#8d96a8;--ac:#7b8cff;--ok:#4fd1a1;--wn:#f0b250;--bad:#ff7b87;--nv:#9aa3b5}}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top,0) 0 calc(84px + env(safe-area-inset-bottom,0))}
+.w{max-width:720px;margin:0 auto;padding:0 14px}
+header{display:flex;align-items:baseline;justify-content:space-between;padding:16px 0 8px}
+h1{font-size:20px;margin:0}h1 small{font-size:12px;color:var(--mu);font-weight:500}
+h2{font-size:18px;margin:6px 0 10px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:12px;margin:10px 0}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:12px;padding:11px 12px;margin:3px 0 8px}
+label{font-size:12.5px;font-weight:600;color:var(--mu)}
+.btn{display:block;width:100%;min-height:46px;background:var(--s2);border:1px solid var(--ln);border-radius:12px;padding:10px 14px;font-weight:600;margin:6px 0;cursor:pointer}
+.btn.p{background:var(--ac);border-color:var(--ac);color:#fff}.btn:disabled{opacity:.5}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}
+.stat{background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:14px;text-align:left;cursor:pointer}
+.stat span{font-size:20px}.stat b{display:block;font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}.stat small{color:var(--mu);font-size:13px}
+.s-working b{color:var(--ok)}.s-recheck b{color:var(--wn)}.s-neverWorked b{color:var(--bad)}.s-toTest b{color:var(--nv)}
+.t{font-size:12.5px;color:var(--mu);overflow-wrap:anywhere}
+.back{background:none;border:0;color:var(--ac);font-weight:600;padding:8px 0;cursor:pointer}
+.co{display:block;width:100%;text-align:left;background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:13px;margin:8px 0;cursor:pointer}
+.co b{font-size:16px}.bar{height:6px;background:var(--s2);border-radius:6px;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
+.m{display:flex;gap:8px;align-items:center;padding:9px 0;border-top:1px solid var(--ln)}
+.m:first-child{border-top:0}.d{width:10px;height:10px;border-radius:50%;background:var(--nv);flex:none}
 .working .d{background:var(--ok)}.recheck .d{background:var(--wn)}.neverWorked .d{background:var(--bad)}
 .busy .d{animation:pl 1s infinite}@keyframes pl{50%{opacity:.2}}
-.i{flex:1;min-width:0}.n{font-weight:600;overflow-wrap:anywhere}.t{font-size:12px;color:var(--mu);overflow-wrap:anywhere}
-.m button{padding:5px 9px;font-size:12.5px}
-pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:10px;font-size:13px;max-height:300px;overflow:auto}
-#note{font-size:13px;color:var(--mu)}#note.e{color:var(--bad)}
-</style></head><body><div class="w">
-<h1>AI Gateway · Checking <small style="font-size:12px;color:var(--mu)">v2.0</small></h1><div id="note">Token daalo aur Connect dabao.</div>
-<div class="card">
-  <input id="url" placeholder="Worker URL" inputmode="url">
-  <input id="tk" type="password" placeholder="Admin token">
-  <div class="row"><button class="p" id="go">Connect / Refresh</button></div>
-</div>
-<div class="stats" id="stats"></div>
-<div class="card">
-  <div class="row"><input id="q" placeholder="Model dhoondo…"><select id="pv"><option value="">Sab providers</option></select></div>
-  <div class="row"><button class="p" id="all" disabled>Dikhe hue sab test karo</button><button id="stop" disabled>Stop</button></div>
-  <div id="prog" class="t"></div>
-</div>
-<div class="card" id="chat" hidden>
-  <div class="n" id="cm"></div>
-  <textarea id="cp" rows="3">2+2 kitna hota hai? Ek line mein jawab do.</textarea>
-  <div class="row"><button class="p" id="send">Bhejo</button><button id="cx">Band</button></div>
-  <pre id="co" hidden></pre>
-</div>
-<div class="card" id="list"></div>
-</div>
+.i{flex:1;min-width:0}.n{font-weight:600;overflow-wrap:anywhere;font-size:14px}
+.m button{min-height:34px;padding:4px 10px;font-size:12.5px;background:var(--s2);border:1px solid var(--ln);border-radius:9px;cursor:pointer;font-weight:600}
+details{border-top:1px solid var(--ln);padding:8px 0}details:first-of-type{border-top:0}
+summary{cursor:pointer;font-weight:600;list-style:none}summary::-webkit-details-marker{display:none}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:20px;padding:1px 8px;margin-left:6px;background:var(--s2)}
+.pill.ok{color:var(--ok)}.pill.bad{color:var(--bad)}.pill.wn{color:var(--wn)}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border:1px solid var(--ln);border-radius:12px;padding:10px;font-size:13px;max-height:320px;overflow:auto}
+.empty{text-align:center;color:var(--mu);padding:22px 8px}
+#pg{position:sticky;top:env(safe-area-inset-top,0);z-index:5;background:var(--ac);color:#fff;border-radius:12px;padding:8px 12px;margin:6px 0;display:flex;justify-content:space-between;align-items:center;font-size:13px}
+#pg[hidden]{display:none}#pg button{background:#fff3;border:0;color:#fff;border-radius:8px;padding:4px 10px;font-weight:700}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--sf);border-top:1px solid var(--ln);display:flex;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0));gap:4px;z-index:9}
+nav button{flex:1;background:none;border:0;border-radius:12px;padding:6px 2px;color:var(--mu);font-size:11.5px;font-weight:600;cursor:pointer}
+nav button span{display:block;font-size:20px}nav button.on{color:var(--ac);background:var(--s2)}
+nav button.t2{background:var(--ac);color:#fff}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0) + 10px);transform:translateX(-50%);width:min(92vw,460px);background:var(--sf);border:1px solid var(--ln);border-left:4px solid var(--ok);border-radius:12px;padding:10px 12px;z-index:20;box-shadow:0 8px 28px #0005;font-size:13.5px}
+#toast.e{border-left-color:var(--bad)}#toast[hidden]{display:none}
+</style></head><body>
+<div class="w"><header><h1>AI Gateway <small>Checking v2.1</small></h1><span class="t" id="chip"></span></header>
+<div id="pg" hidden><span id="pgt"></span><button id="stop">Stop</button></div>
+<main id="main"></main></div>
+<div id="toast" hidden></div>
+<nav id="nav"></nav>
 <script>
-const $=i=>document.getElementById(i);
+const VER='v2.1',DEF='https://examyatri-gateway.vyup2987.workers.dev',$=i=>document.getElementById(i);
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,v)}catch(e){return ''}};
-$('url').value=ls('ey_url')||'https://examyatri-gateway.vyup2987.workers.dev';$('tk').value=ls('ey_tk');
-const CATS=[['working','✅ Working'],['recheck','⚠ Re-check'],['neverWorked','❌ Fail'],['toTest','⏳ Baaki']];
-let rows=[],filt='working',stop=false,busy=false,sel=null;
-const note=(t,e)=>{$('note').textContent=t;$('note').className=e?'e':''};
-async function api(m,p,b){
-  const r=await fetch($('url').value.trim().replace(/\/+$/,'')+p,{method:m,headers:{'content-type':'application/json','x-admin-token':$('tk').value.trim()},body:b?JSON.stringify(b):undefined});
-  let j={};try{j=await r.json()}catch(e){}
-  if(!r.ok)throw new Error(j.error||'HTTP '+r.status);return j;
-}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CATS=[['working','Working','✅'],['recheck','Retest','⚠️'],['neverWorked','Not working','❌'],['toTest','Never tested','⏳']];
+const S={url:ls('ey_url')||DEF,tk:ls('ey_tk'),rows:[],provs:[],view:'home',q:'',sel:'',busy:false,stop:false,wv:'',open:new Set()};
+const comp=id=>id.replace(/-\d+$/,''),tail=id=>(S.provs.find(p=>p.id===id)||{}).key||'';
+const cnt=rs=>{const c={working:0,recheck:0,neverWorked:0,toTest:0};rs.forEach(r=>c[r.cat]++);return c};
+const pills=c=>`✅ ${c.working} · ⚠️ ${c.recheck} · ❌ ${c.neverWorked} · ⏳ ${c.toTest}`;
 const ago=t=>{if(!t)return 'kabhi nahi';const m=Math.round((Date.now()-t)/6e4);return m<60?m+' min pehle':m<1440?Math.round(m/60)+' ghante pehle':Math.round(m/1440)+' din pehle'};
-function shown(){
-  const q=$('q').value.trim().toLowerCase(),pv=$('pv').value;
-  return rows.filter(r=>r.cat===filt&&(!pv||r.model.startsWith(pv+'|'))&&(!q||r.model.toLowerCase().includes(q)));
+let tt;const toast=(m,e)=>{const t=$('toast');t.textContent=m;t.className=e?'e':'';t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,4500)};
+async function api(m,p,b){
+  const r=await fetch(S.url.replace(/\/+$/,'')+p,{method:m,headers:{'content-type':'application/json','x-admin-token':S.tk},body:b?JSON.stringify(b):undefined});
+  let j={};try{j=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(j.error==='Unauthorized'?'Token galat hai (Settings mein check karo)':j.error||'HTTP '+r.status);return j;
 }
-function draw(){
-  $('stats').replaceChildren(...CATS.map(([c,l])=>{
-    const d=document.createElement('div');d.className='st'+(c===filt?' on':'');
-    d.innerHTML='<b>'+rows.filter(r=>r.cat===c).length+'</b><span>'+l+'</span>';
-    d.onclick=()=>{filt=c;draw()};return d}));
-  const s=shown(),box=$('list');box.replaceChildren();
-  if(!s.length){box.textContent='Is list mein kuch nahi.';}
-  s.slice(0,200).forEach(r=>{
-    const [pid,...mm]=r.model.split('|'),d=document.createElement('div');
-    d.className='m '+r.cat+(r.busy?' busy':'');
-    const i=document.createElement('div');i.className='i';
-    const n=document.createElement('div');n.className='n';n.textContent=mm.join('|');
-    const t=document.createElement('div');t.className='t';
-    t.textContent=pid+(r.lat?' · '+(r.lat/1000).toFixed(1)+'s':'')+' · '+ago(r.tested)+(r.err?' · '+r.err:'');
-    i.append(n,t);
-    const b1=document.createElement('button');b1.textContent='Test';b1.disabled=busy;b1.onclick=()=>run([r.model]);
-    const b2=document.createElement('button');b2.textContent='Chat';b2.onclick=()=>openChat(r.model);
-    d.append(document.createElement('span'),i,b1,b2);d.firstChild.className='d';box.append(d);
-  });
-  if(s.length>200){const x=document.createElement('div');x.className='t';x.textContent='Pehle 200 dikh rahe hain ('+s.length+' mein se). Search/provider se chhota karo.';box.append(x)}
-  $('all').disabled=busy||!s.length;$('stop').disabled=!busy;
+const rowH=r=>{const [p,...m]=r.model.split('|');return `<div class="m ${r.cat}${r.busy?' busy':''}"><i class="d"></i><div class="i"><div class="n">${esc(m.join('|'))}</div><div class="t">${esc(p)}${r.lat?' · '+(r.lat/1e3).toFixed(1)+'s':''} · ${ago(r.tested)}${r.err?' · '+esc(r.err):''}</div></div><button data-test="${esc(r.model)}">Test</button><button data-chat="${esc(r.model)}">Chat</button></div>`};
+const rowsH=(rs,max=150)=>rs.length?rs.slice(0,max).map(rowH).join('')+(rs.length>max?`<div class="t">Pehle ${max} dikh rahe hain (${rs.length} mein se). Search karo.</div>`:''):'<div class="empty">Is list mein kuch nahi.</div>';
+function keysFor(s){const [k,v]=s.split(':');
+  return S.rows.filter(r=>k==='cat'?r.cat===v:k==='co'?comp(r.model.split('|')[0])===v:r.model.split('|')[0]===v).map(r=>r.model)}
+
+/* ---------- views ---------- */
+function home(){
+  const c=cnt(S.rows),cs=new Set(S.provs.map(p=>comp(p.id))).size;
+  return `<div class="grid">${CATS.map(([k,l,e])=>`<button class="stat s-${k}" data-go="list:${k}"><span>${e}</span><b>${c[k]}</b><small>${l}</small></button>`).join('')}</div>
+  <div class="card"><div class="t">${cs} companies · ${S.provs.length} keys · ${S.rows.length} models</div>
+  <button class="btn p" data-act="disc">🔍 Naye models khojo</button>
+  <button class="btn" data-run="cat:toTest">▶ Never tested sab test karo</button>
+  <button class="btn" data-act="load">↻ Refresh</button></div>
+  ${S.rows.length?'':'<div class="empty">Abhi koi model nahi. <b>Naye models khojo</b> dabao (2–3 baar, ek baar mein 10 providers padhta hai).</div>'}`;
 }
-async function load(){
-  note('Load ho raha hai…');
-  try{
-    const j=await api('GET','/admin/status');
-    rows=[];for(const c in j.lists)for(const x of j.lists[c])rows.push({...x,cat:c});
-    const sel=$('pv'),v=sel.value;sel.length=1;
-    j.providers.forEach(p=>sel.add(new Option(p.id,p.id)));sel.value=v;
-    ls('ey_url',$('url').value.trim());ls('ey_tk',$('tk').value.trim());
-    note('Connected · '+j.providers.length+' providers, '+rows.length+' models');draw();
-  }catch(e){note(e.message==='Unauthorized'?'Token galat hai':e.message,1)}
+function list(){
+  const k=S.view.split(':')[1],m=CATS.find(x=>x[0]===k),all=S.rows.filter(r=>r.cat===k);
+  return `<button class="back" data-go="home">← Home</button><h2>${m[2]} ${m[1]} (${all.length})</h2>
+  <input id="q" placeholder="Model dhoondo…" value="${esc(S.q)}"><button class="btn p" data-run="cat:${k}" ${all.length?'':'disabled'}>Ye sab test karo</button>
+  <div class="card" id="rows">${rowsH(fl(all))}</div>`;
 }
+const fl=a=>{const q=S.q.trim().toLowerCase();return q?a.filter(r=>r.model.toLowerCase().includes(q)):a};
+function cos(){
+  const g={};S.provs.forEach(p=>(g[comp(p.id)]=g[comp(p.id)]||[]).push(p.id));
+  const names=Object.keys(g).sort();
+  return `<h2>Companies (${names.length})</h2>`+(names.map(n=>{
+    const rs=S.rows.filter(r=>comp(r.model.split('|')[0])===n),c=cnt(rs),pc=rs.length?Math.round(c.working/rs.length*100):0;
+    return `<button class="co" data-go="co:${esc(n)}"><b>${esc(n)}</b> <span class="t">· ${g[n].length} key</span><div class="t">${pills(c)}</div><div class="bar"><i style="width:${pc}%"></i></div></button>`}).join('')||'<div class="empty">Koi company nahi. Pehle keys import karo.</div>');
+}
+function coV(){
+  const n=S.view.slice(3),ids=S.provs.filter(p=>comp(p.id)===n).map(p=>p.id),all=S.rows.filter(r=>comp(r.model.split('|')[0])===n);
+  return `<button class="back" data-go="cos">← Companies</button><h2>${esc(n)}</h2><div class="t">${pills(cnt(all))}</div>
+  <button class="btn p" data-run="co:${esc(n)}" ${all.length?'':'disabled'}>Is company ke sab models test karo</button>
+  <div class="card">${ids.map(id=>{const rs=S.rows.filter(r=>r.model.split('|')[0]===id),c=cnt(rs),
+    st=c.working?['ok','Key OK']:c.recheck?['wn','Recheck']:c.neverWorked?['bad','Key fail']:['','Baaki'];
+    return `<details data-k="${esc(id)}" ${S.open.has(id)?'open':''}><summary>🔑 ${esc(tail(id))}<span class="pill ${st[0]}">${st[1]}</span><div class="t">${esc(id)} · ${pills(c)}</div></summary>
+    <button class="btn" data-run="key:${esc(id)}" ${rs.length?'':'disabled'}>Is key ke sab models test karo</button>${rowsH(rs,100)}</details>`}).join('')}</div>`;
+}
+function test(){
+  const cs=[...new Set(S.provs.map(p=>comp(p.id)))].sort(),[sp,...sm]=S.sel.split('|'),sc=sp?comp(sp):cs[0]||'';
+  return `<h2>🧪 Manual test</h2><div class="card"><label>Company</label><select id="tc">${cs.map(c=>`<option ${c===sc?'selected':''}>${esc(c)}</option>`).join('')}</select>
+  <label>Key</label><select id="tk2"></select><label>Model</label><input id="tm" list="dl" value="${esc(sm.join('|'))}" placeholder="model id"><datalist id="dl"></datalist>
+  <label>Prompt</label><textarea id="tp" rows="3">2+2 kitna hota hai? Ek line mein jawab do.</textarea>
+  <div class="r2"><button class="btn p" id="ts">Bhejo (chat)</button><button class="btn" id="tq">Quiz-format test</button></div><pre id="to" hidden></pre></div>
+  <div class="t">Chat: sirf jawab dikhata hai, save nahi karta. Quiz-format test: cron wala test chalata hai aur result save karta hai.</div>`;
+}
+function bindTest(){
+  const pid=()=>$('tk2').value,key=()=>pid()+'|'+$('tm').value.trim(),out=t=>{$('to').hidden=false;$('to').textContent=t};
+  const fillM=()=>{$('dl').innerHTML=S.rows.filter(r=>r.model.startsWith(pid()+'|')).map(r=>`<option value="${esc(r.model.split('|').slice(1).join('|'))}">`).join('')};
+  const fillK=()=>{const [sp]=S.sel.split('|');$('tk2').innerHTML=S.provs.filter(p=>comp(p.id)===$('tc').value).map(p=>`<option value="${esc(p.id)}" ${p.id===sp?'selected':''}>${esc(p.id)} (${esc(p.key)})</option>`).join('');fillM()};
+  $('tc').onchange=()=>{S.sel='';fillK()};$('tk2').onchange=fillM;fillK();
+  $('ts').onclick=async()=>{if(!$('tm').value.trim())return out('Model likho');out('Wait…');$('ts').disabled=true;
+    try{const j=await api('POST','/admin/chat',{provider:pid(),model:$('tm').value.trim(),prompt:$('tp').value});
+      out(j.ok?'✅ '+(j.ms/1e3).toFixed(1)+'s\n\n'+(j.text||'[khaali reply]'):'❌ '+(j.ms/1e3).toFixed(1)+'s\n'+j.error)}catch(e){out(e.message)}$('ts').disabled=false};
+  $('tq').onclick=async()=>{if(!$('tm').value.trim())return out('Model likho');out('Quiz test chal raha hai…');$('tq').disabled=true;
+    try{const j=await api('POST','/admin/test',{models:[key()]}),v=j.results&&j.results[key()];
+      if(v){merge(j.results);out((v.cat==='working'?'✅ Working':v.cat==='toTest'?'⏳ Rate limit / baad mein':'❌ Fail')+(v.lat?' · '+(v.lat/1e3).toFixed(1)+'s':'')+(v.err?'\n'+v.err:''))}else out('Provider/model nahi mila')}catch(e){out(e.message)}$('tq').disabled=false};
+}
+function set(){
+  return `<h2>⚙ Settings</h2><div class="card"><label>Worker URL</label><input id="su" value="${esc(S.url)}" inputmode="url"><label>Admin token</label><input id="st" type="password" value="${esc(S.tk)}" autocomplete="off">
+  <button class="btn p" data-act="save">Save & Connect</button><button class="btn" data-act="forget">Token bhulao (is device se hatao)</button></div>
+  <div class="t">Page ${VER}${S.wv?' · Worker '+esc(S.wv):''}<br>Token sirf is browser mein save hota hai. Shared device par "Token bhulao" dabao.</div>`;
+}
+
+/* ---------- shell ---------- */
+const NAV=[['home','🏠','Home'],['cos','🏢','Companies'],['test','🧪','Manual test'],['set','⚙️','Settings']];
+function render(){
+  const v=S.view.split(':')[0],V={home,list,cos,co:coV,test,set}[v];
+  if(v==='list'&&$('q')&&document.activeElement===$('q'))return;
+  $('main').innerHTML=V();
+  $('nav').innerHTML=NAV.map(([k,e,l])=>`<button data-go="${k}" class="${(k===v||(k==='cos'&&v==='co')||(k==='home'&&v==='list'))?'on':''}${k==='test'&&k!==v?' t2':''}"><span>${e}</span>${l}</button>`).join('');
+  $('chip').textContent=S.provs.length?S.provs.length+' keys':'';
+  if(v==='test')bindTest();
+}
+function go(v){S.view=v;if(v.startsWith('list'))S.q='';render();scrollTo(0,0)}
+function merge(res){for(const k in res){const r=S.rows.find(x=>x.model===k);if(r)Object.assign(r,res[k]);else S.rows.push({model:k,...res[k]})}render()}
+async function load(quiet){
+  if(!S.tk){if(!quiet)toast('Pehle Settings mein token daalo',1);return go('set')}
+  try{const j=await api('GET','/admin/status');S.rows=[];for(const c in j.lists)for(const x of j.lists[c])S.rows.push({...x,cat:c});
+    S.provs=j.providers;try{S.wv=(await api('GET','/')).version||''}catch(e){}
+    if(!quiet)toast('Connected · '+S.provs.length+' keys, '+S.rows.length+' models');render()}
+  catch(e){toast(e.message,1)}
+}
+const pg=t=>{$('pg').hidden=!t;$('pgt').textContent=t||''};
 async function run(keys){
-  if(busy)return;busy=true;stop=false;
-  for(let i=0;i<keys.length&&!stop;i+=12){
-    const part=keys.slice(i,i+12);
-    rows.forEach(r=>{if(part.includes(r.model))r.busy=true});draw();
-    $('prog').textContent='Test chal raha hai: '+Math.min(i+12,keys.length)+' / '+keys.length;
-    try{
-      const j=await api('POST','/admin/test',{models:part});
-      for(const k in j.results){const r=rows.find(x=>x.model===k),v=j.results[k];
-        if(r)Object.assign(r,v);else rows.push({model:k,...v})}
-    }catch(e){note(e.message,1);stop=true}
-    rows.forEach(r=>{r.busy=false});draw();
+  if(S.busy)return;if(!keys.length)return toast('Test ke liye koi model nahi',1);
+  S.busy=true;S.stop=false;
+  for(let i=0;i<keys.length&&!S.stop;i+=12){
+    const part=keys.slice(i,i+12);S.rows.forEach(r=>{if(part.includes(r.model))r.busy=true});render();
+    pg('Test: '+Math.min(i+12,keys.length)+' / '+keys.length);
+    try{merge((await api('POST','/admin/test',{models:part})).results||{})}catch(e){toast(e.message,1);S.stop=true}
+    S.rows.forEach(r=>r.busy=false);
   }
-  busy=false;$('prog').textContent=stop?'Roka gaya':'Test poora hua';draw();
+  S.busy=false;pg('');render();toast(S.stop?'Roka gaya':'Test poora hua');
 }
-function openChat(k){sel=k;$('chat').hidden=false;$('cm').textContent=k;$('co').hidden=true;$('chat').scrollIntoView({behavior:'smooth'})}
-$('send').onclick=async()=>{
-  const [p,...m]=sel.split('|'),o=$('co');o.hidden=false;o.textContent='Wait…';$('send').disabled=true;
-  try{const j=await api('POST','/admin/chat',{provider:p,model:m.join('|'),prompt:$('cp').value});
-    o.textContent=j.ok?'('+(j.ms/1000).toFixed(1)+'s)\n\n'+(j.text||'[khaali reply]'):'Error ('+(j.ms/1000).toFixed(1)+'s): '+j.error}
-  catch(e){o.textContent=e.message}
-  $('send').disabled=false;
-};
-$('cx').onclick=()=>{$('chat').hidden=true};
-$('go').onclick=load;$('q').oninput=draw;$('pv').onchange=draw;
-$('all').onclick=()=>run(shown().map(r=>r.model));
-$('stop').onclick=()=>{stop=true};
-if($('tk').value)load();
+async function disc(){
+  if(S.busy)return;S.busy=true;pg('Models khoj raha hai (30 sec tak)…');
+  try{const j=await api('POST','/admin/test',{});await load(true);toast('Naye models: '+j.discovered+' · test hue: '+j.tested)}catch(e){toast(e.message,1)}
+  S.busy=false;pg('');render();
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-go],[data-test],[data-chat],[data-run],[data-act]');if(!b)return;const d=b.dataset;
+  if(d.go)go(d.go);else if(d.test)run([d.test]);else if(d.chat){S.sel=d.chat;go('test')}else if(d.run)run(keysFor(d.run));
+  else if(d.act==='load')load();else if(d.act==='disc')disc();
+  else if(d.act==='save'){S.url=$('su').value.trim()||DEF;S.tk=$('st').value.trim();ls('ey_url',S.url);ls('ey_tk',S.tk);load().then(()=>{if(S.provs.length)go('home')})}
+  else if(d.act==='forget'){S.tk='';ls('ey_tk','');$('st').value='';toast('Token hata diya')}
+});
+document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;$('rows').innerHTML=rowsH(fl(S.rows.filter(r=>r.cat===S.view.split(':')[1])))}});
+document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k)e.target.open?S.open.add(k):S.open.delete(k)},true);
+$('stop').onclick=()=>{S.stop=true};
+render();if(S.tk)load(true);else go('set');
 </script></body></html>
