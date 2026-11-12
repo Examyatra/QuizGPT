@@ -6358,11 +6358,10 @@ function backFromGenerating() {
 document.getElementById('cancelAiBtn').addEventListener('click', backFromGenerating);
 
 /* =====================================================================
-   EXAM YATRI — direct AI generation through the Val Town gateway.
-   All company API keys / endpoints / models live ONLY in Val Town env vars
-   (AI_<ID>_KEY, AI_<ID>_ENDPOINT, AI_<ID>_MODELS). This page just asks the
-   gateway for the model list (GET /models) and sends prompts (POST /generate).
-   Add a new company in Val Town -> it shows up here automatically.
+   EXAM YATRI — direct AI generation through the Cloudflare Worker gateway.
+   All company API keys live ONLY in the Worker's KV store (add them at <worker-url>/admin).
+   This page just sends prompts (POST /generate); the Worker tests models in the
+   background and picks a working one.
    ===================================================================== */
 const EY_MAX_Q = 100;   // max questions per Exam Yatri quiz
 const EY_PART_Q = 10;   // questions per background part. RELIABILITY FIRST: a 10-question call finishes fast, so a weak phone/Wi-Fi connection rarely drops it (was 15).
@@ -6371,7 +6370,7 @@ const EY_SLICE_NOTES = true;   // token saver: each part is sent ONLY the notes 
 const EY_EFFORT = { exam: 'medium', revision: 'medium' };   // reasoning depth sent to the gateway per quiz mode (instant | low | medium | high). Only models that support it use it (see main.ts)
 let eyEffort = '';   // set at the start of every quiz run
 const EY_FIRST_EFFORT = 'medium';   // part 1 (first 5 questions): same medium reasoning (small part, so it is still fast)
-const EY_RACE_FIRST = false;   // API-call saver: true = part 1 is sent to 2 different AIs at once (2x tokens, the loser is wasted). false = one AI; the gateway still hedges a slow one after a safe delay
+const EY_RACE_FIRST = true;   // API-call saver: true = part 1 is sent to 2 different AIs at once (2x tokens, the loser is wasted). false = one AI; the gateway still hedges a slow one after a safe delay
 const EY_TOPUP_GAP = 2;   // API-call saver: a quiz of 40+ questions that is short by this many or fewer is accepted as is (a whole extra call + full instructions for 1-2 questions is not worth it). Quizzes under 40 still get exact top-ups
 const EY_EXCL_KEEP = 20;   // token saver: 'already made' stems sent to a part whose notes segments are already disjoint (was the last 100)
 const EY_MODELS_TTL = 6 * 3600 * 1000;   // the gateway's model list is a constant: refetch at most every 6 h, not on every page load
@@ -6379,12 +6378,12 @@ const EY_PARALLEL = 3;   // background parts generated at the same time (3 = gen
 const EY_TOPUP_ROUNDS = 5;   // top-up rounds when the AI gave fewer questions than asked (was 3)
 const EY_BG_AUTO_TRIES = 6;   // silent automatic retries of the background run before the student is asked to tap retry
 const EY_ASK_TRIES = 5;       // attempts per API call (network drop / gateway busy / empty reply are all retried)
-const EY_FETCH_TIMEOUT = 70000;   // one attempt that hangs longer than this is cut and retried (gateway itself stops at 55 s)
+const EY_FETCH_TIMEOUT = 100000;   // one attempt that hangs longer than this is cut and retried (gateway itself stops at 55 s)
 const EY_AUTO_MODEL = [{ id: 'auto', label: 'Exam Yatri', provider: 'Exam Yatri' }];   // the gateway ignores the model name; used when /models cannot be read
 const EY_LEAN_PROMPT = true;   // token saver + fewer contradictions: Exam Yatri-only wording trims in the prompt (copy-paste AI sites never see them). false = old wording
 // Appended to every Exam Yatri request: a short self-check that raises question quality without changing the app's own prompt.
 const EY_GATE = '\n\nFINAL QUALITY GATE (silent; the output format stays exactly as specified above, nothing added): (1) Re-solve every question from its EV line only; if that evidence does not prove the marked answer, or two options can be defended, rewrite the question. (2) Drop any question that is trivial, trick-worded, or about page numbers/headings. (3) If space runs short, shorten CON - never drop questions - and finish the output completely.';
-const EY_API_URL = 'https://vishalyadav--ac9af586d5c311f1ac7a1607ee4eb77e.web.val.run';   // examyatri-ai val's public URL (no trailing slash)
+const EY_API_URL = 'https://examyatri-gateway.vyup2987.workers.dev';   // Cloudflare Worker gateway (no trailing slash)
 let eyActive = false, eyModels = null, eyLoading = false;
 let eyModel = ''; try { eyModel = localStorage.getItem('yai_ey_model') || ''; } catch (e) {}
 try { const c = JSON.parse(localStorage.getItem('yai_ey_models') || 'null'); if (Array.isArray(c) && c.length) eyModels = c.filter(m => m && m.id); } catch (e) {}   // last known list: picker is ready instantly, refreshed in background
