@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<!-- Gateway Checking v3.1 (2026-11-13) -->
+<!-- Gateway Checking v3.5 (2026-11-13) -->
 <html lang="hi"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Gateway Checking v3.1</title>
+<title>Gateway Checking v3.5</title>
 <style>
 :root{--bg:#f4f5f8;--sf:#fff;--s2:#eceef3;--ln:#dfe2e9;--tx:#161a22;--mu:#667085;--ac:#3d4fe0;--ok:#12805c;--wn:#b26a00;--bad:#c42b3a;--nv:#6a7282}
 @media(prefers-color-scheme:dark){:root{--bg:#0e1117;--sf:#171b24;--s2:#212735;--ln:#2a3242;--tx:#e8ebf2;--mu:#8d96a8;--ac:#7b8cff;--ok:#4fd1a1;--wn:#f0b250;--bad:#ff7b87;--nv:#9aa3b5}}
@@ -53,14 +53,29 @@ nav button.t2{background:var(--ac);color:#fff}
 .tb{display:flex;gap:6px;margin:6px 0}.tb .btn{width:auto;flex:1;margin:0}.tb .btn:last-child{flex:0 0 44px}
 .card .co{padding:8px 10px;margin:4px 0;border-radius:10px}
 .seg{display:flex;border:1px solid var(--ln);border-radius:10px;overflow:hidden;margin:4px 0}.seg button{flex:1;border:0;background:var(--sf);padding:7px 4px;font-size:12.5px;font-weight:600;cursor:pointer}.seg button.on{background:var(--ac);color:#fff}
+
+.cg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.tile{aspect-ratio:1;display:flex;flex-direction:column;justify-content:space-between;text-align:left;background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:9px;cursor:pointer;min-width:0;overflow:hidden}
+.tile b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.tile .t{font-size:11px;line-height:1.35}.tile .bar{margin-top:6px}
+.kr{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.kc{flex:1 1 90px;max-width:160px;display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:7px 10px;font-weight:700;font-size:13.5px;cursor:pointer}
+.kc small{font-size:10.5px;color:var(--mu);font-weight:500}.kc.on{border-color:var(--ac);background:var(--s2);box-shadow:0 0 0 1px var(--ac) inset}
+.dd{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--nv);margin-right:6px}.dd.ok{background:var(--ok)}.dd.wn{background:var(--wn)}.dd.bad{background:var(--bad)}
+.th{font-size:20px;line-height:1;min-width:24px;text-align:center}
+
+.ml{max-height:260px;overflow:auto;border:1px solid var(--ln);border-radius:12px;margin:4px 0 8px}
+.mi{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--ln);padding:9px 10px;font-size:13.5px;cursor:pointer;overflow-wrap:anywhere}
+.mi:first-child{border-top:0}.mi.on{background:var(--s2);box-shadow:inset 3px 0 0 var(--ac);font-weight:700}
+.res{border:1px solid var(--ln);border-radius:12px;padding:8px 10px;margin:6px 0;font-size:13.5px;overflow-wrap:anywhere}.res.ok{border-color:var(--ok)}.res.no{border-color:var(--bad)}
 </style></head><body>
-<div class="w"><header><h1>AI Gateway <small>Checking v3.1</small></h1><span class="t" id="chip"></span></header>
+<div class="w"><header><h1>AI Gateway <small>Checking v3.5</small></h1><span class="t" id="chip"></span></header>
 <div id="pg" hidden><span id="pgt"></span><button id="stop">Stop</button></div>
 <main id="main"></main></div>
 <div id="toast" hidden></div>
 <nav id="nav"></nav>
 <script>
-const VER='v3.1',DEF='https://examyatri-gateway.vyup2987.workers.dev',$=i=>document.getElementById(i);
+const VER='v3.6',DEF='https://examyatri-gateway.vyup2987.workers.dev',$=i=>document.getElementById(i);
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,v)}catch(e){return ''}};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CATS=[['working','Working','✅'],['recheck','Retest','⚠️'],['neverWorked','Not working','❌'],['toTest','Never tested','⏳']];
@@ -75,7 +90,7 @@ async function api(m,p,b){
   let j={};try{j=await r.json()}catch(e){}
   if(!r.ok)throw new Error(j.error==='Unauthorized'?'Token galat hai (Settings mein check karo)':j.error||'HTTP '+r.status);return j;
 }
-const rowH=r=>{const [p,...m]=r.model.split('|');return `<div class="m ${r.cat}${r.busy?' busy':''}"><i class="d"></i><div class="i"><div class="n">${esc(m.join('|'))}</div><div class="t">${esc(p)}${r.lat?' · '+(r.lat/1e3).toFixed(1)+'s':''} · ${ago(r.tested)}${r.err?' · '+esc(r.err):''}</div></div><div class="bt"><button data-test="${esc(r.model)}">Test</button><button data-chat="${esc(r.model)}">Chat</button><button data-mark="${esc(r.model)}">${r.cat==='working'?'Mark ✖':'Mark ✔'}</button></div></div>`};
+const rowH=r=>{const [p,...m]=r.model.split('|');return `<div class="m ${r.cat}${r.busy?' busy':''}"><i class="d"></i><div class="i"><div class="n">${esc(m.join('|'))}</div><div class="t">${esc(p)}${r.lat?' · '+(r.lat/1e3).toFixed(1)+'s':''} · ${ago(r.tested)}${r.err?' · '+esc(r.err):''}</div></div><div class="bt"><button data-test="${esc(r.model)}">Test</button><button data-mark="${esc(r.model)}">${r.cat==='working'?'Mark ✖':'Mark ✔'}</button></div></div>`};
 const sortR=a=>[...a].sort((x,y)=>CATS.findIndex(c=>c[0]===x.cat)-CATS.findIndex(c=>c[0]===y.cat)||x.model.localeCompare(y.model));
 const rowsH=(rs,max=150)=>rs.length?rs.slice(0,max).map(rowH).join('')+(rs.length>max?`<div class="t">Pehle ${max} dikh rahe hain (${rs.length} mein se). Search karo.</div>`:''):'<div class="empty">Is list mein kuch nahi.</div>';
 function keysFor(s){const [k,v]=s.split(':');
@@ -83,13 +98,11 @@ function keysFor(s){const [k,v]=s.split(':');
 
 /* ---------- views ---------- */
 function home(){
-  const c=cnt(S.rows),cs=new Set(S.provs.map(p=>comp(p.id))).size,
-   att=S.provs.filter(p=>!p.off&&!S.rows.some(r=>r.model.startsWith(p.id+'|')&&r.cat==='working')).map(p=>p.id);
+  const c=cnt(S.rows),cs=new Set(S.provs.map(p=>comp(p.id))).size;
   return `<div class="sg">${CATS.map(([k,l,e])=>`<button class="stat s-${k}" data-go="list:${k}"><b>${c[k]}</b><small>${e} ${l}</small></button>`).join('')}</div>
   <div class="tb"><button class="btn p" data-act="disc">🔍 Models khojo</button><button class="btn" data-run="cat:toTest" ${c.toTest?'':'disabled'}>▶ Pending (${c.toTest})</button><button class="btn" data-act="load" title="Refresh">↻</button></div>
   <div class="t">${cs} companies · ${S.provs.length} keys · ${S.rows.length} models${S.t?' · data '+ago(S.t):''}</div>
-  ${att.length?`<div class="card"><b>⚠ Dhyan do</b> <span class="t">— in keys mein koi model working nahi</span>${att.slice(0,8).map(id=>`<button class="co" data-go="co:${esc(comp(id))}"><b>${esc(id)}</b> <span class="t">${esc(tail(id))}</span></button>`).join('')}</div>`:''}
-  ${S.rows.length?'':'<div class="empty">Abhi koi model nahi. <b>Models khojo</b> dabao (2–3 baar, ek baar mein 10 providers padhta hai).</div>'}`;
+  ${S.rows.length?'':'<div class="empty">Abhi koi model nahi. <b>Models khojo</b> dabao (sirf list laata hai, test nahi karta).</div>'}`;
 }
 function list(){
   const k=S.view.split(':')[1],m=CATS.find(x=>x[0]===k),all=S.rows.filter(r=>r.cat===k);
@@ -104,22 +117,31 @@ const seg=(ids,p)=>`<div class="seg">${[[1,'⭐ High'],[0,'Normal'],[-1,'⬇ Low
 function cos(){
   const g={};S.provs.forEach(p=>(g[comp(p.id)]=g[comp(p.id)]||[]).push(p.id));
   const names=Object.keys(g).sort();
-  return `<h2>Companies (${names.length})</h2><button class="btn p" data-addco="">+ Nayi company / key add karo</button>`+(names.map(n=>{
+  return `<h2>Companies (${names.length})</h2><button class="btn p" data-addco="">+ Nayi company / key add karo</button>`+(names.length?`<div class="cg">`+names.map(n=>{
     const rs=S.rows.filter(r=>comp(r.model.split('|')[0])===n),c=cnt(rs),pc=rs.length?Math.round(c.working/rs.length*100):0;
-    return `<button class="co" data-go="co:${esc(n)}"><b>${esc(n)}</b>${badge(n)} <span class="t">· ${g[n].length} key</span><div class="t">${pills(c)}</div><div class="bar"><i style="width:${pc}%"></i></div></button>`}).join('')||'<div class="empty">Koi company nahi. Pehle keys import karo.</div>');
+    return `<button class="tile" data-go="co:${esc(n)}"><div><b>${esc(n)}${badge(n)}</b><div class="t">${g[n].length} key · ${rs.length} model</div></div><div><div class="t">✅${c.working} ⚠️${c.recheck}<br>❌${c.neverWorked} ⏳${c.toTest}</div><div class="bar"><i style="width:${pc}%"></i></div></div></button>`}).join('')+`</div>`:'<div class="empty">Koi company nahi. Pehle key add karo.</div>');
 }
+const th=r=>r.busy?'⏳':r.cat==='working'?'👍':(r.cat==='recheck'||r.cat==='neverWorked')?'👎':(r.err?'⏳':'');
+const keyRow=r=>{const m=r.model.split('|').slice(1).join('|');return `<div class="m ${r.cat}${r.busy?' busy':''}"><i class="d"></i><div class="i"><div class="n">${esc(m)}</div><div class="t">${r.busy?'Test ho raha hai…':(r.tested?(r.lat?(r.lat/1e3).toFixed(1)+'s · ':'')+ago(r.tested):'Abhi test nahi hua')+(r.err?' · '+esc(r.err):'')}</div></div><div class="bt"><button data-test="${esc(r.model)}">Test</button><button data-mark="${esc(r.model)}">${r.cat==='working'?'Mark ✖':'Mark ✔'}</button></div><span class="th">${th(r)}</span></div>`};
 function coV(){
-  const n=S.view.slice(3),ids=S.provs.filter(p=>comp(p.id)===n).map(p=>p.id),all=S.rows.filter(r=>comp(r.model.split('|')[0])===n);
-  return `<button class="back" data-go="cos">← Companies</button><h2>${esc(n)}</h2><div class="t">${pills(cnt(all))}</div>
-  <button class="btn p" data-run="co:${esc(n)}" ${all.length?'':'disabled'}>Is company ke sab models test karo</button><button class="btn" data-addco="${esc(n)}">+ Is company mein nayi key add karo</button>
-  <div class="r2">${seg(ids,curP(S.provs.filter(p=>comp(p.id)===n)))}<button class="btn" style="color:var(--bad)" data-delco="${esc(n)}">🗑 Company delete</button></div>
-  <div class="card">${ids.map(id=>{const rs=S.rows.filter(r=>r.model.split('|')[0]===id),c=cnt(rs),
-    pv=S.provs.find(p=>p.id===id)||{},st=c.working?['ok','Key OK']:c.recheck?['wn','Recheck']:c.neverWorked?['bad','Key fail']:['','Baaki'];
-    return `<details data-k="${esc(id)}" ${S.open.has(id)?'open':''}><summary>🔑 ${esc(tail(id))}<span class="pill ${st[0]}">${st[1]}</span>${pv.prio>0?' ⭐':pv.prio<0?' ⬇':''}${pv.off?' ⏸':''}<div class="t">${esc(id)} · ${pills(c)}</div></summary>
+  const n=S.view.slice(3),ps=S.provs.filter(p=>comp(p.id)===n),ids=ps.map(p=>p.id);
+  if(!ids.includes(S.key))S.key='';
+  const chips=ps.map((pv,i)=>{const c=cnt(S.rows.filter(r=>r.model.split('|')[0]===pv.id)),st=c.working?'ok':c.recheck?'wn':c.neverWorked?'bad':'';
+    return `<button class="kc ${pv.id===S.key?'on':''}" data-key="${esc(pv.id)}"><span><i class="dd ${st}"></i>Key ${i+1}${pv.prio>0?' ⭐':pv.prio<0?' ⬇':''}${pv.off?' ⏸':''}</span><small>${esc(tail(pv.id))}</small></button>`}).join('');
+  let panel='<div class="empty">Upar se koi key chuno.</div>';
+  if(S.key){
+    const id=S.key,pv=ps.find(p=>p.id===id)||{},rs=sortR(S.rows.filter(r=>r.model.split('|')[0]===id));
+    panel=`<div class="card"><div class="t" style="margin-bottom:4px">${esc(id)} · ${pills(cnt(rs))}</div>
     <div class="r2">${seg([id],pv.prio||0)}<button class="btn" data-pause="${esc(id)}">${pv.off?'▶ Resume':'⏸ Pause'}</button></div>
-    <div class="r2"><button class="btn" data-fetch="${esc(id)}">📥 Model list laao</button><button class="btn" data-run="key:${esc(id)}" ${rs.length?'':'disabled'}>▶ Sab test karo</button></div>
-    <div class="r2"><input id="am-${esc(id)}" placeholder="model id khud likho" autocapitalize="none" autocomplete="off"><button class="btn" data-addm="${esc(id)}">＋ Add & test</button></div>
-    ${rowsH(sortR(rs),300)}<button class="btn" style="color:var(--bad)" data-del="${esc(id)}">🗑 Is key ko delete karo</button></details>`}).join('')}</div>`;
+    <button class="btn" style="color:var(--bad)" data-del="${esc(id)}">🗑 Is key ko delete karo</button>
+    ${rs.length?rs.slice(0,300).map(keyRow).join('')+(rs.length>300?`<div class="t">Pehle 300 dikh rahe hain (${rs.length} mein se).</div>`:''):'<div class="empty">Is key ke models abhi nahi mile. Neeche "Aur options" mein Model list laao dabao.</div>'}
+    <details data-k="more-${esc(id)}" ${S.open.has('more-'+id)?'open':''}><summary class="t">⋯ Aur options</summary>
+    <button class="btn" data-fetch="${esc(id)}">📥 Model list laao (test nahi hoga)</button>
+    <div class="r2"><input id="am-${esc(id)}" placeholder="model id khud likho" autocapitalize="none" autocomplete="off"><button class="btn" data-addm="${esc(id)}">＋ Add & test</button></div></details></div>`;
+  }
+  return `<button class="back" data-go="cos">← Companies</button><h2>${esc(n)}</h2>
+  <div class="r2"><button class="btn p" data-addco="${esc(n)}">+ Nayi key add karo</button><button class="btn" style="color:var(--bad)" data-delco="${esc(n)}">🗑 Company delete</button></div>
+  <div class="kr">${chips}</div>${panel}`;
 }
 const epOf=n=>(S.provs.find(p=>comp(p.id)===n)||{}).endpoint||'';
 function add(){
@@ -129,9 +151,9 @@ function add(){
   <label>Endpoint (…/v1)</label><input id="ae" value="${esc(epOf(n))}" placeholder="https://api.example.com/v1" inputmode="url" autocapitalize="none">
   <label>API key</label><input id="ak" type="password" autocomplete="off">
   <label>Models (optional, comma se)</label><input id="am" placeholder="khali chhodo to khud khoje jayenge" autocapitalize="none">
-  <label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="aa" checked style="width:auto;margin:0"> Auto: models khojo + pehle 12 test karo</label><div class="t" id="ah"></div>
+  <label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="aa" checked style="width:auto;margin:0"> Auto: models khojo (test nahi hoga, cron 2 ghante mein karega)</label><div class="t" id="ah"></div>
   <button class="btn p" data-act="addsave">Save</button></div>
-  <div class="t">Company pehle se hai to nayi key uske saath alag key ki tarah jud jayegi. Endpoint OpenAI-compatible hona chahiye. Save ke baad Home par "Naye models khojo" dabao.</div>`;
+  <div class="t">Company pehle se hai to nayi key uske saath alag key ki tarah jud jayegi. Endpoint OpenAI-compatible hona chahiye. Save ke baad models sirf khoje jayenge, test cron (har 2 ghante) karega.</div>`;
 }
 const hint=()=>{const h=$('ah');if(!h)return;const co=$('ac').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'').replace(/-\d+$/,'');if(!co){h.textContent='';return}const u=new Set(S.provs.map(p=>p.id));let id=co;for(let n=2;u.has(id);n++)id=co+'-'+n;h.textContent=id===co?'Nayi company: '+co:co+' pehle se hai → ye key "'+id+'" banegi'};
 async function addKey(){
@@ -142,7 +164,7 @@ async function addKey(){
   try{await api('POST','/admin/provider',{id,endpoint:ep,key:k,models:ms});
     S.provs.push({id,endpoint:ep,key:'…'+k.slice(-4),prio:0,off:false});ms.forEach(m=>S.rows.push({model:id+'|'+m,cat:'toTest'}));save();
     toast('Key save hui: '+id);S.addCo='';go('co:'+co);
-    if(auto){await fetchM(id);const t=sortR(S.rows.filter(r=>r.model.startsWith(id+'|')&&r.cat==='toTest')).slice(0,12).map(r=>r.model);if(t.length)run(t)}
+    if(auto)await fetchM(id)
   }catch(e){toast(e.message,1)}
 }
 function drop(ids){S.provs=S.provs.filter(p=>!ids.includes(p.id));S.rows=S.rows.filter(r=>!ids.includes(r.model.split('|')[0]));save()}
@@ -169,25 +191,55 @@ async function markRow(k){
   const r=S.rows.find(x=>x.model===k),st=r&&r.cat==='working'?'failed':'working';
   try{merge((await api('POST','/admin/mark',{models:[k],status:st})).results||{});toast(st==='working'?'Working mark ho gaya':'Not working mark ho gaya')}catch(e){toast(e.message,1)}
 }
+Object.assign(S,{mt:'rand',mr:[],mrs:null,mtc:'',mco:'',mkey:'',mq:'',mm:'',mres:null,mbusy:false,mload:false});
+const cos2=()=>[...new Set(S.provs.map(p=>comp(p.id)))].sort();
+const icon=v=>v.cat==='working'?'👍':v.cat==='toTest'?'⏳':'👎';
+const sugH=()=>{if(S.mco)return '';const q=S.mtc.trim().toLowerCase(),m=cos2().filter(c=>c.includes(q)).slice(0,12);
+  return m.length?m.map(c=>`<button class="kc" data-tsco="${esc(c)}">${esc(c)}<small>${S.provs.filter(p=>comp(p.id)===c).length} key</small></button>`).join(''):'<div class="t">Koi company nahi mili.</div>'};
+const mlH=()=>{const q=S.mq.trim().toLowerCase(),all=sortR(S.rows.filter(r=>r.model.split('|')[0]===S.mkey)).filter(r=>!q||r.model.toLowerCase().includes(q));
+  if(!all.length)return `<div class="empty">${S.mload?'Model list load ho rahi hai…':'Is key ke models nahi mile.'}</div>`;
+  return (S.mload?'<div class="t" style="padding:6px 10px">Model list update ho rahi hai…</div>':'')+all.slice(0,300).map(r=>{const m=r.model.split('|').slice(1).join('|');return `<button class="mi ${m===S.mm?'on':''}" data-tsm="${esc(m)}"><span>${esc(m)}</span><span>${th(r)||'·'}</span></button>`}).join('')+(all.length>300?`<div class="t" style="padding:6px 10px">Pehle 300 dikh rahe hain. Search karo.</div>`:'')};
+const resH=()=>{if(S.mbusy)return '<div class="res">⏳ Test ho raha hai… ("hii" bheja gaya)</div>';const v=S.mres;if(!v)return '';
+  if(v.error)return `<div class="res no">👎 ${esc(v.error)}</div>`;
+  return `<div class="res ${v.cat==='working'?'ok':v.cat==='toTest'?'':'no'}">${icon(v)} ${v.cat==='working'?'Working':v.cat==='toTest'?'Rate limit / baad mein':'Fail'}${v.lat?' · '+(v.lat/1e3).toFixed(1)+'s':''}${v.err?'<br>'+esc(v.err):''}${v.reply?'<br><span class="t">Reply: '+esc(v.reply)+'</span>':''}</div>`};
+const selH=()=>`<div class="t" style="margin:6px 0">${S.mm?'Chuna hua: <b>'+esc(S.mm)+'</b>':'Upar list se ek model chuno'}</div><button class="btn p" data-act="tone" ${S.mm&&!S.mbusy?'':'disabled'}>▶ Test karo ("hii" bhejega)</button>${resH()}`;
+const bodyH=()=>{if(!S.mco)return '';const ids=S.provs.filter(p=>comp(p.id)===S.mco).map(p=>p.id);
+  return (ids.length>1?`<div class="kr">${ids.map((id,i)=>`<button class="kc ${id===S.mkey?'on':''}" data-tskey="${esc(id)}">Key ${i+1}<small>${esc(tail(id))}</small></button>`).join('')}</div>`:'')+
+  `<label>Model chuno (${S.rows.filter(r=>r.model.split('|')[0]===S.mkey).length})</label><input id="tmq" placeholder="model dhoondo…" value="${esc(S.mq)}" autocapitalize="none" autocomplete="off"><div class="ml" id="tml">${mlH()}</div><div id="tsel">${selH()}</div>`};
+const paintSug=()=>{const e=$('tsug');if(e)e.innerHTML=sugH()},paintML=()=>{const e=$('tml');if(e)e.innerHTML=mlH()},paintSel=()=>{const e=$('tsel');if(e)e.innerHTML=selH()},paintBody=()=>{const e=$('tbody');if(e)e.innerHTML=bodyH()};
 function test(){
-  const cs=[...new Set(S.provs.map(p=>comp(p.id)))].sort(),[sp,...sm]=S.sel.split('|'),sc=sp?comp(sp):cs[0]||'';
-  return `<h2>🧪 Manual test</h2><div class="card"><label>Company</label><select id="tc">${cs.map(c=>`<option ${c===sc?'selected':''}>${esc(c)}</option>`).join('')}</select>
-  <label>Key</label><select id="tk2"></select><label>Model</label><input id="tm" list="dl" value="${esc(sm.join('|'))}" placeholder="model id"><datalist id="dl"></datalist>
-  <label>Prompt</label><textarea id="tp" rows="3">2+2 kitna hota hai? Ek line mein jawab do.</textarea>
-  <div class="r2"><button class="btn p" id="ts">Bhejo (chat)</button><button class="btn" id="tq">Quiz-format test</button></div><pre id="to" hidden></pre></div>
-  <div class="t">Chat: sirf jawab dikhata hai, save nahi karta. Quiz-format test: cron wala test chalata hai aur result save karta hai.</div>`;
+  const seg=`<div class="seg">${[['rand','🎲 12 random test'],['one','🎯 Ek model test']].map(([k,l])=>`<button data-mt="${k}" class="${S.mt===k?'on':''}">${l}</button>`).join('')}</div>`;
+  let body;
+  if(S.mt==='rand'){
+    const rs=S.mr,ok=rs.filter(r=>r.cat==='working').length,no=rs.filter(r=>r.cat==='recheck'||r.cat==='neverWorked').length;
+    body=`<div class="card"><div class="t">Random 12: 11 naye (untested) + 1 purana working model — cron jaisa hi. Har model ko sirf "hii" bheja jata hai.</div>
+    <button class="btn p" data-act="trand" ${S.busy?'disabled':''}>▶ 12 models test karo</button>
+    ${S.mrs?`<div class="t">Test hue: ${S.mrs.tested} · naye models mile: ${S.mrs.discovered} · 👍 ${ok} · 👎 ${no}</div>`:''}
+    ${rs.map(r=>{const [p,...m]=r.model.split('|');return `<div class="m ${r.cat}"><i class="d"></i><div class="i"><div class="n">${esc(m.join('|'))}</div><div class="t">${esc(p)}${r.lat?' · '+(r.lat/1e3).toFixed(1)+'s':''}${r.err?' · '+esc(r.err):''}${r.reply?'<br>Reply: '+esc(r.reply):''}</div></div><span class="th">${icon(r)}</span></div>`}).join('')}</div>`;
+  }else{
+    body=`<div class="card"><label>Company ka naam likho</label><input id="tco" value="${esc(S.mtc)}" placeholder="jaise mer…" autocapitalize="none" autocomplete="off"><div class="kr" id="tsug">${sugH()}</div><div id="tbody">${bodyH()}</div></div>`;
+  }
+  return `<h2>🧪 Manual test</h2>${seg}${body}<div class="t">Test mein har jagah sirf "hii" bheja jata hai. Model "working" tab maana jata hai jab wo koi bhi jawab de.</div>`;
 }
-function bindTest(){
-  const pid=()=>$('tk2').value,key=()=>pid()+'|'+$('tm').value.trim(),out=t=>{$('to').hidden=false;$('to').textContent=t};
-  const fillM=()=>{$('dl').innerHTML=S.rows.filter(r=>r.model.startsWith(pid()+'|')).map(r=>`<option value="${esc(r.model.split('|').slice(1).join('|'))}">`).join('')};
-  const fillK=()=>{const [sp]=S.sel.split('|');$('tk2').innerHTML=S.provs.filter(p=>comp(p.id)===$('tc').value).map(p=>`<option value="${esc(p.id)}" ${p.id===sp?'selected':''}>${esc(p.id)} (${esc(p.key)})</option>`).join('');fillM()};
-  $('tc').onchange=()=>{S.sel='';fillK()};$('tk2').onchange=fillM;fillK();
-  $('ts').onclick=async()=>{if(!$('tm').value.trim())return out('Model likho');out('Wait…');$('ts').disabled=true;
-    try{const j=await api('POST','/admin/chat',{provider:pid(),model:$('tm').value.trim(),prompt:$('tp').value});
-      out(j.ok?'✅ '+(j.ms/1e3).toFixed(1)+'s\n\n'+(j.text||'[khaali reply]'):'❌ '+(j.ms/1e3).toFixed(1)+'s\n'+j.error)}catch(e){out(e.message)}$('ts').disabled=false};
-  $('tq').onclick=async()=>{if(!$('tm').value.trim())return out('Model likho');out('Quiz test chal raha hai…');$('tq').disabled=true;
-    try{const j=await api('POST','/admin/test',{models:[key()]}),v=j.results&&j.results[key()];
-      if(v){merge(j.results);out((v.cat==='working'?'✅ Working':v.cat==='toTest'?'⏳ Rate limit / baad mein':'❌ Fail')+(v.lat?' · '+(v.lat/1e3).toFixed(1)+'s':'')+(v.err?'\n'+v.err:''))}else out('Provider/model nahi mila')}catch(e){out(e.message)}$('tq').disabled=false};
+async function pickCo(n){
+  S.mco=n;S.mtc=n;S.mm='';S.mq='';S.mres=null;S.mkey=(S.provs.find(p=>comp(p.id)===n)||{}).id||'';
+  const e=$('tco');if(e)e.value=n;paintSug();paintBody();loadMl(S.mkey);
+}
+async function loadMl(id){
+  if(!id)return;S.mload=true;paintML();
+  try{const j=await api('GET','/admin/models?add=1&provider='+encodeURIComponent(id)),have=new Set(S.rows.map(r=>r.model));
+    j.models.forEach(m=>{if(!have.has(id+'|'+m))S.rows.push({model:id+'|'+m,cat:'toTest'})});save()}catch(e){toast(e.message,1)}
+  S.mload=false;if(S.mkey===id&&S.view==='test')paintML();
+}
+async function tone(){
+  if(!S.mm||S.mbusy)return;const k=S.mkey+'|'+S.mm;S.mbusy=true;S.mres=null;paintSel();
+  try{const j=await api('POST','/admin/test',{models:[k]}),v=j.results&&j.results[k];if(v){mergeS(j.results);S.mres=v}else S.mres={error:'Provider/model nahi mila'}}catch(e){S.mres={error:e.message}}
+  S.mbusy=false;if(S.view==='test'){paintSel();paintML()}
+}
+async function rand12(){
+  if(S.busy)return;S.busy=true;pg('12 models test ho rahe hain…');render();
+  try{const j=await api('POST','/admin/test',{}),res=j.results||{};mergeS(res);S.mr=Object.keys(res).map(k=>({model:k,...res[k]}));S.mrs={tested:j.tested,discovered:j.discovered};if(!S.mr.length)toast('Test ke liye koi model nahi (sab abhi test ho chuke / cooldown)',1)}catch(e){toast(e.message,1)}
+  S.busy=false;pg('');render();
 }
 function set(){
   return `<h2>⚙ Settings</h2><div class="card"><label>Worker URL</label><input id="su" value="${esc(S.url)}" inputmode="url"><label>Admin token</label><input id="st" type="password" value="${esc(S.tk)}" autocomplete="off">
@@ -203,10 +255,11 @@ function render(){
   $('main').innerHTML=V();
   $('nav').innerHTML=NAV.map(([k,e,l])=>`<button data-go="${k}" class="${(k===v||(k==='cos'&&(v==='co'||v==='add'))||(k==='home'&&v==='list'))?'on':''}${k==='test'&&k!==v?' t2':''}"><span>${e}</span>${l}</button>`).join('');
   $('chip').textContent=S.provs.length?S.provs.length+' keys':'';
-  if(v==='test')bindTest();if(v==='add')hint();
+  if(v==='add')hint();
 }
-function go(v){S.view=v;if(v.startsWith('list'))S.q='';render();scrollTo(0,0)}
-function merge(res){for(const k in res){const r=S.rows.find(x=>x.model===k);if(r)Object.assign(r,res[k]);else S.rows.push({model:k,...res[k]})}save();render()}
+function go(v){if(v.startsWith('co:')&&S.view!==v)S.key='';S.view=v;if(v.startsWith('list'))S.q='';render();scrollTo(0,0)}
+function mergeS(res){for(const k in res){const r=S.rows.find(x=>x.model===k);if(r)Object.assign(r,res[k]);else S.rows.push({model:k,...res[k]})}save()}
+function merge(res){mergeS(res);render()}
 const save=()=>ls('ey_cache',JSON.stringify({t:S.t||0,rows:S.rows,provs:S.provs,wv:S.wv}));
 async function load(quiet){
   if(!S.tk){if(!quiet)toast('Pehle Settings mein token daalo',1);return go('set')}
@@ -230,19 +283,22 @@ async function run(keys){
   S.busy=false;pg('');render();toast(S.stop?'Roka gaya':'Test poora hua');
 }
 async function disc(){
-  if(S.busy)return;S.busy=true;pg('Models khoj raha hai (30 sec tak)…');
-  try{const j=await api('POST','/admin/test',{});await load(true);toast('Naye models: '+j.discovered+' · test hue: '+j.tested)}catch(e){toast(e.message,1)}
+  if(S.busy)return;S.busy=true;pg('Models khoj raha hai…');
+  try{const j=await api('POST','/admin/discover',{});await load(true);toast('Naye models: '+j.discovered+' (test cron karega)')}catch(e){toast(e.message,1)}
   S.busy=false;pg('');render();
 }
 document.addEventListener('click',e=>{
-  const b=e.target.closest('[data-go],[data-test],[data-chat],[data-run],[data-act],[data-del],[data-addco],[data-fetch],[data-addm],[data-mark],[data-prio],[data-pause],[data-delco]');if(!b)return;const d=b.dataset;
-  if(d.prio!==undefined)setP(d.ids.split(','),{prio:+d.prio});else if(d.pause){const p=S.provs.find(x=>x.id===d.pause);setP([d.pause],{off:!(p&&p.off)})}else if(d.delco)delCo(d.delco);else if(d.go)go(d.go);else if(d.test)run([d.test]);else if(d.chat){S.sel=d.chat;go('test')}else if(d.run)run(keysFor(d.run));
+  const b=e.target.closest('[data-go],[data-test],[data-chat],[data-run],[data-act],[data-del],[data-addco],[data-fetch],[data-addm],[data-mark],[data-prio],[data-pause],[data-delco],[data-key],[data-mt],[data-tsco],[data-tskey],[data-tsm]');if(!b)return;const d=b.dataset;
+  if(d.mt){S.mt=d.mt;render()}else if(d.tsco!==undefined)pickCo(d.tsco);else if(d.tskey){S.mkey=d.tskey;S.mm='';S.mq='';S.mres=null;paintBody();loadMl(S.mkey)}else if(d.tsm!==undefined){S.mm=d.tsm;S.mres=null;paintML();paintSel()}else if(d.act==='tone')tone();else if(d.act==='trand')rand12();
+  else if(d.key!==undefined){S.key=d.key===S.key?'':d.key;render()}else if(d.prio!==undefined)setP(d.ids.split(','),{prio:+d.prio});else if(d.pause){const p=S.provs.find(x=>x.id===d.pause);setP([d.pause],{off:!(p&&p.off)})}else if(d.delco)delCo(d.delco);else if(d.go)go(d.go);else if(d.test)run([d.test]);else if(d.chat){S.sel=d.chat;go('test')}else if(d.run)run(keysFor(d.run));
   else if(d.del)delKey(d.del);else if(d.fetch)fetchM(d.fetch);else if(d.addm)addM(d.addm);else if(d.mark)markRow(d.mark);else if(d.addco!==undefined){S.addCo=d.addco;go('add')}else if(d.act==='addsave')addKey();else if(d.act==='load')load();else if(d.act==='disc')disc();
   else if(d.act==='save'){S.url=$('su').value.trim()||DEF;S.tk=$('st').value.trim();ls('ey_url',S.url);ls('ey_tk',S.tk);load().then(()=>{if(S.provs.length)go('home')})}
   else if(d.act==='forget'){S.tk='';ls('ey_tk','');$('st').value='';toast('Token hata diya')}
 });
 document.addEventListener('input',e=>{
   if(e.target.id==='ae')e.target.dataset.t=1;
+  if(e.target.id==='tco'){S.mtc=e.target.value;if(S.mco&&S.mtc!==S.mco){S.mco='';S.mkey='';S.mm='';S.mq='';S.mres=null;paintBody()}paintSug()}
+  if(e.target.id==='tmq'){S.mq=e.target.value;paintML()}
   if(e.target.id==='ac'){hint();const ep=epOf(e.target.value.trim().toLowerCase());if(ep&&!$('ae').dataset.t)$('ae').value=ep}
 if(e.target.id==='q'){S.q=e.target.value;$('rows').innerHTML=rowsH(fl(S.rows.filter(r=>r.cat===S.view.split(':')[1])))}});
 document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k)e.target.open?S.open.add(k):S.open.delete(k)},true);
