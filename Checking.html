@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<!-- Gateway Checking v2.1 (2026-11-13) -->
+<!-- Gateway Checking v3.1 (2026-11-13) -->
 <html lang="hi"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Gateway Checking v2.1</title>
+<title>Gateway Checking v3.1</title>
 <style>
 :root{--bg:#f4f5f8;--sf:#fff;--s2:#eceef3;--ln:#dfe2e9;--tx:#161a22;--mu:#667085;--ac:#3d4fe0;--ok:#12805c;--wn:#b26a00;--bad:#c42b3a;--nv:#6a7282}
 @media(prefers-color-scheme:dark){:root{--bg:#0e1117;--sf:#171b24;--s2:#212735;--ln:#2a3242;--tx:#e8ebf2;--mu:#8d96a8;--ac:#7b8cff;--ok:#4fd1a1;--wn:#f0b250;--bad:#ff7b87;--nv:#9aa3b5}}
@@ -27,11 +27,11 @@ label{font-size:12.5px;font-weight:600;color:var(--mu)}
 .back{background:none;border:0;color:var(--ac);font-weight:600;padding:8px 0;cursor:pointer}
 .co{display:block;width:100%;text-align:left;background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:13px;margin:8px 0;cursor:pointer}
 .co b{font-size:16px}.bar{height:6px;background:var(--s2);border-radius:6px;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
-.m{display:flex;gap:8px;align-items:center;padding:9px 0;border-top:1px solid var(--ln)}
+.m{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 0;border-top:1px solid var(--ln)}
 .m:first-child{border-top:0}.d{width:10px;height:10px;border-radius:50%;background:var(--nv);flex:none}
 .working .d{background:var(--ok)}.recheck .d{background:var(--wn)}.neverWorked .d{background:var(--bad)}
 .busy .d{animation:pl 1s infinite}@keyframes pl{50%{opacity:.2}}
-.i{flex:1;min-width:0}.n{font-weight:600;overflow-wrap:anywhere;font-size:14px}
+.i{flex:1 1 170px;min-width:0}.bt{display:flex;gap:6px}.n{font-weight:600;overflow-wrap:anywhere;font-size:14px}
 .m button{min-height:34px;padding:4px 10px;font-size:12.5px;background:var(--s2);border:1px solid var(--ln);border-radius:9px;cursor:pointer;font-weight:600}
 details{border-top:1px solid var(--ln);padding:8px 0}details:first-of-type{border-top:0}
 summary{cursor:pointer;font-weight:600;list-style:none}summary::-webkit-details-marker{display:none}
@@ -47,14 +47,20 @@ nav button span{display:block;font-size:20px}nav button.on{color:var(--ac);backg
 nav button.t2{background:var(--ac);color:#fff}
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0) + 10px);transform:translateX(-50%);width:min(92vw,460px);background:var(--sf);border:1px solid var(--ln);border-left:4px solid var(--ok);border-radius:12px;padding:10px 12px;z-index:20;box-shadow:0 8px 28px #0005;font-size:13.5px}
 #toast.e{border-left-color:var(--bad)}#toast[hidden]{display:none}
+
+.btn{min-height:36px;padding:6px 12px;border-radius:10px;margin:4px 0;font-size:14px}.card{border-radius:12px;padding:10px}
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}.sg .stat{padding:8px 6px;text-align:center;border-radius:10px}.sg .stat b{font-size:22px}.sg .stat small{font-size:11.5px}
+.tb{display:flex;gap:6px;margin:6px 0}.tb .btn{width:auto;flex:1;margin:0}.tb .btn:last-child{flex:0 0 44px}
+.card .co{padding:8px 10px;margin:4px 0;border-radius:10px}
+.seg{display:flex;border:1px solid var(--ln);border-radius:10px;overflow:hidden;margin:4px 0}.seg button{flex:1;border:0;background:var(--sf);padding:7px 4px;font-size:12.5px;font-weight:600;cursor:pointer}.seg button.on{background:var(--ac);color:#fff}
 </style></head><body>
-<div class="w"><header><h1>AI Gateway <small>Checking v2.1</small></h1><span class="t" id="chip"></span></header>
+<div class="w"><header><h1>AI Gateway <small>Checking v3.1</small></h1><span class="t" id="chip"></span></header>
 <div id="pg" hidden><span id="pgt"></span><button id="stop">Stop</button></div>
 <main id="main"></main></div>
 <div id="toast" hidden></div>
 <nav id="nav"></nav>
 <script>
-const VER='v2.1',DEF='https://examyatri-gateway.vyup2987.workers.dev',$=i=>document.getElementById(i);
+const VER='v3.1',DEF='https://examyatri-gateway.vyup2987.workers.dev',$=i=>document.getElementById(i);
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,v)}catch(e){return ''}};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CATS=[['working','Working','✅'],['recheck','Retest','⚠️'],['neverWorked','Not working','❌'],['toTest','Never tested','⏳']];
@@ -69,20 +75,21 @@ async function api(m,p,b){
   let j={};try{j=await r.json()}catch(e){}
   if(!r.ok)throw new Error(j.error==='Unauthorized'?'Token galat hai (Settings mein check karo)':j.error||'HTTP '+r.status);return j;
 }
-const rowH=r=>{const [p,...m]=r.model.split('|');return `<div class="m ${r.cat}${r.busy?' busy':''}"><i class="d"></i><div class="i"><div class="n">${esc(m.join('|'))}</div><div class="t">${esc(p)}${r.lat?' · '+(r.lat/1e3).toFixed(1)+'s':''} · ${ago(r.tested)}${r.err?' · '+esc(r.err):''}</div></div><button data-test="${esc(r.model)}">Test</button><button data-chat="${esc(r.model)}">Chat</button></div>`};
+const rowH=r=>{const [p,...m]=r.model.split('|');return `<div class="m ${r.cat}${r.busy?' busy':''}"><i class="d"></i><div class="i"><div class="n">${esc(m.join('|'))}</div><div class="t">${esc(p)}${r.lat?' · '+(r.lat/1e3).toFixed(1)+'s':''} · ${ago(r.tested)}${r.err?' · '+esc(r.err):''}</div></div><div class="bt"><button data-test="${esc(r.model)}">Test</button><button data-chat="${esc(r.model)}">Chat</button><button data-mark="${esc(r.model)}">${r.cat==='working'?'Mark ✖':'Mark ✔'}</button></div></div>`};
+const sortR=a=>[...a].sort((x,y)=>CATS.findIndex(c=>c[0]===x.cat)-CATS.findIndex(c=>c[0]===y.cat)||x.model.localeCompare(y.model));
 const rowsH=(rs,max=150)=>rs.length?rs.slice(0,max).map(rowH).join('')+(rs.length>max?`<div class="t">Pehle ${max} dikh rahe hain (${rs.length} mein se). Search karo.</div>`:''):'<div class="empty">Is list mein kuch nahi.</div>';
 function keysFor(s){const [k,v]=s.split(':');
   return S.rows.filter(r=>k==='cat'?r.cat===v:k==='co'?comp(r.model.split('|')[0])===v:r.model.split('|')[0]===v).map(r=>r.model)}
 
 /* ---------- views ---------- */
 function home(){
-  const c=cnt(S.rows),cs=new Set(S.provs.map(p=>comp(p.id))).size;
-  return `<div class="grid">${CATS.map(([k,l,e])=>`<button class="stat s-${k}" data-go="list:${k}"><span>${e}</span><b>${c[k]}</b><small>${l}</small></button>`).join('')}</div>
-  <div class="card"><div class="t">${cs} companies · ${S.provs.length} keys · ${S.rows.length} models</div>
-  <button class="btn p" data-act="disc">🔍 Naye models khojo</button>
-  <button class="btn" data-run="cat:toTest">▶ Never tested sab test karo</button>
-  <button class="btn" data-act="load">↻ Refresh</button></div>
-  ${S.rows.length?'':'<div class="empty">Abhi koi model nahi. <b>Naye models khojo</b> dabao (2–3 baar, ek baar mein 10 providers padhta hai).</div>'}`;
+  const c=cnt(S.rows),cs=new Set(S.provs.map(p=>comp(p.id))).size,
+   att=S.provs.filter(p=>!p.off&&!S.rows.some(r=>r.model.startsWith(p.id+'|')&&r.cat==='working')).map(p=>p.id);
+  return `<div class="sg">${CATS.map(([k,l,e])=>`<button class="stat s-${k}" data-go="list:${k}"><b>${c[k]}</b><small>${e} ${l}</small></button>`).join('')}</div>
+  <div class="tb"><button class="btn p" data-act="disc">🔍 Models khojo</button><button class="btn" data-run="cat:toTest" ${c.toTest?'':'disabled'}>▶ Pending (${c.toTest})</button><button class="btn" data-act="load" title="Refresh">↻</button></div>
+  <div class="t">${cs} companies · ${S.provs.length} keys · ${S.rows.length} models${S.t?' · data '+ago(S.t):''}</div>
+  ${att.length?`<div class="card"><b>⚠ Dhyan do</b> <span class="t">— in keys mein koi model working nahi</span>${att.slice(0,8).map(id=>`<button class="co" data-go="co:${esc(comp(id))}"><b>${esc(id)}</b> <span class="t">${esc(tail(id))}</span></button>`).join('')}</div>`:''}
+  ${S.rows.length?'':'<div class="empty">Abhi koi model nahi. <b>Models khojo</b> dabao (2–3 baar, ek baar mein 10 providers padhta hai).</div>'}`;
 }
 function list(){
   const k=S.view.split(':')[1],m=CATS.find(x=>x[0]===k),all=S.rows.filter(r=>r.cat===k);
@@ -91,21 +98,76 @@ function list(){
   <div class="card" id="rows">${rowsH(fl(all))}</div>`;
 }
 const fl=a=>{const q=S.q.trim().toLowerCase();return q?a.filter(r=>r.model.toLowerCase().includes(q)):a};
+const badge=n=>{const ps=S.provs.filter(p=>comp(p.id)===n);return (ps.some(p=>p.prio>0)?' ⭐':'')+(ps.length&&ps.every(p=>p.off)?' ⏸':'')};
+const curP=ps=>{const v=new Set(ps.map(p=>p.prio||0));return v.size===1?[...v][0]:null};
+const seg=(ids,p)=>`<div class="seg">${[[1,'⭐ High'],[0,'Normal'],[-1,'⬇ Low']].map(([v,l])=>`<button data-prio="${v}" data-ids="${esc(ids.join(','))}" class="${p===v?'on':''}">${l}</button>`).join('')}</div>`;
 function cos(){
   const g={};S.provs.forEach(p=>(g[comp(p.id)]=g[comp(p.id)]||[]).push(p.id));
   const names=Object.keys(g).sort();
-  return `<h2>Companies (${names.length})</h2>`+(names.map(n=>{
+  return `<h2>Companies (${names.length})</h2><button class="btn p" data-addco="">+ Nayi company / key add karo</button>`+(names.map(n=>{
     const rs=S.rows.filter(r=>comp(r.model.split('|')[0])===n),c=cnt(rs),pc=rs.length?Math.round(c.working/rs.length*100):0;
-    return `<button class="co" data-go="co:${esc(n)}"><b>${esc(n)}</b> <span class="t">· ${g[n].length} key</span><div class="t">${pills(c)}</div><div class="bar"><i style="width:${pc}%"></i></div></button>`}).join('')||'<div class="empty">Koi company nahi. Pehle keys import karo.</div>');
+    return `<button class="co" data-go="co:${esc(n)}"><b>${esc(n)}</b>${badge(n)} <span class="t">· ${g[n].length} key</span><div class="t">${pills(c)}</div><div class="bar"><i style="width:${pc}%"></i></div></button>`}).join('')||'<div class="empty">Koi company nahi. Pehle keys import karo.</div>');
 }
 function coV(){
   const n=S.view.slice(3),ids=S.provs.filter(p=>comp(p.id)===n).map(p=>p.id),all=S.rows.filter(r=>comp(r.model.split('|')[0])===n);
   return `<button class="back" data-go="cos">← Companies</button><h2>${esc(n)}</h2><div class="t">${pills(cnt(all))}</div>
-  <button class="btn p" data-run="co:${esc(n)}" ${all.length?'':'disabled'}>Is company ke sab models test karo</button>
+  <button class="btn p" data-run="co:${esc(n)}" ${all.length?'':'disabled'}>Is company ke sab models test karo</button><button class="btn" data-addco="${esc(n)}">+ Is company mein nayi key add karo</button>
+  <div class="r2">${seg(ids,curP(S.provs.filter(p=>comp(p.id)===n)))}<button class="btn" style="color:var(--bad)" data-delco="${esc(n)}">🗑 Company delete</button></div>
   <div class="card">${ids.map(id=>{const rs=S.rows.filter(r=>r.model.split('|')[0]===id),c=cnt(rs),
-    st=c.working?['ok','Key OK']:c.recheck?['wn','Recheck']:c.neverWorked?['bad','Key fail']:['','Baaki'];
-    return `<details data-k="${esc(id)}" ${S.open.has(id)?'open':''}><summary>🔑 ${esc(tail(id))}<span class="pill ${st[0]}">${st[1]}</span><div class="t">${esc(id)} · ${pills(c)}</div></summary>
-    <button class="btn" data-run="key:${esc(id)}" ${rs.length?'':'disabled'}>Is key ke sab models test karo</button>${rowsH(rs,100)}</details>`}).join('')}</div>`;
+    pv=S.provs.find(p=>p.id===id)||{},st=c.working?['ok','Key OK']:c.recheck?['wn','Recheck']:c.neverWorked?['bad','Key fail']:['','Baaki'];
+    return `<details data-k="${esc(id)}" ${S.open.has(id)?'open':''}><summary>🔑 ${esc(tail(id))}<span class="pill ${st[0]}">${st[1]}</span>${pv.prio>0?' ⭐':pv.prio<0?' ⬇':''}${pv.off?' ⏸':''}<div class="t">${esc(id)} · ${pills(c)}</div></summary>
+    <div class="r2">${seg([id],pv.prio||0)}<button class="btn" data-pause="${esc(id)}">${pv.off?'▶ Resume':'⏸ Pause'}</button></div>
+    <div class="r2"><button class="btn" data-fetch="${esc(id)}">📥 Model list laao</button><button class="btn" data-run="key:${esc(id)}" ${rs.length?'':'disabled'}>▶ Sab test karo</button></div>
+    <div class="r2"><input id="am-${esc(id)}" placeholder="model id khud likho" autocapitalize="none" autocomplete="off"><button class="btn" data-addm="${esc(id)}">＋ Add & test</button></div>
+    ${rowsH(sortR(rs),300)}<button class="btn" style="color:var(--bad)" data-del="${esc(id)}">🗑 Is key ko delete karo</button></details>`}).join('')}</div>`;
+}
+const epOf=n=>(S.provs.find(p=>comp(p.id)===n)||{}).endpoint||'';
+function add(){
+  const n=S.addCo||'',cs=[...new Set(S.provs.map(p=>comp(p.id)))].sort();
+  return `<button class="back" data-go="${n?'co:'+esc(n):'cos'}">← Back</button><h2>🔑 API key add karo</h2><div class="card">
+  <label>Company ka naam</label><input id="ac" list="acl" value="${esc(n)}" placeholder="jaise groq, openrouter" autocapitalize="none" autocomplete="off"><datalist id="acl">${cs.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
+  <label>Endpoint (…/v1)</label><input id="ae" value="${esc(epOf(n))}" placeholder="https://api.example.com/v1" inputmode="url" autocapitalize="none">
+  <label>API key</label><input id="ak" type="password" autocomplete="off">
+  <label>Models (optional, comma se)</label><input id="am" placeholder="khali chhodo to khud khoje jayenge" autocapitalize="none">
+  <label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="aa" checked style="width:auto;margin:0"> Auto: models khojo + pehle 12 test karo</label><div class="t" id="ah"></div>
+  <button class="btn p" data-act="addsave">Save</button></div>
+  <div class="t">Company pehle se hai to nayi key uske saath alag key ki tarah jud jayegi. Endpoint OpenAI-compatible hona chahiye. Save ke baad Home par "Naye models khojo" dabao.</div>`;
+}
+const hint=()=>{const h=$('ah');if(!h)return;const co=$('ac').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'').replace(/-\d+$/,'');if(!co){h.textContent='';return}const u=new Set(S.provs.map(p=>p.id));let id=co;for(let n=2;u.has(id);n++)id=co+'-'+n;h.textContent=id===co?'Nayi company: '+co:co+' pehle se hai → ye key "'+id+'" banegi'};
+async function addKey(){
+  const co=$('ac').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'').replace(/-\d+$/,''),ep=$('ae').value.trim(),k=$('ak').value.trim();
+  if(!co||!ep||!k)return toast('Company, endpoint aur key teeno chahiye',1);
+  const u=new Set(S.provs.map(p=>p.id));let id=co;for(let n=2;u.has(id);n++)id=co+'-'+n;
+  const ms=$('am').value.split(',').map(x=>x.trim()).filter(Boolean),auto=$('aa').checked;
+  try{await api('POST','/admin/provider',{id,endpoint:ep,key:k,models:ms});
+    S.provs.push({id,endpoint:ep,key:'…'+k.slice(-4),prio:0,off:false});ms.forEach(m=>S.rows.push({model:id+'|'+m,cat:'toTest'}));save();
+    toast('Key save hui: '+id);S.addCo='';go('co:'+co);
+    if(auto){await fetchM(id);const t=sortR(S.rows.filter(r=>r.model.startsWith(id+'|')&&r.cat==='toTest')).slice(0,12).map(r=>r.model);if(t.length)run(t)}
+  }catch(e){toast(e.message,1)}
+}
+function drop(ids){S.provs=S.provs.filter(p=>!ids.includes(p.id));S.rows=S.rows.filter(r=>!ids.includes(r.model.split('|')[0]));save()}
+async function delKey(id){
+  if(!confirm('Key '+id+' ('+tail(id)+') aur uske saare models hata dein?'))return;
+  try{await api('DELETE','/admin/provider?id='+encodeURIComponent(id));drop([id]);toast('Hata diya: '+id);const c=comp(id);go(S.provs.some(p=>comp(p.id)===c)?'co:'+c:'cos')}catch(e){toast(e.message,1)}
+}
+async function delCo(n){
+  const ids=S.provs.filter(p=>comp(p.id)===n).map(p=>p.id);if(!confirm(n+' ki '+ids.length+' key aur sab models hata dein?'))return;
+  try{await api('DELETE','/admin/provider?id='+encodeURIComponent(ids.join(',')));drop(ids);toast(n+' hata di');go('cos')}catch(e){toast(e.message,1)}
+}
+async function setP(ids,b){try{await api('POST','/admin/set',{ids,...b});S.provs.forEach(p=>{if(ids.includes(p.id))Object.assign(p,b)});save();render()}catch(e){toast(e.message,1)}}
+async function fetchM(id){
+  if(S.busy)return;S.busy=true;pg('Model list la raha hai…');
+  try{const j=await api('GET','/admin/models?add=1&provider='+encodeURIComponent(id)),have=new Set(S.rows.map(r=>r.model));
+    j.models.forEach(m=>{if(!have.has(id+'|'+m))S.rows.push({model:id+'|'+m,cat:'toTest'})});save();toast(j.models.length+' models mile, '+j.added+' naye')}catch(e){toast(e.message,1)}
+  S.busy=false;pg('');render();
+}
+async function addM(id){
+  const m=($('am-'+id).value||'').trim();if(!m)return toast('Model id likho',1);
+  try{await api('POST','/admin/models',{provider:id,models:[m]});if(!S.rows.some(r=>r.model===id+'|'+m))S.rows.push({model:id+'|'+m,cat:'toTest'});run([id+'|'+m])}catch(e){toast(e.message,1)}
+}
+async function markRow(k){
+  const r=S.rows.find(x=>x.model===k),st=r&&r.cat==='working'?'failed':'working';
+  try{merge((await api('POST','/admin/mark',{models:[k],status:st})).results||{});toast(st==='working'?'Working mark ho gaya':'Not working mark ho gaya')}catch(e){toast(e.message,1)}
 }
 function test(){
   const cs=[...new Set(S.provs.map(p=>comp(p.id)))].sort(),[sp,...sm]=S.sel.split('|'),sc=sp?comp(sp):cs[0]||'';
@@ -136,25 +198,28 @@ function set(){
 /* ---------- shell ---------- */
 const NAV=[['home','🏠','Home'],['cos','🏢','Companies'],['test','🧪','Manual test'],['set','⚙️','Settings']];
 function render(){
-  const v=S.view.split(':')[0],V={home,list,cos,co:coV,test,set}[v];
+  const v=S.view.split(':')[0],V={home,list,cos,co:coV,add,test,set}[v];
   if(v==='list'&&$('q')&&document.activeElement===$('q'))return;
   $('main').innerHTML=V();
-  $('nav').innerHTML=NAV.map(([k,e,l])=>`<button data-go="${k}" class="${(k===v||(k==='cos'&&v==='co')||(k==='home'&&v==='list'))?'on':''}${k==='test'&&k!==v?' t2':''}"><span>${e}</span>${l}</button>`).join('');
+  $('nav').innerHTML=NAV.map(([k,e,l])=>`<button data-go="${k}" class="${(k===v||(k==='cos'&&(v==='co'||v==='add'))||(k==='home'&&v==='list'))?'on':''}${k==='test'&&k!==v?' t2':''}"><span>${e}</span>${l}</button>`).join('');
   $('chip').textContent=S.provs.length?S.provs.length+' keys':'';
-  if(v==='test')bindTest();
+  if(v==='test')bindTest();if(v==='add')hint();
 }
 function go(v){S.view=v;if(v.startsWith('list'))S.q='';render();scrollTo(0,0)}
-function merge(res){for(const k in res){const r=S.rows.find(x=>x.model===k);if(r)Object.assign(r,res[k]);else S.rows.push({model:k,...res[k]})}render()}
+function merge(res){for(const k in res){const r=S.rows.find(x=>x.model===k);if(r)Object.assign(r,res[k]);else S.rows.push({model:k,...res[k]})}save();render()}
+const save=()=>ls('ey_cache',JSON.stringify({t:S.t||0,rows:S.rows,provs:S.provs,wv:S.wv}));
 async function load(quiet){
   if(!S.tk){if(!quiet)toast('Pehle Settings mein token daalo',1);return go('set')}
   try{const j=await api('GET','/admin/status');S.rows=[];for(const c in j.lists)for(const x of j.lists[c])S.rows.push({...x,cat:c});
-    S.provs=j.providers;try{S.wv=(await api('GET','/')).version||''}catch(e){}
+    S.provs=j.providers;S.wv=j.version||'';S.t=Date.now();save();
     if(!quiet)toast('Connected · '+S.provs.length+' keys, '+S.rows.length+' models');render()}
   catch(e){toast(e.message,1)}
 }
 const pg=t=>{$('pg').hidden=!t;$('pgt').textContent=t||''};
 async function run(keys){
-  if(S.busy)return;if(!keys.length)return toast('Test ke liye koi model nahi',1);
+  if(S.busy)return;
+  if(keys.length>1){const now=Date.now(),n0=keys.length,m=new Map(S.rows.map(r=>[r.model,r]));keys=keys.filter(k=>{const r=m.get(k);return !(r&&r.tested&&now-r.tested<6e5)});if(keys.length<n0)toast((n0-keys.length)+' model skip (10 min mein test hue)')}
+  if(!keys.length)return toast('Test ke liye koi model nahi',1);
   S.busy=true;S.stop=false;
   for(let i=0;i<keys.length&&!S.stop;i+=12){
     const part=keys.slice(i,i+12);S.rows.forEach(r=>{if(part.includes(r.model))r.busy=true});render();
@@ -170,14 +235,18 @@ async function disc(){
   S.busy=false;pg('');render();
 }
 document.addEventListener('click',e=>{
-  const b=e.target.closest('[data-go],[data-test],[data-chat],[data-run],[data-act]');if(!b)return;const d=b.dataset;
-  if(d.go)go(d.go);else if(d.test)run([d.test]);else if(d.chat){S.sel=d.chat;go('test')}else if(d.run)run(keysFor(d.run));
-  else if(d.act==='load')load();else if(d.act==='disc')disc();
+  const b=e.target.closest('[data-go],[data-test],[data-chat],[data-run],[data-act],[data-del],[data-addco],[data-fetch],[data-addm],[data-mark],[data-prio],[data-pause],[data-delco]');if(!b)return;const d=b.dataset;
+  if(d.prio!==undefined)setP(d.ids.split(','),{prio:+d.prio});else if(d.pause){const p=S.provs.find(x=>x.id===d.pause);setP([d.pause],{off:!(p&&p.off)})}else if(d.delco)delCo(d.delco);else if(d.go)go(d.go);else if(d.test)run([d.test]);else if(d.chat){S.sel=d.chat;go('test')}else if(d.run)run(keysFor(d.run));
+  else if(d.del)delKey(d.del);else if(d.fetch)fetchM(d.fetch);else if(d.addm)addM(d.addm);else if(d.mark)markRow(d.mark);else if(d.addco!==undefined){S.addCo=d.addco;go('add')}else if(d.act==='addsave')addKey();else if(d.act==='load')load();else if(d.act==='disc')disc();
   else if(d.act==='save'){S.url=$('su').value.trim()||DEF;S.tk=$('st').value.trim();ls('ey_url',S.url);ls('ey_tk',S.tk);load().then(()=>{if(S.provs.length)go('home')})}
   else if(d.act==='forget'){S.tk='';ls('ey_tk','');$('st').value='';toast('Token hata diya')}
 });
-document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;$('rows').innerHTML=rowsH(fl(S.rows.filter(r=>r.cat===S.view.split(':')[1])))}});
+document.addEventListener('input',e=>{
+  if(e.target.id==='ae')e.target.dataset.t=1;
+  if(e.target.id==='ac'){hint();const ep=epOf(e.target.value.trim().toLowerCase());if(ep&&!$('ae').dataset.t)$('ae').value=ep}
+if(e.target.id==='q'){S.q=e.target.value;$('rows').innerHTML=rowsH(fl(S.rows.filter(r=>r.cat===S.view.split(':')[1])))}});
 document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k)e.target.open?S.open.add(k):S.open.delete(k)},true);
 $('stop').onclick=()=>{S.stop=true};
-render();if(S.tk)load(true);else go('set');
+try{const c=JSON.parse(ls('ey_cache')||'null');if(c){S.rows=c.rows||[];S.provs=c.provs||[];S.wv=c.wv||'';S.t=c.t||0;S.rows.forEach(r=>delete r.busy)}}catch(e){}
+render();if(!S.tk)go('set');else if(!S.t||Date.now()-S.t>3e5)load(true);
 </script></body></html>
