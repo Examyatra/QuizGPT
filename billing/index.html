@@ -32,20 +32,60 @@ label{font-size:18px;font-weight:700;color:#2b3858;display:block;margin-top:8px}
 .sticky .tl{font-size:26px;display:flex;justify-content:space-between}.sticky .btn{margin:6px 0 2px}
 .seg{display:grid;gap:8px}.seg button{padding:14px;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:12px;font-weight:700;font-size:18px}.seg .on{background:var(--ink);color:#fff}
 .wrap{overflow:hidden;background:#fff;padding:4px;border-radius:8px;border:1px solid var(--line)}
-#inv{width:760px;border:2px solid var(--ink);color:#0f1b3a;font-family:Inter,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#fff;font-size:12px;line-height:1.35;font-variant-numeric:tabular-nums;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-#inv table{border-collapse:collapse;width:100%}#inv td,#inv th{border:1px solid var(--ink);padding:4px 6px;vertical-align:top}
-#inv .pt{table-layout:fixed}#inv .pt th{font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;background:#eef2fa;padding:4px 2px;text-align:center;vertical-align:middle}
-#inv .pt td{font-size:10.5px;padding:3px 2px;height:20px}#inv .pt td.c{text-align:center}#inv .pt td.l{text-align:left;word-break:break-word}#inv .pt td.rt{padding-right:4px}#inv .nw{white-space:nowrap}#inv .pt td.rt,#inv .tt td.rt,#inv .ct td.rt{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}#inv td.lg{font-size:9px}#inv .it{table-layout:auto}#inv .it th{white-space:nowrap;padding-left:4px;padding-right:4px}#inv .it td{padding-left:4px;padding-right:4px}#inv .it td.nm{min-width:110px}#inv .it td.ml{word-break:normal}#inv .tt td.rt{width:1%}
-#inv td table{margin:-1px;width:calc(100% + 2px)}#inv .nb td,#inv .nb th{border:0}
-#inv .ti{text-align:center;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:6px;border-bottom:1.5px solid var(--ink);background:#eef2fa}
-#inv .brand{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 10px 8px;text-align:center}#inv .brand img{height:50px;width:50px;border-radius:10px}
-#inv .sn{font-size:28px;font-weight:800;letter-spacing:.5px;color:var(--ink);text-transform:uppercase;line-height:1.1}#inv .ad{font-size:12.5px;font-weight:500;margin-top:3px}
-#inv .info{table-layout:fixed;border-top:1px solid var(--ink);border-bottom:1.5px solid var(--ink)}#inv .info td{border:0;border-right:1px solid var(--ink);padding:6px 10px;font-size:12px;font-weight:600}#inv .info td:last-child{border-right:0}
-#inv .k{display:block;font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#5a6b92;margin-bottom:1px}
-#inv .kv{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:1px 0}#inv .kv span{color:#5a6b92}
-#inv .sig{font-family:'Segoe Script','Bradley Hand','Apple Chancery','URW Chancery L',cursive;font-size:34px;font-weight:500;letter-spacing:-1.15px;line-height:1.05;color:#14234a;min-height:48px;padding:5px 2px 0 0;display:inline-block;transform:rotate(-2deg);transform-origin:right center;text-rendering:geometricPrecision}
-#inv td,#inv th{font-size:inherit}#inv .pt td.p,#inv .tt td.p{padding-left:1px;padding-right:1px;text-align:center}#inv .tt td{font-size:12px;padding:4px 6px}#inv .gt td{font-size:14px;font-weight:800;background:#eef2fa}
-.big-t{font-size:34px;font-weight:700;text-align:center}.rt{text-align:right}.sm{font-size:11px;color:#47598a}
+/* v1.39: प्रीमियम इनवॉइस — कंटेंट के हिसाब से कॉलम, कुछ भी कटेगा/ओवरलैप नहीं होगा */
+#inv{width:760px;border:1.5px solid var(--ink);color:#16213e;font-family:Inter,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#fff;font-size:12px;line-height:1.4;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#inv table{border-collapse:collapse;width:100%}
+#inv td,#inv th{padding:0;vertical-align:top;font-size:inherit;font-weight:inherit}
+#inv .ti{background:var(--ink);color:#fff;text-align:center;font-size:11px;font-weight:700;letter-spacing:4px;text-transform:uppercase;padding:7px 8px}
+#inv .brand{display:flex;align-items:center;gap:14px;padding:14px 18px 13px}
+#inv .brand img{height:56px;width:56px;border-radius:12px;flex:none;display:block}
+#inv .bt{flex:1;min-width:0}
+#inv .sn{font-size:25px;font-weight:800;letter-spacing:.4px;color:var(--ink);text-transform:uppercase;line-height:1.12}
+#inv .ad{font-size:12px;font-weight:500;color:#33415f;margin-top:4px}
+#inv .em{font-size:11px;color:#5a6b92;margin-top:1px}
+#inv .info{table-layout:fixed;background:#f5f7fc;border-top:1px solid #d3dbec;border-bottom:1px solid #d3dbec}
+#inv .info td{padding:7px 14px;border-right:1px solid #d3dbec;font-size:12px;font-weight:600}
+#inv .info td:last-child{border-right:0}
+#inv .k{display:block;font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#6b7ba3;margin-bottom:2px}
+#inv .meta{border-bottom:1px solid var(--ink)}
+#inv .meta td{padding:10px 16px}
+#inv .meta td.bl{width:58%;border-right:1px solid #d3dbec;font-size:12px}
+#inv .bn{display:block;font-size:14px;font-weight:800;color:var(--ink)}
+#inv .kv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:2px 0;font-size:12px}
+#inv .kv span{color:#6b7ba3;white-space:nowrap}
+#inv .kv b{text-align:right;font-weight:700}
+#inv .kv b.big{font-size:15px;color:var(--ink)}
+/* आइटम टेबल: fixed layout + JS से नापी चौड़ाई = हर जगह एक जैसा रेंडर */
+#inv .it{table-layout:fixed;border-bottom:1px solid var(--ink)}
+#inv .it th{line-height:12px;background:var(--ink);color:#fff;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:8px 3px;text-align:center;vertical-align:middle;border-right:1px solid #3c568f;overflow-wrap:anywhere}
+#inv .it th:last-child{border-right:0}
+#inv .it th.l{text-align:left;padding-left:10px}
+#inv .it td{font-size:11px;line-height:15px;padding:6px 4px;text-align:center;vertical-align:middle;border-bottom:1px solid #e1e7f3;border-right:1px solid #e9eef7;overflow-wrap:anywhere;word-break:normal}
+#inv .it td:last-child{border-right:0}
+#inv .it td.nm{text-align:left;padding-left:10px;padding-right:6px;font-weight:600;color:#0f1b3a}
+#inv .it td.nw{white-space:nowrap}
+#inv .it td.am{font-weight:700;color:#0f1b3a}
+#inv .it tbody tr:nth-child(even) td{background:#f8faff}
+#inv .it tbody tr.fl td{background:#fff;height:24px;padding:0}
+#inv .it .u{color:#5a6b92;font-size:10px;line-height:1;font-weight:600;margin-left:3px}
+/* नीचे का हिस्सा */
+#inv td.sl{width:57%;border-right:1px solid #d3dbec}
+#inv .wd{padding:8px 12px}
+#inv .wd b{font-size:12.5px;font-weight:700;color:var(--ink)}
+#inv .ct th{background:#eef2fa;color:#2b3858;font-size:8.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:6px 4px;text-align:center;border-bottom:1px solid #d3dbec;border-right:1px solid #e1e7f3}
+#inv .ct th:last-child{border-right:0}
+#inv .ct td{font-size:11px;font-weight:500;padding:5px 6px;text-align:center;white-space:nowrap;border-bottom:1px solid #e1e7f3;border-right:1px solid #eef2fa}
+#inv .ct td:first-child{text-align:left;font-weight:700;color:var(--ink)}
+#inv .ct td:last-child{border-right:0}
+#inv .ct tr:last-child td{background:#f5f7fc;font-weight:800;border-bottom:0}
+#inv .tt td{font-size:12px;padding:7px 12px;border-bottom:1px solid #e1e7f3}
+#inv .tt td.rt{text-align:right;white-space:nowrap;width:1%;font-weight:700}
+#inv .tt tr.gt td{background:var(--ink);color:#fff;font-size:15px;font-weight:800;padding:11px 12px;border-bottom:0}
+#inv .sg{border-top:1px solid var(--ink)}
+#inv .sg td{padding:10px 16px;vertical-align:bottom}
+#inv .sg .ln{display:inline-block;min-width:190px;border-top:1px solid #16213e;padding-top:4px;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#33415f;text-align:center}
+#inv .sg .fo{font-size:12px;font-weight:800;color:var(--ink)}
+.rt{text-align:right}.sm{font-size:11px;color:#47598a}
 @page{size:A4;margin:14mm}
 @media print{html,body{background:#fff!important;height:auto!important}body>*:not(#app){display:none!important}#app{max-width:none!important;padding:0!important;margin:0!important}#app>*:not(.wrap){display:none!important}.wrap{border:0!important;padding:0!important;overflow:visible!important;height:auto!important}#inv{position:static!important;width:100%!important;transform:none!important}}
 
@@ -95,6 +135,31 @@ input,select,textarea{border-color:#7f8db0}
 .wa{color:#06260f}
 .cap{font-size:16px;color:#445}
 .mbox.z{color:#6b7690}
+
+/* v1.39: कुछ भी कटे/छिपे/ओवरलैप नहीं — छोटी स्क्रीन पर भी; साफ़, प्रीमियम लुक */
+.qrow{grid-template-columns:minmax(0,1fr)!important;gap:10px;margin:6px 0 12px}
+.ut{min-height:58px}
+.ut button{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:58px;padding:0 6px;font-size:20px;white-space:normal;line-height:1.15}
+.ut .ei{margin:0;flex:none;padding:2px 6px}
+.mbox{font-size:clamp(18px,6.2vw,26px);white-space:normal;overflow:visible;overflow-wrap:anywhere;text-align:center;line-height:1.1;padding:6px 8px}
+.mleft{min-height:62px}
+.stp input,.dr input,.mleft input{text-overflow:clip}
+.dr label,.row label{white-space:normal}
+.rh b{min-width:0;overflow-wrap:anywhere}
+.row .rh+label{margin-top:10px}
+.sticky .tl{align-items:baseline;gap:8px;flex-wrap:wrap}
+.sticky .tl b{white-space:nowrap}
+.item,.sumc{overflow-wrap:anywhere}
+.steps span{display:flex;align-items:center;justify-content:center;min-height:44px;line-height:1.15;border-radius:12px}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px rgba(31,58,110,.16)}
+.row{border-color:#c9d3ea;border-radius:18px;box-shadow:0 2px 10px rgba(31,58,110,.08)}
+.btn{border-radius:16px}
+.btn.main{box-shadow:0 4px 12px rgba(31,58,110,.28)}
+.btn.good,.btn.wa{box-shadow:0 4px 12px rgba(18,128,58,.22)}
+.sticky{border-top:1px solid #d3dbec;box-shadow:0 -6px 18px rgba(31,58,110,.12)}
+.wrap{border-radius:14px;border:1px solid #d3dbec;box-shadow:0 4px 18px rgba(31,58,110,.10);background:#fff}
+@media(max-width:400px){.gstbar{grid-template-columns:minmax(0,1fr)}.gstopts button,.gstmode button{font-size:15px}}
+@media(max-width:360px){body{font-size:19px}h1{font-size:23px}.steps span{font-size:15px}.stp{grid-template-columns:46px minmax(0,1fr) 46px}.stp input{font-size:22px}.dr input,.mleft input{font-size:22px}.pk{font-size:19px}}
 </style></head><body><script>
 (function(){var up=false;window.__vmsUp=function(){up=true};
 function show(t){var a=document.getElementById('app');if(!a||up)return;
@@ -194,7 +259,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.38';
+const APP_VERSION='OFFLINE-1.39';
 // ---- Cloud Backup (val.town SQLite) ----
 // सर्वर पर यही एक फिक्स जगह (ID): ऑटो-बैकअप, बटन वाला बैकअप और Restore तीनों इसी का इस्तेमाल करते हैं.
 // इसे कभी बदलना नहीं — बदलने पर पुराना बैकअप नहीं मिलेगा.
@@ -247,8 +312,8 @@ function scheduleBackup(){
  _billBackupTimer=setTimeout(async()=>{
   _billBackupTimer=null;
   if(!navigator.onLine){
-   _billOnlineH=()=>{_billOnlineH=null;window.removeEventListener('online',_billOnlineH);cloudBackup().catch(()=>{})};
-   window.addEventListener('online',_billOnlineH);return}
+   const h=()=>{window.removeEventListener('online',h);if(_billOnlineH===h)_billOnlineH=null;cloudBackup().catch(()=>{})};_billOnlineH=h;
+   window.addEventListener('online',h);return}
   cloudBackup().catch(()=>{})
  },8000)}
 const uuid=()=>{try{if(crypto.randomUUID)return crypto.randomUUID()}catch(e){}return 'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10)};
@@ -449,7 +514,7 @@ function show(v){
 function listScr(){oldBillScr(lastQ)}
 const back=()=>history.back();
 const head=n=>`<div class=bar><button class=ghost onclick="back()">⬅ पीछे</button></div><div class=steps>${['ग्राहक','दवाइयाँ','बिल देखें'].map((t,i)=>`<span class="${i+1===n?'on':i+1<n?'done':''}">${i+1}. ${t}</span>`).join('')}</div>`;
-function fit(){const w=document.getElementById('wrap'),i=document.getElementById('inv');if(!w||!i)return;const s=Z?1:Math.min(1,(w.clientWidth-8)/760);w.style.overflowX=Z?'auto':'hidden';i.style.transformOrigin='top left';i.style.transform=`scale(${s})`;w.style.height=(i.offsetHeight*s+8)+'px'}
+function fit(){const w=document.getElementById('wrap'),i=document.getElementById('inv');if(!w||!i)return;const s=Z?1:Math.min(1,(w.clientWidth-8)/(i.offsetWidth||760));w.style.overflowX=Z?'auto':'hidden';i.style.transformOrigin='top left';i.style.transform=`scale(${s})`;w.style.height=(i.offsetHeight*s+8)+'px'}
 
 
 const CALC=()=>calc(D.items,{mode:D.mode,interstate:D.interstate,discount:D.discount,dtype:D.dtype});
@@ -684,47 +749,60 @@ function toPrev(){{const keep=D.items.filter(it=>String(it.name).trim()||String(
  go('prev')}
 
 // ---------- INVOICE HTML ----------
-function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows.length<8)rows.push(null);const pc0=posOf(o,sh),pos=(o.interstate&&pc0===(sh.gstin||'').slice(0,2))?'Other State':(ST[pc0]||'')+' ('+pc0+')';
- const fm=v=>{v=Number(v||0);if(!isFinite(v)||Math.abs(v)<0.005)v=0;return v.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})},tdn=v=>{const t=fm(v);return `<td class="rt${t.replace(/\D/g,'').length>9?' lg':''}">${t}</td>`},money=tdn;
- const f2=fm,us=l=>l.unit&&UE[l.unit]?' '+UE[l.unit]:'',es=e=>{const[y,m]=e.split('-');return m+'/'+y.slice(2)};
+function invHTML(o){const sh=o.shop,c=o.customer||{},rows=o.lines.slice();
+ const pc0=posOf(o,sh),pos=(o.interstate&&pc0===(sh.gstin||'').slice(0,2))?'Other State':(ST[pc0]||'')+' ('+pc0+')';
+ const fm=v=>{v=Number(v||0);if(!isFinite(v)||Math.abs(v)<0.005)v=0;return v.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})},
+  tdn=v=>`<td class=rt>${fm(v)}</td>`,ctd=v=>`<td>${fm(v)}</td>`,f2=fm,
+  es=e=>{const[y,m]=String(e).split('-');return m+'/'+String(y).slice(2)},ut=l=>l.unit&&UE[l.unit]?UE[l.unit]:'',hv=v=>String(v==null?'':v).trim();
+ // ---- GST class-wise table ----
  const cls={};[0,5,18].forEach(g=>cls[g]={t:0,d:0,c:0,s:0,i:0});
  o.lines.forEach(l=>{const g=Number(l.gst)||0,x=cls[g]||(cls[g]={t:0,d:0,c:0,s:0,i:0}),tx=Number(l.taxable)||0,t0=l.t0!=null?Number(l.t0):(o.mode==='included'?r2(l.amt*100/(100+g)):Number(l.amt));x.t+=tx;x.d+=Math.max(0,t0-tx);x.c+=Number(l.cgst)||0;x.s+=Number(l.sgst)||0;x.i+=Number(l.igst)||0});
  const ks=Object.keys(cls).map(Number).sort((a,b)=>a-b),ig=!!o.interstate,sm=k=>ks.reduce((s,g)=>s+cls[g][k],0);
- const crow=(n,x)=>`<tr><td><b>${n}</b></td>${tdn(x.t)}${tdn(x.d)}${ig?tdn(x.i):`${tdn(x.c)}${tdn(x.s)}${tdn(x.c+x.s)}`}</tr>`;
+ const crow=(n,x)=>`<tr><td>${n}</td>${ctd(x.t)}${ctd(x.d)}${ig?ctd(x.i):`${ctd(x.c)}${ctd(x.s)}${ctd(x.c+x.s)}`}</tr>`;
  const rateLabel=g=>ig?`GST ${g}% (IGST ${g}%)`:`GST ${g}% (${f2(g/2)} + ${f2(g/2)})`;
- const classTbl=`<table class="pt ct" style="table-layout:auto"><tr><th>GST RATE</th><th>TAXABLE</th><th>DISC.</th>${ig?'<th>IGST</th>':'<th>CGST</th><th>SGST</th><th>TOTAL TAX</th>'}</tr>${ks.map(g=>crow(rateLabel(g),cls[g])).join('')}${crow('TOTAL',{t:sm('t'),d:sm('d'),c:sm('c'),s:sm('s'),i:sm('i')})}</table>`;
+ const classTbl=`<table class=ct><tr><th>GST RATE</th><th>TAXABLE</th><th>DISC.</th>${ig?'<th>IGST</th>':'<th>CGST</th><th>SGST</th><th>TOTAL TAX</th>'}</tr>${ks.map(g=>crow(rateLabel(g),cls[g])).join('')}${crow('TOTAL',{t:sm('t'),d:sm('d'),c:sm('c'),s:sm('s'),i:sm('i')})}</table>`;
  const gmS=new Set(o.lines.map(l=>(l.gst_mode||o.mode)==='excluded'?'x':'i')),gmTxt=gmS.size>1?'GST: included on some items, added extra on others':gmS.has('x')?'GST added extra':'Prices GST included';
  const ro=Number(o.roundoff)||0,rn=Math.abs(ro).toFixed(2).split('.'),rsg=ro>0?'+':ro<0?'-':'';
- const title='Sale Invoice';
- const LS=o.lines,has=f=>LS.some(f),detailBill=o.bill_view!=='simple',CS=[
- {w:24,h:'SN',c:(l,n)=>`<td class="c nw">${n+1}</td>`},
- {w:0,h:'Product Name',c:l=>`<td class="l nm">${esc(l.name)}</td>`},
- {w:56,h:'HSN',on:has(l=>String(l.hsn||'').trim()),c:l=>`<td class="c nw">${esc(l.hsn)}</td>`},
-  {w:48,h:'Mfr.',on:has(l=>String(l.mfr||'').trim()),c:l=>`<td class="l ml">${esc(l.mfr)}</td>`},
- {w:44,h:'Pack',on:has(l=>String(l.pack||'').trim()),c:l=>`<td class=c>${esc(l.pack)}</td>`},
- {w:58,h:'Qty',c:l=>`<td class="c nw">${l.qty}${us(l)}</td>`},
- {w:30,h:'Free',on:has(l=>String(l.free||'').trim()&&Number(l.free)!==0),c:l=>`<td class="c nw">${esc(l.free||0)}</td>`},
- {w:86,h:'Batch',on:has(l=>String(l.batch||'').trim()),c:l=>`<td class="c nw">${l.batch?esc(l.batch):''}</td>`},
- {w:42,h:'Exp.',on:has(l=>l.expiry),c:l=>`<td class="c nw">${l.expiry?es(l.expiry):''}</td>`},
- {w:52,h:'M.R.P.',on:has(l=>l.mrp!=null&&l.mrp!==''),c:l=>l.mrp!=null&&l.mrp!==''?money(l.mrp):'<td class=rt></td>'},
- {w:54,h:'Rate',c:l=>money(l.rate)},
- {w:36,h:'Dis%',on:has(l=>(Number(l.disc)||0)>0),c:l=>`<td class="c nw">${l.amt>0?f2((l.disc||0)*100/l.amt):'0.00'}</td>`},
- {w:34,h:'GST%',on:has(l=>l.gst_set),c:l=>`<td class="c nw">${l.gst_set?l.gst:''}</td>`},
- {w:62,h:'Amount',c:l=>money(l.amt-(l.disc||0))}
-].filter(x=>(x.on===undefined||x.on)&& (detailBill||!['Batch','Exp.','HSN'].includes(x.h)));{const fx=CS.filter(x=>x.w).reduce((t,x)=>t+x.w,0);CS.find(x=>!x.w).w=Math.max(110,752-fx)}
-const cg='<colgroup>'+CS.map(x=>`<col style="width:${x.w}px">`).join('')+'</colgroup>';
- const sigb=sh.show_signatory==='1'?(sh.signature?`<img src="${esc(sh.signature)}" style="height:52px;display:block;margin:2px 0 2px auto">`:`<img src="${PSIG}" style="height:52px;display:block;margin:2px 0 2px auto">`):'<div style="height:54px"></div>';
- return `<div id=inv><div class=ti>${title}</div>
- <div class=brand><img src="${LOGO_DEFAULT}"><div><div class=sn>${esc(sh.shop_name)}</div><div class=ad>${esc(sh.address)}${sh.pin?' - '+esc(sh.pin):''}</div>${sh.email?`<div class=ad style="font-size:11px;color:#5a6b92">${esc(sh.email)}</div>`:''}</div></div>
- <table class=info><tr><td><span class=k>Drug Licence No.</span>${esc(sh.dl1)}<br>${esc(sh.dl2)}</td><td><span class=k>GSTIN</span>${esc(sh.gstin)}</td><td><span class=k>Mobile</span>${esc(sh.mobile)}</td></tr></table>
- <table class=nb style="border-bottom:1.5px solid var(--ink)"><tr><td style="width:62%;padding:8px 12px;border-right:1px solid var(--ink)"><span class=k>Billed To</span><b style="font-size:13px">M/S ${esc(c.name||'Cash Customer')}</b>${c.mobile?'<br>Mob. '+esc(c.mobile):''}${c.address?'<br>'+esc(c.address):''}${c.gstin?'<br>GSTIN: '+esc(c.gstin):''}${c.dl?'<br>D/L No.: '+esc(c.dl):''}</td>
- <td style="padding:8px 12px"><div class=kv><span>Invoice No.</span><b style="font-size:14px">${esc(o.inv_no||o.serial)}</b></div><div class=kv><span>Date</span><b>${dmy(o.date)}</b></div><div class=kv><span>Place of Supply</span><b>${pos}</b></div><div class=kv><span>Reverse Charge</span><b>No</b></div>${sh.transport?`<div class=kv><span>Transport</span><b>${esc(sh.transport)}</b></div>`:''}</td></tr></table>
- <table class="pt it"><tr>${CS.map(x=>`<th${x.w?' style="width:1%"':''}>${x.h}</th>`).join('')}</tr>
- ${rows.map((l,n)=>l?`<tr>${CS.map(x=>x.c(l,n)).join('')}</tr>`:'<tr><td>&nbsp;</td>'+'<td></td>'.repeat(CS.length-1)+'</tr>').join('')}</table>
- <table><tr><td style="width:56%;padding:0">${classTbl}<div style="padding:6px 8px"><span class=k>Total in Words</span><b>${esc(o.words)}</b><div class=sm style="margin-top:6px">${gmTxt} · ${ig?'IGST':'CGST+SGST'}</div>${o.lines.some(l=>!l.gst_set)?'<div class=sm>GST rate not set for some products (taken as 0%)</div>':''}</div></td>
- <td style="padding:0"><table class=tt style="table-layout:auto"><tr><td><b>Gross Amount</b></td>${money(o.gross)}</tr><tr><td><b>Tax</b></td>${money(o.tax)}</tr><tr><td><b>Discount</b></td>${money(o.discount)}</tr><tr><td><b>Rounded off (+/-)</b></td><td class=rt>${rsg}${rn.join('.')}</td></tr><tr class=gt><td><b>GRAND TOTAL</b></td>${money(o.total)}</tr></table></td></tr></table>
- ${sh.terms?`<div class=sm style="padding:4px 10px">${esc(sh.terms)}</div>`:''}${sh.upi?`<div class=sm style="padding:2px 10px">UPI: ${esc(sh.upi)}${sh.pay_mobile?' · '+esc(sh.pay_mobile):''}</div>`:''}
- <table class=nb style="border-top:1.5px solid var(--ink)"><tr><td style="width:50%;padding:8px 12px;vertical-align:bottom;height:92px"><div style="display:inline-block;min-width:190px;border-top:1px solid var(--ink);padding-top:3px;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Party Signature</div></td><td class=rt style="padding:8px 12px"><div style="font-size:12px;font-weight:700">For ${esc(sh.shop_name)}</div>${sigb}<div style="display:inline-block;min-width:190px;border-top:1px solid var(--ink);padding-top:3px;font-size:10.5px;font-weight:600;text-align:center">&nbsp;</div></td></tr></table></div>`}
+ // ---- Item table: columns are measured from the real content ----
+ const LS=o.lines,has=f=>LS.some(f),detailBill=o.bill_view!=='simple',mrpOk=l=>l.mrp!=null&&l.mrp!=='',dp=l=>l.amt>0?f2((l.disc||0)*100/l.amt):'0.00';
+ const CS=[
+  {k:'sn',h:'SN',min:28,nw:1,t:(l,n)=>String(n+1),c:(l,n)=>`<td class=nw>${n+1}</td>`},
+  {k:'name',h:'Product Name',c:l=>`<td class=nm>${esc(l.name)}</td>`},
+  {k:'hsn',h:'HSN',d:1,on:has(l=>hv(l.hsn)),min:44,nw:1,t:l=>hv(l.hsn),c:l=>`<td class=nw>${esc(l.hsn)}</td>`},
+  {k:'mfr',h:'Mfr.',on:has(l=>hv(l.mfr)),min:46,max:96,t:l=>hv(l.mfr),c:l=>`<td>${esc(l.mfr)}</td>`},
+  {k:'pack',h:'Pack',on:has(l=>hv(l.pack)),min:42,max:72,t:l=>hv(l.pack),c:l=>`<td>${esc(l.pack)}</td>`},
+  {k:'qty',h:'Qty',min:50,nw:1,t:l=>l.qty+' '+ut(l),c:l=>`<td class=nw>${esc(l.qty)}${ut(l)?`<span class=u>${ut(l)}</span>`:''}</td>`},
+  {k:'free',h:'Free',on:has(l=>hv(l.free)&&Number(l.free)!==0),min:34,nw:1,t:l=>hv(l.free),c:l=>`<td class=nw>${esc(l.free||0)}</td>`},
+  {k:'batch',h:'Batch',d:1,on:has(l=>hv(l.batch)),min:60,max:120,t:l=>hv(l.batch),c:l=>`<td>${esc(l.batch)}</td>`},
+  {k:'exp',h:'Exp.',d:1,on:has(l=>l.expiry),min:46,nw:1,t:()=>'00/00',c:l=>`<td class=nw>${l.expiry?es(l.expiry):''}</td>`},
+  {k:'mrp',h:'M.R.P.',on:has(mrpOk),min:54,nw:1,t:l=>mrpOk(l)?fm(l.mrp):'',c:l=>`<td class=nw>${mrpOk(l)?fm(l.mrp):''}</td>`},
+  {k:'rate',h:'Rate',min:54,nw:1,t:l=>fm(l.rate),c:l=>`<td class=nw>${fm(l.rate)}</td>`},
+  {k:'dis',h:'Dis%',on:has(l=>(Number(l.disc)||0)>0),min:42,nw:1,t:dp,c:l=>`<td class=nw>${dp(l)}</td>`},
+  {k:'gst',h:'GST%',on:has(l=>l.gst_set),min:42,nw:1,t:l=>l.gst_set?String(l.gst):'',c:l=>`<td class=nw>${l.gst_set?esc(l.gst):''}</td>`},
+  {k:'amt',h:'Amount',min:66,nw:1,t:l=>fm(l.amt-(l.disc||0)),c:l=>`<td class="nw am">${fm(l.amt-(l.disc||0))}</td>`}
+ ].filter(x=>(x.on===undefined||x.on)&&(detailBill||!x.d));
+ // चौड़ाई = सबसे लंबी वैल्यू के हिसाब से (अक्षर-चौड़ाई थोड़ी ज़्यादा मानी ताकि कभी ओवरलैप न हो)
+ let W=760;const NMIN=190,cwB=7.6,cwH=7;
+ CS.forEach(x=>{if(x.k==='name')return;const L=Math.max(0,...LS.map((l,n)=>String(x.t(l,n)).length));let w=Math.ceil(Math.max(L*cwB,x.h.length*cwH)+14);w=Math.max(w,x.min);if(x.max)w=Math.min(w,x.max);x.w=w});
+ let fx=CS.reduce((s,x)=>x.k==='name'?s:s+x.w,0);
+ if(W-4-fx<NMIN)CS.forEach(x=>{if(x.k==='name'||x.nw)return;const cut=Math.min(x.w-x.min,NMIN-(W-4-fx));if(cut>0){x.w-=cut;fx-=cut}});
+ if(W-4-fx<NMIN)W=Math.min(1000,fx+NMIN+4);
+ CS.find(x=>x.k==='name').w=Math.max(80,W-4-fx);
+ const cg='<colgroup>'+CS.map(x=>`<col style="width:${x.w}px">`).join('')+'</colgroup>',
+  hd=CS.map(x=>`<th${x.k==='name'?' class=l':''}>${x.h}</th>`).join(''),
+  body=rows.map((l,n)=>`<tr>${CS.map(x=>x.c(l,n)).join('')}</tr>`).join(''),
+  fill=Array.from({length:Math.max(0,8-rows.length)},()=>`<tr class=fl>${CS.map(()=>'<td>&nbsp;</td>').join('')}</tr>`).join('');
+ const sigImg=sh.show_signatory==='1'?`<img src="${esc(sh.signature||PSIG)}" alt="" style="height:52px;display:block;margin:2px 0 4px auto">`:'<div style="height:54px"></div>';
+ return `<div id=inv style="width:${W}px"><div class=ti>Sale Invoice</div>
+ <div class=brand><img src="${LOGO_DEFAULT}" alt=""><div class=bt><div class=sn>${esc(sh.shop_name)}</div><div class=ad>${esc(sh.address)}${sh.pin?' - '+esc(sh.pin):''}</div>${sh.email?`<div class=em>${esc(sh.email)}</div>`:''}</div></div>
+ <table class=info><tr><td><span class=k>Drug Licence No.</span>${esc(sh.dl1)}${sh.dl2?'<br>'+esc(sh.dl2):''}</td><td><span class=k>GSTIN</span>${esc(sh.gstin)}</td><td><span class=k>Mobile</span>${esc(sh.mobile)}</td></tr></table>
+ <table class=meta><tr><td class=bl><span class=k>Billed To</span><b class=bn>M/S ${esc(c.name||'Cash Customer')}</b>${c.mobile?'Mob. '+esc(c.mobile):''}${c.address?'<br>'+esc(c.address):''}${c.gstin?'<br>GSTIN: '+esc(c.gstin):''}${c.dl?'<br>D/L No.: '+esc(c.dl):''}</td>
+ <td><div class=kv><span>Invoice No.</span><b class=big>${esc(o.inv_no||o.serial)}</b></div><div class=kv><span>Date</span><b>${dmy(o.date)}</b></div><div class=kv><span>Place of Supply</span><b>${esc(pos)}</b></div><div class=kv><span>Reverse Charge</span><b>No</b></div>${sh.transport?`<div class=kv><span>Transport</span><b>${esc(sh.transport)}</b></div>`:''}</td></tr></table>
+ <table class=it>${cg}<thead><tr>${hd}</tr></thead><tbody>${body}${fill}</tbody></table>
+ <table><tr><td class=sl>${classTbl}<div class=wd><span class=k>Total in Words</span><b>${esc(o.words)}</b><div class=sm style="margin-top:6px">${gmTxt} · ${ig?'IGST':'CGST+SGST'}</div>${o.lines.some(l=>!l.gst_set)?'<div class=sm>GST rate not set for some products (taken as 0%)</div>':''}</div></td>
+ <td style="padding:0"><table class=tt><tr><td><b>Gross Amount</b></td>${tdn(o.gross)}</tr><tr><td><b>Tax</b></td>${tdn(o.tax)}</tr><tr><td><b>Discount</b></td>${tdn(o.discount)}</tr><tr><td><b>Rounded off (+/-)</b></td><td class=rt>${rsg}${rn.join('.')}</td></tr><tr class=gt><td><b>GRAND TOTAL</b></td>${tdn(o.total)}</tr></table></td></tr></table>
+ ${sh.terms?`<div class=sm style="padding:6px 14px;border-top:1px solid #d3dbec">${esc(sh.terms)}</div>`:''}${sh.upi?`<div class=sm style="padding:4px 14px">UPI: ${esc(sh.upi)}${sh.pay_mobile?' · '+esc(sh.pay_mobile):''}</div>`:''}
+ <table class=sg><tr><td style="width:50%;height:96px"><span class=ln>Party Signature</span></td><td class=rt><div class=fo>For ${esc(sh.shop_name)}</div>${sigImg}<span class=ln>Authorised Signatory</span></td></tr></table></div>`}
 
 // ---------- STEP 3 ----------
 async function prevScr(){
@@ -760,27 +838,43 @@ function boxCanvas(el,sc){return new Promise((res,rej)=>{try{const W=el.offsetWi
  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'"><foreignObject x="0" y="0" width="'+W+'" height="'+H+'">'+new XMLSerializer().serializeToString(w)+'</foreignObject></svg>';
  const im=new Image();im.onload=()=>{try{const cv=document.createElement('canvas');cv.width=W*sc;cv.height=H*sc;const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.scale(sc,sc);x.drawImage(im,0,0,W,H);res(cv)}catch(e){rej(e)}};
  im.onerror=()=>rej(new Error('बिल की फोटो नहीं बन पाई'));im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}catch(e){rej(e)}})}
-function padCanvas(cv){const p=Math.round(cv.width*0.05),o=document.createElement('canvas');o.width=cv.width+2*p;o.height=cv.height+2*p;const x=o.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,o.width,o.height);x.drawImage(cv,p,p);return o}
+function padCanvas(cv){const p=Math.round(cv.width*0.05),o=document.createElement('canvas');o.width=cv.width+2*p;o.height=cv.height+2*p;const x=o.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,o.width,o.height);x.drawImage(cv,p,p);o._cuts=(cv._cuts||[]).map(y=>y*(cv._k||1)+p);return o}
 const invCanvas=async()=>padCanvas(await invCanvas0());
 async function invCanvas0(){const el=document.getElementById('inv');if(!el)throw new Error('बिल स्क्रीन पर नहीं है');
  try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2500))])}catch(e){}
  try{fit()}catch(e){}await new Promise(r=>requestAnimationFrame(()=>setTimeout(r,60)));
  const old=el.style.transform;el.style.transform='none';
- try{if(await Promise.race([loadH2C(),new Promise(r=>setTimeout(()=>r(false),3000))])){
-   try{return await Promise.race([window.html2canvas(el,{scale:2,backgroundColor:'#fff'}),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),20000))])}catch(e){}}
-  return await boxCanvas(el,2)}finally{el.style.transform=old}}
+ try{let cv=null;
+  if(await Promise.race([loadH2C(),new Promise(r=>setTimeout(()=>r(false),3000))])){
+   try{cv=await Promise.race([window.html2canvas(el,{scale:2,backgroundColor:'#fff'}),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),20000))])}catch(e){}}
+  if(!cv)cv=await boxCanvas(el,2);
+  // लंबे बिल के लिए: हर आइटम-रो का निचला किनारा (पेज यहीं कटेगा, रो बीच से नहीं)
+  const t0=el.getBoundingClientRect().top;cv._k=cv.width/(el.offsetWidth||1);
+  cv._cuts=Array.from(el.querySelectorAll('.it tbody tr:not(.fl)')).map(r=>r.getBoundingClientRect().bottom-t0);
+  return cv}finally{el.style.transform=old}}
 const toJpg=cv=>new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('फोटो नहीं बन पाई')),'image/jpeg',.95));
-async function pdfFromCanvas(cv){const jb=new Uint8Array(await(await toJpg(cv)).arrayBuffer());
- const PW=595.28,PH=841.89,mm=2.834645669,w=cv.width,h=cv.height;let dw=PW,dh=h*dw/w;if(dh>PH){dh=PH;dw=w*dh/h}
- const enc=new TextEncoder(),parts=[],offs=[];let len=0;const put=b=>{const u=typeof b==='string'?enc.encode(b):b;parts.push(u);len+=u.length};
- const obj=(n,body)=>{offs[n]=len;put(n+' 0 obj\n'+body+'\nendobj\n')};
- put('%PDF-1.4\n');obj(1,'<< /Type /Catalog /Pages 2 0 R >>');obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
- obj(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+PW+' '+PH+'] /Resources << /XObject << /Im0 4 0 R >> /ProcSet [/PDF /ImageC] >> /Contents 5 0 R >>');
- offs[4]=len;put('4 0 obj\n<< /Type /XObject /Subtype /Image /Width '+w+' /Height '+h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jb.length+' >>\nstream\n');put(jb);put('\nendstream\nendobj\n');
- const cs='q '+dw.toFixed(2)+' 0 0 '+dh.toFixed(2)+' '+((PW-dw)/2).toFixed(2)+' '+(PH-dh).toFixed(2)+' cm /Im0 Do Q';
- obj(5,'<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream');
- const xr=len;let t='xref\n0 6\n0000000000 65535 f \n';for(let i=1;i<=5;i++)t+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
- put(t+'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF\n');return new Blob(parts,{type:'application/pdf'})}
+async function pdfFromCanvas(cv){
+ const PW=595.28,PH=841.89,w=cv.width,h=cv.height,enc=new TextEncoder(),pageH=w*PH/PW,m=Math.round(w*.035),usable=pageH-2*m;
+ let pages;
+ if(h<=pageH)pages=[cv]; // एक पेज में आ जाए तो पहले जैसा
+ else{pages=[];const cuts=(cv._cuts||[]).slice().sort((a,b)=>a-b);let y0=0;
+  const skip=Math.round(5*(cv._k||2)); // अगली रो के ऊपर की खाली padding (6px) से थोड़ा आगे से शुरू, ताकि पिछली रो की पट्टी न दिखे
+  while(y0<h-1){let y1=Math.min(h,y0+usable),rowCut=false;
+   if(y1<h){const c=cuts.filter(v=>v>y0+usable*.35&&v<=y0+usable);if(c.length){y1=c[c.length-1];rowCut=true}}
+   y1=Math.round(y1);const ph=Math.max(1,y1-y0),pc=document.createElement('canvas');pc.width=w;pc.height=ph+2*m;
+   const x=pc.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,pc.height);x.drawImage(cv,0,y0,w,ph,0,m,w,ph);pages.push(pc);y0=rowCut?y1+skip:y1}}
+ const jbs=[];for(const p of pages)jbs.push(new Uint8Array(await(await toJpg(p)).arrayBuffer()));
+ const parts=[],offs=[],n=pages.length;let len=0;const put=b=>{const u=typeof b==='string'?enc.encode(b):b;parts.push(u);len+=u.length};
+ const obj=(k,body)=>{offs[k]=len;put(k+' 0 obj\n'+body+'\nendobj\n')};
+ put('%PDF-1.4\n');obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+ obj(2,'<< /Type /Pages /Kids ['+pages.map((_,i)=>(3+3*i)+' 0 R').join(' ')+'] /Count '+n+' >>');
+ pages.forEach((p,i)=>{const pg=3+3*i,im=pg+1,ct=pg+2,dh=Math.min(PH,p.height*PW/p.width);
+  obj(pg,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+PW+' '+PH+'] /Resources << /XObject << /Im0 '+im+' 0 R >> /ProcSet [/PDF /ImageC] >> /Contents '+ct+' 0 R >>');
+  offs[im]=len;put(im+' 0 obj\n<< /Type /XObject /Subtype /Image /Width '+p.width+' /Height '+p.height+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jbs[i].length+' >>\nstream\n');put(jbs[i]);put('\nendstream\nendobj\n');
+  const cs='q '+PW.toFixed(2)+' 0 0 '+dh.toFixed(2)+' 0 '+(PH-dh).toFixed(2)+' cm /Im0 Do Q';
+  obj(ct,'<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream')});
+ const xr=len,tot=3+3*n;let t='xref\n0 '+tot+'\n0000000000 65535 f \n';for(let i=1;i<tot;i++)t+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+ put(t+'trailer\n<< /Size '+tot+' /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF\n');return new Blob(parts,{type:'application/pdf'})}
 const pdfBlob=async()=>pdfFromCanvas(await invCanvas());
 // solo: हर function का अपना busy flag — एक बटन दबाने से दूसरा बटन नहीं रुकेगा
 const solo=fn=>{let busy=false;return async(...a)=>{if(busy)return;busy=true;try{return await fn(...a)}finally{busy=false}}};

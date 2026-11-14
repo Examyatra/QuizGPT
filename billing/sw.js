@@ -1,11 +1,11 @@
-/* Vishal Medical Store — Service Worker (OFFLINE-1.38)
+/* Vishal Medical Store — Service Worker (OFFLINE-1.39)
  * - नया version = नया cache (VER), पुराने सारे cache activate पर delete
  * - install में skipWaiting(), activate में clients.claim(): नया SW तुरंत चालू
  * - index.html, sw.js, manifest.json: network-first (नेट हो तो नई file, न हो तो cache)
  * - icons: cache-first, पीछे से refresh
  * - सिर्फ अपनी site की GET files छूता है; सर्वर बैकअप (val.run / val.town) हमेशा सीधे नेटवर्क से
  */
-const VER = 'vms-cache-1.38';
+const VER = 'vms-cache-1.39';
 const CORE = [
   './',
   './index.html',
