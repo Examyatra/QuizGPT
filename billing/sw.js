@@ -1,9 +1,11 @@
-/* Vishal Medical Store — Service Worker (OFFLINE-1.32)
- * - App बिना इंटरनेट के भी खुले (सारी ज़रूरी files cache में)
- * - index.html: पहले नेट से नया लो, न मिले तो cache से (ताकि update आती रहे)
- * - सिर्फ अपनी site की GET files cache होती हैं; सर्वर बैकअप (val.run) को कभी नहीं छूता
+/* Vishal Medical Store — Service Worker (OFFLINE-1.38)
+ * - नया version = नया cache (VER), पुराने सारे cache activate पर delete
+ * - install में skipWaiting(), activate में clients.claim(): नया SW तुरंत चालू
+ * - index.html, sw.js, manifest.json: network-first (नेट हो तो नई file, न हो तो cache)
+ * - icons: cache-first, पीछे से refresh
+ * - सिर्फ अपनी site की GET files छूता है; सर्वर बैकअप (val.run / val.town) हमेशा सीधे नेटवर्क से
  */
-const VER = 'vms-cache-1.32';
+const VER = 'vms-cache-1.38';
 const CORE = [
   './',
   './index.html',
@@ -12,13 +14,14 @@ const CORE = [
   './icons/icon-512.png',
   './icons/icon-maskable-512.png'
 ];
+const NET_FIRST = ['/index.html', '/sw.js', '/manifest.json'];
 
 self.addEventListener('install', e => {
+  self.skipWaiting();
   e.waitUntil((async () => {
     const c = await caches.open(VER);
     // एक file fail हो तो भी बाकी cache हों
     await Promise.all(CORE.map(u => c.add(new Request(u, { cache: 'reload' })).catch(() => {})));
-    await self.skipWaiting();
   })());
 });
 
@@ -30,28 +33,42 @@ self.addEventListener('activate', e => {
   })());
 });
 
+// cache में एक ही key (?v= / ?_= से भीड़ नहीं)
+const keyFor = (url, isNav) => {
+  let p = url.pathname;
+  if (isNav || p.endsWith('/')) p = p.replace(/[^/]*$/, '') + 'index.html';
+  return new Request(url.origin + p);
+};
+
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return; // बैकअप सर्वर / fonts / CDN को छूना नहीं
+  if (url.origin !== self.location.origin) return;            // बैकअप सर्वर / fonts / CDN को छूना नहीं
+  if (/(^|\.)val\.(run|town)$/.test(url.hostname)) return;    // Val Town: हमेशा सीधे नेटवर्क
 
-  // पेज खोलना: network-first, फेल हो तो cache
-  if (req.mode === 'navigate') {
+  const isNav = req.mode === 'navigate';
+  const isNF = isNav || NET_FIRST.some(s => url.pathname.endsWith(s)) || url.pathname.endsWith('/');
+
+  if (isNF) {
     e.respondWith((async () => {
+      const key = keyFor(url, isNav);
       const net = fetch(req, { cache: 'no-cache' });
       try {
-        // नेट धीमा हो तो 4 सेकंड बाद cache वाला पेज (ऐप अटके नहीं)
+        // नेट बहुत धीमा हो तो 4 सेकंड बाद cache वाली file (ऐप अटके नहीं)
         const res = await Promise.race([net, new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 4000))]);
         if (res && res.ok) {
           const c = await caches.open(VER);
-          c.put('./index.html', res.clone()).catch(() => {});
+          c.put(key, res.clone()).catch(() => {});
         }
         return res;
       } catch (err) {
         const c = await caches.open(VER);
-        const hit = (await c.match('./index.html')) || (await c.match('./'));
-        if (hit) { net.then(r => { if (r && r.ok) c.put('./index.html', r.clone()).catch(() => {}); }).catch(() => {}); return hit; }
+        const hit = await c.match(key);
+        if (hit) {
+          net.then(r => { if (r && r.ok) c.put(key, r.clone()).catch(() => {}); }).catch(() => {});
+          return hit;
+        }
         try { return await net; } catch (e2) {}
         return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
       }
@@ -59,7 +76,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // बाकी files (icons, manifest): cache-first, पीछे से refresh
+  // बाकी files (icons): cache-first, पीछे से refresh
   e.respondWith((async () => {
     const c = await caches.open(VER);
     const hit = await c.match(req, { ignoreSearch: true });

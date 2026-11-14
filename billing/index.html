@@ -35,7 +35,7 @@ label{font-size:18px;font-weight:700;color:#2b3858;display:block;margin-top:8px}
 #inv{width:760px;border:2px solid var(--ink);color:#0f1b3a;font-family:Inter,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#fff;font-size:12px;line-height:1.35;font-variant-numeric:tabular-nums;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #inv table{border-collapse:collapse;width:100%}#inv td,#inv th{border:1px solid var(--ink);padding:4px 6px;vertical-align:top}
 #inv .pt{table-layout:fixed}#inv .pt th{font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;background:#eef2fa;padding:4px 2px;text-align:center;vertical-align:middle}
-#inv .pt td{font-size:10.5px;padding:3px 2px;height:20px}#inv .pt td.c{text-align:center}#inv .pt td.l{text-align:left;word-break:break-word}#inv .pt td.rt{padding-right:4px}#inv .nw{white-space:nowrap}
+#inv .pt td{font-size:10.5px;padding:3px 2px;height:20px}#inv .pt td.c{text-align:center}#inv .pt td.l{text-align:left;word-break:break-word}#inv .pt td.rt{padding-right:4px}#inv .nw{white-space:nowrap}#inv .pt td.rt,#inv .tt td.rt,#inv .ct td.rt{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}#inv td.lg{font-size:9px}#inv .it{table-layout:auto}#inv .it th{white-space:nowrap;padding-left:4px;padding-right:4px}#inv .it td{padding-left:4px;padding-right:4px}#inv .it td.nm{min-width:110px}#inv .it td.ml{word-break:normal}#inv .tt td.rt{width:1%}
 #inv td table{margin:-1px;width:calc(100% + 2px)}#inv .nb td,#inv .nb th{border:0}
 #inv .ti{text-align:center;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:6px;border-bottom:1.5px solid var(--ink);background:#eef2fa}
 #inv .brand{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 10px 8px;text-align:center}#inv .brand img{height:50px;width:50px;border-radius:10px}
@@ -87,6 +87,14 @@ label{font-size:20px}.hint{font-size:18px}.note,.ok{font-size:17px}.steps span{f
 .row .btn.mb{min-height:52px;padding:10px;font-size:18px;margin:6px 0 2px}
 .row{padding:10px;margin:9px 0}
 .row label{margin-top:6px}
+
+/* v1.36: बुज़ुर्ग यूज़र के लिए हल्के रंग/पढ़ने के सुधार */
+.ut .ei{display:inline-block;background:#fff;border-radius:8px;padding:2px 5px;margin-right:6px;line-height:1.1}
+input,select,textarea{border-color:#7f8db0}
+.btn:not(.main):not(.good):not(.wa):not(.danger){border:2px solid #8fa0c9}
+.wa{color:#06260f}
+.cap{font-size:16px;color:#445}
+.mbox.z{color:#6b7690}
 </style></head><body><script>
 (function(){var up=false;window.__vmsUp=function(){up=true};
 function show(t){var a=document.getElementById('app');if(!a||up)return;
@@ -186,7 +194,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // ===== Local database: everything is saved on THIS phone (IndexedDB). No internet, no server. =====
 // Bill number (serial) is the bill's unique ID. It is given inside the same save transaction,
 // so two bills can never get the same number, and a half-saved bill can never exist.
-const APP_VERSION='OFFLINE-1.32';
+const APP_VERSION='OFFLINE-1.38';
 // ---- Cloud Backup (val.town SQLite) ----
 // सर्वर पर यही एक फिक्स जगह (ID): ऑटो-बैकअप, बटन वाला बैकअप और Restore तीनों इसी का इस्तेमाल करते हैं.
 // इसे कभी बदलना नहीं — बदलने पर पुराना बैकअप नहीं मिलेगा.
@@ -198,8 +206,12 @@ function cloudWhy(r){r=String(r||'');
  if(r==='offline')return'इंटरनेट बंद है।';
  if(r==='empty')return'अभी फ़ोन में कोई डेटा नहीं है, इसलिए बैकअप नहीं भेजा।';
  if(r==='empty_data_rejected')return'फ़ोन का डेटा खाली है, इसलिए सर्वर का पुराना बैकअप सुरक्षित रखा गया।';
- if(/404/.test(r))return'सर्वर नहीं मिला (404)। main.ts सही से val.town पर लगी है या नहीं देखें।';
- return'सर्वर से जुड़ नहीं पाए। थोड़ी देर बाद फिर कोशिश करें।'}
+ return'सर्वर से जुड़ नहीं पाए।'}
+// घबराने वाला नहीं, साफ़ और शांत संदेश: सर्वर चले या न चले, डेटा फ़ोन में सुरक्षित है
+const SAFE_TXT='\n\n✅ घबराइए मत।\nआपका सारा डेटा और सारे बिल इस फ़ोन में सुरक्षित हैं।\nऐप पहले की तरह चलता रहेगा।';
+function cloudFailMsg(r){
+ if(r==='offline')return'⚠ इंटरनेट बंद है, इसलिए सर्वर पर बैकअप नहीं हो पाया।'+SAFE_TXT+'\n\nइंटरनेट चालू होने पर फिर कोशिश कर सकते हैं।';
+ return'⚠ सर्वर पर बैकअप अभी नहीं हो पाया।\n(सर्वर से जवाब नहीं आया।)'+SAFE_TXT}
 // फ़ोन का सारा डेटा सर्वर पर भेजो. कभी throw नहीं करता.
 async function cloudBackup(){
  if(!navigator.onLine)return{ok:false,reason:'offline'};
@@ -415,9 +427,9 @@ const MODALS=[];
 const ask=m=>modal(m,[['हाँ','main'],['नहीं','']]).then(i=>i===0);
 const say=m=>modal(m,[['ठीक है','main']]);
 let S={},D=null,view='home',V=null,cache={cust:[],med:[]},NX=null;
-const UN={box:'बॉक्स',strip:'स्ट्रिप'},UE={box:'Box',strip:'Strip'};
+const UN={box:'बॉक्स',strip:'पीस'},UE={box:'Box',strip:'Pc'};
 const uk=it=>it&&it.unit==='strip'?'strip':'box';
-const unitTxt=u=>u==='strip'?'💊 स्ट्रिप में बेच रहे हैं (टिक हटाएँ = बॉक्स)':'स्ट्रिप में बेचना है? टिक करें (अभी: 📦 बॉक्स)';
+const unitTxt=u=>u==='strip'?'1️⃣ पीस में बेच रहे हैं (टिक हटाएँ = बॉक्स)':'पीस में बेचना है? टिक करें (अभी: 📦 बॉक्स)';
 const ZB='<button class=btn onclick="zoom()">🔍 पूरा बिल बड़ा / छोटा करें</button>';
 const autoBatch=()=>'TMP-'+String(new Date().getFullYear()).slice(2)+String(new Date().getMonth()+1).padStart(2,'0')+Math.random().toString(36).slice(2,5).toUpperCase();
 const blank=(dt)=>{const off=expRnd();return {name:'',qty:1,unit:'box',mrp:'',mrps:'',spb:'10',rate:'',rt:false,offp:'20',open:false,active:true,hsn:'',pack:'',batch:autoBatch(),batch_status:'temp',exp_off:off,expiry:addMon(dt||(D?D.date:today()),off),expiry_status:'suggested',free:'',gst:'0',gst_mode:'included',mfr:'',save:true}};
@@ -578,7 +590,7 @@ const gxs=()=>{const x=D.mode==='excluded',s=document.getElementById('gxs'),b=do
  if(x){const o=document.getElementById('opt');if(o)o.hidden=false}};
 function rows(){document.getElementById('rows').innerHTML=D.items.map((it,i)=>{
  const isActive=it.active!==false;
- const unitLabel=uk(it)==='strip'?'💊 स्ट्रिप':'📦 बॉक्स';
+ const unitLabel=uk(it)==='strip'?'1️⃣ पीस':'📦 बॉक्स';
  // Condensed view for inactive items
  if(!isActive){
   return `<div class=row style="cursor:pointer;padding:10px 12px" onclick="activateRow(${i})">
@@ -596,9 +608,9 @@ function rows(){document.getElementById('rows').innerHTML=D.items.map((it,i)=>{
  <label>संख्या और इकाई</label>
  <div class=qrow>
   <div class=stp><button onclick="qs(${i},-1)">−</button><input id=q${i} type=number inputmode=decimal value="${esc(it.qty)}" oninput="qc(${i},this.value)"><button onclick="qs(${i},1)">+</button></div>
-  <div class=ut><button class="${uk(it)==='box'?'on':''}" onclick="su(${i},false)">📦 बॉक्स</button><button class="${uk(it)==='strip'?'on':''}" onclick="su(${i},true)">💊 स्ट्रिप</button></div>
+  <div class=ut><button class="${uk(it)==='box'?'on':''}" onclick="su(${i},false)"><span class=ei>📦</span>बॉक्स</button><button class="${uk(it)==='strip'?'on':''}" onclick="su(${i},true)"><span class=ei>1️⃣</span>पीस</button></div>
  </div>
- <label>MRP (प्रति स्ट्रिप) <span style="color:#888;font-weight:400;font-size:14px">— ज़रूरी नहीं</span></label>
+ <label>MRP (प्रति पीस) <span style="color:#5f6675;font-weight:400;font-size:16px">— ज़रूरी नहीं</span></label>
  <div class=mr2>
   <div><div class=mleft><input id=m${i} type=number inputmode=decimal placeholder="रेट" value="${esc(it.mrps)}" oninput="mr(${i},this.value)"><b>×</b><input id=f${i} type=number inputmode=decimal value="${uk(it)==='strip'?esc(it.qty):esc(it.spb)}" ${uk(it)==='strip'?'readonly':''} oninput="fc(${i},this.value)"></div><div class=cap id=mcl${i}>${mpCaps(it)[0]}</div></div>
   <div><div class="mbox ${mpTot(it)>0?'':'z'}" id=mt${i}>₹ ${mpTot(it)}</div><div class=cap id=mcr${i}>${mpCaps(it)[1]}</div></div>
@@ -627,7 +639,8 @@ function qs(i,d){const it=D.items[i];it.qty=Math.max(1,(Number(it.qty)||0)+d);do
 function su(i,c){const it=D.items[i];it.unit=c?'strip':'box';mpSet(it);if(nm2(it.mrp)>0)rateFromOff(it);rows();upd();persist()}
 function sf(i,k,v){D.items[i][k]=v;upd();persist()}
 const nm2=v=>{const n=parseFloat(v);return isFinite(n)?n:NaN},rnd2=v=>Math.round((v+Number.EPSILON)*100)/100;
-function rateFromOff(it){const m=nm2(it.mrp),p=nm2(it.offp);if(m>0&&p>=0&&p<=100)it.rate=String(rnd2(m*(1-p/100)))}
+function rateFromOff(it){const m=nm2(it.mrp);let p=nm2(it.offp);if(!isFinite(p)&&String(it.offp==null?'':it.offp).trim()==='')p=0; // छूट खाली = 0%
+ if(m>0&&p>=0&&p<=100)it.rate=String(rnd2(m*(1-p/100)))}
 function offFromRate(it){const m=nm2(it.mrp),r=nm2(it.rate);if(m>0&&r>=0){const p=rnd2((1-r/m)*100);it.offp=String(p<0?0:p)}}
 function offSync(i,skip){const it=D.items[i],g=id=>document.getElementById(id+i),d=g('d'),r=g('r'),rw=g('rw');
  if(d&&skip!=='d')d.value=it.offp==null?'':it.offp;if(r&&skip!=='r')r.value=rtShow(it);
@@ -636,7 +649,7 @@ function spbOf(it){const n=parseFloat(it.spb);return n>0?n:10}
 function mpUnit(it){return uk(it)==='strip'?1:spbOf(it)}
 function mpSet(it){const s=parseFloat(it.mrps);it.mrp=s>0?String(Math.round((s*mpUnit(it)+Number.EPSILON)*100)/100):''}
 function mpTot(it){const s=parseFloat(it.mrps),q=Number(it.qty)>0?Number(it.qty):0;return s>0?Math.round((s*mpUnit(it)*q+Number.EPSILON)*100)/100:0}
-function mpCaps(it){const s=parseFloat(it.mrps),q=Number(it.qty)>0?Number(it.qty):0,u=UN[uk(it)];return[uk(it)==='box'?(s>0?`1 ${u} = ₹${Math.round((s*mpUnit(it)+Number.EPSILON)*100)/100}`:'स्ट्रिप भाव × स्ट्रिप/बॉक्स'):'स्ट्रिप भाव × स्ट्रिप संख्या',`${q} ${u} का कुल MRP`]}
+function mpCaps(it){const s=parseFloat(it.mrps),q=Number(it.qty)>0?Number(it.qty):0,u=UN[uk(it)];return[uk(it)==='box'?(s>0?`1 ${u} = ₹${Math.round((s*mpUnit(it)+Number.EPSILON)*100)/100}`:'पीस भाव × पीस/बॉक्स'):'पीस भाव × पीस संख्या',`${q} ${u} का कुल MRP`]}
 function rtShow(it){const r=nm2(it.rate),q=Number(it.qty)>0?Number(it.qty):1;return isFinite(r)?String(rnd2(r*q)):''}
 function mpRefresh(i){const it=D.items[i],g=id=>document.getElementById(id+i),t=g('mt'),f=g('f'),a=g('mcl'),b=g('mcr'),tot=mpTot(it),c=mpCaps(it);
  if(f&&uk(it)==='strip')f.value=it.qty;
@@ -649,7 +662,7 @@ function fc(i,v){const it=D.items[i];if(uk(it)==='strip')return;it.spb=v;mpSet(i
 function qc(i,v){D.items[i].qty=v;mpRefresh(i);persist()}
 function offc(i,v){const it=D.items[i];let n=nm2(v);if(n>100){v='100';const d=document.getElementById('d'+i);if(d)d.value=v}else if(n<0){v='0';const d=document.getElementById('d'+i);if(d)d.value=v}
  it.offp=v;it.rt=false;rateFromOff(it);offSync(i,'d');upd();persist()}
-function it_rt(i,v){const it=D.items[i],q=Number(it.qty)>0?Number(it.qty):1,n=nm2(v);it.rate=(v===''||!isFinite(n))?'':String(Math.round((n/q+Number.EPSILON)*10000)/10000);it.rt=String(v)!=='';offFromRate(it);offSync(i,'r');upd();persist()}
+function it_rt(i,v){const it=D.items[i],q=Number(it.qty)>0?Number(it.qty):1,n=nm2(v);it.rate='';if(v!==''&&isFinite(n)){const r=n/q,want=Math.round((n+Number.EPSILON)*100)/100;let x=r;for(let d=4;d<=10;d++){x=Math.round((r+Number.EPSILON)*Math.pow(10,d))/Math.pow(10,d);if(Math.abs(Math.round((x*q+Number.EPSILON)*100)/100-want)<0.001)break}it.rate=String(x)}it.rt=String(v)!=='';offFromRate(it);offSync(i,'r');upd();persist()}
 function cx(i){D.items[i].expiry_status='confirmed';rows();upd();persist()}
 function bt(i,v){const it=D.items[i];it.batch=v;it.batch_status=v.trim()?(/^TMP-/.test(v)?'temp':'confirmed'):'';persist()}
 function ex(i,v){const it=D.items[i];it.expiry=v;it.expiry_status=v?'confirmed':'';persist()}
@@ -672,31 +685,31 @@ function toPrev(){{const keep=D.items.filter(it=>String(it.name).trim()||String(
 
 // ---------- INVOICE HTML ----------
 function invHTML(o){const sh=o.shop,c=o.customer,rows=o.lines.slice();while(rows.length<8)rows.push(null);const pc0=posOf(o,sh),pos=(o.interstate&&pc0===(sh.gstin||'').slice(0,2))?'Other State':(ST[pc0]||'')+' ('+pc0+')';
- const money=v=>`<td class=rt>${Number(v||0).toFixed(2)}</td>`;
- const f2=v=>Number(v||0).toFixed(2),us=l=>l.unit&&UE[l.unit]?' '+UE[l.unit]:'',es=e=>{const[y,m]=e.split('-');return m+'/'+y.slice(2)};
+ const fm=v=>{v=Number(v||0);if(!isFinite(v)||Math.abs(v)<0.005)v=0;return v.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})},tdn=v=>{const t=fm(v);return `<td class="rt${t.replace(/\D/g,'').length>9?' lg':''}">${t}</td>`},money=tdn;
+ const f2=fm,us=l=>l.unit&&UE[l.unit]?' '+UE[l.unit]:'',es=e=>{const[y,m]=e.split('-');return m+'/'+y.slice(2)};
  const cls={};[0,5,18].forEach(g=>cls[g]={t:0,d:0,c:0,s:0,i:0});
  o.lines.forEach(l=>{const g=Number(l.gst)||0,x=cls[g]||(cls[g]={t:0,d:0,c:0,s:0,i:0}),tx=Number(l.taxable)||0,t0=l.t0!=null?Number(l.t0):(o.mode==='included'?r2(l.amt*100/(100+g)):Number(l.amt));x.t+=tx;x.d+=Math.max(0,t0-tx);x.c+=Number(l.cgst)||0;x.s+=Number(l.sgst)||0;x.i+=Number(l.igst)||0});
  const ks=Object.keys(cls).map(Number).sort((a,b)=>a-b),ig=!!o.interstate,sm=k=>ks.reduce((s,g)=>s+cls[g][k],0);
- const crow=(n,x)=>`<tr><td><b>${n}</b></td><td class=rt>${f2(x.t)}</td><td class=rt>${f2(x.d)}</td>${ig?`<td class=rt>${f2(x.i)}</td>`:`<td class=rt>${f2(x.c)}</td><td class=rt>${f2(x.s)}</td><td class=rt>${f2(x.c+x.s)}</td>`}</tr>`;
+ const crow=(n,x)=>`<tr><td><b>${n}</b></td>${tdn(x.t)}${tdn(x.d)}${ig?tdn(x.i):`${tdn(x.c)}${tdn(x.s)}${tdn(x.c+x.s)}`}</tr>`;
  const rateLabel=g=>ig?`GST ${g}% (IGST ${g}%)`:`GST ${g}% (${f2(g/2)} + ${f2(g/2)})`;
  const classTbl=`<table class="pt ct" style="table-layout:auto"><tr><th>GST RATE</th><th>TAXABLE</th><th>DISC.</th>${ig?'<th>IGST</th>':'<th>CGST</th><th>SGST</th><th>TOTAL TAX</th>'}</tr>${ks.map(g=>crow(rateLabel(g),cls[g])).join('')}${crow('TOTAL',{t:sm('t'),d:sm('d'),c:sm('c'),s:sm('s'),i:sm('i')})}</table>`;
  const gmS=new Set(o.lines.map(l=>(l.gst_mode||o.mode)==='excluded'?'x':'i')),gmTxt=gmS.size>1?'GST: included on some items, added extra on others':gmS.has('x')?'GST added extra':'Prices GST included';
  const ro=Number(o.roundoff)||0,rn=Math.abs(ro).toFixed(2).split('.'),rsg=ro>0?'+':ro<0?'-':'';
  const title='Sale Invoice';
  const LS=o.lines,has=f=>LS.some(f),detailBill=o.bill_view!=='simple',CS=[
- {w:24,h:'SN',c:(l,n)=>`<td class=c>${n+1}</td>`},
- {w:0,h:'Product Name',c:l=>`<td class=l>${esc(l.name)}</td>`},
+ {w:24,h:'SN',c:(l,n)=>`<td class="c nw">${n+1}</td>`},
+ {w:0,h:'Product Name',c:l=>`<td class="l nm">${esc(l.name)}</td>`},
  {w:56,h:'HSN',on:has(l=>String(l.hsn||'').trim()),c:l=>`<td class="c nw">${esc(l.hsn)}</td>`},
-  {w:48,h:'Mfr.',on:has(l=>String(l.mfr||'').trim()),c:l=>`<td class=l>${esc(l.mfr)}</td>`},
+  {w:48,h:'Mfr.',on:has(l=>String(l.mfr||'').trim()),c:l=>`<td class="l ml">${esc(l.mfr)}</td>`},
  {w:44,h:'Pack',on:has(l=>String(l.pack||'').trim()),c:l=>`<td class=c>${esc(l.pack)}</td>`},
  {w:58,h:'Qty',c:l=>`<td class="c nw">${l.qty}${us(l)}</td>`},
- {w:30,h:'Free',on:has(l=>String(l.free||'').trim()&&Number(l.free)!==0),c:l=>`<td class=c>${esc(l.free||0)}</td>`},
+ {w:30,h:'Free',on:has(l=>String(l.free||'').trim()&&Number(l.free)!==0),c:l=>`<td class="c nw">${esc(l.free||0)}</td>`},
  {w:86,h:'Batch',on:has(l=>String(l.batch||'').trim()),c:l=>`<td class="c nw">${l.batch?esc(l.batch):''}</td>`},
  {w:42,h:'Exp.',on:has(l=>l.expiry),c:l=>`<td class="c nw">${l.expiry?es(l.expiry):''}</td>`},
- {w:52,h:'M.R.P.',on:has(l=>l.mrp!=null&&l.mrp!==''),c:l=>l.mrp!=null&&l.mrp!==''?money(l.mrp):'<td></td>'},
+ {w:52,h:'M.R.P.',on:has(l=>l.mrp!=null&&l.mrp!==''),c:l=>l.mrp!=null&&l.mrp!==''?money(l.mrp):'<td class=rt></td>'},
  {w:54,h:'Rate',c:l=>money(l.rate)},
- {w:36,h:'Dis%',on:has(l=>(Number(l.disc)||0)>0),c:l=>`<td class=c>${l.amt>0?f2((l.disc||0)*100/l.amt):'0.00'}</td>`},
- {w:34,h:'GST%',on:has(l=>l.gst_set),c:l=>`<td class=c>${l.gst_set?l.gst:''}</td>`},
+ {w:36,h:'Dis%',on:has(l=>(Number(l.disc)||0)>0),c:l=>`<td class="c nw">${l.amt>0?f2((l.disc||0)*100/l.amt):'0.00'}</td>`},
+ {w:34,h:'GST%',on:has(l=>l.gst_set),c:l=>`<td class="c nw">${l.gst_set?l.gst:''}</td>`},
  {w:62,h:'Amount',c:l=>money(l.amt-(l.disc||0))}
 ].filter(x=>(x.on===undefined||x.on)&& (detailBill||!['Batch','Exp.','HSN'].includes(x.h)));{const fx=CS.filter(x=>x.w).reduce((t,x)=>t+x.w,0);CS.find(x=>!x.w).w=Math.max(110,752-fx)}
 const cg='<colgroup>'+CS.map(x=>`<col style="width:${x.w}px">`).join('')+'</colgroup>';
@@ -706,10 +719,10 @@ const cg='<colgroup>'+CS.map(x=>`<col style="width:${x.w}px">`).join('')+'</colg
  <table class=info><tr><td><span class=k>Drug Licence No.</span>${esc(sh.dl1)}<br>${esc(sh.dl2)}</td><td><span class=k>GSTIN</span>${esc(sh.gstin)}</td><td><span class=k>Mobile</span>${esc(sh.mobile)}</td></tr></table>
  <table class=nb style="border-bottom:1.5px solid var(--ink)"><tr><td style="width:62%;padding:8px 12px;border-right:1px solid var(--ink)"><span class=k>Billed To</span><b style="font-size:13px">M/S ${esc(c.name||'Cash Customer')}</b>${c.mobile?'<br>Mob. '+esc(c.mobile):''}${c.address?'<br>'+esc(c.address):''}${c.gstin?'<br>GSTIN: '+esc(c.gstin):''}${c.dl?'<br>D/L No.: '+esc(c.dl):''}</td>
  <td style="padding:8px 12px"><div class=kv><span>Invoice No.</span><b style="font-size:14px">${esc(o.inv_no||o.serial)}</b></div><div class=kv><span>Date</span><b>${dmy(o.date)}</b></div><div class=kv><span>Place of Supply</span><b>${pos}</b></div><div class=kv><span>Reverse Charge</span><b>No</b></div>${sh.transport?`<div class=kv><span>Transport</span><b>${esc(sh.transport)}</b></div>`:''}</td></tr></table>
- <table class=pt>${cg}<tr>${CS.map(x=>`<th>${x.h}</th>`).join('')}</tr>
+ <table class="pt it"><tr>${CS.map(x=>`<th${x.w?' style="width:1%"':''}>${x.h}</th>`).join('')}</tr>
  ${rows.map((l,n)=>l?`<tr>${CS.map(x=>x.c(l,n)).join('')}</tr>`:'<tr><td>&nbsp;</td>'+'<td></td>'.repeat(CS.length-1)+'</tr>').join('')}</table>
  <table><tr><td style="width:56%;padding:0">${classTbl}<div style="padding:6px 8px"><span class=k>Total in Words</span><b>${esc(o.words)}</b><div class=sm style="margin-top:6px">${gmTxt} · ${ig?'IGST':'CGST+SGST'}</div>${o.lines.some(l=>!l.gst_set)?'<div class=sm>GST rate not set for some products (taken as 0%)</div>':''}</div></td>
- <td style="padding:0"><table class=tt style="table-layout:fixed"><colgroup><col><col style="width:96px"></colgroup><tr><td><b>Gross Amount</b></td>${money(o.gross)}</tr><tr><td><b>Tax</b></td>${money(o.tax)}</tr><tr><td><b>Discount</b></td>${money(o.discount)}</tr><tr><td><b>Rounded off (+/-)</b></td><td class=rt>${rsg}${rn.join('.')}</td></tr><tr class=gt><td><b>GRAND TOTAL</b></td>${money(o.total)}</tr></table></td></tr></table>
+ <td style="padding:0"><table class=tt style="table-layout:auto"><tr><td><b>Gross Amount</b></td>${money(o.gross)}</tr><tr><td><b>Tax</b></td>${money(o.tax)}</tr><tr><td><b>Discount</b></td>${money(o.discount)}</tr><tr><td><b>Rounded off (+/-)</b></td><td class=rt>${rsg}${rn.join('.')}</td></tr><tr class=gt><td><b>GRAND TOTAL</b></td>${money(o.total)}</tr></table></td></tr></table>
  ${sh.terms?`<div class=sm style="padding:4px 10px">${esc(sh.terms)}</div>`:''}${sh.upi?`<div class=sm style="padding:2px 10px">UPI: ${esc(sh.upi)}${sh.pay_mobile?' · '+esc(sh.pay_mobile):''}</div>`:''}
  <table class=nb style="border-top:1.5px solid var(--ink)"><tr><td style="width:50%;padding:8px 12px;vertical-align:bottom;height:92px"><div style="display:inline-block;min-width:190px;border-top:1px solid var(--ink);padding-top:3px;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Party Signature</div></td><td class=rt style="padding:8px 12px"><div style="font-size:12px;font-weight:700">For ${esc(sh.shop_name)}</div>${sigb}<div style="display:inline-block;min-width:190px;border-top:1px solid var(--ink);padding-top:3px;font-size:10.5px;font-weight:600;text-align:center">&nbsp;</div></td></tr></table></div>`}
 
@@ -827,18 +840,19 @@ function tabShop(){document.getElementById('tabc').innerHTML=`<h2>🏪 माल
 function tabBackup(){
  const t=Number(lsGet('vms_cloud_backup_at')||0);
  const when=t?new Date(t).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):'अभी तक नहीं हुआ';
- document.getElementById('tabc').innerHTML=`<h2>☁ डेटा बैकअप</h2><p class=hint>आखिरी बैकअप: <b>${when}</b><br>ऐप खोलने पर, इंटरनेट हो तो बैकअप अपने-आप हो जाता है।</p><button class="btn good huge" id=cbtn onclick="manualCloudBackup()">☁ सर्वर पर बैकअप करें</button><button class="btn huge" id=rcbtn style="margin-top:14px" onclick="restoreFromCloud()">📥 सर्वर से वापस लाएँ</button><p class=hint style="margin-top:18px">सॉफ़्टवेयर वर्ज़न: ${APP_VERSION}</p>`}
+ document.getElementById('tabc').innerHTML=`<h2>💾 डेटा बैकअप</h2><p class=hint>✅ आपका सारा डेटा और बिल इसी फ़ोन में सुरक्षित रहते हैं।<br>सर्वर वाला बैकअप सिर्फ़ एक अतिरिक्त कॉपी है। वह हो या न हो, ऐप पहले जैसा ही चलता है।</p><p class=hint>सर्वर पर आखिरी बैकअप: <b>${when}</b><br>ऐप खोलने पर, इंटरनेट हो तो बैकअप अपने-आप हो जाता है।</p><button class="btn good huge" id=cbtn onclick="manualCloudBackup()">☁ सर्वर पर बैकअप करें</button><button class="btn huge" id=rcbtn style="margin-top:14px" onclick="restoreFromCloud()">📥 सर्वर से वापस लाएँ</button><p class=hint style="margin-top:18px">सॉफ़्टवेयर वर्ज़न: ${APP_VERSION}</p>`}
 async function manualCloudBackup(){
  const b=document.getElementById('cbtn');if(b){b.disabled=true;b.textContent='⏳ बैकअप हो रहा है…'}
  const r=await cloudBackup();
  if(r.ok){tabBackup();await say('✅ बैकअप सर्वर पर हो गया')}
- else{if(b){b.disabled=false;b.textContent='☁ सर्वर पर बैकअप करें'}await say('❌ बैकअप नहीं हुआ।\n'+cloudWhy(r.reason))}}
+ else{if(b){b.disabled=false;b.textContent='☁ सर्वर पर बैकअप करें'}await say((r.reason==='empty'||r.reason==='empty_data_rejected')?('ℹ '+cloudWhy(r.reason)):cloudFailMsg(r.reason))}}
 async function restoreFromCloud(){
- if(!navigator.onLine)return say('❌ इंटरनेट बंद है।');
+ if(!navigator.onLine)return say('⚠ इंटरनेट बंद है, इसलिए सर्वर से डेटा वापस नहीं आ सकता।\n\n✅ फ़ोन का आपका डेटा सुरक्षित है।');
  const b=document.getElementById('rcbtn');if(b){b.disabled=true;b.textContent='⏳ देख रहे हैं…'}
  const reset=()=>{if(b){b.disabled=false;b.textContent='📥 सर्वर से वापस लाएँ'}};
+ let j;
+ try{j=await cloudFetch()}catch(e){reset();return say('⚠ सर्वर से डेटा वापस नहीं आ पाया।\n(सर्वर से जवाब नहीं आया।)\n\n✅ घबराइए मत।\nफ़ोन का आपका डेटा जैसा था वैसा ही सुरक्षित है, कुछ नहीं बदला।')}
  try{
-  const j=await cloudFetch();
   if(!j||!j.found){reset();return say('सर्वर पर अभी कोई बैकअप नहीं मिला।')}
   const when=new Date(j.backed_up_at).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});
   if(!await ask('सर्वर का बैकअप ('+when+') वापस लाना है?\n\nफ़ोन का अभी का डेटा इससे बदल जाएगा।')){reset();return}
@@ -853,7 +867,7 @@ async function restoreFromCloud(){
   // 3 सेकंड बाद restored data server पर भी sync हो जाए
   setTimeout(()=>{autoCloudBackup()},3000);
   reset();setScr();await say('✅ डेटा वापस आ गया')
- }catch(e){reset();await say('❌ डेटा वापस नहीं आया।\n'+cloudWhy(e&&e.message))}}
+ }catch(e){reset();await say('❌ डेटा वापस नहीं आया।\nदोबारा कोशिश करें।')}}
 function tabView(){document.getElementById('tabc').innerHTML=`<h2>🧾 बिल का प्रकार चुनें</h2><p class=hint>यह सेटिंग आगे बनने वाले बिलों पर लागू होगी। पुराने बिल अपने पुराने रूप में रहेंगे।</p><div class=row><label class=sw style="font-size:20px"><span>अभी का बिल प्रकार</span><span>${S.bill_view==='simple'?'सिंपल':'डिटेल'}</span></label><div class=two><button class="btn ${S.bill_view!=='simple'?'main':''}" onclick="setBillView('detail')">📋 डिटेल बिल</button><button class="btn ${S.bill_view==='simple'?'main':''}" onclick="setBillView('simple')">🧾 सिंपल बिल</button></div><p class=hint>डिटेल: HSN, बैच और एक्सपायरी सहित।<br>सिंपल: HSN, बैच और एक्सपायरी बिल से छिपेंगे।</p></div>`}
 async function setBillView(v){try{S=await api('/settings',{method:'PUT',body:{bill_view:v==='simple'?'simple':'detail'}});tabView();say(S.bill_view==='simple'?'✅ सिंपल बिल चालू':'✅ डिटेल बिल चालू')}catch(e){say('सेटिंग सेव नहीं हुई: '+e.message)}}
 async function saveSet(g){if(!(document.getElementById('s_shop_name')||{value:'x'}).value.trim())return say('दुकान का नाम खाली नहीं हो सकता।');
@@ -892,7 +906,18 @@ catch(e){app.innerHTML='<h1>🏥</h1><p class=warn style="text-align:center">ड
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
 if('serviceWorker' in navigator){
  try{navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>{const u=(r.active||r.waiting||r.installing||{}).scriptURL||'';if(u&&r.scope===new URL('./',location.href).href&&!/\/sw\.js(\?|$)/.test(u))r.unregister()})).catch(()=>{})}catch(e){}
- navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+ // नया SW चालू होते ही पेज एक बार अपने-आप reload (flag से अनंत लूप नहीं; पहली बार install पर reload नहीं)
+ try{
+  const hadCtl=!!navigator.serviceWorker.controller;
+  setTimeout(()=>{try{sessionStorage.removeItem('vms_sw_rl')}catch(e){}},15000);
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+   if(!hadCtl)return;
+   try{if(sessionStorage.getItem('vms_sw_rl'))return;sessionStorage.setItem('vms_sw_rl','1')}catch(e){if(window.__vmsSwRl)return;window.__vmsSwRl=1}
+   try{vmsFlush()}catch(e){}
+   location.reload()});
+ }catch(e){}
+ navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update().catch(()=>{});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update().catch(()=>{})})}).catch(()=>{});
 }
 const vmsHash=t=>{let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)};
 let vcBusy=false;
