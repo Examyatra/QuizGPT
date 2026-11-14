@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!-- Exam Yatri website v2.0 (2026-11-13) -->
-<!-- Y ai build: exam-fixed-60 (retry audit: after the gateway itself failed (it already tried many AIs for up to 90 s) eyAsk retries only ONCE (was 5x), part-1 unreadable-reply re-ask 2x (was 3x), background auto-retries 3 (was 6)) | previous: exam-fixed-59 (8-unit limit now also checks the PDF page RANGE before extraction (same rule as images: more than 8 -> Exam Yatri off, Gemini on). Earlier: exam-fixed-58 (Exam Yatri limit: more than 8 extracted pages or more than 8 uploaded images -> Exam Yatri is greyed out and blocked (tap + Start), Gemini is auto-selected, a note explains why; Exam Yatri comes back automatically when the input shrinks to 8 or less, unless the student chose another site herself). Earlier: exam-fixed-57 (ALWAYS-SHOW-PAGE: one resolver for every mode (ChatGPT / Claude / Gemini / Exam Yatri API): evidence page -> segment page -> AI PG confirmed in notes -> content search of the notes -> AI PG -> notes page range; tolerant PG parsing ("PG 12", "**PG:** p.12", en-dash ranges); player shows Page N after the question mark in every mode). Earlier: exam-fixed-56 (Page number: Exam Yatri path no longer blanks the AI PG when evidence is not matched (last-resort keeps AI digits); player shows "Page N" after the question in every mode, also from srcPages). Earlier: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
+<!-- Quiz GPT build: exam-fixed-60 (retry audit: after the gateway itself failed (it already tried many AIs for up to 90 s) eyAsk retries only ONCE (was 5x), part-1 unreadable-reply re-ask 2x (was 3x), background auto-retries 3 (was 6)) | previous: exam-fixed-59 (8-unit limit now also checks the PDF page RANGE before extraction (same rule as images: more than 8 -> Exam Yatri off, Gemini on). Earlier: exam-fixed-58 (Exam Yatri limit: more than 8 extracted pages or more than 8 uploaded images -> Exam Yatri is greyed out and blocked (tap + Start), Gemini is auto-selected, a note explains why; Exam Yatri comes back automatically when the input shrinks to 8 or less, unless the student chose another site herself). Earlier: exam-fixed-57 (ALWAYS-SHOW-PAGE: one resolver for every mode (ChatGPT / Claude / Gemini / Exam Yatri API): evidence page -> segment page -> AI PG confirmed in notes -> content search of the notes -> AI PG -> notes page range; tolerant PG parsing ("PG 12", "**PG:** p.12", en-dash ranges); player shows Page N after the question mark in every mode). Earlier: exam-fixed-56 (Page number: Exam Yatri path no longer blanks the AI PG when evidence is not matched (last-resort keeps AI digits); player shows "Page N" after the question in every mode, also from srcPages). Earlier: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Y ai — PDF to Exam Quiz</title>
+<title>Quiz GPT — PDF to Exam Quiz</title>
 <script>
 /* Safe storage: some browsers / webviews / private modes throw on localStorage. Fall back to memory so the app never crashes. */
 (function(){
@@ -25,7 +25,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Y ai">
+<meta name="apple-mobile-web-app-title" content="Quiz GPT">
 <link rel="apple-touch-icon" href="data:image/png;base64,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">
 <link rel="icon" type="image/png" sizes="192x192" href="data:image/png;base64,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">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1284,7 +1284,7 @@ button,.icon-btn,.drop{-webkit-tap-highlight-color:transparent}
 }
 </style>
 <style id="yaiGlow">
-/* ===== Y ai — colourful polish (home screen). Quiz player internals untouched. ===== */
+/* ===== Quiz GPT — colourful polish (home screen). Quiz player internals untouched. ===== */
 :root{
   --g1:#7b8fff; --g2:#c060ff; --g3:#ff5a9e; --g4:#ffaa30; --g5:#00e8c6; --g6:#38b8ff;
   --grad-main:linear-gradient(135deg,#5f72ff 0%,#b040ff 55%,#ff3d94 100%);
@@ -1417,7 +1417,7 @@ footer details.cx{margin:0}
 .img-thumb-wrap .rm-btn{position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;background:var(--coral);color:#fff;border:none;cursor:pointer;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0}
 .img-thumb-wrap:hover .img-thumb{border-color:var(--accent)}
 
-/* ===== Y ai — vivid colour upgrade ===== */
+/* ===== Quiz GPT — vivid colour upgrade ===== */
 :root{
   --g1:#8b7bff; --g2:#c04bff; --g3:#ff4f9a; --g4:#ffb020; --g5:#00e0b8; --g6:#3da5ff;
   --grad-main:linear-gradient(135deg,#7b5cff 0%,#c04bff 52%,#ff4f9a 100%);
@@ -1471,7 +1471,7 @@ details.cx > summary{background:linear-gradient(135deg,rgba(139,123,255,.22),rgb
 @keyframes yaiPulse{0%,100%{box-shadow:0 10px 28px rgba(192,75,255,.6),0 0 0 8px rgba(192,75,255,.14)}50%{box-shadow:0 10px 34px rgba(255,79,154,.65),0 0 0 14px rgba(255,79,154,.08)}}
 </style>
 <style id="yaiHomeV2">
-/* ===== Y ai — home screen: stronger contrast + richer look (scoped; quiz player untouched) ===== */
+/* ===== Quiz GPT — home screen: stronger contrast + richer look (scoped; quiz player untouched) ===== */
 
 /* 1. readable secondary text on the home flow (dark + light) */
 :root:not([data-theme="light"]) header,
@@ -1548,7 +1548,7 @@ footer{color:var(--ink-dim);font-size:.78rem}
 .drop:focus-visible,.quick-btn:focus-visible,.icon-btn:focus-visible,.btn-main:focus-visible,.lang-toggle button:focus-visible,details.cx > summary:focus-visible{outline:2px solid var(--g5);outline-offset:2px}
 </style>
 <style id="yaiHomeV3">
-/* ===== Y ai — home screen: vibrant, glossy colour pass (scoped to home-flow cards; quiz player untouched) ===== */
+/* ===== Quiz GPT — home screen: vibrant, glossy colour pass (scoped to home-flow cards; quiz player untouched) ===== */
 :root:not([data-theme="light"]) body{
   background:
     radial-gradient(760px 460px at 4% -6%, rgba(123,92,255,.55), transparent 62%),
@@ -1617,7 +1617,7 @@ footer{color:var(--ink-dim);font-size:.78rem}
 </style>
 
 <style id="yaiPolish3">
-/* ===== Y ai — polish v3: drifting background shade, boxes that pop, clean AI picker, popup ===== */
+/* ===== Quiz GPT — polish v3: drifting background shade, boxes that pop, clean AI picker, popup ===== */
 :root{--yp-delay:0s}
 body{background:var(--bg) !important}
 body::before{content:"";position:fixed;inset:-15% -10%;z-index:-1;pointer-events:none;
@@ -1801,11 +1801,10 @@ body::before{opacity:.8}
 <header>
   <div class="header-inner">
     <div class="brand">
-      <div class="mark">Y</div>
-      <h1><span data-i18n="title">Y</span><span class="ai-tag">ai</span></h1>
-      <span class="tagline" data-i18n="tagline">PDF pages → exam-style MCQs</span>
+      <h1 class="qg-logo" aria-label="Quiz GPT"><span class="qg-q">Quiz</span><span class="qg-g">GPT</span></h1>
     </div>
     <div class="header-controls">
+      <button class="icon-btn" id="yqScanBtn" title="Scan quiz QR" aria-label="Scan quiz QR"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M4 12h16"/></svg></button>
       <button class="icon-btn" id="installAppBtn" title="Install app" style="display:none;">⬇️</button>
       <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle theme"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></button>
       <button class="icon-btn" id="quizMenuBtn" title="Saved quizzes & texts" style="font-size:1.2rem; font-weight:700;">⋮</button>
@@ -1829,7 +1828,6 @@ body::before{opacity:.8}
       <button class="menu-tab" data-tab="text" id="sqTabText" type="button">📄 Texts</button>
       <button class="menu-tab" data-tab="script" id="menuTabScript" type="button">🤖 Auto-script<span id="bridgeDot"> ⚠️</span></button>
       <button class="menu-tab" data-tab="clean" id="menuTabClean" type="button">🧹 Cleanup</button>
-      <button class="menu-tab" data-tab="help" id="menuTabHelp" type="button">🦊 Firefox</button>
     </div>
     <div class="menu-panes" id="menuPanes">
       <div class="menu-pane active" id="sqPaneQuiz">
@@ -1882,25 +1880,6 @@ body::before{opacity:.8}
             <button class="btn-sm" id="cleanQuizBtn" type="button">🗑 All quizzes</button>
             <button class="btn-sm" id="cleanTextBtn" type="button">🗑 All texts</button>
           </div>
-        </div>
-      </div>
-      <div class="menu-pane" id="menuPaneHelp">
-        <div class="menu-card">
-          <h4>🦊 Sab kuch Firefox me kholne ke liye</h4>
-          Website khud ye force nahi kar sakti, ye phone ki settings se hota hai. Neeche ke steps ek baar kar lo:
-          <ol>
-            <li><b>Firefox ko default browser</b> banao (Android Settings → Apps → Default apps → Browser app).</li>
-            <li>Agar Y ai app ki tarah install hai: Settings → Apps → Y ai (ya Chrome) → <b>Open by default</b> me supported links band karo. Ya app uninstall karke Firefox tab me hi use karo.</li>
-            <li>Firefox → Settings me <b>Open links in apps</b> ko <b>Never</b> karo, taaki Gemini / ChatGPT / Claude ki app na khule.</li>
-            <li>Menu ke naam phone ke hisaab se thode alag ho sakte hain.</li>
-          </ol>
-          <div class="result-actions" style="margin-top:10px;">
-            <button class="btn-sm primary" id="openInFirefoxBtn" type="button" style="display:none;">🦊 Is app ko Firefox me kholo</button>
-          </div>
-        </div>
-        <div class="menu-card">
-          <h4>AI sites ke links</h4>
-          Android par Chrome jaise browser se "Copy prompt &amp; open site" dabane par app AI site ko Firefox me kholne ki koshish karti hai. Firefox install na ho to normal tab khulta hai.
         </div>
       </div>
     </div>
@@ -2226,6 +2205,7 @@ body::before{opacity:.8}
       <div class="rs-stat"><b id="rsSkip">0</b><span>Skipped</span></div>
       <div class="rs-stat time"><b id="rsTime">0:00</b><span>Time</span></div>
     </div>
+    <div class="rs-stat time" id="rsPerQRow"><b id="rsPerQ">0s</b><span>Time per question</span></div>
     <div class="quiz-timer" id="resultTimeRow" style="display:none;"></div>
     <div id="marksRow"></div>
     <div class="result-actions">
@@ -2236,7 +2216,7 @@ body::before{opacity:.8}
       <div class="rs-sec">Question review</div>
       <div class="review-list" id="reviewList"></div>
     </div>
-    <div class="powered-by">Y <span class="ai-tag">ai</span> — powered by Vishal Yadav</div>
+    <div class="powered-by">Quiz <span class="ai-tag">GPT</span> — powered by Vishal Yadav</div>
    </div>
   </div>
 
@@ -2252,7 +2232,7 @@ body::before{opacity:.8}
 <script>
 const I18N = {
   en: {
-    title: "Y",
+    title: "Quiz GPT",
     tagline: "PDF pages → exam-style MCQs",
     step1: "UPLOAD PDF / IMAGES",
     dropMain: "Upload your PDF or Image from Gallery",
@@ -2373,7 +2353,7 @@ const I18N = {
     aiParseError: "Didn't get a valid quiz from the AI. Try again, or paste manually below.",
   },
   hi: {
-    title: "Y",
+    title: "Quiz GPT",
     tagline: "पीडीएफ पेज → एग्ज़ाम-स्टाइल MCQs",
     step1: "पीडीएफ / इमेज अपलोड करें",
     dropMain: "अपना PDF या इमेज गैलरी से अपलोड करें",
@@ -4774,12 +4754,14 @@ function renderSavedQuizzes() {
         <button class="btn-sm primary" data-act="open">${escapeHtml(rec.submitted ? t('sqView') : t('sqResume'))}</button>
         <button class="btn-sm" data-act="again">${escapeHtml(t('sqAgain'))}</button>
         <button class="btn-sm" data-act="delete">${escapeHtml(t('sqDelete'))}</button>
+        <button class="btn-sm" data-act="share">📲 Share</button>
       </div>`;
     item.addEventListener('click', (e) => {
       const act = e.target.closest('[data-act]')?.dataset.act;
       if (act === 'open') resumeSavedQuiz(rec.id);
       else if (act === 'again') practiceSavedQuizAgain(rec.id);
       else if (act === 'delete') deleteSavedQuiz(rec.id);
+      else if (act === 'share') { try { yqShare(rec.id); } catch (err) { showToast('Share nahi ho paya'); } }
     });
     box.appendChild(item);
   });
@@ -6465,7 +6447,7 @@ function eyUnits() {       // how many pages / images the quiz would be built fr
   return Math.max(n, pg);
 }
 function eyOverLimit() { return eyUnits() > EY_MAX_UNITS; }
-function eyLimitMsg(n) { return 'Aapne ' + n + ' pages/images use kiye hain. Exam Yatri sirf ' + EY_MAX_UNITS + ' tak pages ya images ke liye hai, isliye ise band kar diya hai. Gemini select hai (ChatGPT / Claude bhi use kar sakte ho).'; }
+function eyLimitMsg(n) { return 'Exam Yatri sirf ' + EY_MAX_UNITS + ' pages support karta hai.'; }
 function eyPickSite(isEy) {   // programmatic selection of Exam Yatri or Gemini (same effect as a tap, without opening menus)
   document.querySelectorAll('.site-btn').forEach(b => b.classList.remove('active'));
   if (isEy) { const b = document.getElementById('eyPick'); if (b) b.classList.add('active'); eySetActive(true, true); return; }
@@ -6480,7 +6462,7 @@ function eyLimitSync() {
   btn.classList.toggle('ey-off', over); btn.setAttribute('aria-disabled', over ? 'true' : 'false');
   if (note) { note.hidden = !over; note.textContent = over ? '\u26A0\uFE0F ' + eyLimitMsg(n) : ''; }
   if (over) {
-    if (eyActive) { eyPickSite(false); eyForcedOff = true; try { showToast('Exam Yatri band: ' + n + ' pages/images (max ' + EY_MAX_UNITS + '). Gemini select ho gaya.'); } catch (e) {} }
+    if (eyActive) { eyPickSite(false); eyForcedOff = true; try { showToast(eyLimitMsg(n)); } catch (e) {} }
   } else if (eyForcedOff) {   // the big input is gone: give Exam Yatri back, but only if the student did not choose another site meanwhile
     eyForcedOff = false;
     const cur = document.querySelector('.site-btn.active');
@@ -8063,7 +8045,7 @@ function streamStart(key, onlyUrl) {
     if (r && r.blocked) { needTap = true; streamStop(); paintStatus(); return; }
     if (!r) { failAll(); return; }
     const a = r.audio; streamEl = a; streamName = r.cand.name; streamState = 'live'; fmLastGood[key] = r.cand; fmLastGood['fm:auto'] = r.cand; fmClick(r.cand);
-    try { if ('mediaSession' in navigator && window.MediaMetadata) navigator.mediaSession.metadata = new MediaMetadata({ title: streamName || 'Hindi FM', artist: 'Y ai \u00B7 Live FM' }); } catch (e) {}
+    try { if ('mediaSession' in navigator && window.MediaMetadata) navigator.mediaSession.metadata = new MediaMetadata({ title: streamName || 'Hindi FM', artist: 'Quiz GPT \u00B7 Live FM' }); } catch (e) {}
     a.muted = false; a.volume = Math.min(1, moodVol * 0.9);
     a.onwaiting = () => { if (streamEl === a) { streamState = 'loading'; paintStatus(); } };
     a.onplaying = () => { if (streamEl === a) { streamState = 'live'; paintStatus(); } };
@@ -8270,6 +8252,10 @@ function decorateResult() {
   // Stat tiles + ring
   const _rs = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
   _rs('rsRight', right); _rs('rsWrong', wrong); _rs('rsSkip', total - attempted); _rs('rsTime', formatTime(quizTotalSeconds));
+  try {
+    const _pq = total > 0 ? Math.round((quizTotalSeconds || 0) / total) : 0;
+    _rs('rsPerQ', _pq >= 60 ? Math.floor(_pq / 60) + 'm ' + (_pq % 60 < 10 ? '0' : '') + (_pq % 60) + 's' : _pq + 's');
+  } catch (e) {}
   const _ring = document.querySelector('#resultScreenCard .score-circle');
   if (_ring) _ring.style.setProperty('--pct', REDUCED ? pct : 0);
   resultScreenCard.scrollTop = 0;
@@ -8306,7 +8292,7 @@ function decorateResult() {
   box.before(d);
   document.getElementById('sqExport').onclick = () => {
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(loadSavedQuizzes())], { type: 'application/json' }));
-    a.download = 'yai-quizzes-backup.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    a.download = 'quizgpt-quizzes-backup.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   };
   const f = document.getElementById('sqFile');
   document.getElementById('sqImport').onclick = () => f.click();
@@ -8444,7 +8430,8 @@ function updateQuickButtons() {
 function renderPracticeGraph() {
   const box = document.getElementById('pgBars'); if (!box) return;
   const days = last7DaysPractice();
-  const maxH = Math.max(0.1, ...days.map(d => d.hours));   // avoid /0; a tiny floor keeps empty days visually flat
+  const PG_FULL_HOURS = 24;   // the whole box = 24 hours, so 5h fills 5/24 of the box, 10h fills double that
+  const maxH = PG_FULL_HOURS;
   const totalH = days.reduce((a, d) => a + d.hours, 0);
   document.getElementById('pgTotal').textContent = totalH > 0 ? totalH.toFixed(1) + 'h total' : '';
   box.innerHTML = days.map((d, i) => {
@@ -8503,8 +8490,8 @@ function syncHomeChrome() {
 })();
 document.querySelectorAll('#langToggle button').forEach(b => b.addEventListener('click', () => setTimeout(updateQuickButtons, 0)));
 
-const MENU_TABS = ['quiz', 'text', 'script', 'clean', 'help'];
-const MENU_PANE = { quiz: 'sqPaneQuiz', text: 'sqPaneText', script: 'menuPaneScript', clean: 'menuPaneClean', help: 'menuPaneHelp' };
+const MENU_TABS = ['quiz', 'text', 'script', 'clean'];
+const MENU_PANE = { quiz: 'sqPaneQuiz', text: 'sqPaneText', script: 'menuPaneScript', clean: 'menuPaneClean' };
 function showSavedTab(which) {
   if (!MENU_PANE[which]) which = 'quiz';
   MENU_TABS.forEach(k => document.getElementById(MENU_PANE[k]).classList.toggle('active', k === which));
@@ -8570,7 +8557,7 @@ function refreshSavedUi() { renderSavedQuizzes(); renderSavedTexts(); updateSave
 document.getElementById('quizMenuBtn').addEventListener('click', () => { purgeOld(getAutoCleanDays()); refreshSavedUi(); });
 purgeOld(getAutoCleanDays());   // quiet auto-clean on every app start
 
-// Tap "Y ai" in the header = go Home (quiz/result screen closes, progress stays saved)
+// Tap "Quiz GPT" in the header = go Home (quiz/result screen closes, progress stays saved)
 document.querySelector('.brand').addEventListener('click', () => {
   saveQuizProgress(); stopQuizTimer(); closeQuizCard();
   resultScreenCard.style.display = 'none';
@@ -8692,6 +8679,25 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
 .yai-h::after{content:"";position:absolute;left:12px;top:9px;width:20px;height:20px;border-radius:50%;background:#e5484d;box-shadow:0 2px 8px rgba(0,0,0,.5)}
 /* Home-only widgets (resume / last text / 7-day graph) hide as soon as a file is picked */
 .home-only.is-hidden{display:none !important}
+/* ===== Quiz GPT: clean header + animated wordmark ===== */
+.brand{display:flex;align-items:center;gap:0;cursor:pointer;min-width:0}
+.brand h1.qg-logo{margin:0;display:flex;align-items:center;gap:8px;font-family:var(--serif);font-size:1.5rem;font-weight:800;letter-spacing:-.025em;line-height:1;animation:qgIn .7s cubic-bezier(.2,.8,.2,1) both}
+.qg-q{background:linear-gradient(100deg,var(--accent),var(--teal),var(--coral),var(--accent));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:qgShine 5s linear infinite}
+.qg-g{position:relative;font-family:var(--sans);font-size:.6em;font-weight:900;letter-spacing:.08em;padding:5px 8px 4px;border-radius:9px;color:var(--on-grad,#fff);background:var(--grad-main);animation:qgPulse 2.8s ease-in-out infinite}
+.qg-g::after{content:"\2726";position:absolute;top:-7px;right:-5px;font-size:11px;line-height:1;color:var(--teal);animation:qgTwinkle 2.2s ease-in-out infinite}
+@keyframes qgShine{from{background-position:0 0}to{background-position:200% 0}}
+@keyframes qgPulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 0%,transparent)}}
+@keyframes qgTwinkle{0%,100%{opacity:.25;transform:scale(.6) rotate(0)}50%{opacity:1;transform:scale(1.15) rotate(35deg)}}
+@keyframes qgIn{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.brand h1.qg-logo,.qg-q,.qg-g,.qg-g::after{animation:none!important}}
+header .header-inner{gap:10px}
+header .header-controls{gap:6px}
+header .header-controls .icon-btn,header .header-controls #themeToggle,header .header-controls #quizMenuBtn,header .header-controls #pasteQuizBtn,header .header-controls #installAppBtn,header .header-controls #yqScanBtn{width:36px;height:36px;border-radius:11px;background:var(--panel)!important;border:1px solid var(--line)!important;color:var(--ink)!important;box-shadow:none!important;font-size:1rem}
+header .header-controls .icon-btn:hover{border-color:var(--accent)!important}
+header .header-controls .lang-toggle{border-radius:11px;padding:2px;background:var(--panel);border:1px solid var(--line);box-shadow:none}
+header .header-controls .lang-toggle button.active{background:color-mix(in srgb,var(--accent) 70%,var(--panel))!important;color:var(--on-grad,#fff)!important;box-shadow:none!important}
+header::after{height:1px!important;box-shadow:none!important;animation:none!important;opacity:.55;background:linear-gradient(90deg,transparent,var(--accent),var(--teal),transparent)!important}
+header{box-shadow:none!important}
 </style>
 <script>
 (function () {
@@ -9175,7 +9181,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
         if (v && Date.now() - at < 6 * 3600000 && (force || !GM_getValue(K_TAKEN, false))) deliver(v);
       } catch (e) {}
     }
-    // "Return to Y ai" opens  app#qzreturn=<id>  -> user explicitly came back here, so deliver even if another tab took it
+    // "Return to Quiz GPT" opens  app#qzreturn=<id>  -> user explicitly came back here, so deliver even if another tab took it
     let forced = false;
     try { forced = /qzreturn=/.test(location.hash); if (forced) history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
     setTimeout(() => pickup(forced), 900);
@@ -10152,7 +10158,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
   /* ---- main loop ---- */
   async function runBundleInner(bundle, resumeRun) {
     const ui = makePanel();
-    onLost = () => { ui.setStep(0, '\u2139\uFE0F Doosre tab ne ye quiz sambhal liya', 'Is tab me kuch karne ki zaroorat nahi: wahi tab answers Y ai tak pahunchayega.'); ui.setButtons([]); ui.showClose(); };
+    onLost = () => { ui.setStep(0, '\u2139\uFE0F Doosre tab ne ye quiz sambhal liya', 'Is tab me kuch karne ki zaroorat nahi: wahi tab answers Quiz GPT tak pahunchayega.'); ui.setButtons([]); ui.showClose(); };
     const copyText = (t) => {
       toClipboard(t);
       try { navigator.clipboard.writeText(t); } catch (e) {}
@@ -10166,7 +10172,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
       // ALL parts together (1\u201325, 26\u201350 ...), in order
       copyText(allText);
       const n = cnt(allText), pr = partRanges();
-      ui.setStep(4, '\uD83D\uDCCB ' + n + ' answers copy ho gaye', (pr ? 'Parts: ' + pr + '. ' : '') + 'Ab Y ai tab me paste box me paste karo, ya \"Return to Y ai\" dabao.');
+      ui.setStep(4, '\uD83D\uDCCB ' + n + ' answers copy ho gaye', (pr ? 'Parts: ' + pr + '. ' : '') + 'Ab Quiz GPT tab me paste box me paste karo, ya \"Return to Quiz GPT\" dabao.');
     };
     const appTarget = () => {
       const base = String(bundle.appUrl || (APP_ORIGIN + '/')).split('#')[0];
@@ -10174,7 +10180,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
     };
     const isAppAlive = () => { try { return Date.now() - (+GM_getValue(K_ALIVE + '|' + new URL(appTarget()).origin, 0) || 0) < 45000; } catch (e) { return false; } };
     const navigateToApp = (target) => {
-      // Same-tab navigation only. window.open(url,'yai_app') made Firefox ask "Allow this site to open?" on the Y ai tab, so it is never used for navigation.
+      // Same-tab navigation only. window.open(url,'yai_app') made Firefox ask "Allow this site to open?" on the Quiz GPT tab, so it is never used for navigation.
       try { location.assign(target); } catch (e) {}
       setTimeout(() => { try { location.replace(target); } catch (e) {} }, 1500);
     };
@@ -10189,36 +10195,36 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
         ui.setStep(4, '\u26A0\uFE0F App link http/https nahi hai', 'App ko file se nahi, http/https link se kholo. Answers copy ho gaye hain: app me paste karo.', { attention: true });
         return;
       }
-      ui.setStep(4, '\u21A9 Y ai par ja rahe hain\u2026', 'Quiz wahan khud shuru ho jayega.');
+      ui.setStep(4, '\u21A9 Quiz GPT par ja rahe hain\u2026', 'Quiz wahan khud shuru ho jayega.');
       if (isAppAlive()) {
-        // Y ai tab is already open and polls the saved result itself, so NO URL is opened/navigated at all
+        // Quiz GPT tab is already open and polls the saved result itself, so NO URL is opened/navigated at all
         // (that navigation is what triggered the "Allow this site to open?" popup). The result is already saved by deliver(), so just close this AI tab.
         setTimeout(() => { try { window.close(); } catch (e) {} }, 150);
         setTimeout(() => {   // still here = browser did not allow close; user switches tab by hand, nothing is navigated
           returned = false;
-          ui.setStep(4, '\u2705 Answers Y ai tab ko bhej diye', 'Ab tab switcher se Y ai tab kholo: quiz wahan khud shuru ho jayega. Is AI tab ko band kar sakte ho.', { attention: true });
+          ui.setStep(4, '\u2705 Answers Quiz GPT tab ko bhej diye', 'Ab tab switcher se Quiz GPT tab kholo: quiz wahan khud shuru ho jayega. Is AI tab ko band kar sakte ho.', { attention: true });
           ui.setButtons(finalButtons());
         }, 2500);
         return;
       }
-      // Y ai tab is not open anymore: open the app in THIS tab (same-tab navigation, no popup)
+      // Quiz GPT tab is not open anymore: open the app in THIS tab (same-tab navigation, no popup)
       setTimeout(() => navigateToApp(target), 200);
       setTimeout(() => {
         returned = false;
-        ui.setStep(4, '\u26A0\uFE0F Auto return nahi hua', 'Neeche \"\uD83D\uDD17 Open Y ai\" dabao, ya tab switcher se Y ai tab kholo (quiz wahan khud shuru hoga). Answers copy ho chuke hain.', { attention: true });
+        ui.setStep(4, '\u26A0\uFE0F Auto return nahi hua', 'Neeche \"\uD83D\uDD17 Open Quiz GPT\" dabao, ya tab switcher se Quiz GPT tab kholo (quiz wahan khud shuru hoga). Answers copy ho chuke hain.', { attention: true });
         ui.setButtons(finalButtons());
       }, 6500);
     };
     const finalButtons = () => [
-      { label: '\u21A9 Return to Y ai', fn: returnToApp, primary: true, wide: true, blink: true },
-      { label: '\uD83D\uDD17 Open Y ai', href: appTarget(), fn: () => { copyText(allText); } },
+      { label: '\u21A9 Return to Quiz GPT', fn: returnToApp, primary: true, wide: true, blink: true },
+      { label: '\uD83D\uDD17 Open Quiz GPT', href: appTarget(), fn: () => { copyText(allText); } },
       { label: '\uD83D\uDCCB Copy answer', fn: copyAnswers }
     ];
     ui.setButtons([
       { label: '\u23E9 Send now', fn: () => { if (inCountdown) skipWait = true; else clickSend(); }, primary: true },
       { label: '\u23F9 Stop', fn: () => {
         stopped = true; clearHighlight();
-        ui.setStep(0, '\u23F9 Roka gaya', allText ? 'Jo questions mil chuke hain wo copy kar sakte ho.' : 'Dobara shuru karne ke liye Y ai se "Copy prompt & open site" dabao.');
+        ui.setStep(0, '\u23F9 Roka gaya', allText ? 'Jo questions mil chuke hain wo copy kar sakte ho.' : 'Dobara shuru karne ke liye Quiz GPT se "Copy prompt & open site" dabao.');
         ui.setButtons(allText ? [{ label: '\uD83D\uDCCB Copy answer', fn: copyAnswers, primary: true }] : []); ui.showClose();
       } }
     ]);
@@ -10374,13 +10380,13 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
     if (finalScan.duplicateNums && finalScan.duplicateNums.size) finalWarnings.push('duplicate question IDs: ' + [...finalScan.duplicateNums].sort((a,b) => a-b).map(n => 'Q' + n).join(', '));
     const endWarningText = finalWarnings.length
       ? 'Warning: ' + finalWarnings.join('; ') + '. Jo content mila hai wo copy/import ho sakta hai, lekin completion verify kar lo.'
-      : 'Neeche "Return to Y ai" dabao: quiz khud shuru ho jayega. Na ho to "Copy answer" dabao aur Y ai ke paste box me paste karo.';
+      : 'Neeche "Return to Quiz GPT" dabao: quiz khud shuru ho jayega. Na ho to "Copy answer" dabao aur Quiz GPT ke paste box me paste karo.';
     const readyTitle = finalWarnings.length ? '\u26A0\uFE0F ' + total + ' questions captured' : '\u2705 ' + total + ' questions ready!';
     ui.setStep(4, readyTitle, endWarningText, { attention: true });
     ui.setButtons(finalButtons());
     // automatic return (the buttons above stay as a fallback)
     for (let c = 3; c > 0 && !returned; c--) {
-      ui.setStep(4, readyTitle, endWarnings.length ? endWarningText : c + ' sec me apne aap Y ai par wapas jaoge. Na ho to neeche "Return to Y ai" dabao, ya "Copy answer" se copy karo.', { attention: true });
+      ui.setStep(4, readyTitle, endWarnings.length ? endWarningText : c + ' sec me apne aap Quiz GPT par wapas jaoge. Na ho to neeche "Return to Quiz GPT" dabao, ya "Copy answer" se copy karo.', { attention: true });
       await sleep(1000);
     }
     returnToApp();
@@ -10567,7 +10573,7 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
     if (el.getAttribute('data-i18n') === 'nqNote') return;
     wrapNote(el);
   });
-  ['menuPaneScript', 'menuPaneHelp'].forEach(function (id) {
+  ['menuPaneScript'].forEach(function (id) {
     var pane = document.getElementById(id); if (!pane) return;
     pane.querySelectorAll(':scope > .menu-card').forEach(function (card) {
       var h = card.querySelector(':scope > h4'); if (!h) return;
@@ -10578,6 +10584,521 @@ html.yai-nosel #quizOptions .option-btn:disabled{pointer-events:none}
       card.parentNode.replaceChild(d, card);
     });
   });
+})();
+</script>
+<script>
+/* ===== QR share / scan: send a saved quiz to another device (animated multi-frame QR, no internet needed except to load the QR libraries once) ===== */
+(function () {
+  const FRAME_CHARS = 450;          // data characters per QR frame
+  const LIBS = {
+    gen: ['https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js', 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js'],
+    peer: ['https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js', 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'],
+    scan: ['https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js', 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js']
+  };
+  const TOON = cls => `<svg class="yq-toon ${cls}" viewBox="0 0 132 112" aria-hidden="true">
+          <ellipse class="shadow" cx="60" cy="106" rx="24" ry="5" fill="#000" opacity=".3"/>
+          <g class="fly f1"><rect x="86" y="40" width="12" height="9" rx="2" fill="#fff" stroke="#22d3ee" stroke-width="1.5"/></g>
+          <g class="fly f2"><rect x="86" y="40" width="12" height="9" rx="2" fill="#fff" stroke="#ff7ab6" stroke-width="1.5"/></g>
+          <g class="fly f3"><rect x="86" y="40" width="12" height="9" rx="2" fill="#fff" stroke="#ffd166" stroke-width="1.5"/></g>
+          <text class="spk" x="16" y="38">✨</text><text class="spk s2" x="104" y="30">⭐</text>
+          <g class="hop">
+            <rect x="46" y="88" width="9" height="14" rx="4.5" fill="#4b57d6"/><rect x="65" y="88" width="9" height="14" rx="4.5" fill="#4b57d6"/>
+            <g class="arm l"><path d="M36 66 L45 34" stroke="#7c8cff" stroke-width="7" stroke-linecap="round" fill="none"/></g>
+            <g class="arm r"><path d="M84 66 L75 34" stroke="#7c8cff" stroke-width="7" stroke-linecap="round" fill="none"/></g>
+            <circle cx="60" cy="68" r="28" fill="#7c8cff"/>
+            <ellipse cx="60" cy="76" rx="16" ry="13" fill="#a9b4ff" opacity=".55"/>
+            <circle cx="50" cy="62" r="5" fill="#fff"/><circle cx="70" cy="62" r="5" fill="#fff"/>
+            <circle cx="51" cy="63" r="2.4" fill="#1d1d2b"/><circle cx="71" cy="63" r="2.4" fill="#1d1d2b"/>
+            <circle cx="43" cy="73" r="4" fill="#ff7ab6" opacity=".6"/><circle cx="77" cy="73" r="4" fill="#ff7ab6" opacity=".6"/>
+            <path d="M52 74 Q60 84 68 74" stroke="#1d1d2b" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+            <g class="card"><rect x="44" y="6" width="32" height="26" rx="4" fill="#fff" stroke="#22d3ee" stroke-width="2.4"/><path d="M50 14h20M50 20h14" stroke="#9aa3b5" stroke-width="2.4" stroke-linecap="round"/><path d="M63 25l3 3 6-7" stroke="#16a085" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+          </g>
+        </svg>`;
+  const RING = '<div class="yq-ring"><svg viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" cx="60" cy="60" r="52"/></svg><div class="yq-pct"><span class="n">0%</span><small></small></div></div>';
+  function setRing(ov, pct, sub) {
+    pct = Math.max(0, Math.min(100, pct));
+    ov.querySelector('.yq-ring .fg').style.strokeDashoffset = (326.7 * (1 - pct / 100)).toFixed(1);
+    ov.querySelector('.yq-pct .n').textContent = Math.round(pct) + '%';
+    if (sub !== undefined) ov.querySelector('.yq-pct small').textContent = sub;
+  }
+  const loaded = {};
+  function loadLib(key, test) {
+    if (test()) return Promise.resolve();
+    if (loaded[key]) return loaded[key];
+    return loaded[key] = new Promise((res, rej) => {
+      let i = 0;
+      (function next() {
+        if (i >= LIBS[key].length) { loaded[key] = null; return rej(new Error('lib')); }
+        const sc = document.createElement('script'); sc.src = LIBS[key][i++];
+        sc.onload = () => test() ? res() : next();
+        sc.onerror = () => { sc.remove(); next(); };
+        document.head.appendChild(sc);
+      })();
+    });
+  }
+
+  /* ---------- encode / decode ---------- */
+  const b64u = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+  const unb64u = str => { str = str.replace(/-/g, '+').replace(/_/g, '/'); while (str.length % 4) str += '='; const bin = atob(str), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return u8; };
+  async function pipe(u8, stream) { const w = stream.writable.getWriter(); w.write(u8); w.close(); return new Uint8Array(await new Response(stream.readable).arrayBuffer()); }
+  async function pack(obj) {
+    const raw = new TextEncoder().encode(JSON.stringify(obj));
+    if (typeof CompressionStream !== 'undefined') { try { return { flag: 'z', text: b64u(await pipe(raw, new CompressionStream('deflate-raw'))) }; } catch (e) {} }
+    return { flag: 'r', text: b64u(raw) };
+  }
+  async function unpack(flag, text) {
+    let u8 = unb64u(text);
+    if (flag === 'z') { if (typeof DecompressionStream === 'undefined') throw new Error('nodecomp'); u8 = await pipe(u8, new DecompressionStream('deflate-raw')); }
+    return JSON.parse(new TextDecoder().decode(u8));
+  }
+
+  /* ---------- overlay shell ---------- */
+  const st = document.createElement('style');
+  st.textContent = `
+  .yq-ov{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.72);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+  .yq-ov.show{display:flex}
+  .yq-box{width:100%;max-width:400px;max-height:94vh;overflow-y:auto;background:var(--panel,#1c1c24);color:var(--ink,#eee);border:1px solid var(--line,rgba(255,255,255,.15));border-radius:20px;padding:16px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .yq-box h3{margin:0 0 4px;font-size:1.05rem}
+  .yq-sub{margin:0 0 12px;font-size:.8rem;color:var(--ink-dim,#aaa);line-height:1.4}
+  .yq-qr{display:block;margin:0 auto;width:100%;max-width:320px;aspect-ratio:1/1;image-rendering:pixelated;background:#fff;border-radius:12px;padding:0}
+  .yq-info{margin:10px 0 2px;font-size:.88rem;font-weight:700;font-variant-numeric:tabular-nums}
+  .yq-row{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .yq-bar{height:8px;border-radius:8px;background:var(--line,rgba(255,255,255,.15));overflow:hidden;margin-top:8px}
+  .yq-bar>i{display:block;height:100%;width:0;background:var(--grad-main,linear-gradient(90deg,#6e7bff,#22d3ee));transition:width .15s}
+  .yq-vid{position:relative;width:100%;aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:#000}
+  .yq-vid video{width:100%;height:100%;object-fit:cover}
+  .yq-vid::after{content:"";position:absolute;inset:14%;border:3px solid rgba(255,255,255,.75);border-radius:14px;pointer-events:none}
+  .yq-box[data-mode="link"] .yq-fr{display:none}
+  .yq-box[data-mode="frames"] .yq-ln{display:none}
+  .yq-link{margin-top:10px;padding:8px 10px;border-radius:10px;border:1px dashed var(--line,rgba(255,255,255,.25));font-size:.72rem;word-break:break-all;color:var(--ink-dim,#aaa);user-select:all}
+  /* full-screen share screen */
+  #yqShareOv,#yqRecvOv{padding:0;background:var(--bg,#12121a);-webkit-backdrop-filter:none;backdrop-filter:none}
+  #yqShareOv .yq-box,#yqRecvOv .yq-box{max-width:none;width:100%;height:100%;max-height:none;border:0;border-radius:0;box-shadow:none;background:var(--bg,#12121a);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:0;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(env(safe-area-inset-bottom,0px) + 16px)}
+  #yqShareOv .yq-qr{width:min(84vw,46vh,420px);max-width:none;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  #yqShareOv .yq-info,#yqRecvOv .yq-info{max-width:420px}
+  #yqShareOv.yq-ov.show,#yqRecvOv.yq-ov.show{align-items:stretch}
+  .yq-ring{position:relative;width:min(62vw,36vh,260px);aspect-ratio:1/1;margin:10px auto 0;display:none;flex:none}
+  #yqRecvOv .yq-ring,.yq-box[data-xfer="1"] .yq-ring{display:block}
+  .yq-box[data-xfer="1"] .yq-qr,.yq-box[data-xfer="1"] .yq-link,.yq-box[data-xfer="1"] .yq-sub,.yq-box[data-xfer="1"] .yq-row.yq-ln,.yq-box[data-xfer="1"] #yqModeBtn{display:none}
+  #yqAgainBtn{display:none}.yq-box[data-xdone="1"] #yqAgainBtn{display:inline-flex}
+  .yq-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .yq-ring .bg{fill:none;stroke:var(--line,rgba(255,255,255,.18));stroke-width:9}
+  .yq-ring .fg{fill:none;stroke:var(--accent,#7c8cff);stroke-width:9;stroke-linecap:round;stroke-dasharray:326.7;stroke-dashoffset:326.7;transition:stroke-dashoffset .25s ease}
+  .yq-pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+  .yq-pct .n{font-size:2.7rem;font-weight:900;line-height:1}
+  .yq-pct small{margin-top:5px;padding:0 16px;font-size:.74rem;font-weight:700;line-height:1.3;color:var(--ink-dim,#aaa)}
+  .yq-toon.in .fly{animation-name:yqFlyIn}
+  @keyframes yqFlyIn{0%{opacity:0;transform:translate(62px,-34px) rotate(40deg)}20%{opacity:1}100%{opacity:0;transform:translate(0,4px) rotate(0)}}
+  .yq-toon{width:132px;height:112px;margin:40px auto 0;overflow:visible;flex:none;position:relative;z-index:0}
+  .yq-warn{margin:2px 0 0;padding:9px 14px;border-radius:14px;font-size:.92rem;font-weight:800;line-height:1.35;max-width:420px;color:var(--ink,#eee);background:color-mix(in srgb,var(--coral,#ff6b81) 20%,transparent);border:1px solid color-mix(in srgb,var(--coral,#ff6b81) 55%,transparent)}
+  .yq-toon .hop{transform-box:fill-box;transform-origin:50% 100%;animation:yqHop .85s cubic-bezier(.3,.1,.3,1) infinite}
+  .yq-toon .shadow{transform-box:fill-box;transform-origin:50% 50%;animation:yqShadow .85s cubic-bezier(.3,.1,.3,1) infinite}
+  .yq-toon .card{transform-box:fill-box;transform-origin:50% 100%;animation:yqCard .85s ease-in-out infinite}
+  .yq-toon .arm{transform-box:fill-box;animation:yqArm .85s ease-in-out infinite}
+  .yq-toon .arm.r{animation-delay:-.1s}
+  .yq-toon .fly{opacity:0;animation:yqFly 1.7s ease-out infinite}
+  .yq-toon .fly.f2{animation-delay:.55s}.yq-toon .fly.f3{animation-delay:1.1s}
+  .yq-toon .spk{opacity:0;animation:yqSpk 1.7s ease-out infinite;font-size:13px}
+  .yq-toon .spk.s2{animation-delay:.8s}
+  @keyframes yqHop{0%{transform:translateY(0) scale(1.1,.88)}18%{transform:translateY(0) scale(.94,1.08)}50%{transform:translateY(-30px) scale(.97,1.05)}82%{transform:translateY(0) scale(1,1)}92%{transform:translateY(0) scale(1.1,.88)}100%{transform:translateY(0) scale(1.1,.88)}}
+  @keyframes yqShadow{0%,100%{transform:scale(1.1);opacity:.35}50%{transform:scale(.6);opacity:.15}}
+  @keyframes yqCard{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(8deg) translateY(-4px)}}
+  @keyframes yqArm{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(7deg)}}
+  @keyframes yqFly{0%{opacity:0;transform:translate(0,0) rotate(0)}15%{opacity:1}100%{opacity:0;transform:translate(54px,-34px) rotate(40deg)}}
+  @keyframes yqSpk{0%{opacity:0;transform:translateY(8px)}30%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
+  @media (prefers-reduced-motion:reduce){.yq-toon *{animation:none!important}}
+  .yq-err{color:var(--coral,#ff6b81);font-size:.85rem;margin-top:10px;line-height:1.4}
+  `;
+  document.head.appendChild(st);
+  function makeOv(id) {
+    const ov = document.createElement('div'); ov.className = 'yq-ov'; ov.id = id;
+    ov.innerHTML = '<div class="yq-box"></div>';
+    document.body.appendChild(ov); return ov;
+  }
+  const $ = (ov, sel) => ov.querySelector(sel);
+
+  /* ---------- SHARE (sender) ---------- */
+  let shareOv, shareTimer = null, shareState = null, sharePeer = null, shareLink = '';
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function drawQr(canvas, text) {
+    const qr = qrcode(0, 'L'); qr.addData(text, 'Byte'); qr.make();
+    const n = qr.getModuleCount(), q = 4, scale = Math.max(3, Math.floor(640 / (n + 2 * q)));
+    const size = (n + 2 * q) * scale; canvas.width = canvas.height = size;
+    const c = canvas.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, size, size); c.fillStyle = '#000';
+    for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (qr.isDark(r, k)) c.fillRect((k + q) * scale, (r + q) * scale, scale, scale);
+  }
+  function stopTimer() { if (shareTimer) { clearInterval(shareTimer); shareTimer = null; } }
+  let wakeLock = null;
+  async function wakeOn() { try { if (navigator.wakeLock && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } catch (e) { wakeLock = null; } }
+  function wakeOff() { try { if (wakeLock) wakeLock.release(); } catch (e) {} wakeLock = null; }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && shareOv && shareOv.classList.contains('show')) wakeOn(); });
+  function stopShare() {
+    wakeOff();
+    stopTimer(); shareState = null;
+    if (sharePeer) { try { sharePeer.destroy(); } catch (e) {} sharePeer = null; }
+    if (shareOv) shareOv.classList.remove('show');
+  }
+  function shareErr(txt) { const e = $(shareOv, '.yq-err'); e.style.display = txt ? '' : 'none'; e.textContent = txt || ''; }
+  function runShareTimer() {
+    stopTimer();
+    const S = shareState; if (!S || !S.frames) return;
+    const show = () => {
+      drawQr($(shareOv, '.yq-qr'), S.frames[S.i]);
+      $(shareOv, '.yq-info').textContent = 'Frame ' + (S.i + 1) + ' / ' + S.frames.length + (S.frames.length > 1 ? ' · 1 round ≈ ' + Math.ceil(S.frames.length / S.fps) + ' sec' : '');
+      S.i = (S.i + 1) % S.frames.length;
+    };
+    show();
+    if (S.frames.length > 1) shareTimer = setInterval(show, Math.round(1000 / S.fps));
+    $(shareOv, '.yq-fps').textContent = S.frames.length > 1 ? S.fps + ' frame/sec' : '';
+  }
+  /* send the packed quiz to one connected receiver, in small messages */
+  async function sendAll(conn, packed, qCount) {
+    const CH = 12000, n = Math.ceil(packed.text.length / CH);
+    conn.send({ t: 'meta', flag: packed.flag, n, len: packed.text.length, q: qCount });
+    for (let i = 0; i < n; i++) {
+      const dc = conn.dataChannel;
+      while (dc && dc.bufferedAmount > 262144) await sleep(40);
+      conn.send({ t: 'c', i, d: packed.text.slice(i * CH, (i + 1) * CH) });
+      await sleep(8);
+    }
+    conn.send({ t: 'end' });
+  }
+  /* sender-side transfer UI: real progress = chunks the receiver has confirmed */
+  function xferBegin(conn, qCount) {
+    const S = shareState; if (!S) return;
+    S.xfer = { conn, done: false, q: qCount };
+    const box = shareOv.querySelector('.yq-box'); box.dataset.xfer = '1'; box.dataset.xdone = '0';
+    shareErr(''); setRing(shareOv, 0, 'Upload shuru ho raha hai…');
+    $(shareOv, '.yq-info').textContent = '📤 Quiz bheja ja raha hai…';
+  }
+  function xferProgress(conn, got, n) {
+    const S = shareState, x = S && S.xfer; if (!x || x.conn !== conn || x.done || !n) return;
+    const pct = got / n * 100;
+    setRing(shareOv, pct, Math.floor(pct / 100 * x.q) + ' / ' + x.q + ' questions upload');
+    $(shareOv, '.yq-info').textContent = '📤 Upload ho raha hai… ' + Math.round(pct) + '%';
+  }
+  function xferDone(conn) {
+    const S = shareState, x = S && S.xfer; if (!x || x.conn !== conn) return;
+    x.done = true;
+    setRing(shareOv, 100, '✅ ' + x.q + ' / ' + x.q + ' questions pahunch gaye');
+    $(shareOv, '.yq-info').textContent = '✅ Quiz dusre device me pahunch gaya.';
+    shareOv.querySelector('.yq-box').dataset.xdone = '1';
+    try { navigator.vibrate && navigator.vibrate(80); } catch (e) {}
+  }
+  function xferFail(conn, msg) {
+    const S = shareState, x = S && S.xfer; if (!x || x.conn !== conn || x.done) return;
+    S.xfer = null;
+    const box = shareOv.querySelector('.yq-box'); box.dataset.xfer = '0'; box.dataset.xdone = '0';
+    $(shareOv, '.yq-info').textContent = 'Dusre device se scan karo. Jab tak transfer ho, ye screen khuli rakho.';
+    shareErr(msg);
+  }
+  async function startLinkMode() {
+    const S = shareState; if (!S) return;
+    stopTimer(); shareErr('');
+    shareOv.querySelector('.yq-box').dataset.mode = 'link';
+    $(shareOv, '.yq-info').textContent = 'Link ban raha hai…';
+    $(shareOv, '.yq-link').textContent = '';
+    try {
+      await loadLib('gen', () => typeof qrcode === 'function');
+      await loadLib('peer', () => typeof Peer === 'function');
+    } catch (e) { shareErr('Libraries load nahi hui. Internet check karo, ya neeche "Bina internet" wala QR use karo.'); $(shareOv, '.yq-info').textContent = ''; return; }
+    if (!S.packed) S.packed = await pack(S.payload);
+    if (shareState !== S) return;
+    if (sharePeer) { try { sharePeer.destroy(); } catch (e) {} sharePeer = null; }
+    const info = $(shareOv, '.yq-info');
+    let tries = 0;
+    const make = () => {
+      const id = 'yai' + Math.random().toString(36).slice(2, 12);
+      const peer = new Peer(id); sharePeer = peer;
+      peer.on('open', () => {
+        shareLink = location.href.split('#')[0] + '#yqrecv=' + id;
+        drawQr($(shareOv, '.yq-qr'), shareLink);
+        $(shareOv, '.yq-link').textContent = shareLink;
+        info.textContent = 'Dusre device se scan karo. Jab tak transfer ho, ye screen khuli rakho.';
+      });
+      peer.on('connection', conn => {
+        const Q = S.payload.q.length;
+        conn.on('data', m => {
+          if (!m) return;
+          if (m.t === 'hello') { xferBegin(conn, Q); sendAll(conn, S.packed, Q).catch(() => xferFail(conn, 'Bhejte waqt connection toot gaya. Dusre device par dobara scan karo.')); }
+          else if (m.t === 'ack') xferProgress(conn, m.got, m.n);
+          else if (m.t === 'ok') xferDone(conn);
+        });
+        conn.on('close', () => xferFail(conn, 'Connection beech me toot gaya. Dusre device par dobara scan karo.'));
+        conn.on('error', () => xferFail(conn, 'Connection me dikkat aayi. Dusre device par dobara scan karo.'));
+      });
+      peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
+      peer.on('error', err => {
+        if (err && err.type === 'unavailable-id' && tries++ < 3) { try { peer.destroy(); } catch (e) {} make(); return; }
+        if (err && err.type === 'peer-unavailable') return;
+        info.textContent = '';
+        shareErr('Link server se connect nahi ho paya. Internet check karo, ya neeche "Bina internet" wala QR use karo.');
+      });
+    };
+    make();
+  }
+  async function startFramesMode() {
+    const S = shareState; if (!S) return;
+    stopTimer(); shareErr('');
+    if (sharePeer) { try { sharePeer.destroy(); } catch (e) {} sharePeer = null; }
+    shareOv.querySelector('.yq-box').dataset.mode = 'frames';
+    $(shareOv, '.yq-info').textContent = 'QR ban raha hai…';
+    try {
+      await loadLib('gen', () => typeof qrcode === 'function');
+      if (!S.packed) S.packed = await pack(S.payload);
+      if (shareState !== S) return;
+      const { flag, text } = S.packed;
+      const total = Math.ceil(text.length / FRAME_CHARS), sid = Math.random().toString(36).slice(2, 8), frames = [];
+      for (let i = 0; i < total; i++) frames.push('YQ1|' + flag + '|' + sid + '|' + i + '|' + total + '|' + text.slice(i * FRAME_CHARS, (i + 1) * FRAME_CHARS));
+      S.frames = frames; S.i = 0; S.fps = S.fps || 4;
+      runShareTimer();
+    } catch (e) { $(shareOv, '.yq-info').textContent = ''; shareErr('QR nahi ban paya. Internet check karo (QR library ek baar download hoti hai) aur dobara try karo.'); }
+  }
+  window.yqShare = async function (id) {
+    const rec = loadSavedQuizzes().find(r => r.id === id);
+    if (!rec) return;
+    if (!shareOv) {
+      shareOv = makeOv('yqShareOv');
+      $(shareOv, '.yq-box').innerHTML = `
+        <h3>📲 Quiz share karo</h3>
+        <p class="yq-sub yq-ln">Dusre device me header ka <b>scanner</b> button dabao (ya phone ke camera se scan karo). Quiz seedha ek device se dusre me jayega.</p>
+        <p class="yq-sub yq-fr">Internet ke bina: dusre device ke scanner se ye ghoomte QR scan karo.</p>
+        <canvas class="yq-qr"></canvas>
+        ${RING}
+        <div class="yq-info">…</div>
+        ${TOON("")}
+        <div class="yq-warn">📵 Screen off mat karo! Quiz share ho raha hai…</div>
+        <div class="yq-link yq-ln"></div>
+        <div class="yq-bar yq-fr"><i style="width:100%"></i></div>
+        <div class="yq-row yq-ln">
+          <button class="btn-sm" id="yqCopy" type="button">📋 Link copy</button>
+          <button class="btn-sm" id="yqSendLink" type="button">📤 Link bhejo</button>
+        </div>
+        <div class="yq-row yq-fr">
+          <button class="btn-sm" id="yqSlow" type="button">🐢 Slow</button>
+          <span class="yq-fps modal-note" style="margin:0"></span>
+          <button class="btn-sm" id="yqFast" type="button">🐇 Fast</button>
+        </div>
+        <div class="yq-err" style="display:none"></div>
+        <div class="yq-row">
+          <button class="btn-sm primary" id="yqAgainBtn" type="button">📲 Dusre device ko bhejo</button>
+          <button class="btn-sm" id="yqModeBtn" type="button"></button>
+          <button class="btn-sm primary" id="yqShareClose" type="button">Done</button>
+        </div>`;
+      $(shareOv, '#yqShareClose').addEventListener('click', stopShare);
+      $(shareOv, '#yqAgainBtn').addEventListener('click', () => { const b = shareOv.querySelector('.yq-box'); b.dataset.xfer = '0'; b.dataset.xdone = '0'; if (shareState) shareState.xfer = null; $(shareOv, '.yq-info').textContent = 'Dusre device se scan karo. Jab tak transfer ho, ye screen khuli rakho.'; });
+      shareOv.addEventListener('click', e => { if (e.target === shareOv) stopShare(); });
+      $(shareOv, '#yqSlow').addEventListener('click', () => { if (shareState && shareState.frames && shareState.fps > 1) { shareState.fps--; runShareTimer(); } });
+      $(shareOv, '#yqFast').addEventListener('click', () => { if (shareState && shareState.frames && shareState.fps < 10) { shareState.fps++; runShareTimer(); } });
+      $(shareOv, '#yqCopy').addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(shareLink); showToast('Link copy ho gaya'); } catch (e) { showToast('Link ko dabakar copy karo'); }
+      });
+      $(shareOv, '#yqSendLink').addEventListener('click', async () => {
+        if (!shareLink) return;
+        try { if (navigator.share) await navigator.share({ title: 'Quiz GPT quiz', text: 'Quiz kholne ke liye ye link kholo (mera share screen khula rakhna hai):', url: shareLink }); else { await navigator.clipboard.writeText(shareLink); showToast('Link copy ho gaya'); } } catch (e) {}
+      });
+      $(shareOv, '#yqModeBtn').addEventListener('click', () => {
+        const link = shareOv.querySelector('.yq-box').dataset.mode === 'link';
+        if (link) startFramesMode(); else startLinkMode();
+        $(shareOv, '#yqModeBtn').textContent = link ? '🔗 Link QR' : '📴 Bina internet';
+      });
+    }
+    $(shareOv, '#yqModeBtn').textContent = '📴 Bina internet';
+    shareErr(''); shareLink = '';
+    shareOv.classList.add('show'); wakeOn();
+    shareState = { payload: { v: 1, o: rec.id, t: rec.title, q: rec.quizData, a: rec.userAnswers, c: rec.currentQ || 0, e: rec.elapsed || 0, s: !!rec.submitted, n: rec.attempts || 1 }, packed: null, frames: null, i: 0, fps: 4 };
+    startLinkMode();
+  };
+
+  /* ---------- SCAN (receiver) ---------- */
+  let scanOv, stream = null, scanning = false, rxState = null, detector = null, canvas2 = null;
+  function stopScan() {
+    scanning = false;
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    const v = scanOv && $(scanOv, 'video'); if (v) { try { v.pause(); } catch (e) {} v.srcObject = null; }
+    if (scanOv) scanOv.classList.remove('show');
+    rxState = null;
+  }
+  function scanMsg(txt, isErr) { const e = $(scanOv, '.yq-err'); e.style.display = txt ? '' : 'none'; e.textContent = txt || ''; e.style.color = isErr ? '' : 'var(--ink-dim,#aaa)'; }
+  function setProgress(got, total) {
+    $(scanOv, '.yq-info').textContent = total ? ('Mile: ' + got + ' / ' + total + ' frames') : 'QR dhundh raha hoon…';
+    $(scanOv, '.yq-bar>i').style.width = total ? Math.round(got / total * 100) + '%' : '0%';
+  }
+  async function finishReceive(rx) {
+    if (!rx.cleanup) scanning = false;
+    try {
+      const data = await unpack(rx.flag, rx.parts.join(''));
+      if (!data || !Array.isArray(data.q) || !data.q.length || !Array.isArray(data.a)) throw new Error('bad');
+      const list = loadSavedQuizzes();
+      let rec = list.find(r => r.id === data.o || r.sharedFrom === data.o);
+      const fresh = {
+        title: data.t || 'Shared quiz', quizData: data.q, userAnswers: data.a, currentQ: data.c || 0,
+        elapsed: data.e || 0, submitted: !!data.s, attempts: data.n || 1, sharedFrom: data.o, updatedAt: Date.now()
+      };
+      if (fresh.submitted) {   // quiz was already finished on the other device -> start again from question 1 (no result screen)
+        fresh.quizData.forEach(q => { delete q.userText; });
+        fresh.userAnswers = new Array(fresh.quizData.length).fill(-1);
+        fresh.currentQ = 0; fresh.elapsed = 0; fresh.submitted = false; fresh.attempts = (fresh.attempts || 1) + 1;
+      }
+      if (rec) Object.assign(rec, fresh);
+      else { rec = Object.assign({ id: 'q' + Date.now() + Math.random().toString(36).slice(2, 6), createdAt: Date.now() }, fresh); list.push(rec); }
+      writeSavedQuizzes(list);
+      try { navigator.vibrate && navigator.vibrate(120); } catch (e) {}
+      if (rx.cleanup) rx.cleanup(); else stopScan();
+      showToast('✅ Quiz aa gaya: ' + data.q.length + ' questions');
+      resumeSavedQuiz(rec.id);
+    } catch (e) {
+      if (rx.onFail) { rx.onFail(e && e.message === 'nodecomp' ? 'Ye browser compressed quiz nahi khol sakta. Chrome / Firefox ka naya version use karo.' : 'Quiz padha nahi ja saka. Dobara try karo.'); return; }
+      rxState = null; scanning = true; setProgress(0, 0);
+      scanMsg(e && e.message === 'nodecomp' ? 'Ye browser compressed quiz nahi khol sakta. Chrome / Firefox ka naya version use karo.' : 'Quiz padha nahi ja saka. Phir se scan karo.', true);
+      requestAnimationFrame(tick);
+    }
+  }
+  function onText(txt) {
+    if (!txt) return;
+    const lm = /#yqrecv=([A-Za-z0-9_-]+)/.exec(txt);
+    if (lm && scanning) { stopScan(); receiveFromPeer(lm[1]); return; }
+    if (txt.slice(0, 4) !== 'YQ1|') return;
+    const p = txt.split('|'); if (p.length < 6) return;
+    const flag = p[1], sid = p[2], idx = +p[3], total = +p[4], data = p.slice(5).join('|');
+    if (!(total > 0) || !(idx >= 0 && idx < total)) return;
+    if (!rxState || rxState.sid !== sid) rxState = { sid, flag, total, parts: new Array(total).fill(null), got: 0 };
+    if (rxState.parts[idx] === null) { rxState.parts[idx] = data; rxState.got++; setProgress(rxState.got, total); scanMsg(''); }
+    if (rxState.got === total) finishReceive(rxState);
+  }
+  async function tick() {
+    if (!scanning) return;
+    const v = $(scanOv, 'video');
+    try {
+      if (v.readyState >= 2 && v.videoWidth) {
+        if (detector) {
+          const r = await detector.detect(v);
+          for (const c of r) onText(c.rawValue);
+        } else if (typeof jsQR === 'function') {
+          const w = Math.min(960, v.videoWidth), h = Math.round(v.videoHeight * w / v.videoWidth);
+          if (!canvas2) canvas2 = document.createElement('canvas');
+          canvas2.width = w; canvas2.height = h;
+          const cx = canvas2.getContext('2d', { willReadFrequently: true }); cx.drawImage(v, 0, 0, w, h);
+          const img = cx.getImageData(0, 0, w, h), res = jsQR(img.data, w, h, { inversionAttempts: 'dontInvert' });
+          if (res) onText(res.data);
+        }
+      }
+    } catch (e) {}
+    if (scanning) setTimeout(() => requestAnimationFrame(tick), 70);
+  }
+  async function openScanner() {
+    if (!scanOv) {
+      scanOv = makeOv('yqScanOv');
+      $(scanOv, '.yq-box').innerHTML = `
+        <h3>📷 Quiz scan karo</h3>
+        <p class="yq-sub">Dusre device par saved quiz ka <b>Share</b> button dabao, phir uska QR yahan camera me dikhao. Link wala QR turant jud jata hai.</p>
+        <div class="yq-vid"><video playsinline muted autoplay></video></div>
+        <div class="yq-info">Camera shuru ho raha hai…</div>
+        <div class="yq-bar"><i></i></div>
+        <div class="yq-err" style="display:none"></div>
+        <div class="yq-row"><button class="btn-sm" id="yqScanClose" type="button">Cancel</button></div>`;
+      $(scanOv, '#yqScanClose').addEventListener('click', stopScan);
+    }
+    scanOv.classList.add('show'); rxState = null; setProgress(0, 0); scanMsg('');
+    $(scanOv, '.yq-info').textContent = 'Camera shuru ho raha hai…';
+    try {
+      detector = null;
+      if ('BarcodeDetector' in window) { try { detector = new BarcodeDetector({ formats: ['qr_code'] }); } catch (e) { detector = null; } }
+      if (!detector) await loadLib('scan', () => typeof jsQR === 'function');
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('nocam');
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+      const v = $(scanOv, 'video'); v.srcObject = stream; await v.play();
+      scanning = true; setProgress(0, 0); tick();
+    } catch (e) {
+      const msg = e && e.message === 'lib' ? 'Scanner library load nahi hui. Internet check karo aur dobara try karo.'
+        : e && e.message === 'nocam' ? 'Camera sirf https (secure) page par chalta hai.'
+        : e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? 'Camera ki permission band hai. Browser / phone settings me is site ke liye Camera allow karo.'
+        : e && e.name === 'NotFoundError' ? 'Is device me camera nahi mila.' : 'Camera shuru nahi ho paya.';
+      $(scanOv, '.yq-info').textContent = ''; scanMsg(msg, true);
+      if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    }
+  }
+  /* ---------- RECEIVE over the link (direct device-to-device) ---------- */
+  let recvOv, recvPeer = null, recvTimer = null, recvSid = null;
+  function closeRecv() {
+    if (recvTimer) { clearTimeout(recvTimer); recvTimer = null; }
+    if (recvPeer) { try { recvPeer.destroy(); } catch (e) {} recvPeer = null; }
+    wakeOff();
+    if (recvOv) recvOv.classList.remove('show');
+  }
+  async function receiveFromPeer(sid) {
+    recvSid = sid;
+    if (!recvOv) {
+      recvOv = makeOv('yqRecvOv');
+      $(recvOv, '.yq-box').innerHTML = `
+        <h3>📥 Quiz aa raha hai</h3>
+        ${RING}
+        <div class="yq-info">…</div>
+        ${TOON('in')}
+        <div class="yq-warn">📵 Screen off mat karo! Quiz download ho raha hai…</div>
+        <div class="yq-err" style="display:none"></div>
+        <div class="yq-row">
+          <button class="btn-sm primary" id="yqRecvRetry" type="button" style="display:none">🔄 Dobara try</button>
+          <button class="btn-sm" id="yqRecvClose" type="button">Cancel</button>
+        </div>`;
+      $(recvOv, '#yqRecvClose').addEventListener('click', closeRecv);
+      $(recvOv, '#yqRecvRetry').addEventListener('click', () => receiveFromPeer(recvSid));
+    }
+    const info = $(recvOv, '.yq-info'), err = $(recvOv, '.yq-err'), retry = $(recvOv, '#yqRecvRetry'), closeBtn = $(recvOv, '#yqRecvClose');
+    const arm = (ms, msg) => { if (recvTimer) clearTimeout(recvTimer); recvTimer = setTimeout(() => fail(msg), ms); };
+    const fail = txt => {
+      if (recvTimer) { clearTimeout(recvTimer); recvTimer = null; }
+      info.textContent = ''; err.style.display = ''; err.textContent = txt; retry.style.display = ''; closeBtn.textContent = 'Band karo';
+      if (recvPeer) { try { recvPeer.destroy(); } catch (e) {} recvPeer = null; }
+    };
+    if (recvPeer) { try { recvPeer.destroy(); } catch (e) {} recvPeer = null; }
+    err.style.display = 'none'; retry.style.display = 'none'; closeBtn.textContent = 'Cancel';
+    setRing(recvOv, 0, 'Connect ho raha hai…'); info.textContent = '🔗 Dusre device se jud raha hoon…';
+    recvOv.classList.add('show'); wakeOn();
+    try { await loadLib('peer', () => typeof Peer === 'function'); } catch (e) { fail('Connection library load nahi hui. Internet check karo.'); return; }
+    let flag = 'z', n = 0, len = 0, Q = 0, parts = [], got = 0, chars = 0, done = false;
+    arm(25000, 'Connect nahi ho paya. Dusre device par Share screen khuli honi chahiye, aur dono device online hone chahiye.');
+    const peer = new Peer(); recvPeer = peer;
+    peer.on('error', e => fail(e && e.type === 'peer-unavailable' ? 'Ye link ab kaam nahi kar raha. Dusre device par Share screen khuli rakho (ya naya QR banao).' : 'Connection me dikkat aayi. Internet check karo aur dobara try karo.'));
+    peer.on('open', () => {
+      const conn = peer.connect(sid, { serialization: 'json', reliable: true });
+      conn.on('open', () => { info.textContent = '✅ Juda gaya — quiz aa raha hai…'; setRing(recvOv, 0, 'Shuru ho raha hai…'); conn.send({ t: 'hello' }); arm(20000, 'Sender se data nahi aaya. Dobara try karo.'); });
+      conn.on('error', () => { if (!done) fail('Connection toot gaya. Dobara try karo.'); });
+      conn.on('close', () => { if (!done) fail('Connection beech me toot gaya. Dobara try karo.'); });
+      conn.on('data', async m => {
+        if (!m || done) return;
+        if (m.t === 'meta') { flag = m.flag; n = m.n; len = m.len || 0; Q = m.q || 0; parts = new Array(n).fill(null); }
+        else if (m.t === 'c' && parts.length) {
+          if (parts[m.i] === null) { parts[m.i] = m.d; got++; chars += m.d.length; }
+          const pct = got / n * 100;
+          setRing(recvOv, pct, (Q ? Math.floor(pct / 100 * Q) + ' / ' + Q + ' questions · ' : '') + Math.round(chars / 1024) + (len ? ' / ' + Math.round(len / 1024) : '') + ' KB');
+          info.textContent = '📥 Download ho raha hai… ' + Math.round(pct) + '%';
+          try { conn.send({ t: 'ack', got, n }); } catch (e) {}
+          arm(20000, 'Transfer ruk gaya. Dobara try karo.');
+        } else if (m.t === 'end') {
+          if (got !== n || !n) { fail('Data poora nahi aaya. Dobara try karo.'); return; }
+          done = true; if (recvTimer) { clearTimeout(recvTimer); recvTimer = null; }
+          try { conn.send({ t: 'ok' }); } catch (e) {}
+          setRing(recvOv, 100, (Q ? Q + ' / ' + Q + ' questions' : 'Poora quiz') + ' aa gaye');
+          info.textContent = '✅ Sab aa gaya — quiz shuru ho raha hai…';
+          await sleep(650);
+          finishReceive({ flag, parts, cleanup: () => setTimeout(closeRecv, 300), onFail: txt => { done = false; fail(txt); } });
+        }
+      });
+    });
+  }
+  function checkHash() {
+    const m = /yqrecv=([A-Za-z0-9_-]+)/.exec(location.hash || '');
+    if (!m) return;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    receiveFromPeer(m[1]);
+  }
+  setTimeout(checkHash, 700);
+  window.addEventListener('hashchange', checkHash);
+
+  const btn = document.getElementById('yqScanBtn');
+  if (btn) btn.addEventListener('click', openScanner);
+  document.addEventListener('visibilitychange', () => { if (document.hidden && scanOv && scanOv.classList.contains('show')) stopScan(); });
 })();
 </script>
 <datalist id="examNameOptions"><option value="NEET UG"><option value="NEET PG"><option value="AIIMS"><option value="JEE Main"><option value="JEE Advanced"><option value="BITSAT"><option value="GATE"><option value="UPSC CSE"><option value="State PSC / PCS"><option value="SSC CGL"><option value="SSC CHSL"><option value="SSC GD"><option value="IBPS PO"><option value="IBPS Clerk"><option value="SBI PO"><option value="RBI Grade B"><option value="RRB NTPC"><option value="RRB Group D"><option value="CAT"><option value="CLAT"><option value="CUET"><option value="NDA"><option value="CDS"><option value="CA Foundation"><option value="CA Inter"><option value="CS Executive"><option value="UGC NET"><option value="CTET"><option value="State TET"><option value="CBSE Class 10"><option value="CBSE Class 12"><option value="ICSE Class 10"><option value="State Board Class 10"><option value="State Board Class 12"><option value="University Semester Exam"><option value="USMLE"><option value="GRE"><option value="GMAT"><option value="SAT"><option value="IELTS"><option value="Olympiad"></datalist>
