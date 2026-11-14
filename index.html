@@ -3,7 +3,10 @@
 <!-- Quiz GPT build: exam-fixed-60 (retry audit: after the gateway itself failed (it already tried many AIs for up to 90 s) eyAsk retries only ONCE (was 5x), part-1 unreadable-reply re-ask 2x (was 3x), background auto-retries 3 (was 6)) | previous: exam-fixed-59 (8-unit limit now also checks the PDF page RANGE before extraction (same rule as images: more than 8 -> Exam Yatri off, Gemini on). Earlier: exam-fixed-58 (Exam Yatri limit: more than 8 extracted pages or more than 8 uploaded images -> Exam Yatri is greyed out and blocked (tap + Start), Gemini is auto-selected, a note explains why; Exam Yatri comes back automatically when the input shrinks to 8 or less, unless the student chose another site herself). Earlier: exam-fixed-57 (ALWAYS-SHOW-PAGE: one resolver for every mode (ChatGPT / Claude / Gemini / Exam Yatri API): evidence page -> segment page -> AI PG confirmed in notes -> content search of the notes -> AI PG -> notes page range; tolerant PG parsing ("PG 12", "**PG:** p.12", en-dash ranges); player shows Page N after the question mark in every mode). Earlier: exam-fixed-56 (Page number: Exam Yatri path no longer blanks the AI PG when evidence is not matched (last-resort keeps AI digits); player shows "Page N" after the question in every mode, also from srcPages). Earlier: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
+<style id="yqBootCss">#yqBoot{display:none}html.yq-boot #yqBoot{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#0a0a14;color:#fff;font:700 1.05rem system-ui,-apple-system,sans-serif;text-align:center}#yqBoot i{width:46px;height:46px;border-radius:50%;border:4px solid rgba(255,255,255,.18);border-top-color:#7c8cff;animation:yqBootSpin .8s linear infinite}@keyframes yqBootSpin{to{transform:rotate(360deg)}}</style>
+<script>try{if(/yq(dl|recv)=/.test(location.hash)){document.documentElement.classList.add('yq-boot');setTimeout(function(){document.documentElement.classList.remove('yq-boot')},25000)}}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Quiz GPT — PDF to Exam Quiz</title>
 <script>
@@ -1797,6 +1800,7 @@ body::before{opacity:.8}
 </style>
 </head>
 <body>
+<div id="yqBoot"><i></i><div>⏳ Quiz load ho raha hai…</div></div>
 
 <header>
   <div class="header-inner">
@@ -9135,6 +9139,7 @@ header{box-shadow:none!important}
   const APP_ORIGIN = '__APP_ORIGIN__';
   const K_BUNDLE = 'qz_bundle', K_RESULT = 'qz_result', K_POS = 'qz_pos', K_MIN = 'qz_min', K_AT = 'qz_result_at', K_TAKEN = 'qz_result_taken', K_ALIVE = 'qz_app_alive', K_CLAIM = 'qz_claim', K_RUN = 'qz_run', BRIDGE_V = '19', TAB = Math.random().toString(36).slice(2) + Date.now().toString(36);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const buzz = ms => { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(ms); } catch (e) {} };
 
   /* ------------------------------------------------------------------ app page side */
   function appSide() {
@@ -10663,6 +10668,12 @@ header{box-shadow:none!important}
         if (!/^[A-Za-z0-9_-]{8,}$/.test(id)) throw new Error('noid');
         return id;
       },
+      async ack(id) { await xhr('PUT', RELAY + '/' + encodeURIComponent(id), '{"yq":1,"done":1}', { 'Content-Type': 'application/json', Accept: 'application/json' }, null, 15000); },
+      async seen(id) {
+        const r = await fetch(RELAY + '/' + encodeURIComponent(id), { headers: { Accept: 'application/json' } });
+        if (!r.ok) return false;
+        const o = await r.json(); return !!(o && o.done);
+      },
       async down(id, len, onProg) {
         const res = await fetch(RELAY + '/' + encodeURIComponent(id), { headers: { Accept: 'application/json' } });
         if (!res.ok) throw new Error(res.status === 404 ? 'gone' : 'http');
@@ -10675,6 +10686,12 @@ header{box-shadow:none!important}
         let ok = false; try { ok = !!JSON.parse(x.responseText).id; } catch (e) {}
         if (!ok) throw new Error('noid');
         return topic;
+      },
+      async ack(topic) { await fetch(NTFY + '/' + encodeURIComponent(topic) + 'a', { method: 'POST', body: 'ok' }); },
+      async seen(topic) {
+        const r = await fetch(NTFY + '/' + encodeURIComponent(topic) + 'a/json?poll=1&since=all');
+        if (!r.ok) return false;
+        return (await r.text()).split('\n').some(l => { try { return JSON.parse(l).event === 'message'; } catch (e) { return false; } });
       },
       async down(topic, len, onProg) {
         const r = await fetch(NTFY + '/' + encodeURIComponent(topic) + '/json?poll=1&since=all');
@@ -10880,8 +10897,7 @@ header{box-shadow:none!important}
     x.done = true;
     setRing(shareOv, 100, x.q + ' / ' + x.q); setWarn('');
     $(shareOv, '.yq-info').textContent = '✅ Pahunch gaya';
-    shareOv.querySelector('.yq-box').dataset.xdone = '1';
-    try { navigator.vibrate && navigator.vibrate(80); } catch (e) {}
+    finishShare(S);
   }
   function xferFail(conn, msg) {
     const S = shareState, x = S && S.xfer; if (!x || x.conn !== conn || x.done) return;
@@ -10892,6 +10908,26 @@ header{box-shadow:none!important}
   }
   function setMode(m) { const b = $(shareOv, '#yqModeBtn'); b.textContent = m === 'link' ? '📴' : '☁️'; b.title = m === 'link' ? 'Bina internet wala QR' : 'Link QR'; b.setAttribute('aria-label', b.title); }
   function setWarn(txt) { const w = shareOv && shareOv.querySelector('.yq-warn'); if (w) w.textContent = txt; }
+  function finishShare(S) {
+    if (shareState !== S) return;
+    buzz(80);
+    setTimeout(() => { if (shareState === S) { stopShare(); showToast('✅ Quiz dusre device par shuru ho gaya'); } }, 1600);
+  }
+  /* the receiver confirms once its quiz has started -> the QR disappears here automatically */
+  function watchAck(S, relay, id) {
+    (async () => {
+      for (let i = 0; i < 400; i++) {
+        await sleep(1500);
+        if (shareState !== S) return;
+        let seen = false; try { seen = await relay.seen(id); } catch (e) {}
+        if (seen && shareState === S) {
+          const box = shareOv.querySelector('.yq-box'); box.dataset.xfer = '1'; setRing(shareOv, 100, ''); setWarn('');
+          $(shareOv, '.yq-info').textContent = '✅ Pahunch gaya';
+          finishShare(S); return;
+        }
+      }
+    })();
+  }
   async function startLinkMode() {
     const S = shareState; if (!S) return;
     stopTimer(); shareErr('');
@@ -10923,7 +10959,8 @@ header{box-shadow:none!important}
       $(shareOv, '.yq-link').textContent = shareLink;
       $(shareOv, '.yq-info').textContent = '✅ Scan karo';
       setWarn('');
-      try { navigator.vibrate && navigator.vibrate(60); } catch (e) {}
+      buzz(60);
+      watchAck(S, RELAYS.find(r => r.tag === ref.charAt(0)), ref.slice(1));
     } catch (e) {
       if (shareState !== S) return;
       box.dataset.xfer = '0'; setWarn('');
@@ -11043,9 +11080,10 @@ header{box-shadow:none!important}
   };
 
   /* ---------- SCAN (receiver) ---------- */
+  let tickN = 0, scanHintT = null;
   let scanOv, stream = null, scanning = false, rxState = null, detector = null, canvas2 = null;
   function stopScan() {
-    scanning = false;
+    scanning = false; if (scanHintT) { clearTimeout(scanHintT); scanHintT = null; }
     if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
     const v = scanOv && $(scanOv, 'video'); if (v) { try { v.pause(); } catch (e) {} v.srcObject = null; }
     if (scanOv) scanOv.classList.remove('show');
@@ -11075,10 +11113,11 @@ header{box-shadow:none!important}
       if (rec) Object.assign(rec, fresh);
       else { rec = Object.assign({ id: 'q' + Date.now() + Math.random().toString(36).slice(2, 6), createdAt: Date.now() }, fresh); list.push(rec); }
       writeSavedQuizzes(list);
-      try { navigator.vibrate && navigator.vibrate(120); } catch (e) {}
+      buzz(120);
       if (rx.cleanup) rx.cleanup(); else stopScan();
       showToast('✅ Quiz aa gaya: ' + data.q.length + ' questions');
       resumeSavedQuiz(rec.id);
+      try { rx.onStarted && rx.onStarted(); } catch (e) {}
     } catch (e) {
       if (rx.onFail) { rx.onFail(e && e.message === 'nodecomp' ? 'Ye browser compressed quiz nahi khol sakta. Chrome / Firefox ka naya version use karo.' : 'Quiz padha nahi ja saka. Dobara try karo.'); return; }
       rxState = null; scanning = true; setProgress(0, 0);
@@ -11099,47 +11138,60 @@ header{box-shadow:none!important}
   }
   async function tick() {
     if (!scanning) return;
-    const v = $(scanOv, 'video');
+    const v = $(scanOv, 'video'); tickN++;
     try {
       if (v.readyState >= 2 && v.videoWidth) {
+        let found = false;
         if (detector) {
-          const r = await detector.detect(v);
-          for (const c of r) onText(c.rawValue);
-        } else if (typeof jsQR === 'function') {
-          const w = Math.min(960, v.videoWidth), h = Math.round(v.videoHeight * w / v.videoWidth);
+          try { const r = await detector.detect(v); for (const c of r) { onText(c.rawValue); found = true; } }
+          catch (e) { detector = null; loadLib('scan', () => typeof jsQR === 'function').catch(() => {}); }
+        }
+        // jsQR: alternates a centre crop at native resolution (small QR on a far-away screen) with the whole frame
+        if (!found && scanning && typeof jsQR === 'function' && (!detector || tickN % 3 === 0)) {
+          const vw = v.videoWidth, vh = v.videoHeight, crop = tickN % 2 === 0;
+          const sx = crop ? Math.round(vw * 0.18) : 0, sy = crop ? Math.round(vh * 0.18) : 0;
+          const sw = crop ? Math.round(vw * 0.64) : vw, sh = crop ? Math.round(vh * 0.64) : vh;
+          const k = Math.min(1, (crop ? 1100 : 1280) / sw), w = Math.round(sw * k), h = Math.round(sh * k);
           if (!canvas2) canvas2 = document.createElement('canvas');
           canvas2.width = w; canvas2.height = h;
-          const cx = canvas2.getContext('2d', { willReadFrequently: true }); cx.drawImage(v, 0, 0, w, h);
-          const img = cx.getImageData(0, 0, w, h), res = jsQR(img.data, w, h, { inversionAttempts: 'dontInvert' });
-          if (res) onText(res.data);
+          const cx = canvas2.getContext('2d', { willReadFrequently: true }); cx.drawImage(v, sx, sy, sw, sh, 0, 0, w, h);
+          const img = cx.getImageData(0, 0, w, h), res = jsQR(img.data, w, h, { inversionAttempts: crop ? 'dontInvert' : 'attemptBoth' });
+          if (res && res.data) onText(res.data);
         }
       }
     } catch (e) {}
-    if (scanning) setTimeout(() => requestAnimationFrame(tick), 70);
+    if (scanning) setTimeout(() => requestAnimationFrame(tick), 60);
   }
   async function openScanner() {
     if (!scanOv) {
       scanOv = makeOv('yqScanOv');
       $(scanOv, '.yq-box').innerHTML = `
         <h3>📷 Quiz scan karo</h3>
-        <p class="yq-sub">Dusre device par saved quiz ka <b>Share</b> button dabao, phir uska QR yahan camera me dikhao. Link wala QR turant jud jata hai.</p>
         <div class="yq-vid"><video playsinline muted autoplay></video></div>
         <div class="yq-info">Camera shuru ho raha hai…</div>
         <div class="yq-bar"><i></i></div>
         <div class="yq-err" style="display:none"></div>
-        <div class="yq-row"><button class="btn-sm" id="yqScanClose" type="button">Cancel</button></div>`;
+        <div class="yq-row"><button class="btn-sm" id="yqScanPaste" type="button" title="Link paste karo" aria-label="Link paste karo">🔗 Paste</button><button class="btn-sm" id="yqScanClose" type="button">Cancel</button></div>`;
       $(scanOv, '#yqScanClose').addEventListener('click', stopScan);
+      $(scanOv, '#yqScanPaste').addEventListener('click', async () => {
+        let t = ''; try { t = await navigator.clipboard.readText(); } catch (e) {}
+        if (!/#yq(dl|recv)=/.test(t || '')) t = window.prompt('Link paste karo') || '';
+        if (/#yq(dl|recv)=/.test(t)) { stopScan(); routeLink(t); } else if (t) scanMsg('Ye Quiz GPT ka link nahi hai.', true);
+      });
     }
     scanOv.classList.add('show'); rxState = null; setProgress(0, 0); scanMsg('');
     $(scanOv, '.yq-info').textContent = 'Camera shuru ho raha hai…';
     try {
       detector = null;
       if ('BarcodeDetector' in window) { try { detector = new BarcodeDetector({ formats: ['qr_code'] }); } catch (e) { detector = null; } }
-      if (!detector) await loadLib('scan', () => typeof jsQR === 'function');
+      try { await loadLib('scan', () => typeof jsQR === 'function'); } catch (e) { if (!detector) throw e; }
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('nocam');
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+      try { const tr = stream.getVideoTracks()[0]; if (tr && tr.applyConstraints) tr.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {}); } catch (e) {}
       const v = $(scanOv, 'video'); v.srcObject = stream; await v.play();
-      scanning = true; setProgress(0, 0); tick();
+      scanning = true; tickN = 0; setProgress(0, 0); tick();
+      if (scanHintT) clearTimeout(scanHintT);
+      scanHintT = setTimeout(() => { if (scanning && !rxState) $(scanOv, '.yq-info').textContent = 'QR seedha rakho, brightness badhao'; }, 8000);
     } catch (e) {
       const msg = e && e.message === 'lib' ? 'Scanner library load nahi hui. Internet check karo aur dobara try karo.'
         : e && e.message === 'nocam' ? 'Camera sirf https (secure) page par chalta hai.'
@@ -11186,6 +11238,7 @@ header{box-shadow:none!important}
     err.style.display = 'none'; retry.style.display = 'none'; closeBtn.textContent = 'Cancel';
     $(recvOv, '.yq-warn').textContent = '📵 Screen off mat karo';
     recvOv.classList.add('show'); wakeOn();
+    document.documentElement.classList.remove('yq-boot');
     return { info, fail, arm };
   }
   const kbTxt = (a, b) => Math.round(a / 1024) + (b ? ' / ' + Math.round(b / 1024) : '') + ' KB';
@@ -11204,6 +11257,7 @@ header{box-shadow:none!important}
         ui.arm(30000, 'Download ruk gaya. Dobara try karo.');
       });
       const obj = JSON.parse(text);
+      if (obj && obj.done && !obj.d) throw new Error('gone');
       if (!obj || !obj.d) throw new Error('bad');
       ui.info.textContent = '🔐 Khul raha hai…';
       const bytes = await decBytes(obj.d, key);
@@ -11211,9 +11265,9 @@ header{box-shadow:none!important}
       ui.info.textContent = '✅ Quiz shuru ho raha hai…';
       if (recvTimer) { clearTimeout(recvTimer); recvTimer = null; }
       await sleep(650);
-      finishReceive({ flag: obj.f || 'z', parts: [b64u(bytes)], cleanup: () => setTimeout(closeRecv, 300), onFail: txt => ui.fail(txt) });
+      finishReceive({ flag: obj.f || 'z', parts: [b64u(bytes)], cleanup: () => setTimeout(closeRecv, 300), onFail: txt => ui.fail(txt), onStarted: () => { relay.ack(id).catch(() => {}); } });
     } catch (e) {
-      ui.fail(e && e.message === 'gone' ? 'Link expire ho gaya ya galat hai. Naya QR banwao.'
+      ui.fail(e && e.message === 'gone' ? 'Ye link expire ho gaya ya pehle hi use ho chuka hai. Naya QR banwao.'
         : e && e.name === 'OperationError' ? 'Link adhura hai. Poora QR dobara scan karo.'
         : 'Download nahi hua. Internet check karke dobara try karo.');
     }
@@ -11263,12 +11317,12 @@ header{box-shadow:none!important}
     return false;
   }
   function checkHash() {
-    if (!/yq(dl|recv)=/.test(location.hash || '')) return;
+    if (!/yq(dl|recv)=/.test(location.hash || '')) { document.documentElement.classList.remove('yq-boot'); return; }
     const h = location.hash;
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
     routeLink(h);
   }
-  setTimeout(checkHash, 700);
+  checkHash();
   window.addEventListener('hashchange', checkHash);
 
   const btn = document.getElementById('yqScanBtn');
