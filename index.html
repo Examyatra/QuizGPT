@@ -10595,12 +10595,11 @@ header{box-shadow:none!important}
     peer: ['https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js', 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'],
     scan: ['https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js', 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js']
   };
-  const TOON = cls => `<svg class="yq-toon ${cls}" viewBox="0 0 132 112" aria-hidden="true">
+  const TOON = cls => `<svg class="yq-toon ${cls}" viewBox="0 -80 132 192" aria-hidden="true">
           <ellipse class="shadow" cx="60" cy="106" rx="24" ry="5" fill="#000" opacity=".3"/>
-          <g class="fly f1"><rect x="86" y="40" width="12" height="9" rx="2" fill="#fff" stroke="#22d3ee" stroke-width="1.5"/></g>
-          <g class="fly f2"><rect x="86" y="40" width="12" height="9" rx="2" fill="#fff" stroke="#ff7ab6" stroke-width="1.5"/></g>
-          <g class="fly f3"><rect x="86" y="40" width="12" height="9" rx="2" fill="#fff" stroke="#ffd166" stroke-width="1.5"/></g>
-          <text class="spk" x="16" y="38">✨</text><text class="spk s2" x="104" y="30">⭐</text>
+          <g class="fly f1" style="--dx:-24px"><rect x="54" y="8" width="12" height="9" rx="2" fill="#fff" stroke="#22d3ee" stroke-width="1.5"/></g>
+          <g class="fly f2" style="--dx:0px"><rect x="54" y="8" width="12" height="9" rx="2" fill="#fff" stroke="#ff7ab6" stroke-width="1.5"/></g>
+          <g class="fly f3" style="--dx:24px"><rect x="54" y="8" width="12" height="9" rx="2" fill="#fff" stroke="#ffd166" stroke-width="1.5"/></g>
           <g class="hop">
             <rect x="46" y="88" width="9" height="14" rx="4.5" fill="#4b57d6"/><rect x="65" y="88" width="9" height="14" rx="4.5" fill="#4b57d6"/>
             <g class="arm l"><path d="M36 66 L45 34" stroke="#7c8cff" stroke-width="7" stroke-linecap="round" fill="none"/></g>
@@ -10620,6 +10619,85 @@ header{box-shadow:none!important}
     ov.querySelector('.yq-ring .fg').style.strokeDashoffset = (326.7 * (1 - pct / 100)).toFixed(1);
     ov.querySelector('.yq-pct .n').textContent = Math.round(pct) + '%';
     if (sub !== undefined) ov.querySelector('.yq-pct small').textContent = sub;
+  }
+  /* Cloud relay: the quiz is encrypted in the browser (AES-GCM); the key lives only in the link's # part, so the relay only ever sees ciphertext. */
+  const RELAY = 'https://jsonblob.com/api/jsonBlob';
+  const ICE = { config: { iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }, { urls: 'stun:stun.cloudflare.com:3478' },
+    { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
+    { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turns:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' }
+  ] } };
+  async function encBytes(bytes) {
+    if (!(window.crypto && crypto.subtle)) throw new Error('nocrypto');
+    const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 128 }, true, ['encrypt', 'decrypt']);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes));
+    const raw = new Uint8Array(await crypto.subtle.exportKey('raw', key));
+    const out = new Uint8Array(12 + ct.length); out.set(iv); out.set(ct, 12);
+    return { d: b64u(out), k: b64u(raw) };
+  }
+  async function decBytes(d, k) {
+    const all = unb64u(d);
+    const key = await crypto.subtle.importKey('raw', unb64u(k), 'AES-GCM', false, ['decrypt']);
+    return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: all.slice(0, 12) }, key, all.slice(12)));
+  }
+  /* Relays, tried in order. Each is a free public service with no guarantee, so there are two, and the app falls back to direct/offline modes after that. */
+  const NTFY = 'https://ntfy.sh';
+  function xhr(method, url, body, headers, onProg, timeout) {
+    return new Promise((res, rej) => {
+      const x = new XMLHttpRequest(); x.open(method, url);
+      Object.keys(headers || {}).forEach(h => x.setRequestHeader(h, headers[h]));
+      x.timeout = timeout;
+      x.upload.onprogress = e => { if (e.lengthComputable && onProg) onProg(e.loaded / e.total); };
+      x.onload = () => (x.status >= 200 && x.status < 300) ? res(x) : rej(new Error('relay ' + x.status));
+      x.onerror = () => rej(new Error('net')); x.ontimeout = () => rej(new Error('timeout'));
+      x.send(body);
+    });
+  }
+  const upTimeout = body => 20000 + Math.round(body.length / 20);   // allows ~20 KB/s
+  const RELAYS = [
+    { tag: 'j',
+      async up(body, onProg) {
+        const x = await xhr('POST', RELAY, body, { 'Content-Type': 'application/json', Accept: 'application/json' }, onProg, upTimeout(body));
+        const id = (x.getResponseHeader('Location') || x.getResponseHeader('X-jsonblob') || '').split('/').pop();
+        if (!/^[A-Za-z0-9_-]{8,}$/.test(id)) throw new Error('noid');
+        return id;
+      },
+      async down(id, len, onProg) {
+        const res = await fetch(RELAY + '/' + encodeURIComponent(id), { headers: { Accept: 'application/json' } });
+        if (!res.ok) throw new Error(res.status === 404 ? 'gone' : 'http');
+        return readStream(res, len, onProg);
+      } },
+    { tag: 'n',
+      async up(body, onProg) {
+        const topic = 'yq' + Array.from(crypto.getRandomValues(new Uint8Array(20)), v => (v % 36).toString(36)).join('');
+        const x = await xhr('PUT', NTFY + '/' + topic + '?filename=quiz.txt', body, { 'Content-Type': 'text/plain' }, onProg, upTimeout(body));
+        let ok = false; try { ok = !!JSON.parse(x.responseText).id; } catch (e) {}
+        if (!ok) throw new Error('noid');
+        return topic;
+      },
+      async down(topic, len, onProg) {
+        const r = await fetch(NTFY + '/' + encodeURIComponent(topic) + '/json?poll=1&since=all');
+        if (!r.ok) throw new Error('http');
+        const evs = (await r.text()).split('\n').map(l => { try { return JSON.parse(l); } catch (e) { return null; } }).filter(e => e && e.event === 'message');
+        if (!evs.length) throw new Error('gone');
+        const ev = evs[evs.length - 1];
+        if (ev.attachment && ev.attachment.url) {
+          const f = await fetch(ev.attachment.url);
+          if (!f.ok) throw new Error('gone');
+          return readStream(f, len, onProg);
+        }
+        return ev.message || '';
+      } }
+  ];
+  async function readStream(res, len, onProg) {
+    if (!(res.body && res.body.getReader)) return res.text();
+    const reader = res.body.getReader(), dec = new TextDecoder(); let got = 0, text = '';
+    for (;;) {
+      const { done, value } = await reader.read(); if (done) break;
+      got += value.length; text += dec.decode(value, { stream: true }); onProg(got, len);
+    }
+    return text + dec.decode();
   }
   const loaded = {};
   function loadLib(key, test) {
@@ -10708,6 +10786,26 @@ header{box-shadow:none!important}
   @keyframes yqSpk{0%{opacity:0;transform:translateY(8px)}30%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
   @media (prefers-reduced-motion:reduce){.yq-toon *{animation:none!important}}
   .yq-err{color:var(--coral,#ff6b81);font-size:.85rem;margin-top:10px;line-height:1.4}
+  /* --- clean one-screen layout (no scrolling) + throw/catch animation --- */
+  #yqShareOv .yq-box,#yqRecvOv .yq-box{justify-content:center;gap:clamp(6px,1.6dvh,14px);overflow:hidden auto;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px calc(env(safe-area-inset-bottom,0px) + 12px)}
+  #yqShareOv .yq-qr{width:min(76vw,40dvh,380px)}
+  .yq-ring{width:min(58vw,32dvh,250px);margin:0 auto}
+  .yq-pct .n{font-size:clamp(2rem,6dvh,2.7rem)}
+  .yq-info{margin:0;font-size:.95rem;min-height:1.3em}
+  .yq-toon{width:auto;height:clamp(112px,21dvh,170px);margin:0 auto;flex:none}
+  .yq-warn{margin:0;padding:6px 12px;font-size:.8rem;border-radius:12px}
+  .yq-warn:empty{display:none}
+  .yq-link{display:none}
+  .yq-row{margin-top:0;gap:8px}
+  .yq-act{min-width:46px;height:44px;padding:0 14px;font-size:1.05rem;border-radius:14px}
+  .yq-err{margin:0;font-size:.8rem;max-width:380px;line-height:1.35}
+  .yq-box[data-xfer="1"] .yq-act.yq-ln{display:none}
+  .yq-toon .fly{animation:yqFly 1.7s ease-out infinite}
+  .yq-toon.in .fly{animation-name:yqFlyIn}
+  .yq-toon.in .card{animation:yqCatch .55s ease-in-out infinite;animation-delay:-.18s}
+  @keyframes yqFly{0%{opacity:0;transform:translate(0,14px) rotate(0)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx,0px),-74px) rotate(24deg)}}
+  @keyframes yqFlyIn{0%{opacity:0;transform:translate(var(--dx,0px),-74px) rotate(-24deg)}25%{opacity:1}80%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(0,6px) scale(.6)}}
+  @keyframes yqCatch{0%,70%,100%{transform:rotate(-5deg) scale(1)}80%{transform:rotate(5deg) scale(1.14)}}
   `;
   document.head.appendChild(st);
   function makeOv(id) {
@@ -10744,7 +10842,7 @@ header{box-shadow:none!important}
     const S = shareState; if (!S || !S.frames) return;
     const show = () => {
       drawQr($(shareOv, '.yq-qr'), S.frames[S.i]);
-      $(shareOv, '.yq-info').textContent = 'Frame ' + (S.i + 1) + ' / ' + S.frames.length + (S.frames.length > 1 ? ' · 1 round ≈ ' + Math.ceil(S.frames.length / S.fps) + ' sec' : '');
+      $(shareOv, '.yq-info').textContent = S.frames.length > 1 ? 'Frame ' + (S.i + 1) + '/' + S.frames.length : 'Scan karo';
       S.i = (S.i + 1) % S.frames.length;
     };
     show();
@@ -10768,20 +10866,20 @@ header{box-shadow:none!important}
     const S = shareState; if (!S) return;
     S.xfer = { conn, done: false, q: qCount };
     const box = shareOv.querySelector('.yq-box'); box.dataset.xfer = '1'; box.dataset.xdone = '0';
-    shareErr(''); setRing(shareOv, 0, 'Upload shuru ho raha hai…');
-    $(shareOv, '.yq-info').textContent = '📤 Quiz bheja ja raha hai…';
+    shareErr(''); setRing(shareOv, 0, ''); setWarn('📵 Screen off mat karo');
+    $(shareOv, '.yq-info').textContent = '📤 Bhej raha hoon…';
   }
   function xferProgress(conn, got, n) {
     const S = shareState, x = S && S.xfer; if (!x || x.conn !== conn || x.done || !n) return;
     const pct = got / n * 100;
-    setRing(shareOv, pct, Math.floor(pct / 100 * x.q) + ' / ' + x.q + ' questions upload');
-    $(shareOv, '.yq-info').textContent = '📤 Upload ho raha hai… ' + Math.round(pct) + '%';
+    setRing(shareOv, pct, Math.floor(pct / 100 * x.q) + ' / ' + x.q);
+    $(shareOv, '.yq-info').textContent = '📤 ' + Math.round(pct) + '%';
   }
   function xferDone(conn) {
     const S = shareState, x = S && S.xfer; if (!x || x.conn !== conn) return;
     x.done = true;
-    setRing(shareOv, 100, '✅ ' + x.q + ' / ' + x.q + ' questions pahunch gaye');
-    $(shareOv, '.yq-info').textContent = '✅ Quiz dusre device me pahunch gaya.';
+    setRing(shareOv, 100, x.q + ' / ' + x.q); setWarn('');
+    $(shareOv, '.yq-info').textContent = '✅ Pahunch gaya';
     shareOv.querySelector('.yq-box').dataset.xdone = '1';
     try { navigator.vibrate && navigator.vibrate(80); } catch (e) {}
   }
@@ -10789,19 +10887,60 @@ header{box-shadow:none!important}
     const S = shareState, x = S && S.xfer; if (!x || x.conn !== conn || x.done) return;
     S.xfer = null;
     const box = shareOv.querySelector('.yq-box'); box.dataset.xfer = '0'; box.dataset.xdone = '0';
-    $(shareOv, '.yq-info').textContent = 'Dusre device se scan karo. Jab tak transfer ho, ye screen khuli rakho.';
+    $(shareOv, '.yq-info').textContent = 'Scan karo (screen khuli rakho)'; setWarn('');
     shareErr(msg);
   }
+  function setMode(m) { const b = $(shareOv, '#yqModeBtn'); b.textContent = m === 'link' ? '📴' : '☁️'; b.title = m === 'link' ? 'Bina internet wala QR' : 'Link QR'; b.setAttribute('aria-label', b.title); }
+  function setWarn(txt) { const w = shareOv && shareOv.querySelector('.yq-warn'); if (w) w.textContent = txt; }
   async function startLinkMode() {
     const S = shareState; if (!S) return;
     stopTimer(); shareErr('');
+    if (sharePeer) { try { sharePeer.destroy(); } catch (e) {} sharePeer = null; }
+    const box = shareOv.querySelector('.yq-box'); box.dataset.mode = 'link';
+    box.dataset.xfer = '1'; box.dataset.xdone = '0';
+    setRing(shareOv, 0, ''); $(shareOv, '.yq-info').textContent = '⏳ Taiyar ho raha hai…';
+    setWarn('📵 Screen off mat karo');
+    try {
+      await loadLib('gen', () => typeof qrcode === 'function');
+      if (!S.packed) S.packed = await pack(S.payload);
+      if (shareState !== S) return;
+      const enc = await encBytes(unb64u(S.packed.text));
+      const body = JSON.stringify({ yq: 1, f: S.packed.flag, d: enc.d }), Q = S.payload.q.length;
+      let ref = null;
+      for (let r = 0; r < RELAYS.length && !ref; r++) {
+        if (shareState !== S) return;
+        setRing(shareOv, 0, ''); $(shareOv, '.yq-info').textContent = r ? '📤 Dusra server try ho raha hai…' : '📤 0%';
+        try {
+          const id = await RELAYS[r].up(body, p => { if (shareState === S) { setRing(shareOv, p * 100, Math.floor(p * Q) + ' / ' + Q); $(shareOv, '.yq-info').textContent = '📤 ' + Math.round(p * 100) + '%'; } });
+          ref = RELAYS[r].tag + id;
+        } catch (e) { console.warn('relay ' + RELAYS[r].tag + ' failed:', e && e.message); }
+      }
+      if (shareState !== S) return;
+      if (!ref) throw new Error('allrelays');
+      shareLink = location.href.split('#')[0] + '#yqdl=' + ref + '.' + enc.k + '.' + body.length;
+      box.dataset.xfer = '0';
+      drawQr($(shareOv, '.yq-qr'), shareLink);
+      $(shareOv, '.yq-link').textContent = shareLink;
+      $(shareOv, '.yq-info').textContent = '✅ Scan karo';
+      setWarn('');
+      try { navigator.vibrate && navigator.vibrate(60); } catch (e) {}
+    } catch (e) {
+      if (shareState !== S) return;
+      box.dataset.xfer = '0'; setWarn('');
+      startP2PMode();
+      shareErr('Cloud nahi chala — direct tarika try ho raha hai…');
+    }
+  }
+  async function startP2PMode() {
+    const S = shareState; if (!S) return;
+    stopTimer(); shareErr('');
     shareOv.querySelector('.yq-box').dataset.mode = 'link';
-    $(shareOv, '.yq-info').textContent = 'Link ban raha hai…';
+    $(shareOv, '.yq-info').textContent = '⏳ Link ban raha hai…';
     $(shareOv, '.yq-link').textContent = '';
     try {
       await loadLib('gen', () => typeof qrcode === 'function');
       await loadLib('peer', () => typeof Peer === 'function');
-    } catch (e) { shareErr('Libraries load nahi hui. Internet check karo, ya neeche "Bina internet" wala QR use karo.'); $(shareOv, '.yq-info').textContent = ''; return; }
+    } catch (e) { shareErr('Internet check karo ya 📴 wala QR use karo.'); $(shareOv, '.yq-info').textContent = ''; return; }
     if (!S.packed) S.packed = await pack(S.payload);
     if (shareState !== S) return;
     if (sharePeer) { try { sharePeer.destroy(); } catch (e) {} sharePeer = null; }
@@ -10809,30 +10948,31 @@ header{box-shadow:none!important}
     let tries = 0;
     const make = () => {
       const id = 'yai' + Math.random().toString(36).slice(2, 12);
-      const peer = new Peer(id); sharePeer = peer;
+      const peer = new Peer(id, ICE); sharePeer = peer;
       peer.on('open', () => {
+        shareErr('');
         shareLink = location.href.split('#')[0] + '#yqrecv=' + id;
         drawQr($(shareOv, '.yq-qr'), shareLink);
         $(shareOv, '.yq-link').textContent = shareLink;
-        info.textContent = 'Dusre device se scan karo. Jab tak transfer ho, ye screen khuli rakho.';
+        info.textContent = 'Scan karo (screen khuli rakho)'; setWarn('📵 Screen off mat karo');
       });
       peer.on('connection', conn => {
         const Q = S.payload.q.length;
         conn.on('data', m => {
           if (!m) return;
-          if (m.t === 'hello') { xferBegin(conn, Q); sendAll(conn, S.packed, Q).catch(() => xferFail(conn, 'Bhejte waqt connection toot gaya. Dusre device par dobara scan karo.')); }
+          if (m.t === 'hello') { xferBegin(conn, Q); sendAll(conn, S.packed, Q).catch(() => xferFail(conn, 'Connection toota. Dobara scan karo.')); }
           else if (m.t === 'ack') xferProgress(conn, m.got, m.n);
           else if (m.t === 'ok') xferDone(conn);
         });
-        conn.on('close', () => xferFail(conn, 'Connection beech me toot gaya. Dusre device par dobara scan karo.'));
-        conn.on('error', () => xferFail(conn, 'Connection me dikkat aayi. Dusre device par dobara scan karo.'));
+        conn.on('close', () => xferFail(conn, 'Connection toota. Dobara scan karo.'));
+        conn.on('error', () => xferFail(conn, 'Connection me dikkat. Dobara scan karo.'));
       });
       peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
       peer.on('error', err => {
         if (err && err.type === 'unavailable-id' && tries++ < 3) { try { peer.destroy(); } catch (e) {} make(); return; }
         if (err && err.type === 'peer-unavailable') return;
         info.textContent = '';
-        shareErr('Link server se connect nahi ho paya. Internet check karo, ya neeche "Bina internet" wala QR use karo.');
+        shareErr('Server se connect nahi hua. 📴 wala QR use karo.');
       });
     };
     make();
@@ -10842,7 +10982,7 @@ header{box-shadow:none!important}
     stopTimer(); shareErr('');
     if (sharePeer) { try { sharePeer.destroy(); } catch (e) {} sharePeer = null; }
     shareOv.querySelector('.yq-box').dataset.mode = 'frames';
-    $(shareOv, '.yq-info').textContent = 'QR ban raha hai…';
+    $(shareOv, '.yq-info').textContent = '⏳ QR ban raha hai…'; setWarn('');
     try {
       await loadLib('gen', () => typeof qrcode === 'function');
       if (!S.packed) S.packed = await pack(S.payload);
@@ -10852,7 +10992,7 @@ header{box-shadow:none!important}
       for (let i = 0; i < total; i++) frames.push('YQ1|' + flag + '|' + sid + '|' + i + '|' + total + '|' + text.slice(i * FRAME_CHARS, (i + 1) * FRAME_CHARS));
       S.frames = frames; S.i = 0; S.fps = S.fps || 4;
       runShareTimer();
-    } catch (e) { $(shareOv, '.yq-info').textContent = ''; shareErr('QR nahi ban paya. Internet check karo (QR library ek baar download hoti hai) aur dobara try karo.'); }
+    } catch (e) { $(shareOv, '.yq-info').textContent = ''; shareErr('QR nahi ban paya. Internet check karke dobara try karo.'); }
   }
   window.yqShare = async function (id) {
     const rec = loadSavedQuizzes().find(r => r.id === id);
@@ -10860,33 +11000,25 @@ header{box-shadow:none!important}
     if (!shareOv) {
       shareOv = makeOv('yqShareOv');
       $(shareOv, '.yq-box').innerHTML = `
-        <h3>📲 Quiz share karo</h3>
-        <p class="yq-sub yq-ln">Dusre device me header ka <b>scanner</b> button dabao (ya phone ke camera se scan karo). Quiz seedha ek device se dusre me jayega.</p>
-        <p class="yq-sub yq-fr">Internet ke bina: dusre device ke scanner se ye ghoomte QR scan karo.</p>
         <canvas class="yq-qr"></canvas>
         ${RING}
         <div class="yq-info">…</div>
-        ${TOON("")}
-        <div class="yq-warn">📵 Screen off mat karo! Quiz share ho raha hai…</div>
-        <div class="yq-link yq-ln"></div>
-        <div class="yq-bar yq-fr"><i style="width:100%"></i></div>
-        <div class="yq-row yq-ln">
-          <button class="btn-sm" id="yqCopy" type="button">📋 Link copy</button>
-          <button class="btn-sm" id="yqSendLink" type="button">📤 Link bhejo</button>
-        </div>
-        <div class="yq-row yq-fr">
-          <button class="btn-sm" id="yqSlow" type="button">🐢 Slow</button>
-          <span class="yq-fps modal-note" style="margin:0"></span>
-          <button class="btn-sm" id="yqFast" type="button">🐇 Fast</button>
-        </div>
+        ${TOON('out')}
+        <div class="yq-warn"></div>
+        <div class="yq-link"></div>
         <div class="yq-err" style="display:none"></div>
         <div class="yq-row">
-          <button class="btn-sm primary" id="yqAgainBtn" type="button">📲 Dusre device ko bhejo</button>
-          <button class="btn-sm" id="yqModeBtn" type="button"></button>
-          <button class="btn-sm primary" id="yqShareClose" type="button">Done</button>
-        </div>`;
+          <button class="btn-sm yq-act yq-ln" id="yqCopy" type="button" title="Link copy" aria-label="Link copy">🔗</button>
+          <button class="btn-sm yq-act yq-ln" id="yqSendLink" type="button" title="Link bhejo" aria-label="Link bhejo">📤</button>
+          <button class="btn-sm yq-act yq-fr" id="yqSlow" type="button" aria-label="Slow">🐢</button>
+          <button class="btn-sm yq-act yq-fr" id="yqFast" type="button" aria-label="Fast">🐇</button>
+          <button class="btn-sm yq-act" id="yqModeBtn" type="button"></button>
+          <button class="btn-sm primary yq-act" id="yqAgainBtn" type="button">➕ Aur device</button>
+          <button class="btn-sm primary yq-act" id="yqShareClose" type="button">Done</button>
+        </div>
+        <span class="yq-fps" hidden></span>`;
       $(shareOv, '#yqShareClose').addEventListener('click', stopShare);
-      $(shareOv, '#yqAgainBtn').addEventListener('click', () => { const b = shareOv.querySelector('.yq-box'); b.dataset.xfer = '0'; b.dataset.xdone = '0'; if (shareState) shareState.xfer = null; $(shareOv, '.yq-info').textContent = 'Dusre device se scan karo. Jab tak transfer ho, ye screen khuli rakho.'; });
+      $(shareOv, '#yqAgainBtn').addEventListener('click', () => { const b = shareOv.querySelector('.yq-box'); b.dataset.xfer = '0'; b.dataset.xdone = '0'; if (shareState) shareState.xfer = null; $(shareOv, '.yq-info').textContent = 'Scan karo (screen khuli rakho)'; });
       shareOv.addEventListener('click', e => { if (e.target === shareOv) stopShare(); });
       $(shareOv, '#yqSlow').addEventListener('click', () => { if (shareState && shareState.frames && shareState.fps > 1) { shareState.fps--; runShareTimer(); } });
       $(shareOv, '#yqFast').addEventListener('click', () => { if (shareState && shareState.frames && shareState.fps < 10) { shareState.fps++; runShareTimer(); } });
@@ -10900,10 +11032,10 @@ header{box-shadow:none!important}
       $(shareOv, '#yqModeBtn').addEventListener('click', () => {
         const link = shareOv.querySelector('.yq-box').dataset.mode === 'link';
         if (link) startFramesMode(); else startLinkMode();
-        $(shareOv, '#yqModeBtn').textContent = link ? '🔗 Link QR' : '📴 Bina internet';
+        setMode(link ? 'frames' : 'link');
       });
     }
-    $(shareOv, '#yqModeBtn').textContent = '📴 Bina internet';
+    setMode('link');
     shareErr(''); shareLink = '';
     shareOv.classList.add('show'); wakeOn();
     shareState = { payload: { v: 1, o: rec.id, t: rec.title, q: rec.quizData, a: rec.userAnswers, c: rec.currentQ || 0, e: rec.elapsed || 0, s: !!rec.submitted, n: rec.attempts || 1 }, packed: null, frames: null, i: 0, fps: 4 };
@@ -10956,8 +11088,7 @@ header{box-shadow:none!important}
   }
   function onText(txt) {
     if (!txt) return;
-    const lm = /#yqrecv=([A-Za-z0-9_-]+)/.exec(txt);
-    if (lm && scanning) { stopScan(); receiveFromPeer(lm[1]); return; }
+    if (scanning && /#yq(dl|recv)=/.test(txt)) { stopScan(); routeLink(txt); return; }
     if (txt.slice(0, 4) !== 'YQ1|') return;
     const p = txt.split('|'); if (p.length < 6) return;
     const flag = p[1], sid = p[2], idx = +p[3], total = +p[4], data = p.slice(5).join('|');
@@ -11018,80 +11149,124 @@ header{box-shadow:none!important}
       if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
     }
   }
-  /* ---------- RECEIVE over the link (direct device-to-device) ---------- */
-  let recvOv, recvPeer = null, recvTimer = null, recvSid = null;
+  /* ---------- RECEIVE (cloud link or direct link) ---------- */
+  let recvOv, recvPeer = null, recvTimer = null, recvRetry = null;
   function closeRecv() {
     if (recvTimer) { clearTimeout(recvTimer); recvTimer = null; }
     if (recvPeer) { try { recvPeer.destroy(); } catch (e) {} recvPeer = null; }
     wakeOff();
     if (recvOv) recvOv.classList.remove('show');
   }
-  async function receiveFromPeer(sid) {
-    recvSid = sid;
+  function recvPrep(retryFn) {
     if (!recvOv) {
       recvOv = makeOv('yqRecvOv');
       $(recvOv, '.yq-box').innerHTML = `
-        <h3>📥 Quiz aa raha hai</h3>
         ${RING}
         <div class="yq-info">…</div>
         ${TOON('in')}
-        <div class="yq-warn">📵 Screen off mat karo! Quiz download ho raha hai…</div>
+        <div class="yq-warn">📵 Screen off mat karo</div>
         <div class="yq-err" style="display:none"></div>
         <div class="yq-row">
           <button class="btn-sm primary" id="yqRecvRetry" type="button" style="display:none">🔄 Dobara try</button>
           <button class="btn-sm" id="yqRecvClose" type="button">Cancel</button>
         </div>`;
       $(recvOv, '#yqRecvClose').addEventListener('click', closeRecv);
-      $(recvOv, '#yqRecvRetry').addEventListener('click', () => receiveFromPeer(recvSid));
+      $(recvOv, '#yqRecvRetry').addEventListener('click', () => recvRetry && recvRetry());
     }
+    recvRetry = retryFn;
     const info = $(recvOv, '.yq-info'), err = $(recvOv, '.yq-err'), retry = $(recvOv, '#yqRecvRetry'), closeBtn = $(recvOv, '#yqRecvClose');
-    const arm = (ms, msg) => { if (recvTimer) clearTimeout(recvTimer); recvTimer = setTimeout(() => fail(msg), ms); };
     const fail = txt => {
       if (recvTimer) { clearTimeout(recvTimer); recvTimer = null; }
-      info.textContent = ''; err.style.display = ''; err.textContent = txt; retry.style.display = ''; closeBtn.textContent = 'Band karo';
+      info.textContent = ''; err.style.display = ''; err.textContent = txt; retry.style.display = ''; closeBtn.textContent = 'Band karo'; $(recvOv, '.yq-warn').textContent = '';
       if (recvPeer) { try { recvPeer.destroy(); } catch (e) {} recvPeer = null; }
     };
+    const arm = (ms, msg) => { if (recvTimer) clearTimeout(recvTimer); recvTimer = setTimeout(() => fail(msg), ms); };
+    if (recvTimer) { clearTimeout(recvTimer); recvTimer = null; }
     if (recvPeer) { try { recvPeer.destroy(); } catch (e) {} recvPeer = null; }
     err.style.display = 'none'; retry.style.display = 'none'; closeBtn.textContent = 'Cancel';
-    setRing(recvOv, 0, 'Connect ho raha hai…'); info.textContent = '🔗 Dusre device se jud raha hoon…';
+    $(recvOv, '.yq-warn').textContent = '📵 Screen off mat karo';
     recvOv.classList.add('show'); wakeOn();
-    try { await loadLib('peer', () => typeof Peer === 'function'); } catch (e) { fail('Connection library load nahi hui. Internet check karo.'); return; }
+    return { info, fail, arm };
+  }
+  const kbTxt = (a, b) => Math.round(a / 1024) + (b ? ' / ' + Math.round(b / 1024) : '') + ' KB';
+
+  /* cloud link: #yqdl=<relay tag + id>.<key>.<bytes> */
+  async function receiveFromRelay(spec) {
+    const ui = recvPrep(() => receiveFromRelay(spec)), parts = spec.split('.');
+    const tag = parts[0].charAt(0), id = parts[0].slice(1), key = parts[1], len = +parts[2] || 0;
+    const relay = RELAYS.find(r => r.tag === tag) || RELAYS[0];
+    setRing(recvOv, 0, ''); ui.info.textContent = '⏳ Connect ho raha hai…';
+    ui.arm(60000, 'Bahut der lag rahi hai. Internet check karke dobara try karo.');
+    try {
+      const text = await relay.down(id, len, (got, total) => {
+        const pct = total ? Math.min(99, got / total * 100) : 50;
+        setRing(recvOv, pct, kbTxt(got, total)); ui.info.textContent = '📥 ' + Math.round(pct) + '%';
+        ui.arm(30000, 'Download ruk gaya. Dobara try karo.');
+      });
+      const obj = JSON.parse(text);
+      if (!obj || !obj.d) throw new Error('bad');
+      ui.info.textContent = '🔐 Khul raha hai…';
+      const bytes = await decBytes(obj.d, key);
+      setRing(recvOv, 100, ''); $(recvOv, '.yq-warn').textContent = '';
+      ui.info.textContent = '✅ Quiz shuru ho raha hai…';
+      if (recvTimer) { clearTimeout(recvTimer); recvTimer = null; }
+      await sleep(650);
+      finishReceive({ flag: obj.f || 'z', parts: [b64u(bytes)], cleanup: () => setTimeout(closeRecv, 300), onFail: txt => ui.fail(txt) });
+    } catch (e) {
+      ui.fail(e && e.message === 'gone' ? 'Link expire ho gaya ya galat hai. Naya QR banwao.'
+        : e && e.name === 'OperationError' ? 'Link adhura hai. Poora QR dobara scan karo.'
+        : 'Download nahi hua. Internet check karke dobara try karo.');
+    }
+  }
+
+  /* direct link: #yqrecv=<peerId> */
+  async function receiveFromPeer(sid) {
+    const ui = recvPrep(() => receiveFromPeer(sid)), info = ui.info, fail = ui.fail, arm = ui.arm;
+    setRing(recvOv, 0, ''); info.textContent = '⏳ Connect ho raha hai…';
+    try { await loadLib('peer', () => typeof Peer === 'function'); } catch (e) { fail('Internet check karke dobara try karo.'); return; }
     let flag = 'z', n = 0, len = 0, Q = 0, parts = [], got = 0, chars = 0, done = false;
-    arm(25000, 'Connect nahi ho paya. Dusre device par Share screen khuli honi chahiye, aur dono device online hone chahiye.');
-    const peer = new Peer(); recvPeer = peer;
-    peer.on('error', e => fail(e && e.type === 'peer-unavailable' ? 'Ye link ab kaam nahi kar raha. Dusre device par Share screen khuli rakho (ya naya QR banao).' : 'Connection me dikkat aayi. Internet check karo aur dobara try karo.'));
+    arm(25000, 'Connect nahi hua. Sender ki Share screen khuli rakho.');
+    const peer = new Peer(undefined, ICE); recvPeer = peer;
+    peer.on('error', e => fail(e && e.type === 'peer-unavailable' ? 'Link kaam nahi kar raha. Sender ki Share screen khuli rakho.' : 'Connection me dikkat. Dobara try karo.'));
     peer.on('open', () => {
       const conn = peer.connect(sid, { serialization: 'json', reliable: true });
-      conn.on('open', () => { info.textContent = '✅ Juda gaya — quiz aa raha hai…'; setRing(recvOv, 0, 'Shuru ho raha hai…'); conn.send({ t: 'hello' }); arm(20000, 'Sender se data nahi aaya. Dobara try karo.'); });
-      conn.on('error', () => { if (!done) fail('Connection toot gaya. Dobara try karo.'); });
-      conn.on('close', () => { if (!done) fail('Connection beech me toot gaya. Dobara try karo.'); });
+      conn.on('open', () => { info.textContent = '📥 0%'; setRing(recvOv, 0, ''); conn.send({ t: 'hello' }); arm(20000, 'Data nahi aaya. Dobara try karo.'); });
+      conn.on('error', () => { if (!done) fail('Direct connection nahi bana. Sender se 📴 wala QR chalwao.'); });
+      conn.on('close', () => { if (!done) fail('Connection toota. Dobara try karo.'); });
       conn.on('data', async m => {
         if (!m || done) return;
         if (m.t === 'meta') { flag = m.flag; n = m.n; len = m.len || 0; Q = m.q || 0; parts = new Array(n).fill(null); }
         else if (m.t === 'c' && parts.length) {
           if (parts[m.i] === null) { parts[m.i] = m.d; got++; chars += m.d.length; }
           const pct = got / n * 100;
-          setRing(recvOv, pct, (Q ? Math.floor(pct / 100 * Q) + ' / ' + Q + ' questions · ' : '') + Math.round(chars / 1024) + (len ? ' / ' + Math.round(len / 1024) : '') + ' KB');
-          info.textContent = '📥 Download ho raha hai… ' + Math.round(pct) + '%';
+          setRing(recvOv, pct, Q ? Math.floor(pct / 100 * Q) + ' / ' + Q : kbTxt(chars, len));
+          info.textContent = '📥 ' + Math.round(pct) + '%';
           try { conn.send({ t: 'ack', got, n }); } catch (e) {}
           arm(20000, 'Transfer ruk gaya. Dobara try karo.');
         } else if (m.t === 'end') {
-          if (got !== n || !n) { fail('Data poora nahi aaya. Dobara try karo.'); return; }
+          if (got !== n || !n) { fail('Data adhura aaya. Dobara try karo.'); return; }
           done = true; if (recvTimer) { clearTimeout(recvTimer); recvTimer = null; }
           try { conn.send({ t: 'ok' }); } catch (e) {}
-          setRing(recvOv, 100, (Q ? Q + ' / ' + Q + ' questions' : 'Poora quiz') + ' aa gaye');
-          info.textContent = '✅ Sab aa gaya — quiz shuru ho raha hai…';
+          setRing(recvOv, 100, Q ? Q + ' / ' + Q : ''); $(recvOv, '.yq-warn').textContent = '';
+          info.textContent = '✅ Quiz shuru ho raha hai…';
           await sleep(650);
           finishReceive({ flag, parts, cleanup: () => setTimeout(closeRecv, 300), onFail: txt => { done = false; fail(txt); } });
         }
       });
     });
   }
+  function routeLink(txt) {
+    let m = /#yqdl=([A-Za-z0-9_.-]+)/.exec(txt || '');
+    if (m) { receiveFromRelay(m[1]); return true; }
+    m = /#yqrecv=([A-Za-z0-9_-]+)/.exec(txt || '');
+    if (m) { receiveFromPeer(m[1]); return true; }
+    return false;
+  }
   function checkHash() {
-    const m = /yqrecv=([A-Za-z0-9_-]+)/.exec(location.hash || '');
-    if (!m) return;
+    if (!/yq(dl|recv)=/.test(location.hash || '')) return;
+    const h = location.hash;
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
-    receiveFromPeer(m[1]);
+    routeLink(h);
   }
   setTimeout(checkHash, 700);
   window.addEventListener('hashchange', checkHash);
