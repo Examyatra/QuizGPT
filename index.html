@@ -7421,13 +7421,13 @@ const MOODS = [
   { id: 'a_raagam', ico: '🎶', name: 'Raagam', hint: 'AIR · classical', grp: 1, sec: 'AIR · National', url: 'fm:a_raagam', q: 'raagam', re: /\braagam\b|\braga?m\b/i, direct: ['https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudioragam/hlspbaudioragam_Auto.m3u8'] },
   { id: 'a_vbsdel', ico: '🎙️', name: 'VBS Delhi', hint: 'Vividh Bharati · Delhi', grp: 1, sec: 'AIR · National', url: 'fm:a_vbsdel', q: 'vbs delhi', re: /vbs.*delhi|vividh.*delhi/i, direct: ['https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio238/hlspbaudio238_Auto.m3u8'] },
   { id: 'h_gold',    ico: '🥇', name: 'AIR FM Gold',     hint: 'Delhi · 100.1 FM', grp: 1, sec: 'AIR · National', url: 'fm:gold',    q: 'fm gold',        re: /\bfm ?gold\b|\bair ?gold\b/i, direct: ['https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio005/hlspbaudio005_Auto.m3u8'] },
-  { id: 'h_air_lko', ico: '📡', name: 'AIR Lucknow',      hint: 'Akashvani · 101.6 FM', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:airlko',  q: 'air lucknow', re: /\bair\b.*lucknow|lucknow.*\bair\b|akashvani.*lucknow|lucknow.*akashvani/i, direct: [AIR_W('75c01e54cb46ad29')] },
+  { id: 'h_air_lko', ico: '📡', name: 'AIR Lucknow',      hint: 'Akashvani · 101.6 FM', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:airlko',  q: 'air lucknow', re: /^(?!.*(rainbow|vividh|vbs)).*(\bair\b.*lucknow|lucknow.*\bair\b|akashvani.*lucknow|lucknow.*akashvani)/i, direct: [AIR_W('75c01e54cb46ad29')] },
   { id: 'h_air_vns', ico: '📡', name: 'AIR Varanasi',     hint: 'Akashvani · 100.6 FM', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:airvns',  q: 'air varanasi', re: /\bair\b.*varanasi|varanasi.*\bair\b|akashvani.*varanasi|varanasi.*akashvani|akashvani.*banaras|banaras.*akashvani/i, direct: [AIR_W('43290b0b741fd08f')] },
   { id: 'a_rb_lko', ico: '🌈', name: 'FM Rainbow Lucknow', hint: 'Akashvani · Lucknow', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_rb_lko', q: 'rainbow lucknow', re: /rainbow.*lucknow|lucknow.*rainbow/i, direct: [AIR_W('81c465a355a1ea65')] },
-  { id: 'a_kanpur', ico: '📡', name: 'AIR Kanpur', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_kanpur', q: 'air kanpur', re: /\bair\b.*kanpur|akashvani.*kanpur/i, direct: [AIR_W('278ca8613f27411e')] },
+  { id: 'a_kanpur', ico: '📡', name: 'AIR Kanpur', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_kanpur', q: 'air kanpur', re: /^(?!.*(rainbow|vividh|vbs)).*(\bair\b.*kanpur|akashvani.*kanpur)/i, direct: [AIR_W('278ca8613f27411e')] },
   { id: 'a_rb_knp', ico: '🌈', name: 'FM Rainbow Kanpur', hint: 'Akashvani · Kanpur', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_rb_knp', q: 'rainbow kanpur', re: /rainbow.*kanpur|kanpur.*rainbow/i, direct: [AIR_W('c0df5324304ad39e')] },
   { id: 'a_prayag', ico: '📡', name: 'AIR Prayagraj', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_prayag', q: 'air prayagraj', re: /\bair\b.*(prayagraj|allahabad)|akashvani.*(prayagraj|allahabad)/i, direct: [AIR_W('7427fdb9d3f69c5d')] },
-  { id: 'a_agra', ico: '📡', name: 'AIR Agra', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_agra', q: 'air agra', re: /\bair\b.*agra|akashvani.*agra/i, direct: [AIR_W('94e6de05aa9b04b0')] },
+  { id: 'a_agra', ico: '📡', name: 'AIR Agra', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_agra', q: 'air agra', re: /(\bair\b.*\bagra\b|akashvani.*\bagra\b)/i, direct: [AIR_W('94e6de05aa9b04b0')] },
   { id: 'a_mathura', ico: '📡', name: 'AIR Mathura', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_mathura', q: 'air mathura', re: /\bair\b.*mathura|akashvani.*mathura/i, direct: [AIR_W('5e42265becd8a816')] },
   { id: 'a_bareilly', ico: '📡', name: 'AIR Bareilly', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_bareilly', q: 'air bareilly', re: /\bair\b.*bareilly|akashvani.*bareilly/i, direct: [AIR_W('e323812d96d7881d')] },
   { id: 'a_ayodhya', ico: '📡', name: 'AIR Ayodhya', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_ayodhya', q: 'air ayodhya', re: /\bair\b.*ayodhya|akashvani.*ayodhya/i, direct: [AIR_W('750c49044bde8cfe')] },
@@ -7435,11 +7435,11 @@ const MOODS = [
   { id: 'a_jhansi', ico: '📡', name: 'AIR Jhansi', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_jhansi', q: 'air jhansi', re: /\bair\b.*jhansi|akashvani.*jhansi/i, direct: [AIR_W('f8f027390a964141')] },
   { id: 'a_najib', ico: '📡', name: 'AIR Najibabad', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_najib', q: 'air najibabad', re: /\bair\b.*najibabad|akashvani.*najibabad/i, direct: [AIR_W('4aaa85cab056e9c1')] },
   { id: 'a_rampur', ico: '📡', name: 'AIR Rampur', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_rampur', q: 'air rampur', re: /\bair\b.*rampur|akashvani.*rampur/i, direct: [AIR_W('bc3b1ad27f1e2fda')] },
-  { id: 'a_obra', ico: '📡', name: 'AIR Obra', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_obra', q: 'air obra', re: /\bair\b.*obra|akashvani.*obra/i, direct: ['https://air.pc.cdn.bitgravity.com/air/live/pbaudio235/playlist.m3u8'] },
+  { id: 'a_obra', ico: '📡', name: 'AIR Obra', hint: 'Akashvani', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_obra', q: 'air obra', re: /(\bair\b.*\bobra\b|akashvani.*\bobra\b)/i, direct: ['https://air.pc.cdn.bitgravity.com/air/live/pbaudio235/playlist.m3u8'] },
   { id: 'a_kumbh', ico: '🪔', name: 'KumbhVani', hint: 'Akashvani · UP', grp: 1, sec: 'AIR · Uttar Pradesh', url: 'fm:a_kumbh', q: 'kumbhvani', re: /kumbh ?vani/i, direct: ['https://air.pc.cdn.bitgravity.com/air/live/pbaudio300/playlist.m3u8'] },
   { id: 'h_mirchi',  ico: '🔥', name: 'Radio Mirchi',    hint: '98.3 FM',        grp: 1, sec: 'Private FM', url: 'fm:mirchi',  q: 'radio mirchi',   re: /\bmirchi\b(?!.*(love|top|90|retro|indie|unplugged|ghazal|mahfil|edge|filmy|meethi))/i, fb: ['https://radioindia.net/radio/mirchi98/icecast.audio'] },
   { id: 'h_red',     ico: '🔴', name: 'Red FM',          hint: '93.5 FM',        grp: 1, sec: 'Private FM', url: 'fm:red',     q: 'red fm',         re: /\bred ?fm\b|\bred 93/i },
-  { id: 'h_city',    ico: '📻', name: 'Radio City',      hint: '91.1 FM',        grp: 1, sec: 'Private FM', url: 'fm:city',    q: 'radio city',     re: /\bradio ?city\b(?!.*(ishq|lata|asha|love|bhakti|devotional|kishore|rafi))/i, fb: ['https://prclive1.listenon.in/Hindi'] },
+  { id: 'h_city',    ico: '📻', name: 'Radio City',      hint: '91.1 FM',        grp: 1, sec: 'Private FM', url: 'fm:city',    q: 'radio city',     re: /\bradio ?city\b(?!.*(ishq|lata|asha|love|bhakti|devotional|kishore|rafi|classic|retro|old|gold))/i, fb: ['https://prclive1.listenon.in/Hindi'] },
   { id: 'h_big',     ico: '🎤', name: 'Big FM',          hint: '94.3 Lucknow / 95 Varanasi', grp: 1, sec: 'Private FM', url: 'fm:big',     q: 'big fm',         re: /\bbig ?fm\b|\bbig 92/i },
   { id: 'h_fever',   ico: '🌡️', name: 'Fever FM',        hint: '104 FM',         grp: 1, sec: 'Private FM', url: 'fm:fever',   q: 'fever 104',      re: /\bfever\b/i },
   { id: 'h_mlove',   ico: '💗', name: 'Mirchi Love',     hint: 'Hindi love songs', grp: 1, sec: 'Private FM', url: 'fm:mlove', q: 'mirchi love',    re: /mirchi ?love/i },
@@ -7448,7 +7448,7 @@ const MOODS = [
   { id: 'h_ishq', ico: '💞', name: 'Ishq FM', hint: '104.8 FM · romantic', grp: 1, sec: 'Private FM', url: 'fm:ishq', q: 'ishq', re: /\bishq\b/i },
   { id: 'h_hit95', ico: '🎧', name: 'Hit 95 FM', hint: '95 FM · Hindi hits', grp: 1, sec: 'Private FM', url: 'fm:hit95', q: 'hit 95', re: /\bhit ?95\b/i },
   { id: 'h_rone', ico: '1️⃣', name: 'Radio One', hint: '94.3 FM', grp: 1, sec: 'Private FM', url: 'fm:rone', q: 'radio one', re: /\bradio ?one\b/i },
-  { id: 'h_hnow', ico: '🔊', name: 'Hungama Now', hint: 'Bollywood hits', grp: 1, sec: 'Private FM', url: 'fm:hnow', q: 'hungama', re: /hungama.*(now|hot|bollywood)/i, fb: ['https://radioindia.net/radio/hungamanow/icecast.audio'] },
+  { id: 'h_hnow', ico: '🔊', name: 'Hungama Now', hint: 'Bollywood hits', grp: 1, sec: 'Private FM', url: 'fm:hnow', q: 'hungama', re: /hungama(?!.*(evergreen|60|retro|old|classic)).*(now|hot|bollywood)/i, fb: ['https://radioindia.net/radio/hungamanow/icecast.audio'] },
   { id: 'h_nonstop', ico: '🔁', name: 'Non Stop Hindi', hint: '24x7 Hindi songs', grp: 1, sec: 'Private FM', url: 'fm:nonstop', q: 'non stop hindi', re: /non ?stop.*hindi/i },
   /* ---- online: OLD Hindi songs (names are searched live on radio-browser.info = free, no API key; if a channel is off-air the app tries other old-song stations, not random FM) ---- */
   { id: 'o_any', ico: '🎞️', name: 'Old Hindi Mix', hint: 'auto: best working old-song station', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_any', q: 'retro bollywood', re: /retro|old|evergreen|purane|gold|classic|kishor|rafi|lata|b&w/i, old: true, anyCountry: true },
@@ -7967,9 +7967,11 @@ function fmBuild(key, rows, fb, fbName, max, pre) {
   rows.forEach(x => add(x.url_resolved, x.name, x.stationuuid));
   (fb || []).forEach(u => add(u, fbName));
   let out = list;
-  if (location.protocol === 'https:') {          // http streams are blocked as mixed content on an https page: keep them only as a last resort
-    const sec = list.filter(c => /^https:/i.test(c.url));
-    out = sec.length >= 5 ? sec : sec.concat(list.filter(c => !/^https:/i.test(c.url)));
+  if (location.protocol === 'https:') {          // http streams are blocked as mixed content on an https page -> try their https twin (most hosts serve both) right after the real https ones
+    const sec = list.filter(c => /^https:/i.test(c.url)), seen2 = new Set(sec.map(c => c.url));
+    const twins = [];
+    list.filter(c => !/^https:/i.test(c.url)).forEach(c => { const u = c.url.replace(/^http:/i, 'https:'); if (!seen2.has(u)) { seen2.add(u); twins.push({ url: u, name: c.name, id: c.id }); } });
+    out = sec.concat(twins);
   }
   return out.slice(0, max);
 }
@@ -8001,7 +8003,7 @@ async function fmChannelCandidates(m) {
   const [pool0, rg] = await Promise.all([fmTO(m.old ? fmOldPool() : fmPool(), 15000, []), fmTO(fmGarden(m), 12000, [])]);
   const pool = m.old ? pool0.concat((await fmTO(fmPool(), 15000, [])).filter(x => !pool0.some(y => y.url_resolved === x.url_resolved))) : pool0;
   let rows = pool.filter(x => m.re.test(x.name || ''));
-  if (rows.length < 2 && m.q) {
+  if (rows.length < 6 && m.q) {
     const extra = (await fmTO(fmFetch('/json/stations/search?name=' + encodeURIComponent(m.q) + (m.anyCountry ? '' : '&countrycode=IN') + '&hidebroken=true&order=clickcount&reverse=true&limit=40'), 12000, [])).filter(x => fmGood(x) && m.re.test(x.name || ''));
     extra.forEach(x => { if (!rows.some(r => r.url_resolved === x.url_resolved)) rows.push(x); });
     rows = rows.map((x, i) => [x, i]).sort((a, b) => fmKey(a[0]) - fmKey(b[0]) || a[1] - b[1]).map(a => a[0]);
@@ -8034,15 +8036,23 @@ function fmRace(cands, token) {                 // try several stations at once;
         over = true; clearTimeout(tm); fmProbes.delete(a); running--; finish({ audio: a, cand: c });
       };
       a.onerror = a.onended = () => { drop(); launch(); };
-      tm = setTimeout(() => { drop(); launch(); }, c.to || 8000);
+      const armTimer = () => { clearTimeout(tm); tm = setTimeout(() => { drop(); launch(); }, c.to || 10000); };
+      armTimer();
       const startPlay = () => { const p = a.play(); if (p && p.catch) p.catch(err => { if (over) return; drop(); if (err && err.name === 'NotAllowedError') finish({ blocked: true }); else launch(); }); };
       if (fmIsHls(c.url, c) && !FM_HLS_OK) {
+        clearTimeout(tm); tm = setTimeout(() => { drop(); launch(); }, 25000);   // hls.js download gets its own time...
         fmHlsLib().then(H => {
           if (over) return;
           if (!H) { drop(); launch(); return; }
+          armTimer();                                                          // ...the stream's own 10-12 s starts only after the player is ready
           try {
             const h = new H({ enableWorker: true, lowLatencyMode: false }); a._hls = h;
-            h.on(H.Events.ERROR, (ev, d) => { if (d && d.fatal && !over) { drop(); launch(); } });
+            let hRetry = 0;
+            h.on(H.Events.ERROR, (ev, d) => {
+              if (!d || !d.fatal || over) return;
+              if (hRetry++ < 1 && d.type === H.ErrorTypes.MEDIA_ERROR) { try { h.recoverMediaError(); return; } catch (e) {} }
+              drop(); launch();
+            });
             h.loadSource(c.url); h.attachMedia(a); startPlay();
           } catch (e) { drop(); launch(); }
         });
@@ -8076,7 +8086,7 @@ function streamStart(key, onlyUrl) {
       if (token !== streamToken) { if (r && r.audio) fmKill(r.audio); return; }
     }
     if (!r && key !== 'fm:auto' && !onlyUrl) {    // first-time tap on an off-air channel -> try any other live Hindi FM so something plays; a reconnect (onlyUrl set) never does this
-      streamName = 'no working stream for this channel, trying other live FM…'; paintStatus();
+      streamName = 'is channel ka stream abhi band hai, dusra live FM try ho raha hai…'; paintStatus();
       const tried = new Set(cands.map(c => c.url));
       cands = (await (m.old ? fmOldCandidates() : fmAutoCandidates())).filter(c => !tried.has(c.url));
       if (token !== streamToken) return;
@@ -8764,10 +8774,10 @@ header{box-shadow:none!important}
   // Short term (1-5 words) -> "What is ...?" prompt; longer text -> "Explain this sentence" prompt. Works for any subject.
   const googleUrl = t => {
     const n = t.trim().split(/\s+/).length;
-    const style = 'Explain in very simple English or Hinglish, as if I am a complete beginner studying this for the first time and know nothing about it. Use easy everyday words, no jargon. Answer in this format: 1) meaning in one simple line, 2) 3-4 short key points, 3) one easy real-life example. Keep it short and clear.';
+    const style = 'Mai ek student hu, is topic ka mujhe pehle se koi gyaan nahi hai. Mujhe ise bilkul shuruaat se samjhao, jaise ek achha dost ya teacher pehli baar samjhata hai. Jawab sirf Hinglish me do (Hindi + English mix, Roman script me), simple aur friendly bhasha me, bhaari ya formal English nahi. Sabse zaroori: concept 100% sahi hona chahiye, simple karne ke chakkar me kuch galat ya adhura mat batao. Is format me likho: 1) Matlab: 2-3 chhoti lines me poori baat saaf samjhao (kya hai, kaise kaam karta hai / kyun hota hai), taaki bina kuch jaane bhi samajh aa jaye. Koi mushkil word aaye to uska matlab bracket me likh do. 2) Zaroori points: 3-4 bullets, har bullet 1 line. 3) Example: roz ki zindagi ka 1 aasan example, 1-2 lines. 4) Yaad rakho: exam ke liye 1 line ka trick ya common galti. Pure jawab me lambe paragraph ya lambi headings mat likho.';
     const q = n <= 5
-      ? 'What is "' + t + '"? ' + style
-      : 'Explain this statement: "' + t + '". ' + style + ' Also say what it means in simple words.';
+      ? '"' + t + '" kya hai? ' + style
+      : 'Is statement ka matlab samjhao: "' + t + '". ' + style;
     return 'https://www.google.com/search?q=' + encodeURIComponent(q);
   };
   const ov = el('div'); ov.id = 'dictOv';
