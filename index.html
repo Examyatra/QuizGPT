@@ -7418,7 +7418,6 @@ const MOODS = [
      seed = known stream links tried first (https only on https pages). */
   /* ---- online: AIR / Akashvani official streams (list from github.com/codito/akashvani). `direct` = official link tried FIRST; q/re = fallback search only. ---- */
   { id: 'h_vividh',  ico: '🎙️', name: 'Vividh Bharati',  hint: 'AIR · National', grp: 1, sec: 'AIR · National', url: 'fm:vividh',  q: 'vividh bharati', re: /vividh|विविध/i, reHindi: /vividh bharati national|vividh bharati hindi|\bdelhi\b.*vividh|vividh.*\bdelhi\b/i, reAvoid: /bengaluru|bangalore|kannada|tamil|telugu|marathi|gujarati|bhopal|chennai/i, direct: [AIR_W('146ed6ec6dea5a24')] },
-  { id: 'a_news', ico: '📰', name: 'Live News 24x7', hint: 'AIR News · Hindi/English', grp: 1, sec: 'AIR · National', url: 'fm:a_news', q: 'live news 24x7', re: /live ?news ?24|air news/i, direct: ['https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio002/hlspbaudio002_Auto.m3u8'] },
   { id: 'a_raagam', ico: '🎶', name: 'Raagam', hint: 'AIR · classical', grp: 1, sec: 'AIR · National', url: 'fm:a_raagam', q: 'raagam', re: /\braagam\b|\braga?m\b/i, direct: ['https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudioragam/hlspbaudioragam_Auto.m3u8'] },
   { id: 'a_vbsdel', ico: '🎙️', name: 'VBS Delhi', hint: 'Vividh Bharati · Delhi', grp: 1, sec: 'AIR · National', url: 'fm:a_vbsdel', q: 'vbs delhi', re: /vbs.*delhi|vividh.*delhi/i, direct: ['https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio238/hlspbaudio238_Auto.m3u8'] },
   { id: 'h_gold',    ico: '🥇', name: 'AIR FM Gold',     hint: 'Delhi · 100.1 FM', grp: 1, sec: 'AIR · National', url: 'fm:gold',    q: 'fm gold',        re: /\bfm ?gold\b|\bair ?gold\b/i, direct: ['https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio005/hlspbaudio005_Auto.m3u8'] },
@@ -7446,6 +7445,26 @@ const MOODS = [
   { id: 'h_mlove',   ico: '💗', name: 'Mirchi Love',     hint: 'Hindi love songs', grp: 1, sec: 'Private FM', url: 'fm:mlove', q: 'mirchi love',    re: /mirchi ?love/i },
   { id: 'h_m90',     ico: '📼', name: 'Mirchi 90s',      hint: 'old is gold',    grp: 1, sec: 'Private FM', url: 'fm:m90',     q: 'mirchi 90',      re: /mirchi ?90|90.?s ?mirchi/i },
   { id: 'h_mtop',    ico: '🏆', name: 'Mirchi Top 20',   hint: 'hit songs',      grp: 1, sec: 'Private FM', url: 'fm:mtop',    q: 'mirchi top 20',  re: /mirchi ?top/i },
+  { id: 'h_ishq', ico: '💞', name: 'Ishq FM', hint: '104.8 FM · romantic', grp: 1, sec: 'Private FM', url: 'fm:ishq', q: 'ishq', re: /\bishq\b/i },
+  { id: 'h_hit95', ico: '🎧', name: 'Hit 95 FM', hint: '95 FM · Hindi hits', grp: 1, sec: 'Private FM', url: 'fm:hit95', q: 'hit 95', re: /\bhit ?95\b/i },
+  { id: 'h_rone', ico: '1️⃣', name: 'Radio One', hint: '94.3 FM', grp: 1, sec: 'Private FM', url: 'fm:rone', q: 'radio one', re: /\bradio ?one\b/i },
+  { id: 'h_hnow', ico: '🔊', name: 'Hungama Now', hint: 'Bollywood hits', grp: 1, sec: 'Private FM', url: 'fm:hnow', q: 'hungama', re: /hungama.*(now|hot|bollywood)/i, fb: ['https://radioindia.net/radio/hungamanow/icecast.audio'] },
+  { id: 'h_nonstop', ico: '🔁', name: 'Non Stop Hindi', hint: '24x7 Hindi songs', grp: 1, sec: 'Private FM', url: 'fm:nonstop', q: 'non stop hindi', re: /non ?stop.*hindi/i },
+  /* ---- online: OLD Hindi songs (names are searched live on radio-browser.info = free, no API key; if a channel is off-air the app tries other old-song stations, not random FM) ---- */
+  { id: 'o_any', ico: '🎞️', name: 'Old Hindi Mix', hint: 'auto: best working old-song station', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_any', q: 'retro bollywood', re: /retro|old|evergreen|purane|gold|classic|kishor|rafi|lata|b&w/i, old: true, anyCountry: true },
+  { id: 'o_retro', ico: '📼', name: 'Retro Bollywood', hint: '50s-80s golden era', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_retro', q: 'retro bollywood', re: /retro.?bollywood(?!.*90)/i, old: true, anyCountry: true },
+  { id: 'o_r90', ico: '💿', name: 'Retro Bollywood 90s', hint: '80s-90s romantic', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_r90', q: 'retro bollywood 90', re: /retro.?bollywood.?90/i, old: true, anyCountry: true },
+  { id: 'o_gaane', ico: '🎻', name: 'Bollywood Gaane Purane', hint: '60s-90s purane gaane', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_gaane', q: 'gaane purane', re: /gaane ?purane|purane ?gaane/i, old: true, anyCountry: true },
+  { id: 'o_evergreen', ico: '🌿', name: 'Hungama Evergreen', hint: 'evergreen Bollywood', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_evergreen', q: 'evergreen bollywood', re: /evergreen/i, old: true, anyCountry: true, fb: ['https://radioindia.net/radio/hungama_evergreen_bollywood/icecast.audio'] },
+  { id: 'o_h60', ico: '🕰️', name: '60s Forever (Hungama)', hint: 'sixties classics', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_h60', q: 'hungama 60', re: /60.?s.*forever|forever.*60|hungama.*60|60.?s.*hungama/i, old: true, anyCountry: true },
+  { id: 'o_mretro', ico: '🥇', name: 'Mirchi Hindi Retro', hint: 'old is gold', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_mretro', q: 'mirchi retro', re: /mirchi.*(retro|old|gold)/i, old: true, anyCountry: true },
+  { id: 'o_hretro', ico: '🎬', name: 'Hindi Retro Hits', hint: 'golden era', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_hretro', q: 'hindi retro hits', re: /retro.*hits|hindi.*retro/i, old: true, anyCountry: true },
+  { id: 'o_goldy', ico: '✨', name: 'Goldy Evergreen', hint: 'evergreen old songs', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_goldy', q: 'goldy', re: /goldy/i, old: true, anyCountry: true },
+  { id: 'o_shripad', ico: '🎙️', name: 'Shripad Radio', hint: 'curated old film songs', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_shripad', q: 'shripad', re: /shripad/i, old: true, anyCountry: true },
+  { id: 'o_classics', ico: '🎼', name: 'Radio City Classics', hint: 'vintage film music', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_classics', q: 'radio city classics', re: /city.*classic/i, old: true, anyCountry: true },
+  { id: 'o_kishore', ico: '🎤', name: 'Kishore Kumar', hint: 'Kishore Kumar hits', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_kishore', q: 'kishore kumar', re: /kishor/i, old: true, anyCountry: true },
+  { id: 'o_rafi', ico: '🎶', name: 'Mohammed Rafi', hint: 'Rafi hits', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_rafi', q: 'rafi', re: /\brafi\b/i, old: true, anyCountry: true },
+  { id: 'o_lata', ico: '🌸', name: 'Lata Mangeshkar', hint: 'Lata hits', grp: 1, sec: 'Old Hindi Songs', url: 'fm:o_lata', q: 'lata mangeshkar', re: /lata/i, old: true, anyCountry: true },
   /* ---- offline: relaxing background MUSIC (generated in the browser, no internet) ---- */
   { id: 'lofi',      ico: '🎹', name: 'Lo-fi Chill',        hint: 'beats + keys',   grp: 2 },
   { id: 'piano',     ico: '🎼', name: 'Peaceful Piano',     hint: 'soft',           grp: 2 },
@@ -7960,11 +7979,30 @@ async function fmAutoCandidates() {
   FM_GENERIC.forEach(u => { if (fb.indexOf(u) < 0) fb.push(u); });
   return fmBuild('fm:auto', rows, fb, 'Hindi FM', 30, rg);
 }
+let fmOldCache = null;
+async function fmOldPool() {                     // live old-song stations from radio-browser (free API, tags: retro / oldies / evergreen), best first
+  if (fmOldCache && Date.now() - fmOldCache.at < 1800000) return fmOldCache.rows;
+  const qs = ['tag=oldies&language=hindi', 'tag=retro&language=hindi', 'tag=evergreen&countrycode=IN', 'tag=old%20hindi', 'tag=golden&language=hindi', 'name=old%20hindi&countrycode=IN'];
+  const res = await Promise.all(qs.map(q => fmTO(fmFetch('/json/stations/search?' + q + '&hidebroken=true&order=clickcount&reverse=true&limit=40'), 12000, [])));
+  const seen = new Set(), rows = [];
+  res.reduce((a, b) => a.concat(b), []).forEach(x => { if (fmGood(x) && !FM_NOT_MUSIC.test(x.name || '') && !seen.has(x.url_resolved)) { seen.add(x.url_resolved); rows.push(x); } });
+  rows.sort((a, b) => fmKey(a) - fmKey(b));
+  const out = rows.map(x => ({ url_resolved: x.url_resolved, name: x.name, stationuuid: x.stationuuid, hls: Number(x.hls) || 0, lastcheckok: 1 }));
+  if (out.length) fmOldCache = { at: Date.now(), rows: out };
+  return out;
+}
+async function fmOldCandidates() {               // any working old-song station (used by "Old Hindi Mix" and as the fallback of every old-song channel)
+  const [rows, rg] = await Promise.all([fmTO(fmOldPool(), 15000, []), fmTO(rgSearch('retro bollywood').then(a => a.slice(0, 6).map(x => ({ url: rgLink(x.id), name: x.name, id: x.id }))), 12000, [])]);
+  const fb = ['https://radioindia.net/radio/hungama_evergreen_bollywood/icecast.audio'];
+  MOODS.forEach(x => { if (x.old) (x.fb || []).forEach(u => { if (fb.indexOf(u) < 0) fb.push(u); }); });
+  return fmBuild('fm:o_any', rows, fb, 'Old Hindi songs', 30, rg);
+}
 async function fmChannelCandidates(m) {
-  const [pool, rg] = await Promise.all([fmTO(fmPool(), 15000, []), fmTO(fmGarden(m), 12000, [])]);
+  const [pool0, rg] = await Promise.all([fmTO(m.old ? fmOldPool() : fmPool(), 15000, []), fmTO(fmGarden(m), 12000, [])]);
+  const pool = m.old ? pool0.concat((await fmTO(fmPool(), 15000, [])).filter(x => !pool0.some(y => y.url_resolved === x.url_resolved))) : pool0;
   let rows = pool.filter(x => m.re.test(x.name || ''));
   if (rows.length < 2 && m.q) {
-    const extra = (await fmTO(fmFetch('/json/stations/search?name=' + encodeURIComponent(m.q) + '&countrycode=IN&hidebroken=true&order=clickcount&reverse=true&limit=40'), 12000, [])).filter(x => fmGood(x) && m.re.test(x.name || ''));
+    const extra = (await fmTO(fmFetch('/json/stations/search?name=' + encodeURIComponent(m.q) + (m.anyCountry ? '' : '&countrycode=IN') + '&hidebroken=true&order=clickcount&reverse=true&limit=40'), 12000, [])).filter(x => fmGood(x) && m.re.test(x.name || ''));
     extra.forEach(x => { if (!rows.some(r => r.url_resolved === x.url_resolved)) rows.push(x); });
     rows = rows.map((x, i) => [x, i]).sort((a, b) => fmKey(a[0]) - fmKey(b[0]) || a[1] - b[1]).map(a => a[0]);
   }
@@ -8030,7 +8068,7 @@ function streamStart(key, onlyUrl) {
       if (onlyUrl) {                              // reconnecting a stream that just dropped -> retry ONLY that exact stream; never search for or switch to a different one on its own
         cands = [{ url: onlyUrl, name: streamName || m.name, id: '', to: 12000 }];
       } else {
-        cands = key === 'fm:auto' ? await fmAutoCandidates() : await fmChannelCandidates(m);
+        cands = key === 'fm:auto' ? await fmAutoCandidates() : key === 'fm:o_any' ? await fmOldCandidates() : await fmChannelCandidates(m);
       }
       if (token !== streamToken) return;
       fmTried += cands.length;
@@ -8040,7 +8078,7 @@ function streamStart(key, onlyUrl) {
     if (!r && key !== 'fm:auto' && !onlyUrl) {    // first-time tap on an off-air channel -> try any other live Hindi FM so something plays; a reconnect (onlyUrl set) never does this
       streamName = 'no working stream for this channel, trying other live FM…'; paintStatus();
       const tried = new Set(cands.map(c => c.url));
-      cands = (await fmAutoCandidates()).filter(c => !tried.has(c.url));
+      cands = (await (m.old ? fmOldCandidates() : fmAutoCandidates())).filter(c => !tried.has(c.url));
       if (token !== streamToken) return;
       fmTried += cands.length;
       r = await fmRace(cands, token);
@@ -8722,7 +8760,16 @@ header{box-shadow:none!important}
   const mBtn = el('button', 'dcb dcm', 'Dictionary'); mBtn.type = 'button';
   const gBtn = el('a', 'dcb dcg', 'Google'); gBtn.href = 'https://www.google.com/'; gBtn.target = '_blank'; gBtn.rel = 'noopener';   // real link in a NEW tab: Back closes it and the quiz is exactly as left
   chip.appendChild(mBtn); chip.appendChild(gBtn);
-  const googleUrl = t => 'https://www.google.com/search?q=' + encodeURIComponent(t);
+  // Google search + smart student prompt: shaped like a question so Google's AI Overview (top box) answers in a simple, short, point-wise way.
+  // Short term (1-5 words) -> "What is ...?" prompt; longer text -> "Explain this sentence" prompt. Works for any subject.
+  const googleUrl = t => {
+    const n = t.trim().split(/\s+/).length;
+    const style = 'Explain in very simple English or Hinglish, as if I am a complete beginner studying this for the first time and know nothing about it. Use easy everyday words, no jargon. Answer in this format: 1) meaning in one simple line, 2) 3-4 short key points, 3) one easy real-life example. Keep it short and clear.';
+    const q = n <= 5
+      ? 'What is "' + t + '"? ' + style
+      : 'Explain this statement: "' + t + '". ' + style + ' Also say what it means in simple words.';
+    return 'https://www.google.com/search?q=' + encodeURIComponent(q);
+  };
   const ov = el('div'); ov.id = 'dictOv';
   const sheet = el('div'); sheet.id = 'dictSheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true');
   const head = el('div', 'dh');
