@@ -3154,8 +3154,8 @@ function warmOcrIfOffline() {
   } catch (e) {}
 }
 
-/* ===== Online OCR (OCR.space through the Val Town proxy; API keys live ONLY in the proxy) ===== */
-const CLOUD_OCR_URL = 'https://Babu420--6994d1b8d35b11f192a81607ee4eb77e.web.val.run';
+/* ===== Online OCR (OCR.space through the Cloudflare Worker examyatri-ocr; API keys live ONLY in the Worker) ===== */
+const CLOUD_OCR_URL = 'https://examyatri-ocr.vyup2987.workers.dev';
 const CLOUD_PREF_KEY = 'yai_cloud_img';          // '1' (default) / '0'
 const CLOUD_MAX_BYTES = 900 * 1024;              // OCR.space free limit is 1 MB
 const CLOUD_SIDE_LATIN = 2000;                   // Engine 2 (English)
