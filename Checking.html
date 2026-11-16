@@ -79,7 +79,7 @@ const VER='v3.6',DEF='https://examyatri-gateway.vyup2987.workers.dev',$=i=>docum
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,v)}catch(e){return ''}};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CATS=[['working','Working','✅'],['recheck','Retest','⚠️'],['neverWorked','Not working','❌'],['toTest','Never tested','⏳']];
-const S={url:ls('ey_url')||DEF,tk:ls('ey_tk'),rows:[],provs:[],view:'home',q:'',sel:'',busy:false,stop:false,wv:'',open:new Set()};
+const S={url:ls('ey_url')||DEF,tk:ls('ey_tk'),rows:[],provs:[],view:'home',q:'',sel:'',busy:false,stop:false,wv:'',v:'',open:new Set()};
 const comp=id=>id.replace(/-\d+$/,''),tail=id=>(S.provs.find(p=>p.id===id)||{}).key||'';
 const cnt=rs=>{const c={working:0,recheck:0,neverWorked:0,toTest:0};rs.forEach(r=>c[r.cat]++);return c};
 const pills=c=>`✅ ${c.working} · ⚠️ ${c.recheck} · ❌ ${c.neverWorked} · ⏳ ${c.toTest}`;
@@ -208,12 +208,12 @@ const bodyH=()=>{if(!S.mco)return '';const ids=S.provs.filter(p=>comp(p.id)===S.
   `<label>Model chuno (${S.rows.filter(r=>r.model.split('|')[0]===S.mkey).length})</label><input id="tmq" placeholder="model dhoondo…" value="${esc(S.mq)}" autocapitalize="none" autocomplete="off"><div class="ml" id="tml">${mlH()}</div><div id="tsel">${selH()}</div>`};
 const paintSug=()=>{const e=$('tsug');if(e)e.innerHTML=sugH()},paintML=()=>{const e=$('tml');if(e)e.innerHTML=mlH()},paintSel=()=>{const e=$('tsel');if(e)e.innerHTML=selH()},paintBody=()=>{const e=$('tbody');if(e)e.innerHTML=bodyH()};
 function test(){
-  const seg=`<div class="seg">${[['rand','🎲 12 random test'],['one','🎯 Ek model test']].map(([k,l])=>`<button data-mt="${k}" class="${S.mt===k?'on':''}">${l}</button>`).join('')}</div>`;
+  const seg=`<div class="seg">${[['rand','🎲 2 random test'],['one','🎯 Ek model test']].map(([k,l])=>`<button data-mt="${k}" class="${S.mt===k?'on':''}">${l}</button>`).join('')}</div>`;
   let body;
   if(S.mt==='rand'){
     const rs=S.mr,ok=rs.filter(r=>r.cat==='working').length,no=rs.filter(r=>r.cat==='recheck'||r.cat==='neverWorked').length;
-    body=`<div class="card"><div class="t">Random 12: 11 naye (untested) + 1 purana working model — cron jaisa hi. Har model ko sirf "hii" bheja jata hai.</div>
-    <button class="btn p" data-act="trand" ${S.busy?'disabled':''}>▶ 12 models test karo</button>
+    body=`<div class="card"><div class="t">Random 2: ek random key ke 2 models (naye pehle, phir purana) — bilkul cron tick jaisa. Har model ko sirf "hii" bheja jata hai.</div>
+    <button class="btn p" data-act="trand" ${S.busy?'disabled':''}>▶ 2 models test karo</button>
     ${S.mrs?`<div class="t">Test hue: ${S.mrs.tested} · naye models mile: ${S.mrs.discovered} · 👍 ${ok} · 👎 ${no}</div>`:''}
     ${rs.map(r=>{const [p,...m]=r.model.split('|');return `<div class="m ${r.cat}"><i class="d"></i><div class="i"><div class="n">${esc(m.join('|'))}</div><div class="t">${esc(p)}${r.lat?' · '+(r.lat/1e3).toFixed(1)+'s':''}${r.err?' · '+esc(r.err):''}${r.reply?'<br>Reply: '+esc(r.reply):''}</div></div><span class="th">${icon(r)}</span></div>`}).join('')}</div>`;
   }else{
@@ -237,7 +237,7 @@ async function tone(){
   S.mbusy=false;if(S.view==='test'){paintSel();paintML()}
 }
 async function rand12(){
-  if(S.busy)return;S.busy=true;pg('12 models test ho rahe hain…');render();
+  if(S.busy)return;S.busy=true;pg('2 models test ho rahe hain…');render();
   try{const j=await api('POST','/admin/test',{}),res=j.results||{};mergeS(res);S.mr=Object.keys(res).map(k=>({model:k,...res[k]}));S.mrs={tested:j.tested,discovered:j.discovered};if(!S.mr.length)toast('Test ke liye koi model nahi (sab abhi test ho chuke / cooldown)',1)}catch(e){toast(e.message,1)}
   S.busy=false;pg('');render();
 }
@@ -260,11 +260,17 @@ function render(){
 function go(v){if(v.startsWith('co:')&&S.view!==v)S.key='';S.view=v;if(v.startsWith('list'))S.q='';render();scrollTo(0,0)}
 function mergeS(res){for(const k in res){const r=S.rows.find(x=>x.model===k);if(r)Object.assign(r,res[k]);else S.rows.push({model:k,...res[k]})}save()}
 function merge(res){mergeS(res);render()}
-const save=()=>ls('ey_cache',JSON.stringify({t:S.t||0,rows:S.rows,provs:S.provs,wv:S.wv}));
-async function load(quiet){
+const save=()=>ls('ey_cache',JSON.stringify({t:S.t||0,rows:S.rows,provs:S.provs,wv:S.wv,v:S.v||''}));
+const FULL_MS=36e5;   // safety: even if the version never moves, re-download everything at most once an hour
+async function load(quiet,force){
   if(!S.tk){if(!quiet)toast('Pehle Settings mein token daalo',1);return go('set')}
-  try{const j=await api('GET','/admin/status');S.rows=[];for(const c in j.lists)for(const x of j.lists[c])S.rows.push({...x,cat:c});
-    S.provs=j.providers;S.wv=j.version||'';S.t=Date.now();save();
+  try{
+    if(!force&&S.v&&S.rows.length&&S.t&&Date.now()-S.t<FULL_MS){   // cheap check first: /admin/ver = 1 tiny read, no shards
+      let v='';try{v=(await api('GET','/admin/ver')).v||''}catch(e){if(/Token/.test(e.message))throw e}   // old worker without /admin/ver -> full load below
+      if(v&&v===S.v){S.t=Date.now();save();if(!quiet)toast('Data latest hai · server se nayi list nahi mangayi');render();return}
+    }
+    const j=await api('GET','/admin/status');S.rows=[];for(const c in j.lists)for(const x of j.lists[c])S.rows.push({...x,cat:c});
+    S.provs=j.providers;S.wv=j.version||'';S.v=j.v||'';S.t=Date.now();save();
     if(!quiet)toast('Connected · '+S.provs.length+' keys, '+S.rows.length+' models');render()}
   catch(e){toast(e.message,1)}
 }
@@ -274,9 +280,12 @@ async function run(keys){
   if(keys.length>1){const now=Date.now(),n0=keys.length,m=new Map(S.rows.map(r=>[r.model,r]));keys=keys.filter(k=>{const r=m.get(k);return !(r&&r.tested&&now-r.tested<6e5)});if(keys.length<n0)toast((n0-keys.length)+' model skip (10 min mein test hue)')}
   if(!keys.length)return toast('Test ke liye koi model nahi',1);
   S.busy=true;S.stop=false;
-  for(let i=0;i<keys.length&&!S.stop;i+=12){
-    const part=keys.slice(i,i+12);S.rows.forEach(r=>{if(part.includes(r.model))r.busy=true});render();
-    pg('Test: '+Math.min(i+12,keys.length)+' / '+keys.length);
+  let q=keys.slice(),done=0;const tot=q.length;
+  while(q.length&&!S.stop){
+    const per={},part=[],rest=[];   // worker rule: max 2 models per key, max 8 per call
+    for(const k of q){const id=k.split('|')[0];if(part.length<8&&(per[id]=(per[id]||0)+1)<=2)part.push(k);else rest.push(k)}
+    q=rest;done+=part.length;S.rows.forEach(r=>{if(part.includes(r.model))r.busy=true});render();
+    pg('Test: '+done+' / '+tot);
     try{merge((await api('POST','/admin/test',{models:part})).results||{})}catch(e){toast(e.message,1);S.stop=true}
     S.rows.forEach(r=>r.busy=false);
   }
@@ -284,7 +293,7 @@ async function run(keys){
 }
 async function disc(){
   if(S.busy)return;S.busy=true;pg('Models khoj raha hai…');
-  try{const j=await api('POST','/admin/discover',{});await load(true);toast('Naye models: '+j.discovered+' (test cron karega)')}catch(e){toast(e.message,1)}
+  try{const j=await api('POST','/admin/discover',{});await load(true,true);toast('Naye models: '+j.discovered+' (test cron karega)')}catch(e){toast(e.message,1)}
   S.busy=false;pg('');render();
 }
 document.addEventListener('click',e=>{
@@ -292,7 +301,7 @@ document.addEventListener('click',e=>{
   if(d.mt){S.mt=d.mt;render()}else if(d.tsco!==undefined)pickCo(d.tsco);else if(d.tskey){S.mkey=d.tskey;S.mm='';S.mq='';S.mres=null;paintBody();loadMl(S.mkey)}else if(d.tsm!==undefined){S.mm=d.tsm;S.mres=null;paintML();paintSel()}else if(d.act==='tone')tone();else if(d.act==='trand')rand12();
   else if(d.key!==undefined){S.key=d.key===S.key?'':d.key;render()}else if(d.prio!==undefined)setP(d.ids.split(','),{prio:+d.prio});else if(d.pause){const p=S.provs.find(x=>x.id===d.pause);setP([d.pause],{off:!(p&&p.off)})}else if(d.delco)delCo(d.delco);else if(d.go)go(d.go);else if(d.test)run([d.test]);else if(d.chat){S.sel=d.chat;go('test')}else if(d.run)run(keysFor(d.run));
   else if(d.del)delKey(d.del);else if(d.fetch)fetchM(d.fetch);else if(d.addm)addM(d.addm);else if(d.mark)markRow(d.mark);else if(d.addco!==undefined){S.addCo=d.addco;go('add')}else if(d.act==='addsave')addKey();else if(d.act==='load')load();else if(d.act==='disc')disc();
-  else if(d.act==='save'){S.url=$('su').value.trim()||DEF;S.tk=$('st').value.trim();ls('ey_url',S.url);ls('ey_tk',S.tk);load().then(()=>{if(S.provs.length)go('home')})}
+  else if(d.act==='save'){S.url=$('su').value.trim()||DEF;S.tk=$('st').value.trim();ls('ey_url',S.url);ls('ey_tk',S.tk);load(false,true).then(()=>{if(S.provs.length)go('home')})}
   else if(d.act==='forget'){S.tk='';ls('ey_tk','');$('st').value='';toast('Token hata diya')}
 });
 document.addEventListener('input',e=>{
@@ -303,6 +312,6 @@ document.addEventListener('input',e=>{
 if(e.target.id==='q'){S.q=e.target.value;$('rows').innerHTML=rowsH(fl(S.rows.filter(r=>r.cat===S.view.split(':')[1])))}});
 document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k)e.target.open?S.open.add(k):S.open.delete(k)},true);
 $('stop').onclick=()=>{S.stop=true};
-try{const c=JSON.parse(ls('ey_cache')||'null');if(c){S.rows=c.rows||[];S.provs=c.provs||[];S.wv=c.wv||'';S.t=c.t||0;S.rows.forEach(r=>delete r.busy)}}catch(e){}
+try{const c=JSON.parse(ls('ey_cache')||'null');if(c){S.rows=c.rows||[];S.provs=c.provs||[];S.wv=c.wv||'';S.v=c.v||'';S.t=c.t||0;S.rows.forEach(r=>delete r.busy)}}catch(e){}
 render();if(!S.tk)go('set');else if(!S.t||Date.now()-S.t>3e5)load(true);
 </script></body></html>
