@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<!-- Gateway Checking v3.5 (2026-11-13) -->
+<!-- Gateway Checking v4.1 (2026-11-17) -->
 <html lang="hi"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Gateway Checking v3.5</title>
+<title>Gateway Checking v4.1</title>
 <style>
 :root{--bg:#f4f5f8;--sf:#fff;--s2:#eceef3;--ln:#dfe2e9;--tx:#161a22;--mu:#667085;--ac:#3d4fe0;--ok:#12805c;--wn:#b26a00;--bad:#c42b3a;--nv:#6a7282}
 @media(prefers-color-scheme:dark){:root{--bg:#0e1117;--sf:#171b24;--s2:#212735;--ln:#2a3242;--tx:#e8ebf2;--mu:#8d96a8;--ac:#7b8cff;--ok:#4fd1a1;--wn:#f0b250;--bad:#ff7b87;--nv:#9aa3b5}}
@@ -69,17 +69,17 @@ nav button.t2{background:var(--ac);color:#fff}
 .mi:first-child{border-top:0}.mi.on{background:var(--s2);box-shadow:inset 3px 0 0 var(--ac);font-weight:700}
 .res{border:1px solid var(--ln);border-radius:12px;padding:8px 10px;margin:6px 0;font-size:13.5px;overflow-wrap:anywhere}.res.ok{border-color:var(--ok)}.res.no{border-color:var(--bad)}
 </style></head><body>
-<div class="w"><header><h1>AI Gateway <small>Checking v3.5</small></h1><span class="t" id="chip"></span></header>
+<div class="w"><header><h1>AI Gateway <small>Checking v4.1</small></h1><span class="t" id="chip"></span></header>
 <div id="pg" hidden><span id="pgt"></span><button id="stop">Stop</button></div>
 <main id="main"></main></div>
 <div id="toast" hidden></div>
 <nav id="nav"></nav>
 <script>
-const VER='v3.6',DEF='https://examyatri-gateway.vyup2987.workers.dev',$=i=>document.getElementById(i);
+const VER='v4.1',DEF='https://examyatri-gateway.vyup2987.workers.dev',$=i=>document.getElementById(i);
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,v)}catch(e){return ''}};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CATS=[['working','Working','✅'],['recheck','Retest','⚠️'],['neverWorked','Not working','❌'],['toTest','Never tested','⏳']];
-const S={url:ls('ey_url')||DEF,tk:ls('ey_tk'),rows:[],provs:[],view:'home',q:'',sel:'',busy:false,stop:false,wv:'',v:'',open:new Set()};
+const S={url:ls('ey_url')||DEF,tk:ls('ey_tk'),rows:[],provs:[],view:'home',q:'',sel:'',busy:false,stop:false,wv:'',open:new Set()};
 const comp=id=>id.replace(/-\d+$/,''),tail=id=>(S.provs.find(p=>p.id===id)||{}).key||'';
 const cnt=rs=>{const c={working:0,recheck:0,neverWorked:0,toTest:0};rs.forEach(r=>c[r.cat]++);return c};
 const pills=c=>`✅ ${c.working} · ⚠️ ${c.recheck} · ❌ ${c.neverWorked} · ⏳ ${c.toTest}`;
@@ -130,11 +130,11 @@ function coV(){
     return `<button class="kc ${pv.id===S.key?'on':''}" data-key="${esc(pv.id)}"><span><i class="dd ${st}"></i>Key ${i+1}${pv.prio>0?' ⭐':pv.prio<0?' ⬇':''}${pv.off?' ⏸':''}</span><small>${esc(tail(pv.id))}</small></button>`}).join('');
   let panel='<div class="empty">Upar se koi key chuno.</div>';
   if(S.key){
-    const id=S.key,pv=ps.find(p=>p.id===id)||{},rs=sortR(S.rows.filter(r=>r.model.split('|')[0]===id));
-    panel=`<div class="card"><div class="t" style="margin-bottom:4px">${esc(id)} · ${pills(cnt(rs))}</div>
+    const id=S.key,pv=ps.find(p=>p.id===id)||{},rs=sortR(rowsFor(id)),lv=S.live[id]||{};
+    panel=`<div class="card"><div class="t" style="margin-bottom:4px">${esc(id)} · ${pills(cnt(S.rows.filter(r=>r.model.split('|')[0]===id)))}${S.liveBusy[id]?' · ⏳ list aa rahi hai…':lv.err?' · ⚠️ live list nahi mili':''}</div>
     <div class="r2">${seg([id],pv.prio||0)}<button class="btn" data-pause="${esc(id)}">${pv.off?'▶ Resume':'⏸ Pause'}</button></div>
     <button class="btn" style="color:var(--bad)" data-del="${esc(id)}">🗑 Is key ko delete karo</button>
-    ${rs.length?rs.slice(0,300).map(keyRow).join('')+(rs.length>300?`<div class="t">Pehle 300 dikh rahe hain (${rs.length} mein se).</div>`:''):'<div class="empty">Is key ke models abhi nahi mile. Neeche "Aur options" mein Model list laao dabao.</div>'}
+    ${rs.length?rs.slice(0,300).map(keyRow).join('')+(rs.length>300?`<div class="t">Pehle 300 dikh rahe hain (${rs.length} mein se).</div>`:''):`<div class="empty">${S.liveBusy[id]?'Model list load ho rahi hai…':lv.err?esc(lv.err)+' — dobara key dabao ya neeche "Aur options" mein Model list laao dabao.':'Is key ke models nahi mile.'}</div>`}
     <details data-k="more-${esc(id)}" ${S.open.has('more-'+id)?'open':''}><summary class="t">⋯ Aur options</summary>
     <button class="btn" data-fetch="${esc(id)}">📥 Model list laao (test nahi hoga)</button>
     <div class="r2"><input id="am-${esc(id)}" placeholder="model id khud likho" autocapitalize="none" autocomplete="off"><button class="btn" data-addm="${esc(id)}">＋ Add & test</button></div></details></div>`;
@@ -177,6 +177,15 @@ async function delCo(n){
   try{await api('DELETE','/admin/provider?id='+encodeURIComponent(ids.join(',')));drop(ids);toast(n+' hata di');go('cos')}catch(e){toast(e.message,1)}
 }
 async function setP(ids,b){try{await api('POST','/admin/set',{ids,...b});S.provs.forEach(p=>{if(ids.includes(p.id))Object.assign(p,b)});save();render()}catch(e){toast(e.message,1)}}
+/* key click = live model list loads by itself (not saved; saved models + live-only models shown together) */
+const rowsFor=id=>{const rs=S.rows.filter(r=>r.model.split('|')[0]===id),have=new Set(rs.map(r=>r.model)),L=(S.live[id]||{}).models||[];return rs.concat(L.filter(m=>!have.has(id+'|'+m)).map(m=>({model:id+'|'+m,cat:'toTest',live:1})))};
+async function liveList(id,force){
+  if(!id||S.liveBusy[id])return;const c=S.live[id];if(c&&!c.err&&!force&&Date.now()-c.t<6e5)return;
+  S.liveBusy[id]=1;if(S.view.startsWith('co:'))render();
+  try{const j=await api('GET','/admin/models?provider='+encodeURIComponent(id));S.live[id]={models:j.models||[],t:Date.now()}}
+  catch(e){S.live[id]={models:[],t:Date.now(),err:e.message}}
+  delete S.liveBusy[id];if(S.view.startsWith('co:')&&S.key===id)render();
+}
 async function fetchM(id){
   if(S.busy)return;S.busy=true;pg('Model list la raha hai…');
   try{const j=await api('GET','/admin/models?add=1&provider='+encodeURIComponent(id)),have=new Set(S.rows.map(r=>r.model));
@@ -189,14 +198,14 @@ async function addM(id){
 }
 async function markRow(k){
   const r=S.rows.find(x=>x.model===k),st=r&&r.cat==='working'?'failed':'working';
-  try{merge((await api('POST','/admin/mark',{models:[k],status:st})).results||{});toast(st==='working'?'Working mark ho gaya':'Not working mark ho gaya')}catch(e){toast(e.message,1)}
+  try{const j=await api('POST','/admin/mark',{models:[k],status:st});merge(j.results||{});if(j.saved===false)toast('⚠️ Database mein save nahi hua, dobara try karo',1);toast(st==='working'?'Working mark ho gaya':'Not working mark ho gaya')}catch(e){toast(e.message,1)}
 }
-Object.assign(S,{mt:'rand',mr:[],mrs:null,mtc:'',mco:'',mkey:'',mq:'',mm:'',mres:null,mbusy:false,mload:false});
+Object.assign(S,{live:{},liveBusy:{},mt:'rand',mr:[],mrs:null,mtc:'',mco:'',mkey:'',mq:'',mm:'',mres:null,mbusy:false,mload:false});
 const cos2=()=>[...new Set(S.provs.map(p=>comp(p.id)))].sort();
 const icon=v=>v.cat==='working'?'👍':v.cat==='toTest'?'⏳':'👎';
 const sugH=()=>{if(S.mco)return '';const q=S.mtc.trim().toLowerCase(),m=cos2().filter(c=>c.includes(q)).slice(0,12);
   return m.length?m.map(c=>`<button class="kc" data-tsco="${esc(c)}">${esc(c)}<small>${S.provs.filter(p=>comp(p.id)===c).length} key</small></button>`).join(''):'<div class="t">Koi company nahi mili.</div>'};
-const mlH=()=>{const q=S.mq.trim().toLowerCase(),all=sortR(S.rows.filter(r=>r.model.split('|')[0]===S.mkey)).filter(r=>!q||r.model.toLowerCase().includes(q));
+const mlH=()=>{const q=S.mq.trim().toLowerCase(),all=sortR(rowsFor(S.mkey)).filter(r=>!q||r.model.toLowerCase().includes(q));
   if(!all.length)return `<div class="empty">${S.mload?'Model list load ho rahi hai…':'Is key ke models nahi mile.'}</div>`;
   return (S.mload?'<div class="t" style="padding:6px 10px">Model list update ho rahi hai…</div>':'')+all.slice(0,300).map(r=>{const m=r.model.split('|').slice(1).join('|');return `<button class="mi ${m===S.mm?'on':''}" data-tsm="${esc(m)}"><span>${esc(m)}</span><span>${th(r)||'·'}</span></button>`}).join('')+(all.length>300?`<div class="t" style="padding:6px 10px">Pehle 300 dikh rahe hain. Search karo.</div>`:'')};
 const resH=()=>{if(S.mbusy)return '<div class="res">⏳ Test ho raha hai… ("hii" bheja gaya)</div>';const v=S.mres;if(!v)return '';
@@ -205,21 +214,21 @@ const resH=()=>{if(S.mbusy)return '<div class="res">⏳ Test ho raha hai… ("hi
 const selH=()=>`<div class="t" style="margin:6px 0">${S.mm?'Chuna hua: <b>'+esc(S.mm)+'</b>':'Upar list se ek model chuno'}</div><button class="btn p" data-act="tone" ${S.mm&&!S.mbusy?'':'disabled'}>▶ Test karo ("hii" bhejega)</button>${resH()}`;
 const bodyH=()=>{if(!S.mco)return '';const ids=S.provs.filter(p=>comp(p.id)===S.mco).map(p=>p.id);
   return (ids.length>1?`<div class="kr">${ids.map((id,i)=>`<button class="kc ${id===S.mkey?'on':''}" data-tskey="${esc(id)}">Key ${i+1}<small>${esc(tail(id))}</small></button>`).join('')}</div>`:'')+
-  `<label>Model chuno (${S.rows.filter(r=>r.model.split('|')[0]===S.mkey).length})</label><input id="tmq" placeholder="model dhoondo…" value="${esc(S.mq)}" autocapitalize="none" autocomplete="off"><div class="ml" id="tml">${mlH()}</div><div id="tsel">${selH()}</div>`};
+  `<label>Model chuno (${rowsFor(S.mkey).length})</label><input id="tmq" placeholder="model dhoondo…" value="${esc(S.mq)}" autocapitalize="none" autocomplete="off"><div class="ml" id="tml">${mlH()}</div><div id="tsel">${selH()}</div>`};
 const paintSug=()=>{const e=$('tsug');if(e)e.innerHTML=sugH()},paintML=()=>{const e=$('tml');if(e)e.innerHTML=mlH()},paintSel=()=>{const e=$('tsel');if(e)e.innerHTML=selH()},paintBody=()=>{const e=$('tbody');if(e)e.innerHTML=bodyH()};
 function test(){
-  const seg=`<div class="seg">${[['rand','🎲 2 random test'],['one','🎯 Ek model test']].map(([k,l])=>`<button data-mt="${k}" class="${S.mt===k?'on':''}">${l}</button>`).join('')}</div>`;
+  const seg=`<div class="seg">${[['rand','🎲 2 naye model test'],['one','🎯 Ek model test']].map(([k,l])=>`<button data-mt="${k}" class="${S.mt===k?'on':''}">${l}</button>`).join('')}</div>`;
   let body;
   if(S.mt==='rand'){
     const rs=S.mr,ok=rs.filter(r=>r.cat==='working').length,no=rs.filter(r=>r.cat==='recheck'||r.cat==='neverWorked').length;
-    body=`<div class="card"><div class="t">Random 2: ek random key ke 2 models (naye pehle, phir purana) — bilkul cron tick jaisa. Har model ko sirf "hii" bheja jata hai.</div>
-    <button class="btn p" data-act="trand" ${S.busy?'disabled':''}>▶ 2 models test karo</button>
+    body=`<div class="card"><div class="t">2 naye (kabhi test nahi hue) models, bilkul cron jaisa. Working ya purane models dobara test nahi hote. Har model ko sirf \"hii\" bheja jata hai.</div>
+    <button class="btn p" data-act="trand" ${S.busy?'disabled':''}>▶ 2 naye models test karo</button>
     ${S.mrs?`<div class="t">Test hue: ${S.mrs.tested} · naye models mile: ${S.mrs.discovered} · 👍 ${ok} · 👎 ${no}</div>`:''}
     ${rs.map(r=>{const [p,...m]=r.model.split('|');return `<div class="m ${r.cat}"><i class="d"></i><div class="i"><div class="n">${esc(m.join('|'))}</div><div class="t">${esc(p)}${r.lat?' · '+(r.lat/1e3).toFixed(1)+'s':''}${r.err?' · '+esc(r.err):''}${r.reply?'<br>Reply: '+esc(r.reply):''}</div></div><span class="th">${icon(r)}</span></div>`}).join('')}</div>`;
   }else{
     body=`<div class="card"><label>Company ka naam likho</label><input id="tco" value="${esc(S.mtc)}" placeholder="jaise mer…" autocapitalize="none" autocomplete="off"><div class="kr" id="tsug">${sugH()}</div><div id="tbody">${bodyH()}</div></div>`;
   }
-  return `<h2>🧪 Manual test</h2>${seg}${body}<div class="t">Test mein har jagah sirf "hii" bheja jata hai. Model "working" tab maana jata hai jab wo koi bhi jawab de.</div>`;
+  return `<h2>🧪 Manual test</h2>${seg}${body}<div class="t">Test mein har jagah sirf "hii" bheja jata hai. Model "working" tab maana jata hai jab wo koi bhi jawab de. Test mein fail = ❌ Not working. Asli student quiz mein model jawab de (format kuch bhi ho) = working rehta hai; jawab hi na de (error / timeout / khali) to ⚠️ Retest mein aata hai (yahan manual test karo). Working hote hi naam database mein save ho jata hai.</div>`;
 }
 async function pickCo(n){
   S.mco=n;S.mtc=n;S.mm='';S.mq='';S.mres=null;S.mkey=(S.provs.find(p=>comp(p.id)===n)||{}).id||'';
@@ -227,18 +236,17 @@ async function pickCo(n){
 }
 async function loadMl(id){
   if(!id)return;S.mload=true;paintML();
-  try{const j=await api('GET','/admin/models?add=1&provider='+encodeURIComponent(id)),have=new Set(S.rows.map(r=>r.model));
-    j.models.forEach(m=>{if(!have.has(id+'|'+m))S.rows.push({model:id+'|'+m,cat:'toTest'})});save()}catch(e){toast(e.message,1)}
+  await liveList(id);if(S.live[id]&&S.live[id].err)toast(S.live[id].err,1);
   S.mload=false;if(S.mkey===id&&S.view==='test')paintML();
 }
 async function tone(){
   if(!S.mm||S.mbusy)return;const k=S.mkey+'|'+S.mm;S.mbusy=true;S.mres=null;paintSel();
-  try{const j=await api('POST','/admin/test',{models:[k]}),v=j.results&&j.results[k];if(v){mergeS(j.results);S.mres=v}else S.mres={error:'Provider/model nahi mila'}}catch(e){S.mres={error:e.message}}
+  try{const j=await api('POST','/admin/test',{models:[k]}),v=j.results&&j.results[k];if(j.saved===false)toast('⚠️ Database mein save nahi hua, dobara test karo',1);if(v){mergeS(j.results);S.mres=v}else S.mres={error:'Provider/model nahi mila'}}catch(e){S.mres={error:e.message}}
   S.mbusy=false;if(S.view==='test'){paintSel();paintML()}
 }
 async function rand12(){
-  if(S.busy)return;S.busy=true;pg('2 models test ho rahe hain…');render();
-  try{const j=await api('POST','/admin/test',{}),res=j.results||{};mergeS(res);S.mr=Object.keys(res).map(k=>({model:k,...res[k]}));S.mrs={tested:j.tested,discovered:j.discovered};if(!S.mr.length)toast('Test ke liye koi model nahi (sab abhi test ho chuke / cooldown)',1)}catch(e){toast(e.message,1)}
+  if(S.busy)return;S.busy=true;pg('2 naye models test ho rahe hain…');render();
+  try{const j=await api('POST','/admin/test',{}),res=j.results||{};mergeS(res);if(j.saved===false)toast('⚠️ Database mein save nahi hua, dobara test karo',1);S.mr=Object.keys(res).map(k=>({model:k,...res[k]}));S.mrs={tested:j.tested,discovered:j.discovered};if(!S.mr.length)toast('Test ke liye koi model nahi (sab abhi test ho chuke / cooldown)',1)}catch(e){toast(e.message,1)}
   S.busy=false;pg('');render();
 }
 function set(){
@@ -257,20 +265,16 @@ function render(){
   $('chip').textContent=S.provs.length?S.provs.length+' keys':'';
   if(v==='add')hint();
 }
-function go(v){if(v.startsWith('co:')&&S.view!==v)S.key='';S.view=v;if(v.startsWith('list'))S.q='';render();scrollTo(0,0)}
+function go(v){if(v.startsWith('co:')&&S.view!==v)S.key='';S.view=v;if(v.startsWith('list'))S.q='';render();scrollTo(0,0);
+  if(v.startsWith('co:')){const ids=S.provs.filter(p=>comp(p.id)===v.slice(3)).map(p=>p.id);if(ids.length===1){S.key=ids[0];render();liveList(S.key)}}}   // company with one key: that key opens and its list loads by itself
 function mergeS(res){for(const k in res){const r=S.rows.find(x=>x.model===k);if(r)Object.assign(r,res[k]);else S.rows.push({model:k,...res[k]})}save()}
 function merge(res){mergeS(res);render()}
-const save=()=>ls('ey_cache',JSON.stringify({t:S.t||0,rows:S.rows,provs:S.provs,wv:S.wv,v:S.v||''}));
-const FULL_MS=36e5;   // safety: even if the version never moves, re-download everything at most once an hour
-async function load(quiet,force){
+const save=()=>ls('ey_cache',JSON.stringify({t:S.t||0,rows:S.rows,provs:S.provs,wv:S.wv}));
+async function load(quiet){
   if(!S.tk){if(!quiet)toast('Pehle Settings mein token daalo',1);return go('set')}
-  try{
-    if(!force&&S.v&&S.rows.length&&S.t&&Date.now()-S.t<FULL_MS){   // cheap check first: /admin/ver = 1 tiny read, no shards
-      let v='';try{v=(await api('GET','/admin/ver')).v||''}catch(e){if(/Token/.test(e.message))throw e}   // old worker without /admin/ver -> full load below
-      if(v&&v===S.v){S.t=Date.now();save();if(!quiet)toast('Data latest hai · server se nayi list nahi mangayi');render();return}
-    }
-    const j=await api('GET','/admin/status');S.rows=[];for(const c in j.lists)for(const x of j.lists[c])S.rows.push({...x,cat:c});
-    S.provs=j.providers;S.wv=j.version||'';S.v=j.v||'';S.t=Date.now();save();
+  try{const j=await api('GET','/admin/status?c=1');S.rows=[];for(const c in j.lists)for(const x of j.lists[c]){   // compact rows: [model,lat,tested] / [model,lat,fails,err,tested] / model
+      if(typeof x==='string')S.rows.push({model:x,lat:0,fails:0,err:'',tested:0,cat:c});else if(c==='working')S.rows.push({model:x[0],lat:x[1],tested:x[2],fails:0,err:'',cat:c});else S.rows.push({model:x[0],lat:x[1],fails:x[2],err:x[3],tested:x[4],cat:c})}
+    S.provs=j.providers;S.wv=j.version||'';S.t=Date.now();save();
     if(!quiet)toast('Connected · '+S.provs.length+' keys, '+S.rows.length+' models');render()}
   catch(e){toast(e.message,1)}
 }
@@ -280,28 +284,25 @@ async function run(keys){
   if(keys.length>1){const now=Date.now(),n0=keys.length,m=new Map(S.rows.map(r=>[r.model,r]));keys=keys.filter(k=>{const r=m.get(k);return !(r&&r.tested&&now-r.tested<6e5)});if(keys.length<n0)toast((n0-keys.length)+' model skip (10 min mein test hue)')}
   if(!keys.length)return toast('Test ke liye koi model nahi',1);
   S.busy=true;S.stop=false;
-  let q=keys.slice(),done=0;const tot=q.length;
-  while(q.length&&!S.stop){
-    const per={},part=[],rest=[];   // worker rule: max 2 models per key, max 8 per call
-    for(const k of q){const id=k.split('|')[0];if(part.length<8&&(per[id]=(per[id]||0)+1)<=2)part.push(k);else rest.push(k)}
-    q=rest;done+=part.length;S.rows.forEach(r=>{if(part.includes(r.model))r.busy=true});render();
-    pg('Test: '+done+' / '+tot);
-    try{merge((await api('POST','/admin/test',{models:part})).results||{})}catch(e){toast(e.message,1);S.stop=true}
+  for(let i=0;i<keys.length&&!S.stop;i+=12){
+    const part=keys.slice(i,i+12);S.rows.forEach(r=>{if(part.includes(r.model))r.busy=true});render();
+    pg('Test: '+Math.min(i+12,keys.length)+' / '+keys.length);
+    try{const j=await api('POST','/admin/test',{models:part});merge(j.results||{});if(j.saved===false)toast('⚠️ Database mein save nahi hua, dobara test karo',1)}catch(e){toast(e.message,1);S.stop=true}
     S.rows.forEach(r=>r.busy=false);
   }
   S.busy=false;pg('');render();toast(S.stop?'Roka gaya':'Test poora hua');
 }
 async function disc(){
   if(S.busy)return;S.busy=true;pg('Models khoj raha hai…');
-  try{const j=await api('POST','/admin/discover',{});await load(true,true);toast('Naye models: '+j.discovered+' (test cron karega)')}catch(e){toast(e.message,1)}
+  try{const j=await api('POST','/admin/discover',{});await load(true);toast('Naye models: '+j.discovered+' (test cron karega)')}catch(e){toast(e.message,1)}
   S.busy=false;pg('');render();
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-go],[data-test],[data-chat],[data-run],[data-act],[data-del],[data-addco],[data-fetch],[data-addm],[data-mark],[data-prio],[data-pause],[data-delco],[data-key],[data-mt],[data-tsco],[data-tskey],[data-tsm]');if(!b)return;const d=b.dataset;
   if(d.mt){S.mt=d.mt;render()}else if(d.tsco!==undefined)pickCo(d.tsco);else if(d.tskey){S.mkey=d.tskey;S.mm='';S.mq='';S.mres=null;paintBody();loadMl(S.mkey)}else if(d.tsm!==undefined){S.mm=d.tsm;S.mres=null;paintML();paintSel()}else if(d.act==='tone')tone();else if(d.act==='trand')rand12();
-  else if(d.key!==undefined){S.key=d.key===S.key?'':d.key;render()}else if(d.prio!==undefined)setP(d.ids.split(','),{prio:+d.prio});else if(d.pause){const p=S.provs.find(x=>x.id===d.pause);setP([d.pause],{off:!(p&&p.off)})}else if(d.delco)delCo(d.delco);else if(d.go)go(d.go);else if(d.test)run([d.test]);else if(d.chat){S.sel=d.chat;go('test')}else if(d.run)run(keysFor(d.run));
+  else if(d.key!==undefined){S.key=d.key===S.key?'':d.key;render();if(S.key)liveList(S.key)}else if(d.prio!==undefined)setP(d.ids.split(','),{prio:+d.prio});else if(d.pause){const p=S.provs.find(x=>x.id===d.pause);setP([d.pause],{off:!(p&&p.off)})}else if(d.delco)delCo(d.delco);else if(d.go)go(d.go);else if(d.test)run([d.test]);else if(d.chat){S.sel=d.chat;go('test')}else if(d.run)run(keysFor(d.run));
   else if(d.del)delKey(d.del);else if(d.fetch)fetchM(d.fetch);else if(d.addm)addM(d.addm);else if(d.mark)markRow(d.mark);else if(d.addco!==undefined){S.addCo=d.addco;go('add')}else if(d.act==='addsave')addKey();else if(d.act==='load')load();else if(d.act==='disc')disc();
-  else if(d.act==='save'){S.url=$('su').value.trim()||DEF;S.tk=$('st').value.trim();ls('ey_url',S.url);ls('ey_tk',S.tk);load(false,true).then(()=>{if(S.provs.length)go('home')})}
+  else if(d.act==='save'){S.url=$('su').value.trim()||DEF;S.tk=$('st').value.trim();ls('ey_url',S.url);ls('ey_tk',S.tk);load().then(()=>{if(S.provs.length)go('home')})}
   else if(d.act==='forget'){S.tk='';ls('ey_tk','');$('st').value='';toast('Token hata diya')}
 });
 document.addEventListener('input',e=>{
@@ -312,6 +313,6 @@ document.addEventListener('input',e=>{
 if(e.target.id==='q'){S.q=e.target.value;$('rows').innerHTML=rowsH(fl(S.rows.filter(r=>r.cat===S.view.split(':')[1])))}});
 document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k)e.target.open?S.open.add(k):S.open.delete(k)},true);
 $('stop').onclick=()=>{S.stop=true};
-try{const c=JSON.parse(ls('ey_cache')||'null');if(c){S.rows=c.rows||[];S.provs=c.provs||[];S.wv=c.wv||'';S.v=c.v||'';S.t=c.t||0;S.rows.forEach(r=>delete r.busy)}}catch(e){}
-render();if(!S.tk)go('set');else if(!S.t||Date.now()-S.t>3e5)load(true);
+try{const c=JSON.parse(ls('ey_cache')||'null');if(c){S.rows=c.rows||[];S.provs=c.provs||[];S.wv=c.wv||'';S.t=c.t||0;S.rows.forEach(r=>delete r.busy)}}catch(e){}
+render();if(!S.tk)go('set');else load(true);   // page refresh = one compact call for the latest lists
 </script></body></html>
