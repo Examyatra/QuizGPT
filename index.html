@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- Exam Yatri website v2.0 (2026-11-13) -->
-<!-- Quiz GPT build: exam-fixed-63 (QR share screen: short tidy link pill under the QR (host/…tail, never the full URL) with a Copy button beside it; tap the pill also copies; clipboard fallback; duplicate link icon button removed | previous: exam-fixed-62 (5 new palettes for site + quiz player: AMOLED black+gold, Synthwave neon, Pastel lilac night, Mocha sand, Arctic silver (11 -> 16 palettes; new glow layouts: diagonal + centered halo) | previous: exam-fixed-61 (Google lookup: [Google] chip button opens Google AI Mode directly (udm=50); new student prompt: Devanagari Hindi with English technical terms kept as-is (no bracket translations), fixed Ek line me + Matlab sections, 1-2 topic-fitting extra headings, 70-120 words total) | previous: exam-fixed-60 (retry audit: after the gateway itself failed (it already tried many AIs for up to 90 s) eyAsk retries only ONCE (was 5x), part-1 unreadable-reply re-ask 2x (was 3x), background auto-retries 3 (was 6)) | previous: exam-fixed-59 (8-unit limit now also checks the PDF page RANGE before extraction (same rule as images: more than 8 -> Exam Yatri off, Gemini on). Earlier: exam-fixed-58 (Exam Yatri limit: more than 8 extracted pages or more than 8 uploaded images -> Exam Yatri is greyed out and blocked (tap + Start), Gemini is auto-selected, a note explains why; Exam Yatri comes back automatically when the input shrinks to 8 or less, unless the student chose another site herself). Earlier: exam-fixed-57 (ALWAYS-SHOW-PAGE: one resolver for every mode (ChatGPT / Claude / Gemini / Exam Yatri API): evidence page -> segment page -> AI PG confirmed in notes -> content search of the notes -> AI PG -> notes page range; tolerant PG parsing ("PG 12", "**PG:** p.12", en-dash ranges); player shows Page N after the question mark in every mode). Earlier: exam-fixed-56 (Page number: Exam Yatri path no longer blanks the AI PG when evidence is not matched (last-resort keeps AI digits); player shows "Page N" after the question in every mode, also from srcPages). Earlier: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
+<!-- Quiz GPT build: exam-fixed-67 (clean UI: removed the "Tap anywhere to start the music" text and the "Popup block hai" toast; blocked audio just starts on the student's next tap, silently | previous: exam-fixed-66 (FM: default = online FM when internet is on (last used station, else Vividh Bharati), offline Lo-fi when there is none; tab hidden -> FM only PAUSES (no teardown), tab back -> instant resume (<20 s away: same connection; longer: same audio element reconnects to live; 3+ min: released, direct reconnect of the exact stream, no station search); internet back -> failed FM retries | previous: exam-fixed-65 (full audit pass: no code changes beyond 62-64 (5 new palettes, short link pill + Copy, single reusable Google AI Mode tab, new explanation prompt); all scripts syntax-checked, no duplicate ids, tag counts balanced | previous: exam-fixed-64 (Google lookup: every [Google] tap reuses ONE named tab (window.open name, no noopener) instead of opening a new tab each time; popup-blocked toast; opener cleared; closed tab -> browser makes a new one | previous: exam-fixed-63 (QR share screen: short tidy link pill under the QR (host/…tail, never the full URL) with a Copy button beside it; tap the pill also copies; clipboard fallback; duplicate link icon button removed | previous: exam-fixed-62 (5 new palettes for site + quiz player: AMOLED black+gold, Synthwave neon, Pastel lilac night, Mocha sand, Arctic silver (11 -> 16 palettes; new glow layouts: diagonal + centered halo) | previous: exam-fixed-61 (Google lookup: [Google] chip button opens Google AI Mode directly (udm=50); new student prompt: Devanagari Hindi with English technical terms kept as-is (no bracket translations), fixed Ek line me + Matlab sections, 1-2 topic-fitting extra headings, 70-120 words total) | previous: exam-fixed-60 (retry audit: after the gateway itself failed (it already tried many AIs for up to 90 s) eyAsk retries only ONCE (was 5x), part-1 unreadable-reply re-ask 2x (was 3x), background auto-retries 3 (was 6)) | previous: exam-fixed-59 (8-unit limit now also checks the PDF page RANGE before extraction (same rule as images: more than 8 -> Exam Yatri off, Gemini on). Earlier: exam-fixed-58 (Exam Yatri limit: more than 8 extracted pages or more than 8 uploaded images -> Exam Yatri is greyed out and blocked (tap + Start), Gemini is auto-selected, a note explains why; Exam Yatri comes back automatically when the input shrinks to 8 or less, unless the student chose another site herself). Earlier: exam-fixed-57 (ALWAYS-SHOW-PAGE: one resolver for every mode (ChatGPT / Claude / Gemini / Exam Yatri API): evidence page -> segment page -> AI PG confirmed in notes -> content search of the notes -> AI PG -> notes page range; tolerant PG parsing ("PG 12", "**PG:** p.12", en-dash ranges); player shows Page N after the question mark in every mode). Earlier: exam-fixed-56 (Page number: Exam Yatri path no longer blanks the AI PG when evidence is not matched (last-resort keeps AI digits); player shows "Page N" after the question in every mode, also from srcPages). Earlier: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
 <html lang="en">
 <head>
 
@@ -7500,8 +7500,12 @@ let lastOff = localStorage.getItem('yai_off_last') || '';
 function setOff(id) { lastOff = id; try { localStorage.setItem('yai_off_last', id); } catch (e) {} }
 function pickOffline() { return 'lofi'; }   // every quiz starts with Lo-fi Chill; the person then changes it to their mood
 function offlineFor() { return OFF_IDS.indexOf(lastOff) >= 0 ? lastOff : pickOffline(); }
-let moodId = localStorage.getItem('yai_mute') === '1' ? 'off' : pickOffline();
-if (moodId !== 'off') setOff(moodId);
+/* Default music: internet available -> online FM (last station the person used, else Vividh Bharati); no internet -> offline Lo-fi. */
+function fmDefaultId() { let id = ''; try { id = localStorage.getItem('yai_fm_last') || ''; } catch (e) {} const m = MOODS.find(x => x.id === id && x.url); return m ? m.id : 'h_vividh'; }
+function pickDefaultMood() { return (typeof navigator !== 'undefined' && navigator.onLine === false) ? pickOffline() : fmDefaultId(); }
+const isOfflineMood = id => OFF_IDS.indexOf(id) >= 0;
+let moodId = localStorage.getItem('yai_mute') === '1' ? 'off' : pickDefaultMood();
+if (moodId !== 'off' && isOfflineMood(moodId)) setOff(moodId);
 let moodVol = parseFloat(localStorage.getItem('yai_mood_vol')); if (isNaN(moodVol)) moodVol = 0.5;
 let amb = null, _ambMaster = null, _rev = null, _noiseBufs = {};
 let streamEl = null, streamUrl = null, streamState = '', streamName = '', streamFailed = {}, needTap = false, streamToken = 0, fmLastGood = {}, fmRetry = [], uiTab = '', fmVariantBlock = {};   // fmVariantBlock[key] = stream url to skip (so "refresh to Hindi" can reject the wrong-city/language variant)
@@ -7839,7 +7843,7 @@ function paintStatus() {
   else if (m.id === 'off') { title = 'Music off'; sub = 'Quiz music is switched off.'; ico = '🔕'; }
   else if (m.url) {
     if (streamFailed[m.url]) { const o = MOODS.find(x => x.id === offlineFor()); title = 'No live FM found'; sub = '⚠️ Playing offline music instead' + (o ? ': ' + o.name : '.') + (fmWhy ? ' (' + fmWhy + ')' : ''); ico = '📡'; }
-    else if (needTap) { title = m.name; sub = 'Tap anywhere to start the music.'; }
+    else if (needTap) { title = m.name; sub = m.direct ? 'Akashvani (AIR) · Live FM' : 'Live FM radio'; }   // browser is waiting for the first touch: no instruction text, the next tap anywhere starts it silently
     else if (streamState === 'live') { title = streamName || m.name; sub = m.direct ? '● LIVE · Akashvani (AIR)' : '● LIVE · Hindi FM radio'; ico = '📻'; }
     else { title = 'Finding a live FM…'; sub = '⏳ ' + (streamName || 'Checking Hindi stations — the first live one plays automatically.'); ico = '📡'; }
   } else { title = m.name; sub = '🎵 Offline music · works without internet'; }
@@ -7871,8 +7875,10 @@ function fmHlsLib() {                            // hls.js from a CDN, loaded on
   })();
   return fmHlsP;
 }
+let fmSuspended = false, fmSuspAt = 0, fmDirty = false, fmHardT = null;   // tab hidden -> stream is only PAUSED (element + connection kept), not destroyed
 function streamStop() {
   streamToken++;
+  fmSuspended = false; fmDirty = false; clearTimeout(fmHardT);
   fmProbes.forEach(fmKill); fmProbes.clear();
   if (streamEl) { fmKill(streamEl); streamEl = null; }
   streamUrl = null; streamState = ''; streamName = '';
@@ -8076,7 +8082,7 @@ function fmRace(cands, token) {                 // try several stations at once;
     launch();
   });
 }
-function streamStart(key, onlyUrl) {
+function streamStart(key, onlyUrl, soft) {   // soft = onlyUrl is a remembered good stream: if it fails, fall back to the normal full search once
   streamStop(); streamState = 'loading'; streamUrl = key; streamName = onlyUrl ? streamName : ''; fmWhy = ''; fmSrc = { rb: false, rg: false }; let fmTried = 0;
   const token = streamToken, m = MOODS.find(x => x.url === key) || {};
   paintStatus();
@@ -8100,6 +8106,7 @@ function streamStart(key, onlyUrl) {
       r = await fmRace(cands, token);
       if (token !== streamToken) { if (r && r.audio) fmKill(r.audio); return; }
     }
+    if (!r && soft && onlyUrl) { streamStart(key); return; }
     if (!r && key !== 'fm:auto' && !onlyUrl) {    // first-time tap on an off-air channel -> try any other live Hindi FM so something plays; a reconnect (onlyUrl set) never does this
       streamName = 'is channel ka stream abhi band hai, dusra live FM try ho raha hai…'; paintStatus();
       const tried = new Set(cands.map(c => c.url));
@@ -8119,12 +8126,14 @@ function streamStart(key, onlyUrl) {
     const sameUrl = r.cand.url || a.src;                        // the exact stream that was playing (used so a reconnect never silently switches channel/variant)
     const lost = () => {                          // stream dropped -> retry the SAME stream only; a few short hiccups reconnect quietly, but it never jumps to a different station/variant on its own
       if (streamEl !== a) return;
+      if (fmSuspended) { fmDirty = true; return; }   // tab is in the background (paused on purpose): do nothing now, reconnect when the person is back
+      a._lost = lost;
       const now = Date.now(); fmRetry = fmRetry.filter(t => now - t < 90000); fmRetry.push(now);
       streamStop();
       if (fmRetry.length > 4) { streamFailed[key] = 1; delete fmLastGood[key]; delete fmLastGood['fm:auto']; paintStatus(); ambSync(); return; }   // kept dropping -> stop and wait; only a manual tap/refresh picks the next stream
       streamStart(key, sameUrl);
     };
-    a.onerror = lost; a.onended = lost;
+    a.onerror = lost; a.onended = lost; a._lost = lost;
     try { if (a._hls && window.Hls) a._hls.on(window.Hls.Events.ERROR, (ev, d) => { if (d && d.fatal) lost(); }); } catch (e) {}
     paintStatus();
     setTimeout(() => { if (streamEl === a && a.paused) { const p = a.play(); if (p && p.catch) p.catch(() => { if (streamEl === a) { needTap = true; streamStop(); paintStatus(); } }); } }, 700);
@@ -8135,11 +8144,47 @@ function fmVariantRefresh(key) {                 // "refresh" on a station that 
   delete fmLastGood[key]; delete fmLastGood['fm:auto']; streamFailed = {};
   streamStart(key);
 }
+function fmSuspend() {                          // tab hidden (e.g. Google tab opened): pause instantly, keep the stream object so coming back needs no new connection
+  const a = streamEl; if (!a || fmSuspended) return;
+  fmSuspended = true; fmSuspAt = Date.now(); fmDirty = false;
+  try { a.pause(); } catch (e) {}
+  clearTimeout(fmHardT);
+  fmHardT = setTimeout(() => { if (fmSuspended) streamStop(); }, 180000);   // away for 3+ minutes: release the connection (return reconnects the same stream directly)
+}
+function fmReattach(a, url) {                   // same <audio> element (keeps its play permission), fresh connection -> back at the live edge
+  if (a._hls) { try { a._hls.destroy(); } catch (e) {} a._hls = null; }
+  if (fmIsHls(url) && !FM_HLS_OK) {
+    return fmHlsLib().then(H => {
+      if (!H) throw new Error('hls');
+      const h = new H({ enableWorker: true, lowLatencyMode: false }); a._hls = h;
+      h.on(H.Events.ERROR, (ev, d) => { if (d && d.fatal && a._lost) a._lost(); });
+      h.loadSource(url); h.attachMedia(a);
+      return a.play();
+    });
+  }
+  a.src = url;
+  return a.play();
+}
+function fmResume() {                           // back on the tab: quick glance away -> play instantly; longer -> same element jumps to live; anything odd -> direct reconnect of the exact stream
+  const a = streamEl; if (!a || !fmSuspended) return;
+  fmSuspended = false; clearTimeout(fmHardT);
+  const away = Date.now() - fmSuspAt, key = streamUrl, tok = streamToken;
+  const url = (fmLastGood[key] && fmLastGood[key].url) || a.currentSrc || a.src;
+  const redo = () => { if (streamEl === a && tok === streamToken) { streamStop(); streamStart(key, url, true); } };
+  let p;
+  try { p = (away < 20000 && !fmDirty) ? a.play() : fmReattach(a, url); } catch (e) { redo(); return; }
+  if (p && p.catch) p.catch(err => {
+    if (streamEl !== a || tok !== streamToken) return;
+    if (err && err.name === 'NotAllowedError') { needTap = true; streamStop(); paintStatus(); } else redo();
+  });
+  setTimeout(() => { if (streamEl === a && tok === streamToken && !fmSuspended && (a.paused || a.readyState < 3)) redo(); }, 4500);   // safety net: not really playing -> reconnect the same stream
+  paintStatus();
+}
 function quizVisible() { const c = document.getElementById('quizCard'); return !!c && c.style.display !== 'none' && c.getClientRects().length > 0; }
 let _qvPrev = false;
-function onQuizStart() {                         // every new quiz -> Lo-fi Chill first (online/FM only when the person switches to it)
+function onQuizStart() {                         // every new quiz -> online FM when there is internet, otherwise offline Lo-fi
   if (moodId === 'off') return;
-  moodId = pickOffline(); setOff(moodId); needTap = false; streamFailed = {};
+  moodId = pickDefaultMood(); if (isOfflineMood(moodId)) setOff(moodId); needTap = false; streamFailed = {};   // internet -> online FM, no internet -> offline Lo-fi
   try { if (moodPop.classList.contains('open')) paintMoodPop(); } catch (e) {}
 }
 function ambSync() {
@@ -8148,6 +8193,7 @@ function ambSync() {
   _qvPrev = qv;
   const m = MOODS.find(x => x.id === moodId) || MOODS[0];
   const active = sfxOn && m.id !== 'off' && qv && !document.hidden;
+  const wantSuspend = sfxOn && m.id !== 'off' && qv && document.hidden && !!m.url && !!streamEl && streamUrl === m.url && !streamFailed[m.url];   // tab in background: pause the FM, do not tear it down
   moodBtn.classList.toggle('on', sfxOn && m.id !== 'off');
   let synthId = null, level = 1, url = null;
   if (active) {
@@ -8155,7 +8201,9 @@ function ambSync() {
     else synthId = m.id;
   }
   try {
-    if (url) { if (!needTap && streamUrl !== url) streamStart(url); } else streamStop();
+    if (wantSuspend) fmSuspend();
+    else if (url) { if (!needTap && streamUrl !== url) streamStart(url, (fmLastGood[url] && fmLastGood[url].url) || undefined, true); else if (fmSuspended && streamEl && streamUrl === url) fmResume(); }
+    else streamStop();
     if (synthId && BUILD[synthId]) {
       const ac = getAC(); if (ac.state === 'suspended') ac.resume();
       if (!(amb && amb.id === synthId && amb.level === level)) { ambStop(true); ambStart(synthId, level); }
@@ -8191,7 +8239,7 @@ function paintMoodPop() {
   moodPop.querySelectorAll('.mp-chip').forEach(b => b.addEventListener('click', ev => {
     ev.stopPropagation(); const x = MOODS.find(y => y.id === b.dataset.m); if (!x) return;
     uiTab = ''; moodId = x.id; needTap = false; streamFailed = {}; localStorage.removeItem('yai_mute');
-    if (x.url) streamStop(); else setOff(x.id);
+    if (x.url) { streamStop(); try { localStorage.setItem('yai_fm_last', x.id); } catch (e) {} } else setOff(x.id);
     paintMoodPop(); ambSync();
   }));
   moodPop.querySelector('#moodVol').addEventListener('input', e => setMoodVol(parseFloat(e.target.value)));
@@ -8209,6 +8257,7 @@ addEventListener('resize', () => { if (moodPop.classList.contains('open')) place
 sfxBtn.addEventListener('click', () => { needTap = false; ambSync(); if (moodPop.classList.contains('open')) paintMoodPop(); });   // speaker ON/OFF controls everything
 ['pointerup', 'click', 'touchend', 'keydown'].forEach(ev => document.addEventListener(ev, () => { needTap = false; try { if (_ac && _ac.state === 'suspended') _ac.resume(); } catch (e) {} ambSync(); }, true));   // browsers need one tap before audio can start
 document.addEventListener('visibilitychange', ambSync);
+addEventListener('online', () => { try { const m = MOODS.find(x => x.id === moodId); if (m && m.url && streamFailed[m.url]) { streamFailed = {}; needTap = false; ambSync(); } } catch (e) {} });   // internet is back -> try the FM again
 setInterval(ambSync, 1000);                                            // starts when quiz opens, stops when it closes
 paintSfx(); moodBtn.classList.toggle('on', sfxOn && moodId !== 'off');
 
@@ -8781,9 +8830,19 @@ header{box-shadow:none!important}
   const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 
   // ---------- DOM (built once) ----------
+  const GOOGLE_TAB = 'yai_google_ai';
+  // Opens the search in the SAME Google tab every time. If that tab was closed (or navigated to another site, which clears its name) the browser simply makes a new one.
+  function openGoogleTab(url) {
+    let w = null;
+    try { w = window.open(url, GOOGLE_TAB); } catch (e) {}
+    if (!w) return false;                         // popup blocked
+    try { w.opener = null; } catch (e) {}         // Google tab gets no handle back to this page (allowed only while the tab is fresh; harmless otherwise)
+    try { w.focus(); } catch (e) {}               // bring the existing tab to the front where the browser allows it
+    return true;
+  }
   const chip = el('div'); chip.id = 'dictChip';
   const mBtn = el('button', 'dcb dcm', 'Dictionary'); mBtn.type = 'button';
-  const gBtn = el('a', 'dcb dcg', 'Google'); gBtn.href = 'https://www.google.com/'; gBtn.target = '_blank'; gBtn.rel = 'noopener';   // real link in a NEW tab: Back closes it and the quiz is exactly as left
+  const gBtn = el('a', 'dcb dcg', 'Google'); gBtn.href = 'https://www.google.com/'; gBtn.target = GOOGLE_TAB;   // ONE named tab reused for every search (no rel=noopener on purpose: noopener puts the tab in a separate browsing-context group, so the name could not be found again and every click would open a new tab)
   chip.appendChild(mBtn); chip.appendChild(gBtn);
   // Google search + smart student prompt: shaped like a question so Google's AI Overview (top box) answers in a simple, short, point-wise way.
   // Short term (1-5 words) -> "What is ...?" prompt; longer text -> "Explain this sentence" prompt. Works for any subject.
@@ -8891,7 +8950,12 @@ header{box-shadow:none!important}
   window.addEventListener('resize', schedule);
   mBtn.addEventListener('pointerdown', e => { e.preventDefault(); const t = chipTerm; hideChip(); if (t) openFor(t); });
   mBtn.addEventListener('click', e => { e.preventDefault(); if (chipTerm) { const t = chipTerm; hideChip(); openFor(t); } });
-  gBtn.addEventListener('click', () => { setTimeout(() => { clearPick(); hideChip(); try { window.getSelection().removeAllRanges(); } catch (er) {} }, 80); });   // default action (new tab) still runs
+  gBtn.addEventListener('click', e => {
+    if (e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;   // modified click (new tab / window): leave to the browser
+    e.preventDefault();
+    openGoogleTab(gBtn.href);   // if the browser blocks it, nothing is shown; the next tap simply works
+    setTimeout(() => { clearPick(); hideChip(); try { window.getSelection().removeAllRanges(); } catch (er) {} }, 80);
+  });
 
   // ---------- touch selection without Chrome's own menu (Define / Copy / Select all / Google panel) ----------
   // Long-press a word (question, option or explanation), keep the finger down and drag to extend to a phrase.
