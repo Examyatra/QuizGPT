@@ -11696,5 +11696,42 @@ header{box-shadow:none!important}
 })();
 </script>
 <datalist id="examNameOptions"><option value="NEET UG"><option value="NEET PG"><option value="AIIMS"><option value="JEE Main"><option value="JEE Advanced"><option value="BITSAT"><option value="GATE"><option value="UPSC CSE"><option value="State PSC / PCS"><option value="SSC CGL"><option value="SSC CHSL"><option value="SSC GD"><option value="IBPS PO"><option value="IBPS Clerk"><option value="SBI PO"><option value="RBI Grade B"><option value="RRB NTPC"><option value="RRB Group D"><option value="CAT"><option value="CLAT"><option value="CUET"><option value="NDA"><option value="CDS"><option value="CA Foundation"><option value="CA Inter"><option value="CS Executive"><option value="UGC NET"><option value="CTET"><option value="State TET"><option value="CBSE Class 10"><option value="CBSE Class 12"><option value="ICSE Class 10"><option value="State Board Class 10"><option value="State Board Class 12"><option value="University Semester Exam"><option value="USMLE"><option value="GRE"><option value="GMAT"><option value="SAT"><option value="IELTS"><option value="Olympiad"></datalist>
+<script>
+/* Self-heal guard: a popup, a lost focus or a stray error must never freeze the quiz or its keyboard shortcuts */
+(function () {
+  var log = function () { try { console.warn.apply(console, arguments); } catch (e) {} };
+  /* 1. errors stay silent and never stop the rest of the page */
+  window.addEventListener('error', function (e) { log('[guard]', e && e.message); try { e.preventDefault(); } catch (_) {} }, true);
+  window.addEventListener('unhandledrejection', function (e) { log('[guard] promise', e && e.reason); try { e.preventDefault(); } catch (_) {} });
+  /* 2. a blocked or failed popup returns null instead of throwing */
+  var _open = window.open;
+  window.open = function () { try { return _open.apply(window, arguments) || null; } catch (e) { return null; } };
+  /* 3. when the page gets focus back (popup / other window closed): take keyboard control again, reset half-pressed keys, resume audio + timer */
+  function heal() {
+    try { window.focus(); } catch (e) {}
+    try { if (typeof kbLastKey !== 'undefined') kbLastKey = ''; } catch (e) {}
+    try {
+      if (document.body && !document.body.hasAttribute('tabindex')) document.body.setAttribute('tabindex', '-1');
+      var a = document.activeElement;
+      if (!a || a === document.documentElement || a.tagName === 'IFRAME') document.body.focus({ preventScroll: true });
+    } catch (e) {}
+    try { if (typeof ambSync === 'function') ambSync(); } catch (e) {}
+    try { if (!document.hidden && typeof resumeQuizTimer === 'function') resumeQuizTimer(); } catch (e) {}
+  }
+  window.addEventListener('focus', heal);
+  window.addEventListener('pageshow', heal);
+  window.addEventListener('blur', function () { try { if (typeof kbLastKey !== 'undefined') kbLastKey = ''; } catch (e) {} });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) heal(); });
+  /* 4. any click on the page also brings keyboard control back */
+  document.addEventListener('pointerdown', function () { setTimeout(heal, 0); }, true);
+  /* 5. Escape always gets rid of a popup/overlay that is stuck open */
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    setTimeout(function () {
+      try { document.querySelectorAll('.modal-backdrop.show').forEach(function (m) { m.classList.remove('show'); }); } catch (_) {}
+    }, 150);
+  });
+})();
+</script>
 </body>
 </html>
