@@ -1039,6 +1039,7 @@
   #quizCard .option-btn:disabled:not(.correct):not(.wrong) { opacity: 0.55; }
   #quizCard .option-btn.correct::after { content: "✔"; margin-left: auto; font-size: 1.2rem; font-weight: 800; }
   #quizCard .option-btn.wrong::after { content: "✘"; margin-left: auto; font-size: 1.2rem; font-weight: 800; }
+  #quizCard .option-btn.kb-focus:not(:disabled) { border-color: var(--accent); outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; background: color-mix(in srgb, var(--accent) 14%, transparent); }
   @keyframes blinkRed {
     0%, 100% { filter: brightness(1); transform: translateX(0); }
     25% { transform: translateX(-5px); } 75% { transform: translateX(5px); }
@@ -1808,7 +1809,7 @@ body::before{opacity:.8}
       <h1 class="qg-logo" aria-label="Quiz GPT"><span class="qg-q">Quiz</span><span class="qg-g">GPT</span></h1>
     </div>
     <div class="header-controls">
-      <button class="icon-btn" id="yqScanBtn" title="Scan quiz QR" aria-label="Scan quiz QR"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M4 12h16"/></svg></button>
+      <button class="icon-btn" id="yqScanBtn" title="Quiz receive karo" aria-label="Quiz receive karo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 20h14"/></svg></button>
       <button class="icon-btn" id="installAppBtn" title="Install app" style="display:none;">⬇️</button>
       <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle theme"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></button>
       <button class="icon-btn" id="quizMenuBtn" title="Saved quizzes & texts" style="font-size:1.2rem; font-weight:700;">⋮</button>
@@ -8315,17 +8316,97 @@ submitFill = function () {
   _sf();
   if (userAnswers[currentQ] !== -1) feedback(isRight(currentQ), document.getElementById('fillResult') || quizOptions);
 };
+/* ---------- Full keyboard control of the quiz player ----------
+   Up/Down  : move highlight over options        Left/Right : previous / next question
+   Enter or 0 : send highlighted option (after answering: next question)
+   1-4 / A-D : highlight that option (press the same key twice = send)             5 / E : explanation on/off
+   6 or 9 : skip      7 : previous      8 : next      + / - : scroll page down / up      ? / H : show this help
+   Fill-in-the-blank: Enter focuses the box, Enter again checks, Esc leaves the box. */
+let kbIdx = 0, kbLastKey = "";   // kbLastKey: option key pressed last (pressing the same one again sends it)
+function kbOptBtns() { return quizOptions.querySelectorAll('.option-btn'); }
+function kbApply(scroll) {
+  const bs = kbOptBtns();
+  bs.forEach((b, i) => b.classList.toggle('kb-focus', i === kbIdx));
+  if (scroll && bs[kbIdx]) { try { bs[kbIdx].scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {} }
+}
+const _rqKb = renderQuestion;
+renderQuestion = function () { _rqKb(); kbIdx = 0; kbLastKey = ""; kbApply(false); };
 document.addEventListener('keydown', e => {
   if (quizCard.style.display === 'none' || !quizData.length || e.ctrlKey || e.metaKey || e.altKey) return;
   if (document.querySelector('.modal-backdrop.show')) return;
   const tag = (e.target.tagName || '').toLowerCase(), k = e.key.toLowerCase();
-  if (tag === 'input' || tag === 'textarea') return;
-  if (tag === 'button' && (k === 'enter' || k === ' ')) return;
-  const q = quizData[currentQ], idx = 'abcde'.indexOf(k) >= 0 ? 'abcde'.indexOf(k) : '12345'.indexOf(k);
-  if (idx >= 0 && q.type !== 'fill' && idx < q.options.length) { selectOption(idx); e.preventDefault(); }
-  else if (k === 'arrowright' || k === 'enter' || k === 'n') { nextQBtn.click(); e.preventDefault(); }
-  else if (k === 'arrowleft' || k === 'p') prevQBtn.click();
-  else if (k === 'e') explToggleBtn.click();
+  if (tag === 'textarea') return;
+  if (tag === 'input') {                                    // typing in the fill-in box
+    if (k === 'escape') { e.target.blur(); e.preventDefault(); }
+    return;                                                 // Enter there is handled by the box itself
+  }
+  if (tag === 'button' && e.target.closest('.quiz-top') && (k === 'enter' || k === ' ')) return;   // top-bar buttons keep native behaviour
+  if (tag === 'button' && k === ' ') return;
+  if (e.repeat && k !== 'arrowup' && k !== 'arrowdown') return;   // holding a key must not skip questions
+
+  const q = quizData[currentQ], isFill = q.type === 'fill';
+  const answered = userAnswers[currentQ] !== -1;
+  const n = isFill ? 0 : q.options.length;
+  const optKey = (!isFill && !answered && k.length === 1 && "1234abcd".indexOf(k) >= 0) ? String("1234abcd".indexOf(k) % 4) : "";
+  if (!optKey) kbLastKey = "";                              // any other key cancels a pending double-press
+  const sendIt = () => {
+    if (isFill) {
+      if (answered) { goNextOrFinish(); return; }
+      const inp = document.getElementById('fillInput'); if (inp) inp.focus();
+    } else if (answered) goNextOrFinish();
+    else selectOption(kbIdx);
+  };
+
+  if (k === 'arrowdown' || k === 'arrowup') {
+    if (answered || isFill || !n) {                         // nothing to highlight: arrows scroll the page a little (to read the explanation)
+      const bd = document.querySelector("#quizCard .quiz-body");
+      if (bd) { bd.scrollBy({ top: (k === "arrowdown" ? 1 : -1) * 90, behavior: e.repeat ? "auto" : "smooth" }); e.preventDefault(); }
+      return;
+    }
+    kbIdx = k === 'arrowdown' ? (kbIdx + 1) % n : (kbIdx - 1 + n) % n;
+    kbApply(true); e.preventDefault();
+  }
+  else if (k === 'arrowright' || k === '8' || k === 'n') { goNextOrFinish(); e.preventDefault(); }
+  else if (k === 'arrowleft' || k === '7' || k === 'p') { prevQBtn.click(); e.preventDefault(); }
+  else if (k === 'enter' || k === '0') {
+    if (k === '0' && isFill && !answered) return;
+    sendIt(); e.preventDefault();
+  }
+  else if (k === '5' || k === 'e') { explToggleBtn.click(); e.preventDefault(); }
+  else if (k === '6' || k === '9') { skipQBtn.click(); e.preventDefault(); }
+  else if (k === '?' || k === 'h') { showToast('⌨️ ↑↓ option · Enter/0 send · 1-4 pick (twice = send) · ←→ prev/next · 5 explanation · 6/9 skip · +/− scroll'); e.preventDefault(); }
+  else if (!isFill && !answered) {
+    const d = '1234'.indexOf(k) >= 0 ? '1234'.indexOf(k) : 'abcd'.indexOf(k);
+    if (d >= 0 && d < n) {
+      e.preventDefault();
+      if (kbLastKey === String(d)) { kbLastKey = ""; kbIdx = d; selectOption(d); }   // same key twice = send
+      else { kbIdx = d; kbLastKey = String(d); kbApply(true); }
+    }
+  }
+});
+/* Page scroll from the numpad: + = down, - = up (also PageUp/PageDown, Home/End). Works on quiz, result and home screens. */
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable) return;
+  if (document.querySelector('.modal-backdrop.show')) return;
+  const k = e.key;
+  const dir = (k === '+' || k === '=' || k === 'PageDown') ? 1 : (k === '-' || k === '_' || k === 'PageUp') ? -1 : 0;
+  const edge = k === 'Home' ? -1 : k === 'End' ? 1 : 0;
+  if (!dir && !edge) return;
+  const vis = el => el && el.getClientRects().length > 0;
+  let sc = null;
+  if (vis(quizCard)) sc = document.querySelector('#quizCard .quiz-body');
+  else if (vis(resultScreenCard)) sc = resultScreenCard;
+  if (sc && sc.scrollHeight <= sc.clientHeight + 2) sc = null;
+  const beh = e.repeat ? 'auto' : 'smooth';
+  if (edge) {
+    if (!sc) return;                                         // window: native Home/End already work
+    sc.scrollTo({ top: edge < 0 ? 0 : sc.scrollHeight, behavior: beh }); e.preventDefault(); return;
+  }
+  if (sc) sc.scrollBy({ top: dir * sc.clientHeight * 0.8, behavior: beh });
+  else window.scrollBy({ top: dir * window.innerHeight * 0.8, behavior: beh });
+  e.preventDefault();
 });
 function retryWrong() {
   const qs = quizData.filter((q, i) => !isRight(i)).map(q => { const c = { ...q }; delete c.userText; return c; });
@@ -11098,7 +11179,7 @@ header{box-shadow:none!important}
     const S = shareState; if (!S) return;
     stopTimer(); shareErr('');
     if (sharePeer) { try { sharePeer.destroy(); } catch (e) {} sharePeer = null; }
-    const box = shareOv.querySelector('.yq-box'); box.dataset.mode = 'link';
+    const box = shareOv.querySelector('.yq-box'); box.dataset.mode = 'link'; setCodeText('');
     box.dataset.xfer = '1'; box.dataset.xdone = '0';
     setRing(shareOv, 0, ''); $(shareOv, '.yq-info').textContent = '⏳ Taiyar ho raha hai…';
     setWarn('📵 Screen off mat karo');
@@ -11126,6 +11207,7 @@ header{box-shadow:none!important}
       $(shareOv, '.yq-info').textContent = '✅ Scan karo';
       setWarn('');
       buzz(60);
+      registerCode(S, ref + '.' + enc.k + '.' + body.length);
       watchAck(S, RELAYS.find(r => r.tag === ref.charAt(0)), ref.slice(1));
     } catch (e) {
       if (shareState !== S) return;
@@ -11139,7 +11221,7 @@ header{box-shadow:none!important}
     stopTimer(); shareErr('');
     shareOv.querySelector('.yq-box').dataset.mode = 'link';
     $(shareOv, '.yq-info').textContent = '⏳ Link ban raha hai…';
-    setLinkText('');
+    setLinkText(''); setCodeText('');
     try {
       await loadLib('gen', () => typeof qrcode === 'function');
       await loadLib('peer', () => typeof Peer === 'function');
@@ -11184,7 +11266,7 @@ header{box-shadow:none!important}
     const S = shareState; if (!S) return;
     stopTimer(); shareErr('');
     if (sharePeer) { try { sharePeer.destroy(); } catch (e) {} sharePeer = null; }
-    shareOv.querySelector('.yq-box').dataset.mode = 'frames';
+    shareOv.querySelector('.yq-box').dataset.mode = 'frames'; setCodeText('');
     $(shareOv, '.yq-info').textContent = '⏳ QR ban raha hai…'; setWarn('');
     try {
       await loadLib('gen', () => typeof qrcode === 'function');
@@ -11209,6 +11291,7 @@ header{box-shadow:none!important}
         ${TOON('out')}
         <div class="yq-warn"></div>
         <div class="yq-link" data-empty="1"><span class="yq-lt" id="yqLinkTxt" role="button" tabindex="0" title="Tap to copy"></span><button class="yq-cp" id="yqCopy" type="button" aria-label="Link copy">Copy</button></div>
+        <div class="yq-code" data-empty="1" role="button" tabindex="0" title="Tap to copy"><span class="yq-cl">🔢 Code</span><b id="yqCodeTxt"></b></div>
         <div class="yq-err" style="display:none"></div>
         <div class="yq-row">
           <button class="btn-sm yq-act yq-ln" id="yqSendLink" type="button" title="Link bhejo" aria-label="Link bhejo">📤</button>
@@ -11225,6 +11308,7 @@ header{box-shadow:none!important}
       $(shareOv, '#yqSlow').addEventListener('click', () => { if (shareState && shareState.frames && shareState.fps > 1) { shareState.fps--; runShareTimer(); } });
       $(shareOv, '#yqFast').addEventListener('click', () => { if (shareState && shareState.frames && shareState.fps < 10) { shareState.fps++; runShareTimer(); } });
       $(shareOv, '#yqCopy').addEventListener('click', copyShareLink);
+      $(shareOv, '.yq-code').addEventListener('click', copyShareCode);
       $(shareOv, '#yqLinkTxt').addEventListener('click', copyShareLink);
       $(shareOv, '#yqLinkTxt').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copyShareLink(); } });
       $(shareOv, '#yqSendLink').addEventListener('click', async () => {
@@ -11238,7 +11322,7 @@ header{box-shadow:none!important}
       });
     }
     setMode('link');
-    shareErr(''); shareLink = ''; setLinkText('');
+    shareErr(''); shareLink = ''; setLinkText(''); setCodeText('');
     shareOv.classList.add('show'); wakeOn();
     shareState = { payload: { v: 1, o: rec.id, t: rec.title, q: rec.quizData, a: rec.userAnswers, c: rec.currentQ || 0, e: rec.elapsed || 0, s: !!rec.submitted, n: rec.attempts || 1 }, packed: null, frames: null, i: 0, fps: 4 };
     startLinkMode();
@@ -11490,8 +11574,124 @@ header{box-shadow:none!important}
   checkHash();
   window.addEventListener('hashchange', checkHash);
 
+  /* ---------- 5-digit CODE (third way, next to QR and link) ----------
+     The code is only a short pointer: ntfy topic "yqcode<code>" holds the same "<relay id>.<key>.<bytes>" string that the QR/link carries.
+     The encrypted quiz itself still sits on the existing relay. If ntfy is down the code simply doesn't show; QR and link are untouched. */
+  const CODE_TTL = '2h', CODE_NS = 'yqcode';
+  async function codeGet(code) {
+    const r = await fetch(NTFY + '/' + CODE_NS + code + '/json?poll=1&since=' + CODE_TTL);
+    if (!r.ok) throw new Error('http');
+    const evs = (await r.text()).split('\n').map(l => { try { return JSON.parse(l); } catch (e) { return null; } }).filter(e => e && e.event === 'message' && e.message);
+    if (!evs.length) return null;
+    evs.sort((a, b) => (a.time || 0) - (b.time || 0));
+    return String(evs[evs.length - 1].message).trim();
+  }
+  async function codePut(spec) {
+    for (let i = 0; i < 6; i++) {
+      const a = new Uint32Array(1); crypto.getRandomValues(a);
+      const code = String(10000 + a[0] % 90000);
+      if (await codeGet(code)) continue;                       // already in use -> pick another
+      const r = await fetch(NTFY + '/' + CODE_NS + code, { method: 'POST', body: spec });
+      if (!r.ok) throw new Error('http');
+      return code;
+    }
+    throw new Error('busy');
+  }
+  function setCodeText(c) {
+    const box = shareOv && shareOv.querySelector('.yq-code'); if (!box) return;
+    $(shareOv, '#yqCodeTxt').textContent = c || '';
+    if (c) box.removeAttribute('data-empty'); else box.setAttribute('data-empty', '1');
+  }
+  async function registerCode(S, spec) {
+    try { const code = await codePut(spec); if (shareState !== S) return; S.code = code; setCodeText(code); }
+    catch (e) { console.warn('code failed:', e && e.message); }
+  }
+  async function copyShareCode() {
+    const c = shareState && shareState.code; if (!c) return;
+    let ok = false; try { await navigator.clipboard.writeText(c); ok = true; } catch (e) {}
+    showToast(ok ? 'Code copy ho gaya' : 'Code: ' + c);
+  }
+  const st2 = document.createElement('style');
+  st2.textContent = `
+  .yq-code{display:flex;align-items:center;justify-content:center;gap:10px;width:min(88vw,380px);margin:0 auto;padding:6px 12px;border-radius:14px;border:1px solid var(--line,rgba(255,255,255,.2));background:var(--panel,rgba(255,255,255,.06));cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none}
+  .yq-code[data-empty="1"],.yq-box[data-mode="frames"] .yq-code,.yq-box[data-xfer="1"] .yq-code{display:none}
+  .yq-cl{font-size:.8rem;font-weight:700;color:var(--ink-dim,#aaa)}
+  .yq-code b{font-size:1.5rem;font-weight:800;letter-spacing:.22em;font-variant-numeric:tabular-nums}
+  #yqShareOv .yq-box:has(.yq-code:not([data-empty])) .yq-qr{width:min(76vw,34dvh,380px)}
+  .yq-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 4px}
+  .yq-opt{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;border-radius:14px;border:1px solid var(--line,rgba(255,255,255,.2));background:var(--panel,rgba(255,255,255,.06));color:var(--ink,#eee);font:700 .9rem var(--sans,inherit);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .yq-opt span{font-size:1.6rem;line-height:1}
+  .yq-opt small{font-size:.66rem;font-weight:600;color:var(--ink-dim,#aaa)}
+  .yq-opt.on{border-color:var(--accent,#7c8cff);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent,#7c8cff) 35%,transparent)}
+  .yq-pane{margin-top:10px}.yq-pane[hidden]{display:none}
+  .yq-in{width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid var(--line,rgba(255,255,255,.25));background:var(--panel,rgba(255,255,255,.06));color:var(--ink,#eee);font:600 .9rem var(--sans,inherit);outline:none}
+  .yq-in:focus{border-color:var(--accent,#7c8cff)}
+  .yq-in.code{font-size:1.9rem;font-weight:800;letter-spacing:.4em;text-indent:.4em;text-align:center;font-variant-numeric:tabular-nums}
+  .yq-in:disabled{opacity:.5}
+  #yqRcvOv .yq-row{margin-top:16px}#yqRcvOv .yq-err{margin-top:10px}
+  `;
+  document.head.appendChild(st2);
+
+  /* ---------- RECEIVE chooser: QR / Link / Code ---------- */
+  let rcvOv = null;
+  function closeRcv() { if (rcvOv) rcvOv.classList.remove('show'); }
+  function rcvErr(t) { const e = $(rcvOv, '.yq-err'); e.style.display = t ? '' : 'none'; e.textContent = t || ''; }
+  function rcvPane(k) {
+    rcvOv.querySelectorAll('.yq-pane').forEach(p => { p.hidden = p.dataset.p !== k; });
+    rcvOv.querySelectorAll('.yq-opt').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+    rcvErr('');
+    const inp = k ? rcvOv.querySelector('.yq-pane[data-p="' + k + '"] input') : null;
+    if (inp) { inp.value = ''; setTimeout(() => inp.focus(), 50); }
+  }
+  async function submitCode(code) {
+    const inp = $(rcvOv, '#yqCodeIn');
+    inp.disabled = true; rcvErr('');
+    let spec = null, failed = false;
+    try { spec = await codeGet(code); } catch (e) { failed = true; }
+    inp.disabled = false;
+    if (spec && /^[A-Za-z0-9_.-]+$/.test(spec)) { closeRcv(); routeLink('#yqdl=' + spec); return; }
+    inp.value = ''; inp.focus();
+    rcvErr(failed ? 'Internet check karke dobara try karo.' : 'Code galat hai ya expire ho gaya.');
+  }
+  function tryLink(v) {
+    v = (v || '').trim();
+    if (/#yq(dl|recv)=/.test(v)) { closeRcv(); routeLink(v); return; }
+    rcvErr(v.length >= 20 ? 'Ye Quiz GPT ka link nahi hai.' : '');
+  }
+  function openReceive() {
+    if (!rcvOv) {
+      rcvOv = makeOv('yqRcvOv');
+      $(rcvOv, '.yq-box').innerHTML = `
+        <h3>📥 Quiz receive karo</h3>
+        <div class="yq-opts">
+          <button class="yq-opt" type="button" data-k="qr"><span>📷</span>QR</button>
+          <button class="yq-opt" type="button" data-k="link"><span>🔗</span>Link</button>
+          <button class="yq-opt" type="button" data-k="code"><span>🔢</span>Code</button>
+        </div>
+        <div class="yq-pane" data-p="link" hidden>
+          <input class="yq-in" id="yqLinkIn" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Link paste karo">
+        </div>
+        <div class="yq-pane" data-p="code" hidden>
+          <input class="yq-in code" id="yqCodeIn" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="•••••">
+        </div>
+        <div class="yq-err" style="display:none"></div>
+        <div class="yq-row"><button class="btn-sm" id="yqRcvClose" type="button">Cancel</button></div>`;
+      rcvOv.addEventListener('click', e => { if (e.target === rcvOv) closeRcv(); });
+      $(rcvOv, '#yqRcvClose').addEventListener('click', closeRcv);
+      rcvOv.querySelectorAll('.yq-opt').forEach(b => b.addEventListener('click', () => {
+        if (b.dataset.k === 'qr') { closeRcv(); openScanner(); } else rcvPane(b.dataset.k);
+      }));
+      $(rcvOv, '#yqLinkIn').addEventListener('input', e => tryLink(e.target.value));
+      $(rcvOv, '#yqCodeIn').addEventListener('input', e => {
+        const d = e.target.value.replace(/\D/g, '').slice(0, 5); e.target.value = d; rcvErr('');
+        if (d.length === 5) submitCode(d);
+      });
+    }
+    rcvPane(''); rcvOv.classList.add('show');
+  }
+
   const btn = document.getElementById('yqScanBtn');
-  if (btn) btn.addEventListener('click', openScanner);
+  if (btn) btn.addEventListener('click', openReceive);
   document.addEventListener('visibilitychange', () => { if (document.hidden && scanOv && scanOv.classList.contains('show')) stopScan(); });
 })();
 </script>
