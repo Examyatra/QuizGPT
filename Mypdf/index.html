@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.63">
+<meta name="app-version" content="1.4.71">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -654,28 +654,28 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
     <div style="flex:1;text-align:center;font-size:16px;font-weight:700">Settings</div>
   </div>
   <div class="setting-row">
-    <div class="setting-label">Writing Pressure <span class="setting-hint" title="Stroke width changes with stylus pressure">?</span></div>
+    <div class="setting-label">Writing Pressure <span class="setting-hint" title="How much the line gets thicker when you press harder. 3 = natural ball-pen feel; lower = more even line, higher = more brush-like">?</span></div>
     <div class="slider-row">
-      <input type="range" id="ps-pressure" min="1" max="8" step="1" value="4">
-      <span class="slider-val" id="ps-pressure-val">4</span>
+      <input type="range" id="ps-pressure" min="1" max="8" step="1" value="3">
+      <span class="slider-val" id="ps-pressure-val">3</span>
     </div>
   </div>
   <div class="setting-row">
-    <div class="setting-label">Min Width <span class="setting-hint" title="Minimum width at light pressure">?</span></div>
+    <div class="setting-label">Min Width <span class="setting-hint" title="Thinnest the line can get when you write lightly (60% of the pen size). Higher = lines never look faint">?</span></div>
     <div class="slider-row">
-      <input type="range" id="ps-minw" min="0" max="100" step="5" value="50">
-      <span class="slider-val" id="ps-minw-val">50%</span>
+      <input type="range" id="ps-minw" min="0" max="100" step="5" value="60">
+      <span class="slider-val" id="ps-minw-val">60%</span>
     </div>
   </div>
   <div class="setting-row">
-    <div class="setting-label">Width Smoothing <span class="setting-hint" title="Reduces sudden changes in width">?</span></div>
+    <div class="setting-label">Width Smoothing <span class="setting-hint" title="Evens out sudden thick/thin jumps, especially at stroke ends. 75% = clean, no flicks">?</span></div>
     <div class="slider-row">
-      <input type="range" id="ps-widthsmooth" min="0" max="100" step="5" value="60">
-      <span class="slider-val" id="ps-widthsmooth-val">60%</span>
+      <input type="range" id="ps-widthsmooth" min="0" max="100" step="5" value="75">
+      <span class="slider-val" id="ps-widthsmooth-val">75%</span>
     </div>
   </div>
   <div class="setting-row">
-    <div class="setting-label">Motion Smoothing <span class="setting-hint" title="Reduces hand tremor for smoother lines">?</span></div>
+    <div class="setting-label">Motion Smoothing <span class="setting-hint" title="Steadies finger / mouse lines (Apple Pencil is always smoothed lightly). 2 = steady without lag">?</span></div>
     <div class="slider-row">
       <input type="range" id="ps-motionsmooth" min="1" max="8" step="1" value="2">
       <span class="slider-val" id="ps-motionsmooth-val">2</span>
@@ -1020,7 +1020,8 @@ buildSizeRow("hl-sizes",HL_SIZES,(i,s)=>{HW=s.px;$("#hl-slider").value=s.px;$("#
 $("#pen-slider").oninput=e=>{W=+e.target.value;$("#pen-slider-val").textContent=W+"mm";drawPenPreview()};
 $("#hl-slider").oninput=e=>{HW=+e.target.value;$("#hl-slider-val").textContent=HW+"mm";drawHlPreview()};
 
-/* Pressure/smoothing settings */
+/* Pressure/smoothing settings — v1.4.71 standard defaults: pressure 3, min width 60 %, width smoothing 75 %, motion smoothing 2 (applied once; slider changes made afterwards are kept) */
+try{if(localStorage.getItem("pa_pen_std")!=="2"){["pressure","minw","widthsmooth","motionsmooth"].forEach(k=>localStorage.removeItem("pa_pen_"+k));localStorage.setItem("pa_pen_std","2")}}catch(e){}
 ["pressure","minw","widthsmooth","motionsmooth"].forEach(k=>{
   const el=document.getElementById("ps-"+k),val=document.getElementById("ps-"+k+"-val");
   if(!el)return;
@@ -1031,8 +1032,8 @@ $("#hl-slider").oninput=e=>{HW=+e.target.value;$("#hl-slider-val").textContent=H
   try{const sv=localStorage.getItem("pa_pen_"+k);if(sv){el.value=sv;val.textContent=sv+(k==="minw"||k==="widthsmooth"?"%":"")}}catch(e){}
 });
 document.getElementById("ps-reset").onclick=()=>{
-  [["ps-pressure","4"],["ps-minw","50"],["ps-widthsmooth","60"],["ps-motionsmooth","2"]].forEach(([id,v])=>{
-    const el=document.getElementById(id);if(!el)return;el.value=v;
+  [["ps-pressure","3"],["ps-minw","60"],["ps-widthsmooth","75"],["ps-motionsmooth","2"]].forEach(([id,v])=>{
+    const el=document.getElementById(id);if(!el)return;el.value=v;try{localStorage.removeItem("pa_pen_"+id.slice(3))}catch(e){}
     const lbl=document.getElementById(id+"-val");if(lbl)lbl.textContent=v+(/minw|widthsmooth/.test(id)?"%":"");
   });
 };
@@ -1058,8 +1059,8 @@ drawPenPreview();drawHlPreview();
 
 /* ===== PANEL OPEN/CLOSE LOGIC ===== */
 const PANELS=["pen-panel","pen-settings-panel","er-panel","hl-panel","shape-panel","text-panel","lasso-panel","sel-panel","shp-panel","more-panel","lz-panel","spk-panel"];
-let panelAnchor=null,panelOpen=null,panelFor=null;
-function closeAllPanels(){PANELS.forEach(id=>{const p=document.getElementById(id);if(p)p.hidden=true});panelOpen=null;panelFor=null}
+let panelAnchor=null,panelOpen=null,panelFor=null,panelTimer=0;
+function closeAllPanels(){PANELS.forEach(id=>{const p=document.getElementById(id);if(p)p.hidden=true});panelOpen=null;panelFor=null;clearTimeout(panelTimer)}
 function placePanel(){
   const p=panelOpen&&document.getElementById(panelOpen);if(!p||p.hidden)return;
   let a=panelAnchor&&document.body.contains(panelAnchor)?panelAnchor:null;{const hp=a&&a.closest(".fpanel[data-anchor]");if(hp)a=document.querySelector(hp.dataset.anchor)||a}
@@ -1070,7 +1071,15 @@ function placePanel(){
   p.style.setProperty("--cx",Math.max(20,Math.min(w-20,r.left+r.width/2-left))+"px");p.classList.add("pop");
   const mh=innerHeight-(r.bottom+22);if(p.offsetHeight>mh){p.style.maxHeight=mh+"px";p.style.overflowY="auto"}}
 function openPanel(id,anchor){if(anchor)panelAnchor=anchor;panelOpen=id;
-  PANELS.forEach(pid=>{const p=document.getElementById(pid);if(p)p.hidden=(pid!==id)});placePanel()}
+  PANELS.forEach(pid=>{const p=document.getElementById(pid);if(p)p.hidden=(pid!==id)});placePanel();armPanelTimer()}
+/* v1.4.69/70 — GoodNotes-style auto-hide: every popover (eraser size, pen, highlighter, shapes, More tools …) closes by itself after 7 s without use.
+   Touching / scrolling / typing inside the popover restarts the 7 s; starting to write or erase on the page closes it at once, so no extra tap is needed. */
+const AUTOHIDE_MS=7000,AUTOHIDE=new Set(PANELS);   /* every popover: tool settings, shapes picker, More tools, selection / text bars */
+function armPanelTimer(){clearTimeout(panelTimer);if(panelOpen&&AUTOHIDE.has(panelOpen))panelTimer=setTimeout(()=>{if(panelOpen&&AUTOHIDE.has(panelOpen))closeAllPanels()},AUTOHIDE_MS)}
+["pointerdown","pointermove","wheel","keydown","input"].forEach(ev=>document.addEventListener(ev,e=>{
+  if(!panelOpen||!AUTOHIDE.has(panelOpen))return;const t=e.target;
+  if(t&&t.closest&&t.closest(".fpanel"))armPanelTimer();
+  else if(ev=="pointerdown"&&t&&t.closest&&t.closest(".pg"))closeAllPanels()},true));
 
 const TOOL_PANEL={pen:"pen-panel",hl:"hl-panel",er:"er-panel",stamp:"st-panel",line:"shape-panel",arrow:"shape-panel",rect:"shape-panel",oval:"shape-panel",text:"text-panel",note:"text-panel",sel:"sel-panel",laser:"lz-panel",spk:"spk-panel"};
 // Tool button click → open relevant panel OR toggle off
@@ -1121,10 +1130,12 @@ const hx=(r,g,b)=>"#"+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toS
 function dc(c){if(!DK||!/^#[0-9a-f]{6}$/i.test(c))return c;
   const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16),mx=Math.max(r,g,b),mn=Math.min(r,g,b);
   if(mx-mn<40){const f=255-mx-mn,k=(240-DK_LO)/255;return hx(DK_LO+(r+f)*k,DK_LO+(g+f)*k,DK_LO+(b+f)*k)}   /* black ink -> soft white that stays readable on the charcoal page */
-  const l=(mx+mn)/510;if(l>=.62)return c;
-  const dl=Math.min((.62-l)*255,255-mx);let R=r+dl,G=g+dl,B=b+dl;
-  if(.2126*R+.7152*G+.0722*B<115){const t=.34;R+=(255-R)*t;G+=(255-G)*t;B+=(255-B)*t}   /* dark colours (navy, brown, dark red…) are lifted so they still glow on dark */
-  return hx(R,G,B)}
+  /* ink is drawn ON the page, so a vivid pen colour keeps its own look; only a colour that is too dark for the dark page is lifted to the same per-hue readability floor as the PDF colours (DK_HF) */
+  const l=(mx+mn)/510,cc=(mx-mn)/255,cm=mx-mn;let h=mx==r?(g-b)/cm:mx==g?(b-r)/cm+2:(r-g)/cm+4;if(h<0)h+=6;
+  const fl=Math.min(.7,DK_HF[((h*60)|0)%360]+.04);if(l>=fl)return c;
+  const Cp=Math.min(cc,1-Math.abs(2*fl-1)),X=Cp*(1-Math.abs(h%2-1)),m=fl-Cp/2;let R,G,B;
+  switch(h|0){case 0:R=Cp;G=X;B=0;break;case 1:R=X;G=Cp;B=0;break;case 2:R=0;G=Cp;B=X;break;case 3:R=0;G=X;B=Cp;break;case 4:R=X;G=0;B=Cp;break;default:R=Cp;G=0;B=X}
+  return hx((R+m)*255,(G+m)*255,(B+m)*255)}
 const mq=matchMedia("(prefers-color-scheme: dark)"),eff=()=>theme=="dark"||(theme=="auto"&&mq.matches);
 const TH_SUN='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></svg>',TH_MOON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>';
 function applyTheme(re){
@@ -1163,31 +1174,54 @@ async function imgRects(page,vp,W,H){
       black text -> soft white, yellow highlight -> dark olive (text stays readable), blue link -> light blue, red -> salmon.
    3) a soft charcoal page and soft white text; mid-tones lifted slightly so the thin anti-aliased edges of text keep their weight. */
 const DK_LUT=(()=>{const L=new Uint8ClampedArray(256);for(let v=0;v<256;v++)L[v]=DK_LO+(DK_HI-DK_LO)*Math.pow(v/255,DK_G);return L})();
-/* v1.4.63 — colours stay vivid in dark mode. Neutral pixels (white paper, black text) are inverted as before; coloured pixels (red / pink / green / blue / cyan headings, coloured points, tinted boxes)
-   keep their own hue and strength and only their lightness is moved: strong colours stay bright and saturated on the dark page, light tints (boxes, highlighter) become dark, quiet versions of the same colour. */
-const DK_G2=(()=>{const P=[[0,.80],[.3,.68],[.5,.60],[.62,.53],[.7,.43],[.78,.33],[.85,.24],[.92,.14],[1,.07]],L=new Float32Array(256);
-  for(let i=0;i<256;i++){const x=i/255;let j=1;while(j<P.length-1&&x>P[j][0])j++;const a=P[j-1],b=P[j];L[i]=a[1]+(b[1]-a[1])*Math.max(0,Math.min(1,(x-a[0])/(b[0]-a[0])))}return L})();
+/* v1.4.68 — GoodNotes-style colour system (one set of rules for EVERY colour)
+   RULE 1  Neutral pixels (white paper, black / grey text): lightness inverted -> soft white text on a soft charcoal page (unchanged).
+   RULE 2  Coloured pixels: HUE and chroma are kept, HSL lightness is MIRRORED (L -> 1-L). Measured on GoodNotes: a deep pink heading stays a deep
+           pink (not a pastel), a dark teal / blue / green text becomes a bright teal / blue / green, a pale cream / blue box becomes a very dark
+           cream / blue box. Strong colours therefore keep the same "weight" in light and dark mode.
+   RULE 3  Readability floor per hue: a colour is never allowed to drop below a minimum luminance (Y_MIN) on the dark page. Blue / violet need a
+           higher lightness than yellow / green to reach it, so the floor is stored per hue (DK_HF). It fades out with the chroma, so the soft
+           anti-aliased edge pixels of a heading still blend smoothly into the page instead of forming a bright halo.
+   RULE 4  Pictures: real photos keep their real colours (only the glare of pure white is softened). Diagrams / screenshots / scans / logos on a
+           white background are converted with rules 1-3. The decision uses how "flat" the picture is (a few colours = graphic, thousands of
+           shades = photo), not how much white it has - so a clinical photo with a bright sclera or white border is never turned into a negative. */
+const DK_YMIN=.115;                                     /* GoodNotes' deep pink heading (#B81868) has Y~0.118 -> same strength */
+const DK_HF=(()=>{const T=new Float32Array(360),lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)};
+  for(let h=0;h<360;h++){const hh=h/60,X=1-Math.abs(hh%2-1);let r,g,b;
+    switch(hh|0){case 0:r=1;g=X;b=0;break;case 1:r=X;g=1;b=0;break;case 2:r=0;g=1;b=X;break;case 3:r=0;g=X;b=1;break;case 4:r=X;g=0;b=1;break;default:r=1;g=0;b=X}
+    let L=.2;for(;L<.8;L+=.01){const m=L-.5,R=(r*1+m)*255,G=(g*1+m)*255,B=(b*1+m)*255;   /* full-chroma colour of this hue at lightness L */
+      if(.2126*lin(R)+.7152*lin(G)+.0722*lin(B)>=DK_YMIN)break}
+    T[h]=L}
+  return T})();
 function dkConvert(d){for(let i=0;i<d.length;i+=4){const r=d[i],g=d[i+1],b=d[i+2],mx=r>g?(r>b?r:b):(g>b?g:b),mn=r<g?(r<b?r:b):(g<b?g:b),c=mx-mn,
     nr=DK_LUT[255-r],ng=DK_LUT[255-g],nb=DK_LUT[255-b];
-  if(c<10){d[i]=nr;d[i+1]=ng;d[i+2]=nb;continue}
-  const nl=DK_LUT[255-(((mx+mn)>>1))];
-  const l=(mx+mn)/510,cc=c/255,Lp=DK_G2[(l*255+.5)|0],k=l>=.9?.65:l>=.8?.65+(.9-l)*3.5:1,Cp=Math.min(cc*k*1.1,1-Math.abs(2*Lp-1));
+  if(c<8){d[i]=nr;d[i+1]=ng;d[i+2]=nb;continue}                       /* RULE 1 */
+  const nl=DK_LUT[255-(((mx+mn)>>1))],l=(mx+mn)/510,cc=c/255;
   let h=mx==r?(g-b)/c:mx==g?(b-r)/c+2:(r-g)/c+4;if(h<0)h+=6;
-  const X=Cp*(1-Math.abs(h%2-1)),m=Lp-Cp/2;let R,G,B;
+  const wf=Math.max(0,Math.min(1,(cc-.12)/.4)),fl=DK_HF[((h*60)|0)%360]*wf;      /* RULE 3: hue floor, faded by chroma */
+  let Lp=1-l;if(Lp<fl)Lp=fl;const cap=1-.32*wf;if(Lp>cap)Lp=cap;                    /* RULE 2: mirror the lightness; strong colours never wash out to a pastel (max L .68) */
+  const Cp=Math.min(cc,1-Math.abs(2*Lp-1)),X=Cp*(1-Math.abs(h%2-1)),m=Lp-Cp/2;let R,G,B;
   switch(h|0){case 0:R=Cp;G=X;B=0;break;case 1:R=X;G=Cp;B=0;break;case 2:R=0;G=Cp;B=X;break;case 3:R=0;G=X;B=Cp;break;case 4:R=X;G=0;B=Cp;break;default:R=Cp;G=0;B=X}
-  const w=Math.min(1,(c-8)/26),v=1-w;
+  const w=Math.min(1,(c-5)/14),v=1-w;
   d[i]=nl*v+(R+m)*255*w;d[i+1]=nl*v+(G+m)*255*w;d[i+2]=nl*v+(B+m)*255*w}}
-function dkIsPhoto(t){const n=t.length/4,sp=Math.max(1,Math.floor(n/3000)),bins=new Uint16Array(512);let q=0,w=0,dk=0;
-  for(let i=0;i<n;i+=sp){const r=t[i*4],g=t[i*4+1],b=t[i*4+2];q++;if(r>235&&g>235&&b>235)w++;else if(r<45&&g<45&&b<45)dk++;bins[(r>>5)<<6|(g>>5)<<3|(b>>5)]++}
-  let nb=0;for(let i=0;i<512;i++)if(bins[i]>=q*.012)nb++;
-  if(w/q>=.35)return false;                 /* mostly white paper -> diagram / scan / screenshot: convert */
-  if(w/q>=.2&&nb<=7)return false;           /* flat-colour graphic on white (logo, chart): convert */
-  return true}                              /* photo / artwork / already-dark picture: keep its real colours */
+/* RULE 4 — graphic or photo?  "flat" = share of the 4 most common colours; a photo / scan of a body part has thousands of shades, a diagram has a handful */
+function dkIsPhoto(t){const n=t.length/4,sp=Math.max(1,Math.floor(n/4000)),M=new Map();let q=0,w=0,ch=0;
+  for(let i=0;i<n;i+=sp){const r=t[i*4],g=t[i*4+1],b=t[i*4+2];q++;if(r>238&&g>238&&b>238)w++;
+    const mx=Math.max(r,g,b),mn=Math.min(r,g,b);if(mx-mn>28)ch++;
+    const k=(r>>3)<<10|(g>>3)<<5|(b>>3);M.set(k,(M.get(k)||0)+1)}
+  const cn=[...M.values()].sort((a,b)=>b-a);let top=0;for(let i=0;i<4&&i<cn.length;i++)top+=cn[i];
+  const flat=top/q,rich=cn.filter(v=>v>=q*.004).length;
+  if(w/q>=.6)return false;                      /* almost all white paper: scan / table / line diagram */
+  if(flat>=.58)return false;                    /* a few flat colours: chart, flow-chart, screenshot, logo */
+  if(flat>=.42&&rich<=10&&ch/q<.25)return false;/* grey-scale scan / handwriting on a tinted background */
+  return true}                                  /* photo / artwork / already-dark picture: keep its real colours */
+/* photos keep their colours; only pure-white glare is softened (soft knee) and the whole picture is dimmed a little so it sits well on the dark page */
+const DK_PH=(()=>{const L=new Uint8ClampedArray(256);for(let v=0;v<256;v++){let x=v;if(x>190)x=190+(x-190)*.5;L[v]=x*.93}return L})();
 async function darken(page,vp,c){
   const W=c.width,H=c.height,x=c.getContext("2d"),keep=[];
   for(const r of(await imgRects(page,vp,W,H)).slice(0,60)){const im=x.getImageData(r[0],r[1],r[2],r[3]);if(dkIsPhoto(im.data))keep.push([r,im])}
   const im=x.getImageData(0,0,W,H);dkConvert(im.data);x.putImageData(im,0,0);
-  for(const[r,s]of keep){const d=s.data;for(let i=0;i<d.length;i+=4){d[i]=d[i]*.92;d[i+1]=d[i+1]*.92;d[i+2]=d[i+2]*.92}x.putImageData(s,r[0],r[1])}}
+  for(const[r,s]of keep){const d=s.data;for(let i=0;i<d.length;i+=4){d[i]=DK_PH[d[i]];d[i+1]=DK_PH[d[i+1]];d[i+2]=DK_PH[d[i+2]]}x.putImageData(s,r[0],r[1])}}
 
 /* ===== INDEXEDDB ===== */
 const DB_VER=6;
@@ -1381,7 +1415,7 @@ function paintSeg(c,o,from,raw){const P=o.p,n=P.length;c.lineCap=c.lineJoin="rou
     if(b!==bk){if(open)c.stroke();c.beginPath();c.moveTo(a[0],a[1]);c.lineWidth=w;bk=b;open=true}
     c.quadraticCurveTo(P[j][0],P[j][1],e[0],e[1])}
   if(open)c.stroke()}
-const penPar=()=>{const g=id=>{const v=parseFloat((document.getElementById(id)||{}).value);return isNaN(v)?null:v};return{s:(g("ps-pressure")||4)/8,m:(g("ps-minw")==null?50:g("ps-minw"))/100,w:(g("ps-widthsmooth")==null?60:g("ps-widthsmooth"))/100}};
+const penPar=()=>{const g=id=>{const v=parseFloat((document.getElementById(id)||{}).value);return isNaN(v)?null:v};return{s:(g("ps-pressure")||3)/8,m:(g("ps-minw")==null?60:g("ps-minw"))/100,w:(g("ps-widthsmooth")==null?75:g("ps-widthsmooth"))/100}};
 function paint(c,o,k,raw){
   c.save();c.scale(k,k);c.lineCap=c.lineJoin="round";c.strokeStyle=c.fillStyle=raw?o.c:dc(o.c);c.lineWidth=o.w;if(o.pt=="pencil")c.globalAlpha=.78;
   if(o.t=="img"){if(!raw&&CROP&&CROP.o===o){c.restore();return}const m=IM[o.id];if(m&&m.naturalWidth){const cr=o.cr;if(cr){const nw=m.naturalWidth,nh=m.naturalHeight;c.drawImage(m,cr[0]*nw,cr[1]*nh,nw*(1-cr[0]-cr[2]),nh*(1-cr[1]-cr[3]),o.x,o.y,o.w,o.h)}else c.drawImage(m,o.x,o.y,o.w,o.h)}
@@ -2503,8 +2537,8 @@ function renderSb(){if(!pdf||SB.hidden)return;const c=$("#sbc");c.innerHTML="";c
       l.onclick=e=>{e.stopPropagation();movePage(i,i-1)};r.onclick=e=>{e.stopPropagation();movePage(i,i+1)};
       d.onclick=()=>goPage(i);d.ondragstart=e=>e.dataTransfer.setData("text/plain",i);d.ondragover=e=>{e.preventDefault();d.classList.add("over")};
       d.ondragleave=()=>d.classList.remove("over");d.ondrop=e=>{e.preventDefault();movePage(+e.dataTransfer.getData("text/plain"),i)};g.append(d);
-      thQ=thQ.then(async()=>{if(v!=sbv||!pdf)return;if(isV(s)){const z=vSize(s);cv.width=120;cv.height=Math.round(120*z.h/z.w);const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,cv.width,cv.height);return}const pg=await pdf.getPage(s+1),w=pg.getViewport({scale:1}).width,vv=pg.getViewport({scale:120/w});
-        cv.width=vv.width;cv.height=vv.height;await pg.render({canvasContext:cv.getContext("2d"),viewport:vv}).promise;pg.cleanup()}).catch(()=>{})})}
+      thQ=thQ.then(async()=>{if(v!=sbv||!pdf)return;if(isV(s)){const z=vSize(s);cv.width=120;cv.height=Math.round(120*z.h/z.w);const x=cv.getContext("2d");x.fillStyle=DK?DKBG:"#fff";x.fillRect(0,0,cv.width,cv.height);return}const pg=await pdf.getPage(s+1),w=pg.getViewport({scale:1}).width,vv=pg.getViewport({scale:120/w});
+        cv.width=vv.width;cv.height=vv.height;await pg.render({canvasContext:cv.getContext("2d"),viewport:vv}).promise;if(DK)try{await darken(pg,vv,cv)}catch(e){}pg.cleanup()}).catch(()=>{})})}
   else if(sbTab=="bm"){if(!bm.size)c.textContent="No bookmarks — tap 🔖 to add the current page";
     [...bm].sort((a,b)=>a-b).forEach(i=>{const b=document.createElement("button");b.className="srow";b.textContent="🔖 Page "+(i+1)+"  (long-press to remove ✕)";
       b.onclick=()=>goPage(i);b.oncontextmenu=e=>{e.preventDefault();bm.delete(i);change();renderSb()};c.append(b)})}
@@ -2707,7 +2741,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.63",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.71",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();

@@ -1,5 +1,5 @@
 /* Vpdf — Service Worker (offline-first). Bump the version whenever the code changes */
-const APP_VERSION = "1.4.63";            // change together with APP_VERSION in index.html
+const APP_VERSION = "1.4.71";            // change together with APP_VERSION in index.html
 const VERSION = "pa-app-" + APP_VERSION;  // app-shell cache (new for every version)
 const LIBS = "pa-libs-1";                 // pdf.js etc. (version-pinned) — not re-downloaded on every update
 const SHELL = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
