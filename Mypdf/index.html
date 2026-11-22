@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.51">
+<meta name="app-version" content="1.4.52">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -266,8 +266,11 @@ body.nobar #showbar{display:block}body.pres #showbar{display:none!important}
 .panel-header .reset-btn{margin-left:0;color:var(--ac);font-size:14px;font-weight:600;cursor:pointer;border:none;background:none}
 
 /* ===== DOCUMENT AREA ===== */
-#doc{position:fixed;left:0;right:0;top:var(--viewer-top,104px);bottom:0;padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px;overflow:auto;overscroll-behavior:contain;touch-action:pan-x pan-y}
-.pg{scroll-margin-top:64px;position:relative;background:#fff;box-shadow:0 2px 16px rgba(0,0,0,0.15);flex:none;border-radius:3px;overflow:hidden}
+#doc{position:fixed;left:0;right:0;top:var(--viewer-top,104px);bottom:0;padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:16px;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+/* v1.4.52: a zoomed page is wider than the screen. With align-items:center the overflow went equally to BOTH sides, so the left half sat at a negative position that can never be
+   scrolled to (iOS only rubber-banded there and snapped back on release). Now every page starts at the left edge and auto side-margins centre it only while it is narrower than the screen:
+   zoomed-in pages overflow to the right only, so you can pan freely from the far left to the far right. */
+.pg{scroll-margin-top:64px;margin-left:auto;margin-right:auto;position:relative;background:#fff;box-shadow:0 2px 16px rgba(0,0,0,0.15);flex:none;border-radius:3px;overflow:hidden}
 .pg canvas{position:absolute;inset:0;width:100%;height:100%}
 .pg textarea{position:absolute;z-index:3;min-width:120px;min-height:2em;border:1px dashed var(--ac);background:#fff9;color:#000;font-family:inherit;resize:both}
 #empty{margin:8vh 8px;text-align:center;line-height:1.9;opacity:.7;font-size:15px}
@@ -1138,7 +1141,7 @@ async function openFile(f,wid){
   try{pdf=await pdfjsLib.getDocument({url,disableAutoFetch:true,rangeChunkSize:131072}).promise}
   catch(e){pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise}
   const v=(await pdf.getPage(1)).getViewport({scale:1});sizes=[{w:v.width,h:v.height}];curPfp=(pdf.fingerprints&&pdf.fingerprints[0])||"";ord=(ex&&okOrd(ex.ord,pdf.numPages))?[...ex.ord]:[...Array(pdf.numPages).keys()];ord.forEach((v,i)=>{if(isV(v))sizes[i]=vSize(v)});bm=new Set(ex&&ex.bm||[]);tpl=(ex&&ex.tpl)||{};SR={};TXT={};selObjs=[];
-  zoom=Math.max(.5,Math.min(1.6,(innerWidth-24)/v.width));
+  zoom=Math.max(.5,Math.min(1.6,(innerWidth-32)/v.width));
   const d=$("#doc");d.innerHTML="";go("read");if(location.hash!="#read")location.hash="read";
   // Update doc tab
   const dt=document.getElementById("doctab");dt.hidden=false;
@@ -1450,9 +1453,15 @@ function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;if(CROP)c
   const top=a[a.length-1];if(top&&top[0]==="__page__"){a.pop();b.push(top);restorePageState(r?top[1].after:top[1].before).then(()=>st(r?"↪ Page action restored":"↶ Page action undone")).catch(()=>st("❌ Couldn't restore page history"));return}
   const[i,s]=a.pop();b.push([i,JSON.stringify(anns[i]||[])]);anns[i]=JSON.parse(s);draw(i);change()}
 $("#un").onclick=()=>undo(0);$("#re").onclick=()=>undo(1);
-function setZoom(z){zoom=Math.max(.5,Math.min(3,z));$$(".pg").forEach(p=>{const i=+p.dataset.i;sz(p,i);if(vis.has(i)){delete p.dataset.z;render(i)}else free(i)})}
+/* v1.4.52: zoom around a focal point (screen x,y). The page-relative position under that point stays under it, horizontally AND vertically,
+   so buttons / ctrl+wheel / pinch all zoom "into" what you are looking at (GoodNotes-style) instead of jumping to another place. */
+function setZoom(z,fx,fy){const d=$("#doc"),r=d.getBoundingClientRect();if(fx==null)fx=r.left+r.width/2;if(fy==null)fy=r.top+r.height/2;
+  let a=null,bd=1e9;for(const p of $$(".pg")){const b=p.getBoundingClientRect(),dy=fy<b.top?b.top-fy:fy>b.bottom?fy-b.bottom:0;if(dy<bd){bd=dy;a=p}}
+  const ab=a&&a.getBoundingClientRect(),ax=ab?(fx-ab.left)/Math.max(1,ab.width):0,ay=ab?(fy-ab.top)/Math.max(1,ab.height):0,ai=a&&a.dataset.i;
+  zoom=Math.max(.5,Math.min(3,z));$$(".pg").forEach(p=>{const i=+p.dataset.i;sz(p,i);if(vis.has(i)){delete p.dataset.z;render(i)}else free(i)});
+  const n=ai!=null&&$(`.pg[data-i="${ai}"]`);if(n){const b=n.getBoundingClientRect();d.scrollLeft+=b.left+ax*b.width-fx;d.scrollTop+=b.top+ay*b.height-fy}}
 $("#zi").onclick=()=>setZoom(zoom+.2);$("#zo").onclick=()=>setZoom(zoom-.2);
-$("#doc").addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setZoom(zoom*(e.deltaY<0?1.12:1/1.12))}},{passive:false});
+$("#doc").addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setZoom(zoom*(e.deltaY<0?1.12:1/1.12),e.clientX,e.clientY)}},{passive:false});
 
 /* ===== 2-finger pinch zoom (works while scrolling AND while writing) ===== */
 let pz=null;const docEl=$("#doc");
@@ -1485,8 +1494,9 @@ function pzEnd(e){
   if(!pz||e.touches.length>=2)return;const p=pz;pz=null;docEl.style.overflow="";
   p.pg.style.transform="";p.pg.style.transformOrigin="";p.pg.style.willChange="";
   if(Math.abs(p.z-p.z0)<.01)return;
-  setZoom(p.z);const pg=$(`.pg[data-i="${p.i}"]`);
-  if(pg){const r=pg.getBoundingClientRect();docEl.scrollLeft+=r.left+p.fx*r.width-p.mx;docEl.scrollTop+=r.top+p.fy*r.height-p.my}}
+  const pg0=$(`.pg[data-i="${p.i}"]`);setZoom(p.z,p.sx,p.sy);
+  /* the pinch also moved the fingers: carry the page along with them, so panning while pinching works too */
+  const pg=$(`.pg[data-i="${p.i}"]`);if(pg&&pg0){const r=pg.getBoundingClientRect();docEl.scrollLeft+=r.left+p.fx*r.width-p.mx;docEl.scrollTop+=r.top+p.fy*r.height-p.my}}
 docEl.addEventListener("touchend",pzEnd,{passive:true});docEl.addEventListener("touchcancel",pzEnd,{passive:true});
 $("#po").classList.toggle("on",penOnly);
 $("#po").onclick=e=>{penOnly=!penOnly;try{localStorage.setItem("pa_penonly",penOnly?"1":"0")}catch(x){}$("#po").classList.toggle("on",penOnly);st(penOnly?"✍️ Pencil writes · finger scrolls":"✍️ Finger can write too");$$(".pg canvas:last-child").forEach(c=>c.style.touchAction=penOnly?"pan-x pan-y":"none")};
@@ -2359,7 +2369,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.51",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.52",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
