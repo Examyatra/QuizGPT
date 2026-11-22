@@ -119,15 +119,12 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .vsep{width:1px;height:28px;background:var(--bd);flex-shrink:0;margin:0 4px}
 
 /* Color dot buttons in toolbar */
-#tbar,#cbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(58px + env(safe-area-inset-bottom,0px));z-index:210;display:flex;flex-direction:column;align-items:center;gap:6px;max-width:94vw;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:12px;padding:6px;box-shadow:var(--panel-shadow)}
-#cbar{flex-direction:row}
-#tb-btns,#tb-cols{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center}
-#tbar .pb,#cbar .pb{padding:6px 9px;min-width:34px}
-#tb-n{min-width:16px;text-align:center;font-size:13px;font-weight:600}
+#cbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(58px + env(safe-area-inset-bottom,0px));z-index:210;display:flex;flex-direction:row;align-items:center;gap:6px;max-width:94vw;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:12px;padding:6px;box-shadow:var(--panel-shadow)}
+#cbar .pb{padding:6px 9px;min-width:34px}
 .tbc{width:26px;height:26px;border-radius:50%;border:2px solid transparent;box-shadow:inset 0 0 0 1px rgba(128,128,128,.55);padding:0;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font:700 16px/1 system-ui,sans-serif;color:var(--tx);background:var(--btn-bg)}
 .tbc.on{border-color:var(--ac)}
 .tbc input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;border:0}
-body.pres #tbar,body.pres #cbar{display:none!important}
+body.pres #cbar{display:none!important}
 /* v1.4.51: voice bar (shown while a text box is open) + move/size buttons for selected text */
 #lpm{position:fixed;z-index:245;display:flex;flex-wrap:wrap;gap:6px;align-items:center;max-width:min(92vw,300px);padding:8px;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:12px;box-shadow:var(--panel-shadow)}
 #lpm[hidden],#spk[hidden]{display:none}
@@ -145,9 +142,7 @@ body.pres #spk,body.pres #lpm{display:none!important}
 #vbar .pb.rec{background:#dc2626;border-color:#dc2626;color:#fff;animation:vbpulse 1.3s ease-in-out infinite}
 @keyframes vbpulse{50%{box-shadow:0 0 0 5px rgba(220,38,38,.25)}}
 body.pres #vbar{display:none!important}
-#tbar{width:max-content}   /* a bar centred with left:50% was squeezed into half the screen and wrapped into many rows */
-#tb-mv{display:flex;gap:5px;align-items:center;flex-wrap:nowrap;justify-content:center}
-#tb-mv .pb{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;font-weight:700;min-width:40px;padding:6px 8px;font-size:16px}
+
 #lzc{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:130}
 body.nobar #bar{display:none!important}
 #showbar{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:10px;z-index:300;display:none}
@@ -773,8 +768,10 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
   <textarea id="spk-t" autocomplete="off" autocapitalize="sentences" data-1p-ignore data-lpignore="true" placeholder="Yaha likho… (Enter = nayi line)"></textarea>
   <div class="sr" id="spk-voice"><button class="pb" id="spk-mic" style="flex:1">🎤</button><button class="pb" id="spk-lang"></button><button class="pb" id="spk-kb">⌨️</button></div>
   <div class="sr f"><button class="pb" id="sp-b" title="Bold"><b>B</b></button><button class="pb" data-spa="l" title="Left">⇤</button><button class="pb" data-spa="c" title="Center">↔</button><button class="pb" data-spa="r" title="Right">⇥</button><button class="pb" id="sp-sm" title="Smaller">A−</button><span id="sp-sz" class="pb" style="flex:0 0 auto;border:0;background:none"></span><button class="pb" id="sp-bg" title="Bigger">A+</button></div>
-  <div class="sr c" id="spk-cols"></div>
-  <div id="spk-st" style="font-size:12px;opacity:.75;min-height:15px"></div>
+  <div style="display:flex;align-items:center;gap:8px;min-height:28px">
+    <div class="sr c" id="spk-cols" style="flex:1;min-width:0"></div>
+    <div id="spk-st" style="font-size:12px;opacity:.8;white-space:nowrap;flex-shrink:0;max-width:48%;text-align:right;overflow:hidden;text-overflow:ellipsis"></div>
+  </div>
   <div class="sr f"><button class="pb" id="spk-del" title="Delete this text">🗑</button><button class="pb on" id="spk-ok" style="flex:3">💾 Save</button></div>
 </div></div>
 <!-- ===== SETTINGS MODAL ===== -->
@@ -911,42 +908,17 @@ function setLines(o,tg){const P=String(o.v).split("\n").length;delete o.bw;if(tg
   for(let k=0;k<18;k++){const m=(lo+hi)/2;o.bw=m;if(tLines(o).length>=tg)lo=m;else hi=m}
   o.bw=lo}
 /* END-HELPERS */
-document.body.insertAdjacentHTML("beforeend",`<div id="tbar" hidden><div id="tb-btns">
-<button class="pb" id="tb-b" title="Bold"><b>B</b></button><button class="pb" data-tba="l" title="Left">⇤</button><button class="pb" data-tba="c" title="Middle">↔</button><button class="pb" data-tba="r" title="Right">⇥</button>
-<button class="pb" id="tb-ed">✎ Edit</button><button class="pb" id="tb-cp" title="Duplicate">⧉</button><button class="pb" id="tb-dl" title="Delete">🗑</button></div>
-<div id="tb-mv"><button class="pb" data-mv="-" title="Smaller (hold to keep shrinking)">A−</button><button class="pb" data-mv="+" title="Bigger (hold to keep growing)">A+</button><button class="pb" data-mv="l" title="Move left">←</button><button class="pb" data-mv="u" title="Move up">↑</button><button class="pb" data-mv="d" title="Move down">↓</button><button class="pb" data-mv="r" title="Move right">→</button></div>
-<div id="tb-cols"></div></div>
-<div id="cbar" hidden><button class="pb on" id="cb-ok">✓ Done</button><button class="pb" id="cb-rs">↺ Reset</button><button class="pb" id="cb-x">✕ Cancel</button></div>`);
-function selTSet(o,i){const old=selT?selT.i:-1;selT=o?{o,i}:null;if(old>=0&&old!=i)draw(old);if(i>=0)draw(i);showTbar()}
-function showTbar(){const b=$("#tbar");if(!selT||TEDIT||CROP){b.hidden=true;return}b.hidden=false;const o=selT.o;
-  {const _n=$("#tb-n");if(_n)_n.textContent=tBox(o).L.length}$("#tb-b").classList.toggle("on",!!o.b);$$("[data-tba]").forEach(x=>x.classList.toggle("on",x.dataset.tba==(o.al||"l")));
-  const cs=$("#tb-cols");cs.innerHTML="";const seen=new Set();
-  $$(".sw").forEach(sw=>{const c=sw.dataset.c;if(!c||seen.has(c))return;seen.add(c);const d=document.createElement("button");d.className="tbc"+(c.toLowerCase()==String(o.c).toLowerCase()?" on":"");d.style.background=c;d.onclick=()=>tChange(()=>{o.c=c});cs.append(d)});
-  const lb=document.createElement("label");lb.className="tbc";lb.title="Custom color";lb.innerHTML='+<input type="color">';
-  const inp=lb.querySelector("input");inp.value=/^#[0-9a-f]{6}$/i.test(o.c)?o.c:"#000000";inp.onchange=()=>tChange(()=>{o.c=inp.value});cs.append(lb)}
-function tChange(fn){if(!selT)return;snap(selT.i);fn(selT.o);draw(selT.i);change();showTbar()}
-$("#tb-b").onclick=()=>tChange(o=>{o.b=o.b?0:1;if(!o.b)delete o.b});
-$$("[data-tba]").forEach(b=>b.onclick=()=>tChange(o=>{if(b.dataset.tba=="l")delete o.al;else o.al=b.dataset.tba}));
-$("#tb-ed").onclick=()=>openEdit();
-$("#tb-cp").onclick=()=>{if(!selT)return;const i=selT.i;snap(i);const n=JSON.parse(JSON.stringify(selT.o));n.x+=14;n.y+=14;anns[i].push(n);selTSet(n,i);change()};
-$("#tb-dl").onclick=()=>{if(!selT)return;const i=selT.i,o=selT.o;snap(i);anns[i]=(anns[i]||[]).filter(x=>x!==o);selTSet(null,i);change()};
-/* v1.4.51: move / resize the selected text with buttons (hold = keep going). Works with finger, Pencil or mouse, even when "Pencil only" is on. */
-function tNudge(k,n){if(!selT)return;const o=selT.o,i=selT.i,sp=sizes[i]||sizes[0]||{w:600,h:800};
-  if(k=="+"||k=="-"){const f=k=="+"?(n?1.035:1.08):(n?1/1.035:1/1.08),v=Math.max(6,Math.min(200,+(o.s*f).toFixed(2)));if(v===o.s)return;if(o.bw)o.bw=o.bw*v/o.s;o.s=v}
-  else{const u=(n<8?3:n<24?6:14)/zoom,B=tBox(o);if(k=="r")o.x+=u;else if(k=="l")o.x-=u;else if(k=="d")o.y+=u;else o.y-=u;
-    o.x=Math.max(0,Math.min(Math.max(0,sp.w-B.w),o.x));o.y=Math.max(0,Math.min(Math.max(0,sp.h-B.h),o.y))}
-  draw(i)}
-$$("#tb-mv [data-mv]").forEach(b=>{let to=0,iv=0,n=0,act=false;const k=b.dataset.mv;
-  const stop=()=>{if(!act)return;act=false;clearTimeout(to);clearInterval(iv);if(selT){if(k=="+"||k=="-"){TXS=Math.round(selT.o.s);lsSet(TXK.s,TXS)}change();showTbar()}};
-  b.addEventListener("pointerdown",e=>{if(!selT||act)return;e.preventDefault();act=true;n=0;snap(selT.i);tNudge(k,0);try{b.setPointerCapture(e.pointerId)}catch(x){}to=setTimeout(()=>{iv=setInterval(()=>tNudge(k,++n),70)},350)});
-  ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>b.addEventListener(ev,stop));
-  b.addEventListener("contextmenu",e=>e.preventDefault())});
+document.body.insertAdjacentHTML("beforeend",`<div id="cbar" hidden><button class="pb on" id="cb-ok">✓ Done</button><button class="pb" id="cb-rs">↺ Reset</button><button class="pb" id="cb-x">✕ Cancel</button></div>`);
+function selTSet(o,i){const old=selT?selT.i:-1;selT=o?{o,i}:null;if(old>=0&&old!=i)draw(old);if(i>=0)draw(i)}
+function showTbar(){/* tbar removed — tap annotation to edit via textSheet */}
+function tChange(fn){if(!selT)return;snap(selT.i);fn(selT.o);draw(selT.i);change()}
+
 function openEdit(){if(!selT)return;textSheet(selT.i,null,!!selT.o.bg,selT.o,tool=="spk")}
 /* image crop */
 const CMIN=24;
 function startCrop(i,o){const cr=o.cr||[0,0,0,0],FW=o.w/(1-cr[0]-cr[2]),FH=o.h/(1-cr[1]-cr[3]);
   CROP={i,o,F:{x:o.x-cr[0]*FW,y:o.y-cr[1]*FH,w:FW,h:FH},R:{x0:o.x,y0:o.y,x1:o.x+o.w,y1:o.y+o.h},drag:null};
-  $("#cbar").hidden=false;$("#tbar").hidden=true;draw(i);st("✂ Drag the handles to crop, then tap Done")}
+  $("#cbar").hidden=false;draw(i);st("✂ Drag the handles to crop, then tap Done")}
 function cropHandles(){const R=CROP.R,mx=(R.x0+R.x1)/2,my=(R.y0+R.y1)/2;return[["nw",R.x0,R.y0],["n",mx,R.y0],["ne",R.x1,R.y0],["e",R.x1,my],["se",R.x1,R.y1],["s",mx,R.y1],["sw",R.x0,R.y1],["w",R.x0,my]]}
 function cropDown(q){const hr=20/zoom;let best=null,bd=1e9;cropHandles().forEach(([k,x,y])=>{const d=Math.hypot(q[0]-x,q[1]-y);if(d<bd){bd=d;best=k}});
   if(bd<hr){CROP.drag={k:best};return true}
@@ -1637,34 +1609,44 @@ async function sttTranscribe(blob,l){
   throw new Error(tried.size?"All voice keys failed or are resting (limit / invalid)":"No usable voice key (all resting or off)")}
 /* recorder with the same interface as the browser recognizer: cuts a segment after ~0.8 s of silence, sends it, and hands the text to the text box */
 const CR=(()=>{const OK=!!(window.MediaRecorder&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
-  let stream=null,ac=null,an=null,buf=null,mr=null,tm=0,want=false,cb=null,lang="hi",heard=0,quiet=0,segT=0,idleG=0,q=Promise.resolve(),infl=0;
+  /* Keep stream alive for the whole page session so iOS/Safari only asks mic permission once.
+     We only stop the MediaRecorder between uses — never the underlying track. */
+  let _pageStream=null,_pageAC=null,_pageAN=null,_pageBuf=null; // page-level, never released
+  let mr=null,tm=0,want=false,cb=null,lang="hi",heard=0,quiet=0,segT=0,idleG=0,q=Promise.resolve(),infl=0;
   const MT=["audio/webm;codecs=opus","audio/mp4","audio/webm","audio/ogg;codecs=opus"],mime=()=>{for(const m of MT)if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m))return m;return""};
   const TH=8,SIL=800,MAXSEG=40000,IDLE=180000;
-  const kill=()=>{clearInterval(tm);tm=0;try{stream&&stream.getTracks().forEach(t=>t.stop())}catch(e){}try{ac&&ac.close()}catch(e){}stream=ac=an=buf=null};
+  // kill: only stop recording, never release the stream tracks
+  const kill=()=>{clearInterval(tm);tm=0;mr=null};
   const armIdle=()=>{clearTimeout(idleG);idleG=setTimeout(()=>{if(!want)return;const h=cb;stopAll(true);if(h)h.error({error:"idle"})},IDLE)};
-  const begin=()=>{const ch=[],m=mime(),r=new MediaRecorder(stream,m?{mimeType:m}:undefined);r._c=ch;r.ondataavailable=e=>{if(e.data&&e.data.size)ch.push(e.data)};mr=r;heard=0;quiet=0;segT=Date.now();r.start()};
+  const begin=()=>{const ch=[],m=mime(),r=new MediaRecorder(_pageStream,m?{mimeType:m}:undefined);r._c=ch;r.ondataavailable=e=>{if(e.data&&e.data.size)ch.push(e.data)};mr=r;heard=0;quiet=0;segT=Date.now();r.start()};
   const send=(b,h)=>{infl++;q=q.then(async()=>{try{const s=(await sttTranscribe(b,lang)).trim();if(s&&h){h.result({results:[[{transcript:s}]]},0);if(h.end)h.end()}}
     catch(e){stopAll(true);if(h)h.error({error:"cloud",msg:e.message})}finally{infl--}})};
-  /* final=true: this is the last segment — send it, then release the microphone */
   const cut=final=>{const r=mr;if(!r||r.state=="inactive")return;mr=null;const sp=heard,h=cb;
     r.onstop=()=>{if(want&&!final)begin();else kill();if(sp){const b=new Blob(r._c,{type:r.mimeType||"audio/webm"});if(b.size>2000)send(b,h)}};try{r.stop()}catch(e){kill()}};
   const stopAll=quiet_=>{want=false;clearTimeout(idleG);if(mr){const r=mr;mr=null;r.onstop=kill;try{r.stop()}catch(e){kill()}}else kill()};
-  const tick=()=>{if(!want||!an||!mr)return;an.getByteTimeDomainData(buf);let m=0;for(let i=0;i<buf.length;i++){const v=Math.abs(buf[i]-128);if(v>m)m=v}
+  const tick=()=>{if(!want||!_pageAN||!mr)return;_pageAN.getByteTimeDomainData(_pageBuf);let m=0;for(let i=0;i<_pageBuf.length;i++){const v=Math.abs(_pageBuf[i]-128);if(v>m)m=v}
     if(m>TH){heard=1;quiet=0;armIdle()}else quiet+=100;
     const age=Date.now()-segT;
     if(heard&&quiet>=SIL||age>MAXSEG||(!heard&&age>15000))cut()};
   const lc=l=>(l||"hi").slice(0,2);
+  // Acquire the mic once and cache it for the page lifetime
+  const ensureStream=async(h)=>{
+    if(_pageStream&&_pageStream.active)return true;  // already have it
+    try{_pageStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}
+    catch(e){want=false;if(cb===h)h.error({error:e&&e.name=="NotFoundError"?"audio-capture":"not-allowed"});return false}
+    try{const AC=window.AudioContext||window.webkitAudioContext;_pageAC=new AC();const s=_pageAC.createMediaStreamSource(_pageStream);_pageAN=_pageAC.createAnalyser();_pageAN.fftSize=1024;s.connect(_pageAN);_pageBuf=new Uint8Array(_pageAN.fftSize)}
+    catch(e){want=false;if(h)h.error({error:"start"});return false}
+    return true};
   return{ok:OK,busy:()=>infl>0||!!(mr&&heard),
     async start(l,h){cb=h;lang=lc(l);want=true;armIdle();
-      if(mr||stream){return}   /* already recording */
-      try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}
-      catch(e){want=false;if(cb===h)h.error({error:e&&e.name=="NotFoundError"?"audio-capture":"not-allowed"});return}
+      if(mr)return;   /* already recording */
+      if(!await ensureStream(h))return;
       if(!want||cb!==h){kill();return}
-      try{const AC=window.AudioContext||window.webkitAudioContext;ac=new AC();const s=ac.createMediaStreamSource(stream);an=ac.createAnalyser();an.fftSize=1024;s.connect(an);buf=new Uint8Array(an.fftSize);begin();tm=setInterval(tick,100)}
-      catch(e){want=false;kill();h.error({error:"start"})}},
+      try{begin();tm=setInterval(tick,100)}catch(e){want=false;kill();h.error({error:"start"})}},
     setLang(l){lang=lc(l)},
-    pause(){want=false;clearTimeout(idleG);cut(true)},      /* last words are still sent and arrive in the box */
+    pause(){want=false;clearTimeout(idleG);cut(true)},
     release(){cb=null;want=false;clearTimeout(idleG);if(mr){const r=mr;mr=null;r.onstop=kill;try{r.stop()}catch(e){kill()}}else kill()},
+    // stopNow also keeps the stream alive — just halts recording immediately
     stopNow(){cb=null;stopAll()}}})();
 /* the rest of the app talks to VR: use cloud keys when at least one key is on, else the browser's own recognizer */
 const VR=(()=>{let cur=VRB;
@@ -1680,7 +1662,7 @@ const LPM=(()=>{document.body.insertAdjacentHTML("beforeend",'<div id="lpm" hidd
     const seen=new Set();$$(".sw").forEach(sw=>{const c=sw.dataset.c;if(!c||seen.has(c))return;seen.add(c);const d=document.createElement("button");d.className="tbc"+(c.toLowerCase()==String(o.c).toLowerCase()?" on":"");d.style.background=c;d.onclick=()=>{tChange(q=>{q.c=c});show(x,y)};m.append(d)});
     const lb=document.createElement("label");lb.className="tbc";lb.innerHTML='+<input type="color">';const ci=lb.querySelector("input");ci.value=/^#[0-9a-f]{6}$/i.test(o.c)?o.c:"#000000";ci.onchange=()=>{tChange(q=>{q.c=ci.value});show(x,y)};m.append(lb);
     const E=document.createElement("button");E.className="pb";E.textContent="✎";E.title="Edit text";E.onclick=()=>{hide();openEdit()};m.append(E);
-    const D=document.createElement("button");D.className="pb";D.textContent="🗑";D.onclick=()=>{hide();$("#tb-dl").click()};m.append(D);
+    const D=document.createElement("button");D.className="pb";D.textContent="🗑";D.onclick=()=>{hide();if(!selT)return;const _i=selT.i,_o=selT.o;snap(_i);anns[_i]=(anns[_i]||[]).filter(x=>x!==_o);selTSet(null,_i);change()};m.append(D);
     m.hidden=false;const w=m.offsetWidth,h=m.offsetHeight;m.style.left=Math.max(8,Math.min(innerWidth-w-8,x-w/2))+"px";m.style.top=Math.max(8,Math.min(innerHeight-h-8,y-h-24))+"px"}
   document.addEventListener("pointerdown",e=>{if(!m.hidden&&!m.contains(e.target))hide()},true);
   return{show,hide}})();
@@ -1704,22 +1686,44 @@ function textSheet(i,q,note,ex,voice){
   $$("[data-spa]").forEach(x=>x.onclick=()=>{al=x.dataset.spa;sty()});
   const hold=(el,f)=>{let to=0,iv=0;const stop=()=>{clearTimeout(to);clearInterval(iv)};el.onpointerdown=e=>{e.preventDefault();f();to=setTimeout(()=>{iv=setInterval(f,70)},350)};el.onpointerup=el.onpointercancel=el.onpointerleave=stop};
   hold($("#sp-sm"),()=>{s=Math.max(6,+(s/1.06).toFixed(1));sty()});hold($("#sp-bg"),()=>{s=Math.min(200,+(s*1.06).toFixed(1));sty()});
-  $("#spk-del").hidden=!ex;$("#spk-voice").hidden=!SRC;
-  const ui=()=>{$("#spk-mic").classList.toggle("rec",listening);$("#spk-mic").textContent=listening?"⏸ Pause":"🎤 Speak";$("#spk-lang").textContent=LN[TXL]||"";$("#spk-kb").classList.toggle("on",!listening)};
-  const paint=()=>{const d=[committed,sess.filter(Boolean).join(" ")].filter(Boolean).join(" ").trim(),cv=TXL=="hing"?D2R(d):d,g1=pre&&cv&&!/\s$/.test(pre)?" ":"",g2=post&&cv&&!/^\s/.test(post)?" ":"";t.value=pre+g1+cv+g2+post;const pos=(pre+g1+cv).length;try{t.setSelectionRange(pos,pos)}catch(e){}t.scrollTop=t.scrollHeight};
+  $("#spk-del").hidden=!ex;
+  // Show voice row always; in text-only mode hide mic+lang but keep keyboard button
+  $("#spk-voice").hidden=false;
+  $("#spk-mic").hidden=!SRC;$("#spk-lang").hidden=!SRC;
+  // Status hint helper — shows contextual message in the space next to colour palette
+  let _hintTimer=0;
+  const hint=(s,ms=0)=>{msg(s);clearTimeout(_hintTimer);if(ms>0)_hintTimer=setTimeout(()=>msg(SRC&&!listening?"🎤 Dabao aur bolo":"✏️ Likhna shuru karo"),ms)};
+  const ui=()=>{
+    $("#spk-mic").classList.toggle("rec",listening);
+    $("#spk-mic").textContent=listening?"⏸ Pause":"🎤 Speak";
+    $("#spk-lang").textContent=LN[TXL]||"";
+    $("#spk-kb").classList.toggle("on",!listening);
+    // Idle hint when no status is showing
+    if(!listening&&!$("#spk-st").textContent)
+      msg(SRC?"🎤 Dabao aur bolo":"✏️ Likhna shuru karo")};
+  const paint=()=>{const d=[committed,sess.filter(Boolean).join(" ")].filter(Boolean).join(" ").trim(),cv=TXL=="hing"?D2R(d):d,g1=pre&&cv&&!/\s$/.test(pre)?" ":"",g2=post&&cv&&!/^\s/.test(post)?" ":"";t.value=pre+g1+cv+g2+post;const pos=(pre+g1+cv).length;try{t.setSelectionRange(pos,pos)}catch(e){}t.scrollTop=t.scrollHeight;
+    if(d)hint("📝 Text aa raha hai…")};
   const anchor=()=>{const a=t.selectionStart==null?t.value.length:t.selectionStart,e=t.selectionEnd==null?a:t.selectionEnd;pre=t.value.slice(0,a);post=t.value.slice(e);committed="";sess=[]};
-  const H={result:(e,bs)=>{if(closed)return;bs=bs||0;got++;for(let k=bs;k<e.results.length;k++)sess[k-bs]=(e.results[k][0].transcript||"").trim();sess.length=Math.max(0,e.results.length-bs);paint()},
-    end:()=>{if(sess.length){const x=sess.filter(Boolean).join(" ");if(x)committed=committed?committed+" "+x:x;sess=[]}},
-    error:e=>{const er=e&&e.error;listening=false;t.readOnly=false;ui();msg(er=="not-allowed"||er=="service-not-allowed"?"🎤 Microphone blocked — site settings me Microphone → Allow":er=="idle"?"🎤 Quiet raha — 🎤 dabao":er=="network"?"🎤 Internet check karo":er=="cloud"?"☁️ "+(e.msg||"Voice failed"):er=="audio-capture"?"🎤 Microphone nahi mila":"🎤 Voice start nahi hua — 🎤 dabao")}};
-  const micOn=()=>{if(listening||!SRC)return;anchor();t.readOnly=true;try{t.blur()}catch(x){}listening=true;ui();msg("🎤 Bolo… ruk ke bhi bol sakte ho");VR.start(TXL=="en"?"en-IN":"hi-IN",H)};
-  const micOff=()=>{if(!listening)return;listening=false;t.readOnly=false;VR.pause();ui();msg("")};
-  const kbOn=()=>{micOff();t.readOnly=false;kbFocus(t);ui()};
+  const H={result:(e,bs)=>{if(closed)return;bs=bs||0;got++;for(let k=bs;k<e.results.length;k++)sess[k-bs]=(e.results[k][0].transcript||"").trim();sess.length=Math.max(0,e.results.length-bs);hint("📡 Processing…");paint()},
+    end:()=>{if(sess.length){const x=sess.filter(Boolean).join(" ");if(x)committed=committed?committed+" "+x:x;sess=[];hint("✅ Text aa gaya — bolte raho",2000)}},
+    error:e=>{const er=e&&e.error;listening=false;t.readOnly=false;ui();msg(er=="not-allowed"||er=="service-not-allowed"?"🔒 Mic blocked — settings me Allow karo":er=="idle"?"🤫 Quiet raha, phir bolo":er=="network"?"📶 Internet check karo":er=="cloud"?"☁️ "+(e.msg||"Voice failed"):er=="audio-capture"?"🎙 Mic nahi mila":"⚠️ Voice start nahi hua")}};
+  const micOn=()=>{if(listening||!SRC)return;anchor();t.readOnly=true;try{t.blur()}catch(x){}listening=true;ui();msg("🎙 Sun raha hai… bolo");VR.start(TXL=="en"?"en-IN":"hi-IN",H)};
+  const micOff=()=>{if(!listening)return;listening=false;t.readOnly=false;VR.pause();ui();hint("⏳ Finalizing…",1500)};
+  const kbOn=()=>{micOff();t.readOnly=false;kbFocus(t);hint("✏️ Keyboard ready",1500)};
   t.oninput=()=>{if(listening)micOff();committed="";sess=[]};
   $("#spk-mic").onclick=()=>listening?micOff():micOn();$("#spk-kb").onclick=kbOn;
   $("#spk-lang").onclick=()=>{TXL=TXL=="hing"?"hi":TXL=="hi"?"en":"hing";lsSet("pa_txlang",TXL);txSync();if(listening){const v=t.value,cp=t.selectionStart==null?v.length:t.selectionStart;pre=v.slice(0,cp);post=v.slice(cp);committed="";sess=[];VR.setLang(TXL=="en"?"en-IN":"hi-IN")}ui()};
   const fit=()=>{const h=(window.visualViewport?visualViewport.height:innerHeight)-20;card.style.maxHeight=Math.max(200,h)+"px"};
   if(window.visualViewport)visualViewport.addEventListener("resize",fit);fit();
-  const close=()=>{closed=true;listening=false;try{VR.release()}catch(e){}m.hidden=true;try{t.blur()}catch(e){}t.value="";document.removeEventListener("keydown",kd,true);if(window.visualViewport)visualViewport.removeEventListener("resize",fit);
+  const close=()=>{closed=true;listening=false;clearTimeout(_hintTimer);try{VR.release()}catch(e){}
+    // Disable textarea BEFORE blur so kbFocus retry callbacks (90ms/260ms) see it as disabled and skip re-focusing
+    t.disabled=true;
+    m.hidden=true;try{t.blur()}catch(e){}
+    // Re-enable after retries have fired, so the element is clean for next open
+    setTimeout(()=>{t.disabled=false;t.value=""},350);
+    document.removeEventListener("keydown",kd,true);if(window.visualViewport)visualViewport.removeEventListener("resize",fit);
+    // Reset visibility so next open starts clean
+    $("#spk-mic").hidden=false;$("#spk-lang").hidden=false;
     ["spk-mic","spk-lang","spk-kb","spk-x","spk-ok","spk-del"].forEach(id=>$("#"+id).onclick=null);t.oninput=null;m.onclick=null};
   const remember=()=>{TXS=Math.round(s);lsSet(TXK.s,TXS);TXB=b;lsSet(TXK.b,b?"1":"0");TXA=al;lsSet(TXK.a,al);txSync()};
   const commit=v=>{close();remember();
@@ -1731,9 +1735,9 @@ function textSheet(i,q,note,ex,voice){
     const av=Math.max(80,Math.min(pw-x-10,420));if(tBox(o).nw>av)o.bw=av;   /* wrap only when it would run off the page */
     snap(i);(anns[i]=anns[i]||[]).push(o);selTSet(o,i);change();st("✅ Saved — tap = edit · ✥ move · ↘ zoom · dabaye rakho = bold / colour")};
   const save=async()=>{if(closed)return;const btn=$("#spk-ok");btn.disabled=true;
-    if(listening){const busy=VR.busy&&VR.busy(),g=got;micOff();msg("⏳ Last words finalize ho rahe hain…");
+    if(listening){const busy=VR.busy&&VR.busy(),g=got;micOff();msg("⏳ Last words aa rahe hain…");
       if(busy){const t0=Date.now();while(Date.now()-t0<5000&&got===g&&VR.busy&&VR.busy())await new Promise(r=>setTimeout(r,120));await new Promise(r=>setTimeout(r,150))}else await new Promise(r=>setTimeout(r,450))}
-    btn.disabled=false;commit(t.value.trim())};
+    msg("💾 Saving…");btn.disabled=false;commit(t.value.trim())};
   $("#spk-ok").onclick=save;
   $("#spk-x").onclick=()=>{close()};
   $("#spk-del").onclick=()=>commit("");
@@ -1741,8 +1745,10 @@ function textSheet(i,q,note,ex,voice){
   function kd(e){if(e.key=="Escape"){e.preventDefault();close()}else if(e.key=="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();save()}}
   document.addEventListener("keydown",kd,true);
   sty();ui();
-  if(SRC&&!ex)micOn();else{const n=t.value.length;kbFocus(t);try{t.setSelectionRange(n,n)}catch(e){}if(!VR.ok&&voice)msg("🎤 Is browser me voice nahi hai — keyboard ka 🎙 use karo")}}
-function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;if(CROP)cropCancel();if(selT){selT=null;$("#tbar").hidden=true}
+  if(SRC&&!ex)micOn();else{const n=t.value.length;kbFocus(t);try{t.setSelectionRange(n,n)}catch(e){}
+    if(!VR.ok&&voice)msg("🎤 Browser me voice nahi — ⌨️ type karo");
+    else if(!SRC)msg(ex?"✏️ Edit karo, phir Save":"✏️ Likhna shuru karo")}}
+function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;if(CROP)cropCancel();if(selT){selT=null}
   const top=a[a.length-1];if(top&&top[0]==="__page__"){a.pop();b.push(top);restorePageState(r?top[1].after:top[1].before).then(()=>st(r?"↪ Page action restored":"↶ Page action undone")).catch(()=>st("❌ Couldn't restore page history"));return}
   const[i,s]=a.pop();b.push([i,JSON.stringify(anns[i]||[])]);anns[i]=JSON.parse(s);draw(i);change()}
 $("#un").onclick=()=>undo(0);$("#re").onclick=()=>undo(1);
@@ -2550,7 +2556,7 @@ addEventListener("keydown",e=>{if(/INPUT|TEXTAREA/.test(document.activeElement.t
   if(inPres()){if(["ArrowRight","ArrowDown","PageDown"," "].includes(e.key)){e.preventDefault();goPage(Math.min(ord.length-1,curPage+1))}else if(["ArrowLeft","ArrowUp","PageUp"].includes(e.key)){e.preventDefault();goPage(Math.max(0,curPage-1))}}
   else if(selObjs.length&&(e.key=="Delete"||e.key=="Backspace")){e.preventDefault();delSel()}});
 
-function onHome(){selT=null;CROP=null;TEDIT=null;$("#tbar").hidden=true;$("#cbar").hidden=true;SB.hidden=true;zwClose();presOff();selObjs=[];lbar();lastRes=null;lastQ=""}
+function onHome(){selT=null;CROP=null;TEDIT=null;$("#cbar").hidden=true;SB.hidden=true;zwClose();presOff();selObjs=[];lbar();lastRes=null;lastQ=""}
 
 
 /* ===== PRO FEATURES 2 ===== */
