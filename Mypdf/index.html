@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.59">
+<meta name="app-version" content="1.4.62">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -431,7 +431,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
 .add-page-options .pb{min-height:48px;text-align:center;white-space:normal}
 @media(max-width:420px){.add-page-options{grid-template-columns:1fr 1fr}}
 
-/* ===== v1.4.59: colourful + smooth toolbar, no instruction text ===== */
+/* ===== v1.4.58: colourful + smooth toolbar, no instruction text ===== */
 #lasso-panel,#sel-panel,.bkh{display:none!important}
 :root{--c-pen:#3b82f6;--c-hl:#f59e0b;--c-er:#ec4899;--c-lasso:#8b5cf6;--c-text:#14b8a6;--c-spk:#ef4444;--c-shape:#f97316;--c-stamp:#eab308;--c-more:#6366f1;--c-laser:#f43f5e;--c-img:#06b6d4;--c-page:#22c55e;--c-undo:#64748b;--ease:cubic-bezier(.22,1,.36,1)}
 /* toolbar strip: each tool has its own colour (soft tinted tile + coloured icon) */
@@ -495,6 +495,78 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
 #hp-tools [data-tl="merge"]{--c:#3b82f6}#hp-tools [data-tl="img"]{--c:#06b6d4}#hp-tools [data-tl="sig"]{--c:#ec4899}#hp-tools [data-tl="ext"]{--c:#f97316}#hp-tools [data-tl="cmp"]{--c:#a855f7}#hp-tools [data-tl="blank"]{--c:#22c55e}
 #hp-tools .tlc.need{opacity:.85}
 @media(prefers-reduced-motion:reduce){.fpanel,.mod,.mod>div,.mcell,#tm .pb,#hp-tools .tlc{animation:none!important}#tstrip .ibtn,.mcell .ibtn{transition:none}}
+
+/* ===== v1.4.61: Settings — clean grouped layout ===== */
+#sm>div{width:min(540px,100%);padding:0;gap:0;border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.4);animation:modIn .3s var(--ease) both;-webkit-overflow-scrolling:touch}
+#sm{animation:modBg .2s ease both}
+#sm .smv{padding:6px 18px 22px;gap:0}
+#sm .smh{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:center;min-height:56px;margin:0 -18px;padding:0 18px;background:var(--panel-bg);border-bottom:1px solid transparent}
+#sm .smh h2{font-size:17px;font-weight:650;letter-spacing:-.01em;margin:0}
+#sm .smh .smdone,#sm .smh .smback{position:absolute;top:50%;transform:translateY(-50%);background:none;border:0;padding:8px 6px;font-size:16px;font-weight:600;color:var(--ac);border-radius:8px}
+#sm .smh .smdone{right:12px}#sm .smh .smback{left:10px;font-weight:500}
+#sm .smh button:active{opacity:.5}
+#sm .sgl{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;opacity:.55;margin:22px 4px 8px}
+#sm .sg{background:var(--btn-bg);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+#sm .smb{display:flex;align-items:center;gap:13px;width:100%;min-height:62px;padding:11px 14px;border:0;border-radius:0;background:transparent;text-align:left;font-weight:400;position:relative;transition:background .15s}
+#sm .smb+.smb::before{content:"";position:absolute;left:61px;right:0;top:0;border-top:1px solid var(--bd);opacity:.7}
+#sm .smb:active,#sm .sgrow:active{background:var(--btn-hover)}
+#sm .smb[hidden]{display:none}
+#sm .ic{flex:0 0 34px;width:34px;height:34px;border-radius:9px;background:var(--c,#64748b);display:flex;align-items:center;justify-content:center}
+#sm .ic svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#sm .smb .t,#sm .sgrow .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+#sm .smb b,#sm .sgrow b{font-size:16px;font-weight:550;line-height:1.25}
+#sm .smb small,#sm .sgrow small{font-size:13px;line-height:1.35;opacity:.6}
+#sm .chev{font-style:normal;font-size:22px;line-height:1;opacity:.3;margin-right:2px}
+#smf{margin-top:10px;padding:0;font-size:14px;line-height:1.45}
+#smf:not(:empty){padding:11px 14px;border-radius:12px;background:var(--btn-bg);border-left:4px solid var(--ac)}
+#smf[data-s=ok]{border-left-color:#16a34a}#smf[data-s=err]{border-left-color:#dc2626}#smf[data-s=warn]{border-left-color:#d97706}
+#sm .seg{display:flex;gap:2px;padding:3px;background:var(--btn-bg);border-radius:12px}
+#sm .seg .th-btn{flex:1;border:0;border-radius:9px;padding:10px 6px;font-size:15px;font-weight:550;background:transparent;transition:background .2s,color .2s,box-shadow .2s}
+#sm .seg .th-btn.on{background:var(--ac);color:#fff;box-shadow:0 2px 8px color-mix(in srgb,var(--ac) 45%,transparent)}
+#sm .smfoot{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:26px;font-size:12px;opacity:.5}
+#sm .smp{font-size:14px;line-height:1.55;opacity:.72;margin:4px 4px 6px}
+#sm .smp.sm2{font-size:13px;margin-top:14px}
+#sm .frm .fld{display:flex;align-items:center;gap:12px;padding:6px 14px;min-height:52px;position:relative}
+#sm .frm .fld+.fld::before{content:"";position:absolute;left:14px;right:0;top:0;border-top:1px solid var(--bd);opacity:.7}
+#sm .frm .fld>span{flex:0 0 96px;font-size:15px;font-weight:550}
+#sm .frm .fld>span em{display:block;font-style:normal;font-size:12px;font-weight:400;opacity:.55}
+#sm .frm .fld.col{align-items:flex-start;padding-top:12px;padding-bottom:12px}
+#sm .frm input,#sm .frm select,#sm .frm textarea{flex:1;min-width:0;width:auto;border:0;background:transparent;color:var(--tx);font:inherit;font-size:16px;padding:8px 0;outline:none;border-radius:0}
+#sm .frm textarea{resize:none;line-height:1.45;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;padding-top:2px}
+#sm .frm select{appearance:none;-webkit-appearance:none;text-align:right;color:var(--ac);font-weight:550;cursor:pointer}
+#sm .frm ::placeholder{color:var(--tx);opacity:.32}
+#sm .frm .fld:focus-within{background:color-mix(in srgb,var(--ac) 6%,transparent)}
+#sm .row2{display:flex;gap:10px;margin-top:14px}
+#sm .row2 button,#sm .wide{flex:1;padding:13px 14px;font-size:16px;font-weight:600;border-radius:12px}
+#sm .wide{width:100%;margin-top:14px}
+#sm button.on{box-shadow:0 3px 10px color-mix(in srgb,var(--ac) 35%,transparent)}
+#sm button.ghost{background:var(--btn-bg);border:0;color:var(--ac)}
+#sm button.danger{background:var(--btn-bg);border:0;color:#dc2626}
+#sm button.ghost:active,#sm button.danger:active{background:var(--btn-hover)}
+#sms,#sk-msg{font-size:14px;line-height:1.5;margin-top:12px}
+#sms:not(:empty),#sk-msg:not(:empty){padding:11px 14px;border-radius:12px;border:0;border-left:4px solid var(--ac);background:var(--btn-bg)}
+#sms[data-s=ok],#sk-msg[data-s=ok]{border-left-color:#16a34a;color:var(--tx)}#sms[data-s=err]{border-left-color:#dc2626;color:var(--tx)}
+#sms[data-s=warn],#sk-msg[data-s=warn]{border-left-color:#d97706;color:var(--tx)}
+#sm .sgrow{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:12px 14px;min-height:62px;background:var(--btn-bg);border:0;border-radius:14px;text-align:left;font-weight:400;color:var(--tx)}
+#sm .sgrow.on{background:var(--btn-bg);color:var(--tx);box-shadow:none}
+#sm .tg{flex:0 0 50px;height:30px;border-radius:15px;background:color-mix(in srgb,var(--tx) 22%,transparent);position:relative;transition:background .22s}
+#sm .tg::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3);transition:transform .22s var(--ease)}
+#sm .sgrow.on .tg{background:#22c55e}#sm .sgrow.on .tg::after{transform:translateX(20px)}
+#sk-list{display:flex;flex-direction:column;gap:10px}
+#sm .kc{background:var(--btn-bg);border-radius:14px;padding:13px 14px;display:flex;flex-direction:column;gap:8px}
+#sm .kc.off{opacity:.75}
+#sm .kt{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#sm .kn{display:flex;flex-direction:column;gap:2px;min-width:0}#sm .kn b{font-size:16px;font-weight:600}
+#sm .kn span{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;opacity:.6}
+#sm .pill{flex:none;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px}
+#sm .p-on{background:color-mix(in srgb,#16a34a 18%,transparent);color:#16a34a}
+#sm .p-off{background:color-mix(in srgb,var(--tx) 12%,transparent);opacity:.8}
+#sm .p-rest{background:color-mix(in srgb,#d97706 18%,transparent);color:#d97706}
+#sm .ku{font-size:13px;opacity:.6}
+#sm .kr{font-size:14px;line-height:1.45;padding:9px 12px;border-radius:10px;background:color-mix(in srgb,var(--tx) 7%,transparent);border-left:4px solid var(--ac)}
+#sm .kr.ok{border-left-color:#16a34a}#sm .kr.err{border-left-color:#dc2626}#sm .kr.warn{border-left-color:#d97706}
+#sm .ka{display:flex;gap:8px}#sm .ka button{flex:1;padding:10px 6px;font-size:15px;font-weight:600;border-radius:10px;background:color-mix(in srgb,var(--tx) 7%,transparent)}
+@media(prefers-reduced-motion:reduce){#sm>div,#sm{animation:none!important}}
 </style></head><body>
 
 <!-- ===== TOP BAR ===== -->
@@ -709,91 +781,68 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
 <div id="sm" hidden><div>
  <!-- main view -->
  <div id="sm-main" class="smv">
-   <h2>⚙️ Settings</h2>
-   <button class="smb" id="sm-ins" hidden>📖 Instructions</button>
-   <button class="smb" id="sm-tgb">✈️ Connect Telegram</button>
-    <button class="smb" id="sm-sttb">🎤 Voice API keys (speech-to-text)</button>
-   <button class="smb" id="stb">💾 Full backup now</button>
-   <button class="smb" id="sm-bkf">📤 Save backup file to this device</button>
-   <button class="smb" id="sm-imp">📥 Import backup file</button>
-   <button class="smb" id="sm-trash">🗑 Recover deleted notebooks</button>
-   <input type="file" id="sm-impf" accept=".json,application/json" hidden>
+   <header class="smh"><h2>Settings</h2><button class="smdone" id="smx">Done</button></header>
    <div id="smf" role="status" aria-live="polite"></div>
-   <label>🎨 Theme</label>
-   <div class="row">
-     <button class="th-btn" data-th="auto">Auto</button>
-     <button class="th-btn" data-th="light">☀️ Light</button>
-     <button class="th-btn" data-th="dark">🌙 Dark</button>
+   <button class="smb" id="sm-ins" hidden>Instructions</button>
+   <div class="sgl">Backup</div>
+   <div class="sg">
+     <button class="smb" id="sm-tgb"><i class="ic" style="--c:#2aabee"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4L3 11l6 2.2L11 20l3.2-4.6L19 19z"/><path d="M9 13.2L21 4"/></svg></i><span class="t"><b>Telegram</b><small id="sm-tgs">Not connected</small></span><em class="chev">›</em></button>
+     <button class="smb" id="stb"><i class="ic" style="--c:#16a34a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 01-.6-8.96A6 6 0 0118 9.5 4 4 0 0117.5 18"/><path d="M12 12v8M9 15l3-3 3 3"/></svg></i><span class="t"><b>Full backup now</b><small>Send every notebook to Telegram</small></span><em class="chev">›</em></button>
+     <button class="smb" id="sm-bkf"><i class="ic" style="--c:#f59e0b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 8l4-4 4 4"/><path d="M5 14v4.5A1.5 1.5 0 006.5 20h11a1.5 1.5 0 001.5-1.5V14"/></svg></i><span class="t"><b>Export backup file</b><small>Save a copy on this device</small></span><em class="chev">›</em></button>
+     <button class="smb" id="sm-imp"><i class="ic" style="--c:#6366f1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 11l4 4 4-4"/><path d="M5 14v4.5A1.5 1.5 0 006.5 20h11a1.5 1.5 0 001.5-1.5V14"/></svg></i><span class="t"><b>Import backup file</b><small>Restore from a Vpdf backup file</small></span><em class="chev">›</em></button>
+     <button class="smb" id="sm-trash"><i class="ic" style="--c:#64748b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 108-8 8 8 0 00-5.7 2.4L4 9"/><path d="M4 4v5h5M12 8v4l3 2"/></svg></i><span class="t"><b>Recently deleted</b><small>Bring back notebooks you removed</small></span><em class="chev">›</em></button>
    </div>
-   <div class="row"><button id="smx">Close</button></div>
-   <div class="ver" style="text-align:center;font-size:12px;opacity:.6"></div>
-   <div style="text-align:center;font-size:12px;opacity:.6">Vpdf · Powered by Vishal Yadav</div>
+   <input type="file" id="sm-impf" accept=".json,application/json" hidden>
+   <div class="sgl">Voice typing</div>
+   <div class="sg">
+     <button class="smb" id="sm-sttb"><i class="ic" style="--c:#ef4444"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v3"/></svg></i><span class="t"><b>Speech-to-text keys</b><small id="sm-stts">No keys added</small></span><em class="chev">›</em></button>
+   </div>
+   <div class="sgl">Appearance</div>
+   <div class="seg" role="group" aria-label="Theme">
+     <button class="th-btn" data-th="auto">Automatic</button>
+     <button class="th-btn" data-th="light">Light</button>
+     <button class="th-btn" data-th="dark">Dark</button>
+   </div>
+   <div class="smfoot"><span class="ver"></span><span>Vpdf · Powered by Vishal Yadav</span></div>
  </div>
  <!-- Telegram view -->
  <div id="sm-tg" class="smv" hidden>
-   <div class="row"><button data-smv="main">← Back</button></div>
-   <h2>✈️ Connect Telegram</h2>
-   <small>1. In Telegram open <b>@BotFather</b> → send <b>/newbot</b> → copy the bot token.<br>2. Open your new bot and press <b>Start</b> (for a group or channel, add the bot to it first).<br>3. Chat ID: your own number (message <b>@userinfobot</b> to get it), or @channelname.<br>4. Enter both below, tap <b>Send test</b>, then <b>Save</b>.</small>
-   <label for="stk">Bot token (from @BotFather)</label>
-   <input id="stk" type="text" class="sec" name="tg-bot-token" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" data-form-type="other" placeholder="123456789:AAH...">
-   <label for="stc">Chat ID (a number, or @channelname)</label>
-   <input id="stc" type="text" name="tg-chat-id" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" data-form-type="other" placeholder="123456789">
-   <div class="row">
-     <button id="stv">👁 Show token</button>
-     <button id="stt">🧪 Send test</button>
+   <header class="smh"><button class="smback" data-smv="main">‹ Settings</button><h2>Telegram</h2></header>
+   <p class="smp">Backups are sent to a Telegram chat you control. Create a bot with <b>@BotFather</b>, copy its token, open the bot and press <b>Start</b>. For the chat ID, message <b>@userinfobot</b>, or use a channel name such as <b>@mychannel</b>.</p>
+   <div class="sg frm">
+     <label class="fld"><span>Bot token</span><input id="stk" type="text" class="sec" name="tg-bot-token" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" data-form-type="other" placeholder="123456789:AAH..."></label>
+     <label class="fld"><span>Chat ID</span><input id="stc" type="text" name="tg-chat-id" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" data-form-type="other" placeholder="123456789 or @channel"></label>
    </div>
+   <div class="row2"><button id="stv" class="ghost">Show token</button><button id="stt" class="ghost">Send test message</button></div>
    <div id="sms" role="status" aria-live="polite"></div>
-   <small>Your bot token and chat ID are stored only in this browser's local storage.</small>
-   <div class="row">
-     <button id="stsave" class="on">Save</button>
-     <button id="strm">🗑 Remove</button>
-   </div>
+   <p class="smp sm2">The token and chat ID stay in this browser only.</p>
+   <div class="row2"><button id="strm" class="danger">Remove</button><button id="stsave" class="on">Save</button></div>
  </div>
-   <!-- Voice API keys view -->
-  <div id="sm-stt" class="smv" hidden>
-    <div class="row"><button data-smv="main">← Back</button></div>
-    <h2>🎤 Voice API keys</h2>
-    <small>Add free speech-to-text keys from any company. Every voice request uses the next key in turn (round-robin), so all keys get equal use. If a key hits its limit or is invalid, it rests for a while and the next key is used automatically. Keys stay only in this browser (not in Telegram backup / backup file).</small>
-    <label for="sk-p">Company</label>
-    <select id="sk-p"></select>
-    <label for="sk-k">API key(s) — one per line</label>
-    <textarea id="sk-k" rows="3" class="sec" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" placeholder="paste key(s) here"></textarea>
-    <div class="row"><button id="sk-add" class="on">➕ Add key(s)</button><button id="sk-test">🧪 Test all</button></div>
-    <div id="sk-list"></div>
-    <div class="row"><button id="sk-use"></button></div>
-    <div id="sk-msg" role="status" aria-live="polite"></div>
-  </div>
-<!-- Instructions view -->
- <div id="sm-help" class="smv" hidden>
-   <div class="row"><button data-smv="main">← Back</button></div>
-   <h2>📖 Instructions</h2>
-   <div class="help">
-     <h3>Getting started</h3>
-     <p>Tap <b>＋ Add PDF</b> and pick a file. Your PDF stays on your device; only your notes (ink, text, images, page order, bookmarks) are saved. Every PDF becomes a notebook on the home screen. Tap its thumbnail to continue; if the app asks you to select the PDF, pick the same file again and all your notes come back.</p>
-     <h3>Writing &amp; tools</h3>
-     <p>Pen, highlighter, eraser, lasso, text, shapes, stamps and images are in the tool strip. Tap a tool to select it and open its options; tap again to close. Press and hold a tool, then drag, to reorder the strip. Everything else (pages, search, sticky note, zoom window, signature, bookmark, template, PDF tools) is under <b>⊕ More tools</b>.</p>
-     <p>Add a page with the ＋📄 button: it is inserted right after the page you are on (blank, ruled, grid or dotted). The PDF file itself is never changed.</p>
-     <h3>Saving</h3>
-     <p>Notes are saved automatically on this device a short while after you stop writing, and when you leave the app. Nothing needs to be saved by hand.</p>
-     <h3>Telegram backup</h3>
-     <p>Tap <b>Connect Telegram</b> and follow the 4 steps. After that, backups are sent automatically (a little after your last edit, when you leave the app, when the internet returns, and about every 15 minutes). <b>✈️ Back up to Telegram</b> on the home screen sends right now.</p>
-     <p><b>💾 Full backup now</b> sends a complete, fresh backup of every notebook, not just the recent changes.</p>
-     <h3>Restore</h3>
-     <p>Download the backup .zip files from Telegram, then on the home screen tap <b>♻️ Restore</b> and select them (select all parts, e.g. part1, part2). Then open your original PDF; the notes appear on the same pages.</p>
-     <h3>Storage</h3>
-     <p>Persistent storage is requested automatically, so the browser does not clear your data when space runs low. Install the app (Share → Add to Home Screen on iPad) to keep your data safest.</p>
-     <h3>Theme</h3>
-     <p>Auto follows the device, or choose Light / Dark. The 🌓 button on the home screen toggles quickly.</p>
-     <h3>If buttons stop responding</h3>
-     <p>The app now checks itself when you come back to it and reloads automatically if something is stuck. Your notes are not affected.</p>
+ <!-- Voice API keys view -->
+ <div id="sm-stt" class="smv" hidden>
+   <header class="smh"><button class="smback" data-smv="main">‹ Settings</button><h2>Speech-to-text keys</h2></header>
+   <p class="smp">Add keys from one or more speech-to-text providers. Requests rotate between your keys. If one reaches its limit or stops working, it rests for a while and the next key takes over. Keys are kept in this browser only and are not included in backups.</p>
+   <button class="sgrow" id="sk-use"></button>
+   <div class="sgl">Add keys</div>
+   <div class="sg frm">
+     <label class="fld"><span>Provider</span><select id="sk-p"></select></label>
+     <label class="fld col"><span>API keys <em>one per line</em></span><textarea id="sk-k" rows="3" class="sec" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" placeholder="Paste here"></textarea></label>
    </div>
+   <button id="sk-add" class="on wide">Add keys</button>
+   <div id="sk-msg" role="status" aria-live="polite"></div>
+   <div class="sgl" id="sk-lh">Your keys</div>
+   <div id="sk-list"></div>
+ </div>
+ <!-- Instructions view (kept for compatibility, not linked) -->
+ <div id="sm-help" class="smv" hidden>
+   <div class="row"><button data-smv="main">Back</button></div>
  </div>
  <!-- legacy controls kept hidden so existing features keep working -->
  <div id="sm-legacy" hidden>
    <div id="stinfo"></div>
-   <button id="stp">🔒 Request persistent storage</button>
+   <button id="stp">Request persistent storage</button>
    <input type="checkbox" id="pinv">
-   <button id="strb">↺ Reset toolbar layout</button>
+   <button id="strb">Reset toolbar layout</button>
  </div>
 </div></div>
 
@@ -835,7 +884,9 @@ const isV=v=>typeof v=="string";
 const vSize=v=>{const m=/^b([\d.]+)x([\d.]+)$/.exec(v);return m?{w:+m[1],h:+m[2]}:{w:595.28,h:841.89}};
 const mkV=z=>"b"+(+z.w).toFixed(2)+"x"+(+z.h).toFixed(2);
 const okOrd=(o,n)=>Array.isArray(o)&&o.every(v=>isV(v)?/^b[\d.]+x[\d.]+$/.test(v):(Number.isInteger(v)&&v>=0&&v<n))&&new Set(o.filter(v=>!isV(v))).size==n;
-const st=t=>{$("#st").textContent=t;const h=$("#hst");if(h)h.textContent=t;const f=$("#smf");if(f)f.textContent=t;const tm=$("#htm");if(tm)tm.textContent=t;const tz=$("#htoast");if(tz&&!$("#home").hidden&&!$("#hp-nb").hidden&&t&&!/^✅ Saved safely/.test(t)){tz.textContent=t;tz.hidden=false;clearTimeout(tz._t);tz._t=setTimeout(()=>{tz.hidden=true},4500)}};
+function smClean(t){return String(t==null?"":t).replace(/^\s*(✅|❌|⏳|⚠️|♻️|🗑|🧪)\s*/u,"")}
+function smTone(t){t=String(t==null?"":t);return/^\s*(✅|♻️)/u.test(t)?"ok":/^\s*❌/u.test(t)?"err":/^\s*⚠️/u.test(t)?"warn":""}
+const st=t=>{$("#st").textContent=t;const h=$("#hst");if(h)h.textContent=t;const f=$("#smf");if(f){f.textContent=smClean(t);f.dataset.s=smTone(t)}const tm=$("#htm");if(tm)tm.textContent=t;const tz=$("#htoast");if(tz&&!$("#home").hidden&&!$("#hp-nb").hidden&&t&&!/^✅ Saved safely/.test(t)){tz.textContent=t;tz.hidden=false;clearTimeout(tz._t);tz._t=setTimeout(()=>{tz.hidden=true},4500)}};
 
 /* ===== TEXT + IMAGE EDITING ===== */
 let selT=null,CROP=null,TEDIT=null;
@@ -1621,7 +1672,7 @@ const LPM=(()=>{document.body.insertAdjacentHTML("beforeend",'<div id="lpm" hidd
     m.hidden=false;const w=m.offsetWidth,h=m.offsetHeight;m.style.left=Math.max(8,Math.min(innerWidth-w-8,x-w/2))+"px";m.style.top=Math.max(8,Math.min(innerHeight-h-8,y-h-24))+"px"}
   document.addEventListener("pointerdown",e=>{if(!m.hidden&&!m.contains(e.target))hide()},true);
   return{show,hide}})();
-/* ===== v1.4.59 — ONE text interface for the A tool and the 🎤 tool: tap → sheet (type or speak, format, Save) → editable box on the page ===== */
+/* ===== v1.4.57 — ONE text interface for the A tool and the 🎤 tool: tap → sheet (type or speak, format, Save) → editable box on the page ===== */
 function textBox(p,i,q,note,ex){textSheet(i,q,note,ex,false)}
 function speakBox(p,i,q){textSheet(i,q,false,null,true)}
 function textSheet(i,q,note,ex,voice){
@@ -1786,7 +1837,7 @@ const tgNote=(ok,msg)=>{try{const x=tgStat();if(ok){x.ok=Date.now();delete x.err
 const tgFailing=()=>{const x=tgStat();return !!(x.err&&(!x.ok||(x.et||0)>=x.ok))};
 const agoT=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
 const tgLine=()=>{const x=tgStat();return tgFailing()?"⚠️ Telegram backup failed — open ⚙️ Settings":x.ok?"✈️ Telegram backup on · last sent "+agoT(x.ok):"✈️ Telegram backup on · waiting for the first backup"};
-const tgMsg=(txt,kind)=>{const m=$("#sms");m.textContent=txt;m.dataset.s=kind||"";if(txt){try{m.scrollIntoView({block:"nearest",behavior:"smooth"})}catch(e){}}};
+const tgMsg=(txt,kind)=>{const m=$("#sms");m.textContent=smClean(txt);m.dataset.s=kind||smTone(txt);if(txt){try{m.scrollIntoView({block:"nearest",behavior:"smooth"})}catch(e){}}};
 const tgValid=(t,c)=>{
   if(!t&&!c)return"Enter both the bot token and the chat ID.";
   if(!t)return"The bot token is empty — paste the token you got from @BotFather.";
@@ -1810,47 +1861,60 @@ async function tgCall(token,method,body,ms,retried){
   if(j&&!j.ok&&j.error_code==429&&!retried){const ra=+(j.parameters&&j.parameters.retry_after)||0;if(ra>0&&ra<=30){await new Promise(z=>setTimeout(z,(ra+1)*1e3));return tgCall(token,method,body,ms,1)}}
   if(!j||!j.ok){const e=new Error(tgErr(j,r.status));e.api=1;e.desc=(j&&j.description)||"";throw e}
   return j.result}
-$("#tg").onclick=()=>{const o=TG()||{},x=tgStat();$("#stk").value=o.t||"";$("#stc").value=o.c||"";$("#stk").classList.add("sec");$("#stv").textContent="👁 Show token";
-  if(!o.t)tgMsg("Telegram backup isn't set up yet. Enter your bot token and chat ID, tap “Send test”, then Save.","");
+$("#tg").onclick=()=>{const o=TG()||{},x=tgStat();$("#stk").value=o.t||"";$("#stc").value=o.c||"";$("#stk").classList.add("sec");$("#stv").textContent="Show token";
+  if(!o.t)tgMsg("Telegram backup isn't set up yet.","");
   else if(tgFailing())tgMsg("⚠️ The last backup attempt failed: "+x.err,"err");
   else tgMsg("✅ Telegram backup is set up."+(x.ok?" Last backup sent "+agoT(x.ok)+".":" Waiting for the first backup."),"ok");
   sm.hidden=false;smView("main");smTgLabel();askPersist()};
 const smView=v=>{$$("#sm .smv").forEach(x=>x.hidden=x.id!=="sm-"+v);const b=$("#sm>div");if(b)b.scrollTop=0};
-const smTgLabel=()=>{$("#sm-tgb").textContent=(TG()||{}).t?"✈️ Telegram connected ✓ (edit)":"✈️ Connect Telegram"};
+const smTgLabel=()=>{const e=$("#sm-tgs");if(e)e.textContent=(TG()||{}).t?"Connected":"Not connected"};
 $("#sm-ins").onclick=()=>smView("help");$("#sm-tgb").onclick=()=>smView("tg");$$("[data-smv]").forEach(b=>b.onclick=()=>smView(b.dataset.smv));
 
 /* ===== v1.4.54 — Settings → Voice API keys ===== */
-(()=>{const sel=$("#sk-p"),msg=$("#sk-msg"),say=(m,c)=>{msg.textContent=m||"";msg.style.color=c||""};
+(()=>{const sel=$("#sk-p"),msg=$("#sk-msg"),say=(m,t)=>{msg.textContent=m||"";msg.dataset.s=t||""};
   Object.keys(STTP).forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=STTP[k].n;sel.append(o)});
-  const mask=k=>k.length>12?k.slice(0,4)+"…"+k.slice(-4):"••••";
+  const mask=k=>k.length>12?k.slice(0,4)+"••••"+k.slice(-4):"••••";
   const wav=()=>{const n=16000,b=new ArrayBuffer(44+n*2),v=new DataView(b),w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};w(0,"RIFF");v.setUint32(4,36+n*2,true);w(8,"WAVEfmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,16000,true);v.setUint32(28,32000,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,n*2,true);return new Blob([b],{type:"audio/wav"})};
-  function render(){const L=$("#sk-list");L.textContent="";
-    KS.all().forEach(k=>{const r=document.createElement("div");r.className="row";const s=document.createElement("span");s.style.cssText="flex:1;font-size:13px;word-break:break-all";
-      const cd=(k.cd||0)>Date.now()?" · ⏳ rest "+Math.ceil((k.cd-Date.now())/6e4)+"m":"";
-      s.textContent=(k.off?"⏸ ":"🔑 ")+(STTP[k.p]?STTP[k.p].n:k.p)+" · "+mask(k.k)+" · ✅"+k.ok+" ❌"+k.er+cd+(k.last?" · "+k.last:"");
-      const a=document.createElement("button");a.textContent=k.off?"▶":"⏸";a.onclick=()=>{k.off=k.off?0:1;k.cd=0;KS.save();render()};
-      const d=document.createElement("button");d.textContent="🗑";d.onclick=()=>{KS.del(k.id);render()};
-      r.append(s,a,d);L.append(r)});
-    $("#sk-use").textContent=KS.d.on?"☁️ Cloud voice: ON (tap to switch off)":"☁️ Cloud voice: OFF — browser voice is used (tap to switch on)"}
-  $("#sk-add").onclick=()=>{const n=KS.add(sel.value,$("#sk-k").value);$("#sk-k").value="";say(n?"✅ "+n+" key(s) added":"No new key added (empty or already saved)",n?"":"#b45309");render()};
+  const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+  function render(){const L=$("#sk-list"),all=KS.all();L.textContent="";
+    $("#sk-lh").hidden=!all.length;
+    all.forEach(k=>{const rest=(k.cd||0)>Date.now()?Math.ceil((k.cd-Date.now())/6e4):0,card=el("div","kc"+(k.off?" off":""));
+      const top=el("div","kt"),nm=el("div","kn");nm.append(el("b","",STTP[k.p]?STTP[k.p].n:k.p),el("span","",mask(k.k)));
+      top.append(nm,el("span","pill "+(k.off?"p-off":rest?"p-rest":"p-on"),k.off?"Paused":rest?"Resting "+rest+" min":"Active"));
+      card.append(top,el("div","ku","Used "+k.ok+" · Failed "+k.er+(k.last?" · Last error: "+k.last:"")));
+      if(k.tr)card.append(el("div","kr "+(k.tt||""),k.tr));
+      const act=el("div","ka"),t=el("button","ghost","Test key"),a=el("button","ghost",k.off?"Resume":"Pause"),d=el("button","danger","Remove");
+      t.onclick=()=>testOne(k);a.onclick=()=>{k.off=k.off?0:1;k.cd=0;KS.save();render()};d.onclick=()=>{KS.del(k.id);render()};
+      act.append(t,a,d);card.append(act);L.append(card)});
+    const u=$("#sk-use");u.textContent="";u.classList.toggle("on",!!KS.d.on);
+    const tx=el("span","t");tx.append(el("b","","Cloud voice"),el("small","",KS.d.on?"On · your keys are used for dictation":"Off · the browser's built-in voice is used"));
+    u.append(tx,el("span","tg"));
+    const ss=$("#sm-stts");if(ss)ss.textContent=all.length?all.length+(all.length>1?" keys":" key")+" · cloud voice "+(KS.d.on?"on":"off"):"No keys added"}
+  $("#sk-add").onclick=()=>{const n=KS.add(sel.value,$("#sk-k").value);$("#sk-k").value="";say(n?(n>1?n+" keys added":"Key added"):"Nothing added. The field was empty or the key is already saved.",n?"ok":"warn");render()};
   $("#sk-use").onclick=()=>{KS.d.on=KS.d.on?0:1;KS.save();render()};
-  $("#sk-test").onclick=async()=>{const ks=KS.all().filter(k=>!k.off&&STTP[k.p]);if(!ks.length){say("Add a key first","#b45309");return}
-    say("🧪 Testing "+ks.length+" key(s)…");const b=wav();
-    for(const k of ks){try{await STTP[k.p].run(k.k,b,"en","wav");k.last="";k.cd=0}catch(e){const s=e&&e.s;if(s==400||s==422){k.last="";k.cd=0}else{k.last=s?"HTTP "+s:"network";if(s==401||s==403)k.cd=Date.now()+216e5}}}
-    KS.save();render();say("Test done — keys with ❌/HTTP code need a look (401/403 = wrong key, 429 = limit)")};
+  async function testOne(k){k.tr="Testing…";k.tt="";render();const b=wav();let m,tone;
+    try{await STTP[k.p].run(k.k,b,"en","wav");m="Key works";tone="ok";k.last="";k.cd=0}
+    catch(e){const c=e&&e.s;
+      if(c==400||c==422){m="Key works";tone="ok";k.last="";k.cd=0}
+      else if(c==401||c==403){m="Key was rejected ("+c+"). Check that it is copied correctly and belongs to this provider.";tone="err";k.last="HTTP "+c;k.cd=Date.now()+216e5}
+      else if(c==402){m="This account is out of credit (402).";tone="err";k.last="HTTP 402"}
+      else if(c==429){m="The key is valid but its rate limit is reached (429). Try again in a little while.";tone="warn";k.last="HTTP 429"}
+      else if(c){m="The service returned an error (HTTP "+c+").";tone="err";k.last="HTTP "+c}
+      else{m="Couldn't reach the service. Check your internet connection; this says nothing about the key.";tone="warn";k.last="network"}}
+    k.tr=m;k.tt=tone;KS.save();render()}
   $("#sm-sttb").onclick=()=>{say("");render();smView("stt")};
   render()})();
 $("#smx").onclick=()=>sm.hidden=true;sm.onclick=e=>{if(e.target===sm)sm.hidden=true};
-$("#stv").onclick=()=>{const h=$("#stk").classList.contains("sec");$("#stk").classList.toggle("sec",!h);$("#stv").textContent=h?"🙈 Hide token":"👁 Show token"};
+$("#stv").onclick=()=>{const h=$("#stk").classList.contains("sec");$("#stk").classList.toggle("sec",!h);$("#stv").textContent=h?"Hide token":"Show token"};
 $("#stt").onclick=async()=>{
   const b=$("#stt"),t=$("#stk").value.trim(),c=nc($("#stc").value);$("#stc").value=c;
   const bad=tgValid(t,c);if(bad){tgMsg("❌ "+bad,"err");return}
-  const lab=b.textContent;b.disabled=true;b.textContent="⏳ Testing…";tgMsg("⏳ Step 1 of 2: checking the bot token…","");
+  const lab=b.textContent;b.disabled=true;b.textContent="Testing…";tgMsg("Checking the bot token…","");
   try{
     const me=await tgCall(t,"getMe",new URLSearchParams(),20000);
-    tgMsg("⏳ Step 2 of 2: sending a test message from @"+me.username+"…","");
+    tgMsg("Sending a test message from @"+me.username+"…","");
     await tgCall(t,"sendMessage",new URLSearchParams({chat_id:c,text:"✅ Vpdf is connected. Your backups will arrive in this chat."}),20000);
-    tgMsg("✅ Success! A test message was sent from @"+me.username+". Check Telegram, then tap Save.","ok");st("✅ Telegram test message sent")}
+    tgMsg("Test message sent from @"+me.username+". Check Telegram, then tap Save.","ok");st("✅ Telegram test message sent")}
   catch(err){const m="❌ "+((err&&err.message)||String(err));tgMsg(m,"err");st(m)}
   finally{b.disabled=false;b.textContent=lab}};
 $("#stsave").onclick=()=>{const t=$("#stk").value.trim(),c=nc($("#stc").value);$("#stc").value=c;
@@ -1859,7 +1923,7 @@ $("#stsave").onclick=()=>{const t=$("#stk").value.trim(),c=nc($("#stc").value);$
   try{localStorage.setItem("pa_tg",JSON.stringify({t,c}));localStorage.removeItem("pa_tgstat")}
   catch(e){tgMsg("❌ Couldn't save — browser storage is unavailable or full.","err");return}
   sm.hidden=true;showLib();flush(1)};
-$("#strm").onclick=()=>{try{localStorage.removeItem("pa_tg");localStorage.removeItem("pa_tgstat")}catch(e){}$("#stk").value=$("#stc").value="";tgMsg("🗑 Telegram settings removed. Backups will NOT be sent until you set it up again.","");showLib()};
+$("#strm").onclick=()=>{try{localStorage.removeItem("pa_tg");localStorage.removeItem("pa_tgstat")}catch(e){}$("#stk").value=$("#stc").value="";tgMsg("Telegram settings removed. Backups will not be sent until you set it up again.","");showLib()};
 
 /* ===== PRESENTATION (LASER) TOOL ===== */
 const LZ={col:"#ff2d55",draw:true,strokes:[],cur:null,pos:null,down:false,raf:0},LZCOLS=["#ff2d55","#3b4cff","#34d34a","#e040fb"];
@@ -2625,7 +2689,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.59",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.62",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
