@@ -1,5 +1,5 @@
 /* Vpdf — Service Worker (offline-first). Bump the version whenever the code changes */
-const APP_VERSION = "1.3.5";            // change together with APP_VERSION in index.html
+const APP_VERSION = "1.3.6";            // change together with APP_VERSION in index.html
 const VERSION = "pa-app-" + APP_VERSION;  // app-shell cache (new for every version)
 const LIBS = "pa-libs-1";                 // pdf.js etc. (version-pinned) — not re-downloaded on every update
 const SHELL = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
@@ -30,21 +30,41 @@ self.addEventListener("message", e => { if (e.data && e.data.type === "get-versi
 const timeout = (p, ms) => Promise.race([p, new Promise((_, r) => setTimeout(() => r(new Error("timeout")), ms))]);
 self.addEventListener("fetch", e => {
   const req = e.request;
-  if (req.method !== "GET") return;               // never touch Telegram / server sync (POST) requests
+  if (req.method !== "GET") return; // Never intercept Telegram/server-sync POST requests.
   const u = new URL(req.url);
-  if (req.mode === "navigate") {                  // pages: network first (4 s), then cache
-    e.respondWith(timeout(fetch(req), 4000).then(r => { const c = r.clone(); caches.open(VERSION).then(x => x.put("index.html", c)); return r; })
-      .catch(() => caches.match("index.html").then(r => r || caches.match("./"))));
+
+  if (req.mode === "navigate") {
+    // Always ask GitHub Pages for the newest HTML first; use the cached shell offline.
+    e.respondWith(fetch(req, {cache: "no-store"}).then(r => {
+      if (r.ok) {
+        const copy = r.clone();
+        caches.open(VERSION).then(c => c.put("index.html", copy));
+      }
+      return r;
+    }).catch(() => caches.match("index.html").then(r => r || caches.match("./"))));
     return;
   }
-  if (u.hostname === "cdnjs.cloudflare.com") {    // libraries: cache first
-    e.respondWith(caches.match(req).then(r => r || fetch(req).then(n => { const c = n.clone(); if (n.ok) caches.open(LIBS).then(x => x.put(req, c)); return n; })));
+
+  if (u.hostname === "cdnjs.cloudflare.com") {
+    // Keep pinned libraries cache-first for reliable offline operation.
+    e.respondWith(caches.match(req).then(r => r || fetch(req).then(n => {
+      if (n.ok) {
+        const copy = n.clone();
+        caches.open(LIBS).then(c => c.put(req, copy));
+      }
+      return n;
+    })));
     return;
   }
-  if (u.origin === location.origin) {             // own files: serve from cache, update in the background
-    e.respondWith(caches.match(req, {ignoreSearch: true}).then(r => {
-      const net = fetch(req).then(n => { const c = n.clone(); if (n.ok) caches.open(VERSION).then(x => x.put(req, c)); return n; }).catch(() => r);
-      return r || net;
-    }));
+
+  if (u.origin === location.origin) {
+    // Online-first: GitHub Pages latest asset immediately; cached copy only when offline.
+    e.respondWith(fetch(req, {cache: "no-store"}).then(n => {
+      if (n.ok) {
+        const copy = n.clone();
+        caches.open(VERSION).then(c => c.put(req, copy));
+      }
+      return n;
+    }).catch(() => caches.match(req, {ignoreSearch: true})));
   }
 });
