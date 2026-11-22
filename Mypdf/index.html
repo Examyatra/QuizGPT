@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.71">
+<meta name="app-version" content="1.4.75">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -786,6 +786,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
      <button class="smb" id="sm-tgb"><i class="ic" style="--c:#2aabee"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4L3 11l6 2.2L11 20l3.2-4.6L19 19z"/><path d="M9 13.2L21 4"/></svg></i><span class="t"><b>Telegram</b><small id="sm-tgs">Not connected</small></span><em class="chev">›</em></button>
      <button class="smb" id="stb"><i class="ic" style="--c:#16a34a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 01-.6-8.96A6 6 0 0118 9.5 4 4 0 0117.5 18"/><path d="M12 12v8M9 15l3-3 3 3"/></svg></i><span class="t"><b>Full backup now</b><small>Send every notebook to Telegram</small></span><em class="chev">›</em></button>
      <button class="smb" id="sm-bkf"><i class="ic" style="--c:#f59e0b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 8l4-4 4 4"/><path d="M5 14v4.5A1.5 1.5 0 006.5 20h11a1.5 1.5 0 001.5-1.5V14"/></svg></i><span class="t"><b>Export backup file</b><small>Save a copy on this device</small></span><em class="chev">›</em></button>
+     <button class="smb" id="sm-stall"><i class="ic" style="--c:#10b981"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg></i><span class="t"><b>Stall report</b><small>Shows when / why the app froze</small></span><em class="chev">›</em></button>
      <button class="smb" id="sm-imp"><i class="ic" style="--c:#6366f1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 11l4 4 4-4"/><path d="M5 14v4.5A1.5 1.5 0 006.5 20h11a1.5 1.5 0 001.5-1.5V14"/></svg></i><span class="t"><b>Import backup file</b><small>Restore from a Vpdf backup file</small></span><em class="chev">›</em></button>
      <button class="smb" id="sm-trash"><i class="ic" style="--c:#64748b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 108-8 8 8 0 00-5.7 2.4L4 9"/><path d="M4 4v5h5M12 8v4l3 2"/></svg></i><span class="t"><b>Recently deleted</b><small>Bring back notebooks you removed</small></span><em class="chev">›</em></button>
    </div>
@@ -1354,7 +1355,15 @@ async function preloadSizes(){const tok=++preTok,P=pdf,o=[...ord];if(!P)return;
     if(i%12==11)await new Promise(r=>setTimeout(r,0))}}
 const io=new IntersectionObserver(es=>es.forEach(e=>{const i=+e.target.dataset.i;if(e.isIntersecting){vis.add(i);render(i)}else{vis.delete(i);free(i)}}),{rootMargin:"300px"});
 function free(i){const p=$(`.pg[data-i="${i}"]`);if(!p)return;(anns[i]||[]).forEach(o=>{if(o.t=="img"&&IM[o.id]&&IM[o.id].src){URL.revokeObjectURL(IM[o.id].src);delete IM[o.id]}});p.querySelectorAll("canvas").forEach(c=>{c.width=c.height=0});p.innerHTML="";delete p.dataset.z}
-const render=i=>{q=q.then(()=>draw1(i)).catch(()=>{})};
+/* v1.4.73 — render watchdog: the queue is serial, so ONE page that never finishes (pdf.js worker hiccup, iOS memory pressure) used to freeze
+   every page after it. Now a page gets 25 s; if it hangs or fails, it is cancelled, marked "not drawn" and retried (3x, with a delay) while the queue moves on. */
+let CURT=null;const RTC={},RT_MS=25000;
+const rFail=i=>{const p=$(`.pg[data-i="${i}"]`);if(p)delete p.dataset.z;const n=RTC[i]=(RTC[i]||0)+1;
+  if(n<=3)setTimeout(()=>{if(vis.has(i)&&pdf)render(i)},1200*n);else if(n==4)st("⚠️ Ek page draw nahi ho raha — thoda scroll karke dekho")};
+const render=i=>{q=q.then(()=>new Promise(res=>{let fin=0;
+  const end=ok=>{if(fin)return;fin=1;clearTimeout(t);if(ok)RTC[i]=0;else rFail(i);res()},
+    t=setTimeout(()=>{try{CURT&&CURT.cancel()}catch(e){}end(0)},RT_MS);
+  draw1(i).then(()=>end(1),()=>end(0))})).catch(()=>{})};
 async function draw1(i){
   const p=$(`.pg[data-i="${i}"]`);if(!p||!pdf||!vis.has(i)||p.dataset.z==zoom)return;p.dataset.z=zoom;
   const ov=ord[i],virt=isV(ov),page=virt?null:await pdf.getPage(ov+1),v1=virt?{width:vSize(ov).w,height:vSize(ov).h}:page.getViewport({scale:1});fitPage(i,{w:v1.width,h:v1.height});sz(p,i);
@@ -1365,7 +1374,7 @@ async function draw1(i){
   const c=document.createElement("canvas"),ink=document.createElement("canvas");c.width=ink.width=vp.width;c.height=ink.height=vp.height;
   ink.style.touchAction=penOnly?"pan-x pan-y":"none";bind(ink,p,i);
   if(virt){const x=c.getContext("2d");x.fillStyle=DK?DKBG:"#fff";x.fillRect(0,0,c.width,c.height)}
-  else{try{await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}}
+  else{try{const rt=page.render({canvasContext:c.getContext("2d"),viewport:vp});CURT=rt;await rt.promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}}
     finally{page.cleanup()}}
   if(!vis.has(i)||p.dataset.z!=zoom){c.width=c.height=ink.width=ink.height=0;return}   /* page left the screen or zoom changed meanwhile: drop it */
   p.querySelectorAll("canvas").forEach(o=>{o.width=o.height=0});p.replaceChildren(c,ink);
@@ -1431,10 +1440,20 @@ function paint(c,o,k,raw){
     else{c.moveTo(a[0],a[1]);c.lineTo(b[0],b[1]);if(o.t=="arrow"){const g=Math.atan2(b[1]-a[1],b[0]-a[0]),L=8+o.w*2;[2.6,-2.6].forEach(d=>c.lineTo(b[0]+L*Math.cos(g+d),b[1]+L*Math.sin(g+d))&&c.moveTo(b[0],b[1]))}c.stroke()}}
   c.restore();
 }
+/* v1.4.73 — live-ink cache: while ONE stroke is being written, everything already on the page is painted once into a spare canvas and then just
+   copied (one fast blit) every frame; only the moving stroke is re-drawn. Before, every frame re-drew every stroke of the page, so a full page lagged.
+   The cache lives for one stroke only and is dropped by the next normal redraw, so it can never show stale ink. */
+let LC=null;const lcDrop=()=>{if(LC){try{LC.c.width=LC.c.height=0}catch(e){}LC=null}};
 function draw(i,live){
-  const p=$(`.pg[data-i="${i}"]`);if(!p||!p.children[1])return;const ink=p.children[1],c=ink.getContext("2d"),k=ink.width/(sizes[i]||sizes[0]).w;
-  (anns[i]||[]).forEach(o=>{if(o.t=="img"&&!IM[o.id])ldImg(o.id,()=>draw(i))});
-  c.clearRect(0,0,ink.width,ink.height);extras(c,i,k);(anns[i]||[]).forEach(o=>paint(c,o,k));if(live){LIVEO=live;try{paint(c,live,k)}finally{LIVEO=null}}overlay(c,i,k);if(zwOn)zwDraw();
+  const p=$(`.pg[data-i="${i}"]`);if(!p||!p.children[1])return;const ink=p.children[1],c=ink.getContext("2d"),k=ink.width/(sizes[i]||sizes[0]).w,L=anns[i]||[];
+  L.forEach(o=>{if(o.t=="img"&&!IM[o.id])ldImg(o.id,()=>draw(i))});
+  if(live&&L.length>=6&&ink.width&&ink.height){
+    if(!(LC&&LC.ink===ink&&LC.i===i&&LC.n===L.length&&LC.w===ink.width&&LC.h===ink.height&&LC.z===zoom)){
+      lcDrop();try{const b=document.createElement("canvas");b.width=ink.width;b.height=ink.height;const x=b.getContext("2d");extras(x,i,k);L.forEach(o=>paint(x,o,k));LC={c:b,ink,i,n:L.length,w:ink.width,h:ink.height,z:zoom}}catch(e){lcDrop()}}
+    if(LC){c.clearRect(0,0,ink.width,ink.height);c.drawImage(LC.c,0,0);LIVEO=live;try{paint(c,live,k)}finally{LIVEO=null}overlay(c,i,k);if(zwOn)zwDraw();return}
+  }
+  lcDrop();
+  c.clearRect(0,0,ink.width,ink.height);extras(c,i,k);L.forEach(o=>paint(c,o,k));if(live){LIVEO=live;try{paint(c,live,k)}finally{LIVEO=null}}overlay(c,i,k);if(zwOn)zwDraw();
 }
 function hit(o,x,y,r){
   if(o.t=="pen"||o.t=="hl")return o.p.some(q=>Math.hypot(q[0]-x,q[1]-y)<r);
@@ -1519,7 +1538,7 @@ function bind(ink,p,i){
         cur.p.push(q2)}
       lastRaw=cur.p[0].length>2?[q[0],q[1],lastMul||1]:q;lastMv=Date.now()}else cur.p[1]=q;
     liveDraw()};
-  ink.onpointerup=ink.onpointercancel=e=>{if(!down)return;if(e&&cur&&e.pointerId!==pid)return;down=false;R=null;lastInk=Date.now();if(rq){cancelAnimationFrame(rq);rq=0}
+  ink.onpointerup=ink.onpointercancel=e=>{if(!down)return;if(e&&cur&&e.pointerId!==pid)return;down=false;R=null;lcDrop();lastInk=Date.now();if(rq){cancelAnimationFrame(rq);rq=0}
     if(cur&&lastRaw&&(cur.t=="pen"||cur.t=="hl")){const l=cur.p[cur.p.length-1];if(Math.hypot(l[0]-lastRaw[0],l[1]-lastRaw[1])>.35)cur.p.push(lastRaw)}   /* the last point of every stroke is always kept */
     if(CROP){CROP.drag=null;return}
     if(mt){const m=mt;mt=null;clearTimeout(lpT);if(m.lp){draw(i);showTbar();return}if(m.k=="m"&&!m.moved&&(m.was||tool!="sel")){openEdit();return}if(m.sn)change();if(m.k=="s"&&m.o.s){TXS=Math.round(m.o.s);lsSet(TXK.s,TXS)}draw(i);showTbar();return}
@@ -1613,7 +1632,7 @@ const VRB=(()=>{const SRC=window.SpeechRecognition||window.webkitSpeechRecogniti
     /* mic off but text box still open: the last words still arrive and are kept */
     pause(){want=false;clearTimeout(rsT);clearTimeout(idleG);try{rec&&rec.stop()}catch(e){}},
     /* the text box is finished: keep the recognizer alive 12 s so the next tap needs no restart, then release the microphone */
-    release(){cb=null;clearTimeout(idleG);clearTimeout(warmT);warmT=setTimeout(()=>{want=false;clearTimeout(rsT);try{rec&&rec.stop()}catch(e){}},12000)},
+    release(){cb=null;clearTimeout(warmT);clearTimeout(idleG);clearTimeout(rsT);want=false;try{rec&&rec.stop()}catch(e){}},   /* v1.4.72: mic off immediately on cancel/save */
     stopNow(){cb=null;clearTimeout(warmT);clearTimeout(idleG);clearTimeout(rsT);want=false;try{rec&&rec.stop()}catch(e){}}}})();
 /* ===== v1.4.54 — cloud speech-to-text: many keys, many companies, round-robin rotation ===== */
 async function oaiSTT(u,m,k,b,l,x){const f=new FormData();f.append("model",m);f.append("language",l);f.append("response_format","json");f.append("file",b,"a."+x);const r=await fetch(u,{method:"POST",headers:{Authorization:"Bearer "+k},body:f});if(!r.ok)throw{s:r.status};return(await r.json()).text||""}
@@ -1643,15 +1662,16 @@ async function sttTranscribe(blob,l){
   throw new Error(tried.size?"All voice keys failed or are resting (limit / invalid)":"No usable voice key (all resting or off)")}
 /* recorder with the same interface as the browser recognizer: cuts a segment after ~0.8 s of silence, sends it, and hands the text to the text box */
 const CR=(()=>{const OK=!!(window.MediaRecorder&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
-  /* Keep stream alive for the whole page session so iOS/Safari only asks mic permission once.
-     We only stop the MediaRecorder between uses — never the underlying track. */
-  let _pageStream=null,_pageAC=null,_pageAN=null,_pageBuf=null; // page-level, never released
+  /* Stream stays alive while the speak popup is open (pause/resume needs no new request); it is released when the popup closes (cancel/save) or after idle — v1.4.72. */
+  let _pageStream=null,_pageAC=null,_pageAN=null,_pageBuf=null; // released by freeStream()
   let mr=null,tm=0,want=false,cb=null,lang="hi",heard=0,quiet=0,segT=0,idleG=0,q=Promise.resolve(),infl=0;
   const MT=["audio/webm;codecs=opus","audio/mp4","audio/webm","audio/ogg;codecs=opus"],mime=()=>{for(const m of MT)if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m))return m;return""};
   const TH=8,SIL=800,MAXSEG=40000,IDLE=180000;
   // kill: only stop recording, never release the stream tracks
   const kill=()=>{clearInterval(tm);tm=0;mr=null};
-  const armIdle=()=>{clearTimeout(idleG);idleG=setTimeout(()=>{if(!want)return;const h=cb;stopAll(true);if(h)h.error({error:"idle"})},IDLE)};
+  /* v1.4.72: really release the device microphone (tracks + audio context) so the browser's mic indicator goes off */
+  const freeStream=()=>{try{_pageStream&&_pageStream.getTracks().forEach(t=>t.stop())}catch(e){}_pageStream=null;try{_pageAC&&_pageAC.close()}catch(e){}_pageAC=null;_pageAN=null;_pageBuf=null};
+  const armIdle=()=>{clearTimeout(idleG);idleG=setTimeout(()=>{if(!want)return;const h=cb;stopAll(true);freeStream();if(h)h.error({error:"idle"})},IDLE)};
   const begin=()=>{const ch=[],m=mime(),r=new MediaRecorder(_pageStream,m?{mimeType:m}:undefined);r._c=ch;r.ondataavailable=e=>{if(e.data&&e.data.size)ch.push(e.data)};mr=r;heard=0;quiet=0;segT=Date.now();r.start()};
   const send=(b,h)=>{infl++;q=q.then(async()=>{try{const s=(await sttTranscribe(b,lang)).trim();if(s&&h){h.result({results:[[{transcript:s}]]},0);if(h.end)h.end()}}
     catch(e){stopAll(true);if(h)h.error({error:"cloud",msg:e.message})}finally{infl--}})};
@@ -1675,13 +1695,13 @@ const CR=(()=>{const OK=!!(window.MediaRecorder&&navigator.mediaDevices&&navigat
     async start(l,h){cb=h;lang=lc(l);want=true;armIdle();
       if(mr)return;   /* already recording */
       if(!await ensureStream(h))return;
-      if(!want||cb!==h){kill();return}
+      if(!want||cb!==h){kill();if(!want)freeStream();return}
       try{begin();tm=setInterval(tick,100)}catch(e){want=false;kill();h.error({error:"start"})}},
     setLang(l){lang=lc(l)},
     pause(){want=false;clearTimeout(idleG);cut(true)},
-    release(){cb=null;want=false;clearTimeout(idleG);if(mr){const r=mr;mr=null;r.onstop=kill;try{r.stop()}catch(e){kill()}}else kill()},
+    release(){cb=null;want=false;clearTimeout(idleG);if(mr){const r=mr;mr=null;r.onstop=kill;try{r.stop()}catch(e){kill()}}else kill();freeStream()},
     // stopNow also keeps the stream alive — just halts recording immediately
-    stopNow(){cb=null;stopAll()}}})();
+    stopNow(){cb=null;stopAll();freeStream()}}})();
 /* the rest of the app talks to VR: use cloud keys when at least one key is on, else the browser's own recognizer */
 const VR=(()=>{let cur=VRB;
   return{get ok(){return VRB.ok||CR.ok},busy:()=>cur===CR&&CR.busy(),
@@ -2055,7 +2075,7 @@ async function syncOne(r){
   p.es.push({f:fn+".json",d});p.ids.push(...nw);b.imgs.push(...nw);p.bytes+=add;p.dirty=1;await bPut(b);
 }
 async function autoSync(){await persist();flush(0)}
-addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(ina);flush(0,1)}else flush(0)});   /* leaving the app: send what is pending right away (retried later if the phone suspends the app) */
+addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(ina);flush(0,1)}else{clearTimeout(flT);flT=setTimeout(()=>flush(0),6000)}});   /* leaving the app: send what is pending right away (retried later if the phone suspends the app) */
 /* app settings (signature, pen presets, colors, theme) travel inside every backup zip — never the Telegram token */
 const SETK=k=>k=="pa_sig"||k=="pa_presets"||k=="pa_cust"||k=="pa_colrm"||k=="pa_toolorder"||k=="pa_theme"||k=="pa_pinv"||k.startsWith("pa_pen_");
 const appSettings=()=>{const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(SETK(k))o[k]=localStorage.getItem(k)}}catch(e){}return o};
@@ -2086,12 +2106,15 @@ async function tgSend(tg,f,c,mid){
   return ok(await tgCall(tg.t,"sendDocument",g,UPMS))}
 const done=(p)=>{p.dirty=0;p.sent=Date.now();if(p.sealed){p.es=[];p.ids=[]}};
 let flT=0;
+/* v1.4.74 — the heavy background backup (reads + compares every notebook, builds the zip) used to start even while you were tapping mic / text / settings,
+   because only pen strokes counted as "busy". Now any tap, key or typing counts. */
+["pointerdown","keydown","input","focusin"].forEach(ev=>addEventListener(ev,()=>{lastInk=Date.now()},{capture:true,passive:true}));
 function flush(manual,force,full){if(!manual&&!force&&Date.now()-lastInk<8000){clearTimeout(flT);flT=setTimeout(()=>flush(0),8000);return Promise.resolve()}   /* background backup waits until you stop writing */
   return lock(async()=>{
   try{
     if(pdf&&docId)await persist();
     if(full){for(const r of (await dbAll())||[])await bPut({id:r.id,name:r.name,last:{},imgs:[],parts:[{n:1,es:[],ids:[],bytes:0,dirty:0}]})}   /* full backup: rebuild every notebook's backup from scratch and send it all */
-    for(const r of (await dbAll())||[])await syncOne(r);
+    for(const r of (await dbAll())||[]){await syncOne(r);await new Promise(y=>setTimeout(y,0))}
     const tg=TG(),out=[];let n=0;
     if(!tg){if(!manual)return;
       if(confirm("Telegram backup isn't set up yet.\n\nOK = set up Telegram now (recommended)\nCancel = just save a backup file on this device")){$("#tg").click();smView("tg");return}}
@@ -2118,7 +2141,7 @@ function updateNet(){
   netDot.title=online?"Internet connection available (browser status)":"No network connection";
   netDot.setAttribute("aria-label",netDot.title);
 }
-addEventListener("online",()=>{updateNet();flush(0)});
+addEventListener("online",()=>{updateNet();clearTimeout(flT);flT=setTimeout(()=>flush(0),6000)});
 addEventListener("offline",updateNet);
 updateNet();
 $("#bknow").onclick=async e=>{const b=e.currentTarget;if(b.disabled)return;const t0=b.textContent;b.disabled=true;b.textContent="⏳ Backing up…";try{await flush(1)}finally{b.disabled=false;b.textContent=t0}};
@@ -2407,7 +2430,7 @@ addEventListener("keydown",e=>{if(e.key=="Escape"){sm.hidden=true;closeAllPanels
 
 /* ===== BACKUP BANNER ===== */
 const LIM=45e6,INACT=12e4,EVERY=9e5;   /* Telegram: send 2 min after the last edit, when leaving the app, when back online, and every 15 min */
-let busy=Promise.resolve();const lock=f=>busy=busy.catch(()=>{}).then(f);
+let busy=Promise.resolve(),LOCKN=0;const lock=f=>busy=busy.catch(()=>{}).then(()=>{LOCKN++;return Promise.resolve().then(f).finally(()=>{LOCKN--})});
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 async function checkBackup(){const t=TG(),bad=t&&tgFailing();if(t&&!bad)return;const docs=(await dbAll())||[];if(!docs.some(r=>r.n>0))return;$("#bnt").textContent=bad?"⚠️ Telegram backup is failing: "+tgStat().err:"✈️ Telegram backup isn't set up — your notes exist only on this device";$("#bnb").textContent=bad?"Fix":"Set up";$("#bn").hidden=false}
 $("#bnb").onclick=()=>{$("#bn").hidden=true;$("#tg").click();smView("tg")};$("#bnx").onclick=()=>$("#bn").hidden=true;
@@ -2741,7 +2764,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.71",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.75",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -2929,6 +2952,23 @@ $$(".sw").forEach(b=>b.addEventListener("click",()=>setTimeout(syncW,0)));
 })();
 
 applyTheme(0);if(location.hash=="#read")history.replaceState(null,"",location.pathname+location.search);bootStorage().catch(()=>{}).then(()=>{showLib();checkBackup()});flush(0);setInterval(()=>flush(0),EVERY);
+
+/* ===== v1.4.75 — stall recorder: notes every freeze (screen not responding > 1.2 s) with what the app was doing, so the real cause can be found ===== */
+const STL=(()=>{const K="pa_stalls";let exp=performance.now(),resume=0,act="",at=0;
+  const get=()=>{try{return JSON.parse(localStorage.getItem(K))||[]}catch(e){return[]}};
+  const ctx=()=>{let cv=0,px=0;try{document.querySelectorAll("canvas").forEach(c=>{cv++;px+=c.width*c.height})}catch(e){}
+    let ink=0;try{ink=Object.values(anns).reduce((a,l)=>a+l.length,0)}catch(e){}
+    return{pg:vis.size,cv,mpx:+(px/1e6).toFixed(1),z:+(+zoom).toFixed(2),tool:String(tool),job:LOCKN,act,ago:at?Math.round((Date.now()-at)/1000):-1,ink,
+      mem:performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576):null,dm:navigator.deviceMemory||null}};
+  const rec=d=>{try{const a=get();a.push({t:Date.now(),ms:Math.round(d),...ctx()});localStorage.setItem(K,JSON.stringify(a.slice(-40)))}catch(e){}};
+  ["pointerdown","keydown","input"].forEach(ev=>addEventListener(ev,e=>{const t=e.target;act=ev+":"+((t&&(t.id||t.tagName))||"").toString().slice(0,24);at=Date.now()},{capture:true,passive:true}));
+  document.addEventListener("visibilitychange",()=>{exp=performance.now();resume=exp});
+  setInterval(()=>{const n=performance.now(),d=n-exp-500;exp=n;if(document.hidden||n-resume<2500||d<1200)return;rec(d)},500);
+  const report=()=>{const a=get();if(!a.length)return"No freeze recorded yet (v"+APP_VERSION+").";
+    const w=a.reduce((m,x)=>x.ms>m?x.ms:m,0);
+    return"Freezes recorded: "+a.length+" · worst "+(w/1000).toFixed(1)+" s · v"+APP_VERSION+"\n\n"+a.slice(-8).map(x=>new Date(x.t).toLocaleString("en-GB")+" · "+(x.ms/1000).toFixed(1)+"s · job:"+x.job+" · last:"+x.act+" ("+x.ago+"s ago) · pages:"+x.pg+" canvases:"+x.cv+" ("+x.mpx+"Mpx) · zoom:"+x.z+" · tool:"+x.tool+" · ink:"+x.ink+(x.mem!=null?" · heap:"+x.mem+"MB":"")+(x.dm?" · dev-mem:"+x.dm+"GB":"")).join("\n")};
+  return{report,clear:()=>{try{localStorage.removeItem(K)}catch(e){}}}})();
+$("#sm-stall").onclick=async()=>{const t=STL.report();try{await navigator.clipboard.writeText(t);st("📋 Stall report copied — paste it in the chat")}catch(e){}alert(t)};
 
 /* ===== v1.4.29 — resume guard: self-heal when iOS freezes the app in the background ===== */
 let _hid=0,_ck=0,_pd=null,_miss=0;
