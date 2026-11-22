@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.46">
+<meta name="app-version" content="1.4.47">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -1148,7 +1148,9 @@ async function draw1(i){
   const [c,ink]=p.children;c.width=ink.width=vp.width;c.height=ink.height=vp.height;
   ink.style.touchAction=penOnly?"pan-x pan-y":"none";bind(ink,p,i);
   if(virt){const x=c.getContext("2d");x.fillStyle=DK?"#000":"#fff";x.fillRect(0,0,c.width,c.height)}
-  else{await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}page.cleanup()}
+  else{if(DK)c.style.opacity="0";   /* v1.4.47: dark mode — keep the page hidden while it is still white, show it only after it is darkened (no white flash on zoom) */
+    try{await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}}
+    finally{c.style.opacity="";page.cleanup()}}
   draw(i);
 }
 function paintSeg(c,o,from,raw){const P=o.p,n=P.length;c.lineCap=c.lineJoin="round";c.strokeStyle=raw?o.c:dc(o.c);   /* variable-width stroke; segments of equal width share one path */
@@ -2266,7 +2268,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.46",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.47",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
