@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.47">
+<meta name="app-version" content="1.4.50">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -140,6 +140,7 @@ body.nobar #showbar{display:block}body.pres #showbar{display:none!important}
 .ccw #cc{width:100%;height:100%;border:none;background:none;padding:0;cursor:pointer;opacity:0;position:absolute;inset:0;z-index:2}
 .ccw::before{content:"";position:absolute;inset:0;border-radius:50%;background:var(--ccbg,#e11d48);box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
 .ccp{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;color:#fff;font:700 20px/1 system-ui,sans-serif;text-shadow:0 0 3px rgba(0,0,0,.7);pointer-events:none}
+.sec{-webkit-text-security:disc;text-security:disc}   /* v1.4.49: hides the token like a password WITHOUT being a password field (iOS shows the Passwords bar instead of the keyboard for those) */
 .sw{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .sw{width:24px;height:24px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;flex-shrink:0;transition:transform .15s,border-color .15s}
 .sw.on{border-color:var(--ac);transform:scale(1.2)}
@@ -328,7 +329,7 @@ body.nobar #showbar{display:block}body.pres #showbar{display:none!important}
 #sm h2{font-size:20px;font-weight:700}
 #sm label{font-size:14px;font-weight:600}
 #sm small{opacity:.7;line-height:1.5;font-size:13px}
-#sm input{width:100%;padding:10px 12px;font-size:15px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+#sm input{width:100%;padding:10px 12px;font-size:16px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
 #sm hr{border:0;border-top:1px solid var(--bd)}
 .smv{display:flex;flex-direction:column;gap:12px}
 #sm .smb{width:100%;text-align:left;padding:14px 16px;font-size:16px;font-weight:600;border-radius:12px}
@@ -372,7 +373,7 @@ body.nobar #showbar{display:block}body.pres #showbar{display:none!important}
 .thi .mv button{border:none;background:var(--btn-bg);color:var(--tx);border-radius:6px;padding:2px 8px;cursor:pointer}
 .thi .bmk{position:absolute;top:2px;right:4px}
 .srow{display:block;width:100%;text-align:left;padding:8px;border:none;border-bottom:1px solid var(--panel-bd);background:none;color:var(--tx);cursor:pointer;font-size:13px}
-#sq{width:100%;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);margin-bottom:8px}
+#sq{width:100%;font-size:16px;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);margin-bottom:8px}
 #lbar{position:fixed;top:calc(var(--barh,100px) + 12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:210;display:flex;gap:6px;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:12px;padding:6px;box-shadow:var(--panel-shadow)}
 #zwb{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:220;background:var(--panel-bg);border:2px solid var(--ac);border-radius:14px;padding:6px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--panel-shadow)}
 #zwc{background:#fff;border-radius:8px;touch-action:none;display:block}
@@ -393,6 +394,8 @@ body.pres{cursor:none}body.pres .pg{scroll-snap-align:center}
 html:has(body.pres){scroll-snap-type:y proximity}
 
 .mod{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px}
+body.kbd .mod,body.kbd #sm{top:var(--vvt,0px);bottom:auto;height:var(--vvh,100%)}   /* v1.4.50: dialogs sit in the part of the screen the keyboard leaves free */
+body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);overflow-y:auto}
 .mod>div{background:var(--panel-bg);color:var(--tx);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:260px;max-width:92vw}
 .mod .pb{text-align:left}.mod h3{margin:0 0 4px}.zr{display:flex;gap:4px;justify-content:center}
 #pgi{position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:140;display:none;gap:4px;align-items:center;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:12px;padding:4px 6px;box-shadow:var(--panel-shadow);font-size:13px}
@@ -633,9 +636,9 @@ html:has(body.pres){scroll-snap-type:y proximity}
    <h2>✈️ Connect Telegram</h2>
    <small>1. In Telegram open <b>@BotFather</b> → send <b>/newbot</b> → copy the bot token.<br>2. Open your new bot and press <b>Start</b> (for a group or channel, add the bot to it first).<br>3. Chat ID: your own number (message <b>@userinfobot</b> to get it), or @channelname.<br>4. Enter both below, tap <b>Send test</b>, then <b>Save</b>.</small>
    <label for="stk">Bot token (from @BotFather)</label>
-   <input id="stk" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="123456789:AAH...">
+   <input id="stk" type="text" class="sec" name="tg-bot-token" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" data-form-type="other" placeholder="123456789:AAH...">
    <label for="stc">Chat ID (a number, or @channelname)</label>
-   <input id="stc" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="123456789">
+   <input id="stc" type="text" name="tg-chat-id" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" data-form-type="other" placeholder="123456789">
    <div class="row">
      <button id="stv">👁 Show token</button>
      <button id="stt">🧪 Send test</button>
@@ -1144,13 +1147,15 @@ async function draw1(i){
   const ov=ord[i],virt=isV(ov),page=virt?null:await pdf.getPage(ov+1),v1=virt?{width:vSize(ov).w,height:vSize(ov).h}:page.getViewport({scale:1});fitPage(i,{w:v1.width,h:v1.height});sz(p,i);
   if(!vis.has(i)){delete p.dataset.z;return}
   const k=Math.min(zoom*DPR,Math.sqrt(MAXPX/(v1.width*v1.height))),vp=virt?{width:v1.width*k,height:v1.height*k}:page.getViewport({scale:k});
-  p.innerHTML="<canvas></canvas><canvas></canvas>";
-  const [c,ink]=p.children;c.width=ink.width=vp.width;c.height=ink.height=vp.height;
+  /* v1.4.47: smooth zoom — the new page is drawn on hidden canvases while the old picture stays on screen (just stretched);
+     the two are swapped in one step, so the page never goes blank/white/black between zoom levels. */
+  const c=document.createElement("canvas"),ink=document.createElement("canvas");c.width=ink.width=vp.width;c.height=ink.height=vp.height;
   ink.style.touchAction=penOnly?"pan-x pan-y":"none";bind(ink,p,i);
   if(virt){const x=c.getContext("2d");x.fillStyle=DK?"#000":"#fff";x.fillRect(0,0,c.width,c.height)}
-  else{if(DK)c.style.opacity="0";   /* v1.4.47: dark mode — keep the page hidden while it is still white, show it only after it is darkened (no white flash on zoom) */
-    try{await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}}
-    finally{c.style.opacity="";page.cleanup()}}
+  else{try{await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}}
+    finally{page.cleanup()}}
+  if(!vis.has(i)||p.dataset.z!=zoom){c.width=c.height=ink.width=ink.height=0;return}   /* page left the screen or zoom changed meanwhile: drop it */
+  p.querySelectorAll("canvas").forEach(o=>{o.width=o.height=0});p.replaceChildren(c,ink);
   draw(i);
 }
 function paintSeg(c,o,from,raw){const P=o.p,n=P.length;c.lineCap=c.lineJoin="round";c.strokeStyle=raw?o.c:dc(o.c);   /* variable-width stroke; segments of equal width share one path */
@@ -1332,7 +1337,8 @@ const VR=(()=>{const SRC=window.SpeechRecognition||window.webkitSpeechRecognitio
 function textBox(p,i,q,note,ex){
   const SRC=window.SpeechRecognition||window.webkitSpeechRecognition;
   let speak=!ex&&TXM=="speak";if(speak&&!SRC){speak=false;st("🎤 Voice typing isn't available here — use the 🎙 on the keyboard")}
-  const t=document.createElement("textarea"),s=ex?ex.s:TXS,bold=ex?!!ex.b:TXB,al=ex?(ex.al||"l"):TXA,x0=ex?ex.x:q[0],y0=ex?ex.y:q[1],pw=(sizes[i]||sizes[0]).w;
+  const t=document.createElement("textarea");t.setAttribute("autocomplete","off");t.setAttribute("data-1p-ignore","");t.setAttribute("data-lpignore","true");t.name="ann-text";
+  const s=ex?ex.s:TXS,bold=ex?!!ex.b:TXB,al=ex?(ex.al||"l"):TXA,x0=ex?ex.x:q[0],y0=ex?ex.y:q[1],pw=(sizes[i]||sizes[0]).w;
   const st_=t.style;st_.left=x0*zoom-4+"px";st_.top=y0*zoom-1+"px";st_.fontSize=s*zoom+"px";st_.color=dc(ex?ex.c:color);st_.fontWeight=bold?"700":"400";st_.textAlign=al==="c"?"center":al==="r"?"right":"left";
   st_.fontFamily='system-ui,"Noto Sans Devanagari",sans-serif';st_.lineHeight="1.25";st_.padding="0 3px";st_.minWidth="0";st_.minHeight="0";st_.resize="none";st_.overflow="hidden";st_.boxSizing="content-box";st_.whiteSpace="pre";
   if(note)st_.background="#fde68a";
@@ -1352,14 +1358,14 @@ function textBox(p,i,q,note,ex){
         result:(e,b)=>{let it="";for(let k=Math.max(e.resultIndex,b||0);k<e.results.length;k++){const r=e.results[k];if(r.isFinal)fin+=(fin?" ":"")+r[0].transcript.trim();else it+=r[0].transcript}t.value=(v=>TXL=="hing"?D2R(v):v)((fin+(it?(fin?" ":"")+it:"")).trim());fit()},
         error:e=>{if(e.error=="not-allowed"||e.error=="service-not-allowed")st("🎤 Microphone is blocked for this app. Tap the 🔒/ⓘ icon next to the address (or Site settings) → Microphone → Allow. You only need to do this once.");else if(e.error=="no-speech"||e.error=="aborted")return;else bad=true,st(e.error=="loop"?"🎤 Voice typing keeps stopping — tap again and speak":"🎤 Couldn't hear — tap again and speak")}});
       st("🎤 Listening… tap outside to finish")}catch(x){st("🎤 Voice typing couldn't start")}}
-  t.focus();
+  kbFocus(t);
   t.onblur=()=>{done=true;if(rec)VR.release();commit(t.value)};
 }
 function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;if(CROP)cropCancel();if(selT){selT=null;$("#tbar").hidden=true}
   const top=a[a.length-1];if(top&&top[0]==="__page__"){a.pop();b.push(top);restorePageState(r?top[1].after:top[1].before).then(()=>st(r?"↪ Page action restored":"↶ Page action undone")).catch(()=>st("❌ Couldn't restore page history"));return}
   const[i,s]=a.pop();b.push([i,JSON.stringify(anns[i]||[])]);anns[i]=JSON.parse(s);draw(i);change()}
 $("#un").onclick=()=>undo(0);$("#re").onclick=()=>undo(1);
-function setZoom(z){zoom=Math.max(.5,Math.min(3,z));$$(".pg").forEach(p=>{const i=+p.dataset.i;sz(p,i);free(i);if(vis.has(i))render(i)})}
+function setZoom(z){zoom=Math.max(.5,Math.min(3,z));$$(".pg").forEach(p=>{const i=+p.dataset.i;sz(p,i);if(vis.has(i)){delete p.dataset.z;render(i)}else free(i)})}
 $("#zi").onclick=()=>setZoom(zoom+.2);$("#zo").onclick=()=>setZoom(zoom-.2);
 $("#doc").addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setZoom(zoom*(e.deltaY<0?1.12:1/1.12))}},{passive:false});
 
@@ -1479,7 +1485,7 @@ async function tgCall(token,method,body,ms,retried){
   if(j&&!j.ok&&j.error_code==429&&!retried){const ra=+(j.parameters&&j.parameters.retry_after)||0;if(ra>0&&ra<=30){await new Promise(z=>setTimeout(z,(ra+1)*1e3));return tgCall(token,method,body,ms,1)}}
   if(!j||!j.ok){const e=new Error(tgErr(j,r.status));e.api=1;e.desc=(j&&j.description)||"";throw e}
   return j.result}
-$("#tg").onclick=()=>{const o=TG()||{},x=tgStat();$("#stk").value=o.t||"";$("#stc").value=o.c||"";$("#stk").type="password";$("#stv").textContent="👁 Show token";
+$("#tg").onclick=()=>{const o=TG()||{},x=tgStat();$("#stk").value=o.t||"";$("#stc").value=o.c||"";$("#stk").classList.add("sec");$("#stv").textContent="👁 Show token";
   if(!o.t)tgMsg("Telegram backup isn't set up yet. Enter your bot token and chat ID, tap “Send test”, then Save.","");
   else if(tgFailing())tgMsg("⚠️ The last backup attempt failed: "+x.err,"err");
   else tgMsg("✅ Telegram backup is set up."+(x.ok?" Last backup sent "+agoT(x.ok)+".":" Waiting for the first backup."),"ok");
@@ -1488,7 +1494,7 @@ const smView=v=>{$$("#sm .smv").forEach(x=>x.hidden=x.id!=="sm-"+v);const b=$("#
 const smTgLabel=()=>{$("#sm-tgb").textContent=(TG()||{}).t?"✈️ Telegram connected ✓ (edit)":"✈️ Connect Telegram"};
 $("#sm-ins").onclick=()=>smView("help");$("#sm-tgb").onclick=()=>smView("tg");$$("[data-smv]").forEach(b=>b.onclick=()=>smView(b.dataset.smv));
 $("#smx").onclick=()=>sm.hidden=true;sm.onclick=e=>{if(e.target===sm)sm.hidden=true};
-$("#stv").onclick=()=>{const h=$("#stk").type=="password";$("#stk").type=h?"text":"password";$("#stv").textContent=h?"🙈 Hide token":"👁 Show token"};
+$("#stv").onclick=()=>{const h=$("#stk").classList.contains("sec");$("#stk").classList.toggle("sec",!h);$("#stv").textContent=h?"🙈 Hide token":"👁 Show token"};
 $("#stt").onclick=async()=>{
   const b=$("#stt"),t=$("#stk").value.trim(),c=nc($("#stc").value);$("#stc").value=c;
   const bad=tgValid(t,c);if(bad){tgMsg("❌ "+bad,"err");return}
@@ -2070,7 +2076,7 @@ function renderSb(){if(!pdf||SB.hidden)return;const c=$("#sbc");c.innerHTML="";c
   else if(sbTab=="bm"){if(!bm.size)c.textContent="No bookmarks — tap 🔖 to add the current page";
     [...bm].sort((a,b)=>a-b).forEach(i=>{const b=document.createElement("button");b.className="srow";b.textContent="🔖 Page "+(i+1)+"  (long-press to remove ✕)";
       b.onclick=()=>goPage(i);b.oncontextmenu=e=>{e.preventDefault();bm.delete(i);change();renderSb()};c.append(b)})}
-  else{c.innerHTML='<input id="sq" placeholder="Search in PDF…"><div id="sr"></div>';const q=$("#sq");q.value=lastQ;
+  else{c.innerHTML='<input id="sq" placeholder="Search in PDF…" inputmode="search" enterkeyhint="search" autocapitalize="off" autocorrect="off" spellcheck="false"><div id="sr"></div>';const q=$("#sq");q.value=lastQ;
     q.onkeydown=e=>{if(e.key=="Enter")doSearch(q.value)};if(lastRes)showRes(lastRes)}}
 const pgText=async s=>{if(TXT[s])return TXT[s];const pg=await pdf.getPage(s+1),tc=await pg.getTextContent(),v=pg.getViewport({scale:1});pg.cleanup();return TXT[s]={items:tc.items,v}};
 function showRes(h){const r=$("#sr");if(!r)return;r.innerHTML="";if(!h.length){r.textContent="No results (text search doesn't work on scanned PDFs)";return}
@@ -2134,10 +2140,10 @@ $("#pgn").addEventListener("keydown",e=>{if(e.key==="Enter"||e.keyCode===13){e.p
 $("#pgn").addEventListener("change",jumpFromInput);
 $("#pgn").addEventListener("blur",pgUpd);
 /* tap the page number → "Go to page" box opens with the number keyboard ready */
-document.body.insertAdjacentHTML("beforeend",`<div class="mod" id="pgj" hidden><div><h3>Go to page</h3><input id="pgjn" type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" autocomplete="off" aria-label="Page number" style="font-size:22px;padding:10px;text-align:center;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);width:100%;box-sizing:border-box"><div class="zr"><button class="pb" id="pgjx" style="flex:1;text-align:center">Cancel</button><button class="pb on" id="pgjg" style="flex:1;text-align:center">Go</button></div></div></div>`);
+document.body.insertAdjacentHTML("beforeend",`<div class="mod" id="pgj" hidden><div><h3>Go to page</h3><input id="pgjn" type="text" name="page-number" inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-1p-ignore data-lpignore="true" data-form-type="other" aria-label="Page number" style="font-size:22px;padding:10px;text-align:center;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);width:100%;box-sizing:border-box"><div class="zr"><button class="pb" id="pgjx" style="flex:1;text-align:center">Cancel</button><button class="pb on" id="pgjg" style="flex:1;text-align:center">Go</button></div></div></div>`);
 const pgjClose=()=>{$("#pgj").hidden=true;$("#pgjn").blur();pgUpd()};
 function pgjGo(){const v=Number.parseInt($("#pgjn").value.trim(),10);pgjClose();if(Number.isFinite(v)&&ord.length)goPage(Math.max(0,Math.min(ord.length-1,v-1)))}
-function pgjOpen(){if(!ord.length)return;const n=$("#pgjn");$("#pgj").hidden=false;n.value="";n.placeholder="1 – "+ord.length;n.focus();setTimeout(()=>{if(document.activeElement!==n)n.focus()},60)}
+function pgjOpen(){if(!ord.length)return;const n=$("#pgjn");$("#pgj").hidden=false;n.value="";n.placeholder="1 – "+ord.length;kbFocus(n)}
 $("#pgn").addEventListener("pointerdown",e=>e.preventDefault());
 $("#pgn").addEventListener("focus",e=>e.target.blur());
 $("#pgi").addEventListener("click",pgjOpen);
@@ -2268,7 +2274,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.47",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.50",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -2534,8 +2540,31 @@ function showCreatePdfDialog(){
   dlg.addEventListener("click",e=>{
     if(e.target===dlg||e.target.id=="cpdf-x"){dlg.remove();return}
     const b=e.target.closest("[data-k]");if(b){kind=b.dataset.k;$$("#cpdf-dlg [data-k]").forEach(x=>x.classList.toggle("on",x===b));return}
-    if(e.target.id=="cpdf-go"){let n=parseInt($("#cpdf-n").value,10);if(!(n>=1)){$("#cpdf-n").focus();return}n=Math.min(500,n);
+    if(e.target.id=="cpdf-go"){let n=parseInt($("#cpdf-n").value,10);if(!(n>=1)){kbFocus($("#cpdf-n"),1);return}n=Math.min(500,n);
       const nm=($("#cpdf-nm").value.replace(/[\\/:*?"<>|]/g,"").replace(/\.pdf$/i,"").trim())||def;dlg.remove();createPdfNb(kind,n,nm)}});
-  setTimeout(()=>{const i=$("#cpdf-n");if(i){i.focus();i.select()}},50)}
+  kbFocus($("#cpdf-n"),1)}
 $("#mkpdf").onclick=showCreatePdfDialog;
+/* ===== v1.4.50 — keyboard manager: one simple, reliable way for every text box in the app =====
+   1) kbFocus(): focus inside the tap itself (the only moment iOS agrees to open the keyboard) + a quiet retry
+   2) a tap on any text box always focuses it from inside the tap
+   3) while the keyboard is open: dialogs are resized to the free area, and a box hidden behind the keyboard is scrolled into view */
+function kbFocus(el,sel){if(!el)return;
+  const go=()=>{try{el.focus({preventScroll:true})}catch(e){el.focus()}if(sel&&el.select){try{el.select()}catch(e){}}};
+  go();[90,260].forEach(ms=>setTimeout(()=>{const a=document.activeElement;if(el.isConnected&&!el.disabled&&(!a||a===document.body))go()},ms))}
+(()=>{const vv=window.visualViewport,R=document.documentElement;
+  const isTxt=e=>!!e&&(e.tagName=="TEXTAREA"||(e.tagName=="INPUT"&&/^(text|search|number|tel|url|email)$/.test(e.type)))&&!e.readOnly&&!e.disabled;
+  const reveal=el=>{if(!el||!el.getBoundingClientRect)return;const r=el.getBoundingClientRect(),vb=(vv?vv.offsetTop+vv.height:innerHeight)-16;
+    if(r.bottom>vb){const d=el.closest("#doc");if(d)d.scrollTop+=r.bottom-vb+24;else if(!el.closest(".mod,#sm"))el.scrollIntoView({block:"center"})}};
+  const sync=()=>{const h=vv?vv.height:innerHeight,t=vv?vv.offsetTop:0;R.style.setProperty("--vvh",h+"px");R.style.setProperty("--vvt",t+"px");
+    const open=isTxt(document.activeElement)&&innerHeight-h>100;document.body.classList.toggle("kbd",open);if(open)reveal(document.activeElement)};
+  if(vv)["resize","scroll"].forEach(ev=>vv.addEventListener(ev,sync));
+  addEventListener("focusin",e=>{if(isTxt(e.target)){sync();[120,350,700].forEach(ms=>setTimeout(sync,ms))}});
+  addEventListener("focusout",()=>setTimeout(sync,150));
+  const tapFocus=e=>{const t=e.target&&e.target.closest&&e.target.closest("input,textarea");if(isTxt(t)&&document.activeElement!==t)t.focus()};
+  document.addEventListener("pointerup",tapFocus,true);document.addEventListener("click",tapFocus,true);sync()})();
+/* v1.4.49: every text box in the app (also boxes created later) tells iOS "no AutoFill / no saved passwords here" */
+(()=>{const ok=e=>e&&e.matches&&e.matches('input:not([type=file]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=button]),textarea');
+  const fix=e=>{if(!e.hasAttribute("autocomplete"))e.setAttribute("autocomplete","off");if(!e.hasAttribute("data-1p-ignore"))e.setAttribute("data-1p-ignore","");if(!e.hasAttribute("data-lpignore"))e.setAttribute("data-lpignore","true")};
+  const scan=r=>{if(ok(r))fix(r);if(r&&r.querySelectorAll)r.querySelectorAll('input,textarea').forEach(e=>{if(ok(e))fix(e)})};
+  scan(document);new MutationObserver(m=>m.forEach(x=>x.addedNodes.forEach(n=>n.nodeType==1&&scan(n)))).observe(document.body,{childList:true,subtree:true})})();
 </script></body></html>
