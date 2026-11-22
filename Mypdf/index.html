@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.50">
+<meta name="app-version" content="1.4.51">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -128,6 +128,15 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .tbc.on{border-color:var(--ac)}
 .tbc input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;border:0}
 body.pres #tbar,body.pres #cbar{display:none!important}
+/* v1.4.51: voice bar (shown while a text box is open) + move/size buttons for selected text */
+#vbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--vvt,0px) + env(safe-area-inset-top,0px) + 8px);z-index:230;display:flex;gap:6px;align-items:center;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:14px;padding:6px;box-shadow:var(--panel-shadow);max-width:96vw;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#vbar .pb{padding:9px 12px;min-width:44px;font-size:15px;white-space:nowrap}
+#vbar .pb.rec{background:#dc2626;border-color:#dc2626;color:#fff;animation:vbpulse 1.3s ease-in-out infinite}
+@keyframes vbpulse{50%{box-shadow:0 0 0 5px rgba(220,38,38,.25)}}
+body.pres #vbar{display:none!important}
+#tbar{width:max-content}   /* a bar centred with left:50% was squeezed into half the screen and wrapped into many rows */
+#tb-mv{display:flex;gap:5px;align-items:center;flex-wrap:nowrap;justify-content:center}
+#tb-mv .pb{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;font-weight:700;min-width:40px;padding:6px 8px;font-size:16px}
 #lzc{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:130}
 body.nobar #bar{display:none!important}
 #showbar{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:10px;z-index:300;display:none}
@@ -748,6 +757,7 @@ function setLines(o,tg){const P=String(o.v).split("\n").length;delete o.bw;if(tg
 document.body.insertAdjacentHTML("beforeend",`<div id="tbar" hidden><div id="tb-btns">
 <button class="pb" id="tb-b" title="Bold"><b>B</b></button><button class="pb" data-tba="l" title="Left">⇤</button><button class="pb" data-tba="c" title="Middle">↔</button><button class="pb" data-tba="r" title="Right">⇥</button>
 <button class="pb" id="tb-ed">✎ Edit</button><button class="pb" id="tb-cp" title="Duplicate">⧉</button><button class="pb" id="tb-dl" title="Delete">🗑</button></div>
+<div id="tb-mv"><button class="pb" data-mv="-" title="Smaller (hold to keep shrinking)">A−</button><button class="pb" data-mv="+" title="Bigger (hold to keep growing)">A+</button><button class="pb" data-mv="l" title="Move left">←</button><button class="pb" data-mv="u" title="Move up">↑</button><button class="pb" data-mv="d" title="Move down">↓</button><button class="pb" data-mv="r" title="Move right">→</button></div>
 <div id="tb-cols"></div></div>
 <div id="cbar" hidden><button class="pb on" id="cb-ok">✓ Done</button><button class="pb" id="cb-rs">↺ Reset</button><button class="pb" id="cb-x">✕ Cancel</button></div>`);
 function selTSet(o,i){const old=selT?selT.i:-1;selT=o?{o,i}:null;if(old>=0&&old!=i)draw(old);if(i>=0)draw(i);showTbar()}
@@ -763,6 +773,17 @@ $$("[data-tba]").forEach(b=>b.onclick=()=>tChange(o=>{if(b.dataset.tba=="l")dele
 $("#tb-ed").onclick=()=>openEdit();
 $("#tb-cp").onclick=()=>{if(!selT)return;const i=selT.i;snap(i);const n=JSON.parse(JSON.stringify(selT.o));n.x+=14;n.y+=14;anns[i].push(n);selTSet(n,i);change()};
 $("#tb-dl").onclick=()=>{if(!selT)return;const i=selT.i,o=selT.o;snap(i);anns[i]=(anns[i]||[]).filter(x=>x!==o);selTSet(null,i);change()};
+/* v1.4.51: move / resize the selected text with buttons (hold = keep going). Works with finger, Pencil or mouse, even when "Pencil only" is on. */
+function tNudge(k,n){if(!selT)return;const o=selT.o,i=selT.i,sp=sizes[i]||sizes[0]||{w:600,h:800};
+  if(k=="+"||k=="-"){const f=k=="+"?(n?1.035:1.08):(n?1/1.035:1/1.08),v=Math.max(6,Math.min(200,+(o.s*f).toFixed(2)));if(v===o.s)return;if(o.bw)o.bw=o.bw*v/o.s;o.s=v}
+  else{const u=(n<8?3:n<24?6:14)/zoom,B=tBox(o);if(k=="r")o.x+=u;else if(k=="l")o.x-=u;else if(k=="d")o.y+=u;else o.y-=u;
+    o.x=Math.max(0,Math.min(Math.max(0,sp.w-B.w),o.x));o.y=Math.max(0,Math.min(Math.max(0,sp.h-B.h),o.y))}
+  draw(i)}
+$$("#tb-mv [data-mv]").forEach(b=>{let to=0,iv=0,n=0,act=false;const k=b.dataset.mv;
+  const stop=()=>{if(!act)return;act=false;clearTimeout(to);clearInterval(iv);if(selT){if(k=="+"||k=="-"){TXS=Math.round(selT.o.s);lsSet(TXK.s,TXS)}change();showTbar()}};
+  b.addEventListener("pointerdown",e=>{if(!selT||act)return;e.preventDefault();act=true;n=0;snap(selT.i);tNudge(k,0);try{b.setPointerCapture(e.pointerId)}catch(x){}to=setTimeout(()=>{iv=setInterval(()=>tNudge(k,++n),70)},350)});
+  ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>b.addEventListener(ev,stop));
+  b.addEventListener("contextmenu",e=>e.preventDefault())});
 function openEdit(){if(!selT)return;const p=$(`.pg[data-i="${selT.i}"]`);if(p)textBox(p,selT.i,null,!!selT.o.bg,selT.o)}
 /* image crop */
 const CMIN=24;
@@ -1201,9 +1222,17 @@ function bind(ink,p,i){
   ink.addEventListener("touchstart",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});   /* Pencil never scrolls, selects or opens menus */
   ink.addEventListener("touchmove",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});ink.oncontextmenu=e=>e.preventDefault();
   const pt=e=>{const r=R||ink.getBoundingClientRect();return[+((e.clientX-r.left)/zoom).toFixed(2),+((e.clientY-r.top)/zoom).toFixed(2)]};
+  let ftap=null;   /* v1.4.51: with "Pencil only", a finger TAP still selects / edits text (a drag still scrolls the page) */
+  ink.addEventListener("pointerup",e=>{const f=ftap;ftap=null;if(!f||f.id!==e.pointerId)return;
+    if(Date.now()-f.t>450||Math.hypot(e.clientX-f.x,e.clientY-f.y)>10||othersFresh(e.pointerId)||pz)return;
+    const ae=document.activeElement;if(ae&&ae.tagName=="TEXTAREA")ae.blur();
+    const r=ink.getBoundingClientRect(),qx=(e.clientX-r.left)/zoom,qy=(e.clientY-r.top)/zoom,TL=anns[i]||[];let ft=null;
+    for(let j=TL.length-1;j>=0;j--){const o=TL[j];if(o.t!="text")continue;const B=tBox(o),rr=8/zoom;if(qx>o.x-rr&&qx<o.x+B.w+rr&&qy>o.y-rr&&qy<o.y+B.h+rr){ft=o;break}}
+    if(ft){if(selT&&selT.o===ft)openEdit();else selTSet(ft,i)}else if(selT)selTSet(null,selT.i)});
   ink.onpointerdown=e=>{
     if(e.pointerType=="touch"&&down&&cur&&e.pointerId!==pid){if(cur.p.length<=8&&Date.now()-dT<300){down=false;cur=null;mv=null;draw(i)}return}   /* palm / extra finger landing while writing: keep the stroke */
     if(e.pointerType=="touch"&&othersFresh(e.pointerId)){down=false;cur=null;mv=null;draw(i);return}
+    if(penOnly&&e.pointerType=="touch"&&(tool=="text"||tool=="note"||tool=="sel")&&!palmBlock(e)&&!CROP){ftap={id:e.pointerId,x:e.clientX,y:e.clientY,t:Date.now()};return}
     if((penOnly&&e.pointerType=="touch")||palmBlock(e))return;if(e.pointerType=="mouse"&&e.button)return;e.preventDefault();R=ink.getBoundingClientRect();pid=e.pointerId;dT=lastInk=Date.now();lastRaw=null;const q=pt(e);ink.setPointerCapture(e.pointerId);
     if(CROP){if(CROP.i==i&&cropDown(q))down=true;return}
     if(tool=="laser")return;
@@ -1311,32 +1340,60 @@ const D2R=(()=>{const C={"क":"k","ख":"kh","ग":"g","घ":"gh","ङ":"n","�
     for(let k=n-2;k>=1;k--){if(!S[k].inh)continue;const L=S[k-1],R=S[k+1];if(L.v!==""&&!del[k-1]&&R.v!==""&&!del[k+1])del[k]=true}
     let out="";S.forEach((x,k)=>{let v=del[k]?"":x.v;if(v=="aa"&&k==n-1&&x.c)v="a";out+=x.c+v});return out}
   return txt=>txt.replace(/[।॥]/g,".").replace(/[०-९]/g,c=>"०१२३४५६७८९".indexOf(c)).replace(/[\u0900-\u097F]+/g,word)})();
-/* ===== v1.4.46 — microphone: ask once, remember, reuse one recognizer ===== */
-const VR=(()=>{const SRC=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,lang="",on=false,want=false,cb=null,base=0,lastLen=0,idleT=0,fast=0,t0=0;
+/* ===== v1.4.51 — microphone: ask once, remember, keep listening through pauses, reuse one recognizer ===== */
+const VR=(()=>{const SRC=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let rec=null,lang="",on=false,want=false,cb=null,base=0,lastLen=0,warmT=0,rsT=0,idleG=0,fails=0,heard=false,net=0;
+  const IDLE_MS=180000;   /* nobody spoke for 3 min → pause the mic (battery + privacy); the text box stays open */
   const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
   /* permission state from the browser (Chrome/Edge/Android); null where the Permissions API can't tell (Safari) */
   const state=async()=>{try{if(navigator.permissions&&navigator.permissions.query){const q=await navigator.permissions.query({name:"microphone"});q.onchange=()=>{ls("pa_mic",q.state=="granted"?"1":q.state=="denied"?"0":"");};return q.state}}catch(e){}return null};
   /* one tiny getUserMedia call (released immediately) makes Chrome store the "Allow" for this site; only when the browser says it hasn't been asked yet */
   const prime=async()=>{try{if((await state())!=="prompt"||!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia))return;const m=await navigator.mediaDevices.getUserMedia({audio:true});m.getTracks().forEach(t=>t.stop());ls("pa_mic","1")}catch(e){if(e&&(e.name=="NotAllowedError"||e.name=="SecurityError"))ls("pa_mic","0")}};
-  const make=l=>{if(rec&&lang===l)return rec;if(rec){try{rec.abort()}catch(e){}rec=null;on=false}
-    rec=new SRC();lang=l;rec.lang=l;rec.continuous=true;rec.interimResults=true;
-    rec.onstart=()=>{on=true;t0=Date.now();lastLen=0;base=0};   /* a fresh session numbers its results from 0 */
-    rec.onaudiostart=()=>{ls("pa_mic","1");fast=0};   /* audio really started = permission is granted; remember it */
-    rec.onresult=e=>{lastLen=e.results.length;if(cb)cb.result(e,base)};
-    rec.onerror=e=>{if(e.error=="not-allowed"||e.error=="service-not-allowed"){ls("pa_mic","0");want=false}if(cb)cb.error(e)};
-    rec.onend=()=>{on=false;if(!want)return;if(Date.now()-t0<600){if(++fast>=3){want=false;if(cb)cb.error({error:"loop"});return}}else fast=0;setTimeout(()=>{if(want&&!on)try{rec.start()}catch(e){}},fast?250:0)};
-    return rec};
+  const kick=d=>{clearTimeout(rsT);rsT=setTimeout(()=>{if(!want||on||!rec)return;try{rec.start()}catch(e){if(e&&e.name=="InvalidStateError")on=true;else{want=false;if(cb)cb.error({error:"start"})}}},d)};
+  const armIdle=()=>{clearTimeout(idleG);idleG=setTimeout(()=>{if(!want)return;want=false;clearTimeout(rsT);try{rec&&rec.stop()}catch(e){}if(cb)cb.error({error:"idle"})},IDLE_MS)};
+  const make=l=>{if(rec&&lang===l)return rec;
+    if(rec){if(cb&&cb.end)cb.end();const old=rec;rec=null;on=false;try{old.abort()}catch(e){}}
+    const me=rec=new SRC();lang=l;me.lang=l;me.continuous=true;me.interimResults=true;me.maxAlternatives=1;
+    me.onstart=()=>{if(rec!==me)return;on=true;heard=false;lastLen=0;base=0};   /* a fresh session numbers its results from 0 */
+    me.onaudiostart=()=>{if(rec!==me)return;heard=true;ls("pa_mic","1")};   /* audio really started = permission is granted; remember it */
+    me.onresult=e=>{if(rec!==me)return;heard=true;fails=0;net=0;lastLen=e.results.length;armIdle();if(cb)cb.result(e,base)};
+    me.onerror=e=>{if(rec!==me)return;const er=e&&e.error;
+      if(er=="not-allowed"||er=="service-not-allowed"){ls("pa_mic","0");want=false;if(cb)cb.error(e);return}
+      if(er=="audio-capture"){want=false;if(cb)cb.error(e);return}
+      if(er=="network"){if(++net>3){want=false;if(cb)cb.error(e)}return}
+      /* "no-speech" / "aborted" just mean a pause: onend below starts the next session */};
+    /* the browser ends a session after every pause — that is normal. Flush the half-heard words, then silently start again (backing off only if it keeps failing without ever hearing audio) */
+    me.onend=()=>{if(rec!==me)return;on=false;lastLen=0;base=0;if(cb&&cb.end)cb.end();if(!want)return;
+      if(heard)fails=0;else fails++;
+      if(fails>=6){want=false;if(cb)cb.error({error:"loop"});return}
+      kick(net?900:fails?Math.min(1500,200*fails):0)};
+    return me};
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&want&&!on&&rec)kick(150)});
   return{ok:!!SRC,
-    async start(l,h){clearTimeout(idleT);cb=h;want=true;base=lastLen;   /* a session kept warm from the previous text box is reused: no new start, no new permission request */
+    async start(l,h){clearTimeout(warmT);cb=h;want=true;fails=0;net=0;base=lastLen;armIdle();   /* a session kept warm from the previous text box is reused: no new start, no new permission request */
       if(ls("pa_mic")!=="1")await prime();
-      const st0=await state();if(st0==="denied"){want=false;h.error({error:"not-allowed"});return}
-      try{const r=make(l);if(!on)r.start()}catch(e){if(!(e&&e.name=="InvalidStateError")){want=false;h.error({error:"start"})}}},
+      const st0=await state();if(st0==="denied"){want=false;if(cb===h)h.error({error:"not-allowed"});return}
+      if(!want||cb!==h)return;   /* the box was closed / mic switched off while the permission question was open */
+      try{const r=make(l);if(!on)r.start()}catch(e){if(e&&e.name=="InvalidStateError")on=true;else{want=false;h.error({error:"start"})}}},
+    setLang(l){if(!want||l===lang)return;clearTimeout(rsT);make(l);kick(250)},
+    /* mic off but text box still open: the last words still arrive and are kept */
+    pause(){want=false;clearTimeout(rsT);clearTimeout(idleG);try{rec&&rec.stop()}catch(e){}},
     /* the text box is finished: keep the recognizer alive 12 s so the next tap needs no restart, then release the microphone */
-    release(){cb=null;clearTimeout(idleT);idleT=setTimeout(()=>{want=false;try{rec&&rec.stop()}catch(e){}},12000)},
-    stopNow(){cb=null;clearTimeout(idleT);want=false;try{rec&&rec.stop()}catch(e){}}}})();
+    release(){cb=null;clearTimeout(idleG);clearTimeout(warmT);warmT=setTimeout(()=>{want=false;clearTimeout(rsT);try{rec&&rec.stop()}catch(e){}},12000)},
+    stopNow(){cb=null;clearTimeout(warmT);clearTimeout(idleG);clearTimeout(rsT);want=false;try{rec&&rec.stop()}catch(e){}}}})();
+/* v1.4.51 — one floating control while a text box is open: 🎤 speak / pause · language · ⌨ keyboard · ✓ Done.
+   The box stays open as long as you like: speak, pause, think, speak again, or type — everything lands in the same box. */
+const VB=(()=>{document.body.insertAdjacentHTML("beforeend",`<div id="vbar" hidden><button class="pb" id="vb-mic" title="Speak / pause">🎤</button><button class="pb" id="vb-lang" title="Voice language"></button><button class="pb" id="vb-kb" title="Keyboard">⌨️</button><button class="pb on" id="vb-ok">✓ Done</button></div>`);
+  const bar=$("#vbar");let cur=null;
+  bar.addEventListener("pointerdown",()=>{if(cur)cur.hold()},true);
+  bar.addEventListener("mousedown",e=>e.preventDefault());   /* tapping the bar must not take focus away from the text box */
+  bar.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("button");if(!b||!cur)return;
+    ({"vb-mic":()=>cur.mic(),"vb-kb":()=>cur.kb(),"vb-lang":()=>cur.lang(),"vb-ok":()=>cur.done()})[b.id]()});
+  return{show(a){cur=a;bar.hidden=false},hide(a){if(cur===a){cur=null;bar.hidden=true}}}})();
 function textBox(p,i,q,note,ex){
-  const SRC=window.SpeechRecognition||window.webkitSpeechRecognition;
-  let speak=!ex&&TXM=="speak";if(speak&&!SRC){speak=false;st("🎤 Voice typing isn't available here — use the 🎙 on the keyboard")}
+  const SRC=VR.ok;
+  /* voice is offered for every box (new or an existing one being edited); the Text panel only decides which way a box starts */
+  let speak=TXM=="speak";if(speak&&!SRC){speak=false;st("🎤 Voice typing isn't available here — use the 🎙 on the keyboard")}
   const t=document.createElement("textarea");t.setAttribute("autocomplete","off");t.setAttribute("data-1p-ignore","");t.setAttribute("data-lpignore","true");t.name="ann-text";
   const s=ex?ex.s:TXS,bold=ex?!!ex.b:TXB,al=ex?(ex.al||"l"):TXA,x0=ex?ex.x:q[0],y0=ex?ex.y:q[1],pw=(sizes[i]||sizes[0]).w;
   const st_=t.style;st_.left=x0*zoom-4+"px";st_.top=y0*zoom-1+"px";st_.fontSize=s*zoom+"px";st_.color=dc(ex?ex.c:color);st_.fontWeight=bold?"700":"400";st_.textAlign=al==="c"?"center":al==="r"?"right":"left";
@@ -1347,19 +1404,47 @@ function textBox(p,i,q,note,ex){
   const fit=()=>{if(ex&&ex.bw){st_.whiteSpace="pre-wrap";st_.width=ex.bw*zoom+"px"}else{st_.whiteSpace="pre";st_.width="1px";const w=t.scrollWidth;if(w>maxW){st_.whiteSpace="pre-wrap";st_.width=maxW+"px"}else st_.width=Math.max(s*zoom*1.6,w+2)+"px"}
     st_.height="1px";st_.height=Math.max(s*zoom*1.25,t.scrollHeight)+"px"};
   if(ex){t.value=ex.v;TEDIT=ex;$("#tbar").hidden=true;draw(i)}
-  p.append(t);fit();t.oninput=fit;
-  let rec=null,done=false,bad=false;
+  p.append(t);fit();
+  let done=false,listening=false,used=false,frozen=false,swapping=false,committed="",sess=[],pre="",post="",holdUntil=0;
+  const swap=fn=>{swapping=true;try{fn()}finally{swapping=false}};   /* our own blur→focus swaps (to show / hide the keyboard) must never finish the box */
   const commit=v=>{v=(v||"").trim();t.remove();
     if(ex){TEDIT=null;if(v!==ex.v){snap(i);if(v)ex.v=v;else{anns[i]=(anns[i]||[]).filter(x=>x!==ex);if(selT&&selT.o===ex)selT=null}change()}draw(i);showTbar();return}
     if(v){snap(i);const o={t:"text",x:q[0],y:q[1],s,c:color,w:1,v,...(bold?{b:1}:{}),...(al!="l"?{al}:{}),...(note?{bg:"#fde68a"}:{})};(anns[i]=anns[i]||[]).push(o);selTSet(o,i);change()}};
-  if(speak){t.readOnly=true;t.placeholder="🎤";
-    try{let fin="";rec=VR;
-      VR.start(TXL=="en"?"en-IN":"hi-IN",{
-        result:(e,b)=>{let it="";for(let k=Math.max(e.resultIndex,b||0);k<e.results.length;k++){const r=e.results[k];if(r.isFinal)fin+=(fin?" ":"")+r[0].transcript.trim();else it+=r[0].transcript}t.value=(v=>TXL=="hing"?D2R(v):v)((fin+(it?(fin?" ":"")+it:"")).trim());fit()},
-        error:e=>{if(e.error=="not-allowed"||e.error=="service-not-allowed")st("🎤 Microphone is blocked for this app. Tap the 🔒/ⓘ icon next to the address (or Site settings) → Microphone → Allow. You only need to do this once.");else if(e.error=="no-speech"||e.error=="aborted")return;else bad=true,st(e.error=="loop"?"🎤 Voice typing keeps stopping — tap again and speak":"🎤 Couldn't hear — tap again and speak")}});
-      st("🎤 Listening… tap outside to finish")}catch(x){st("🎤 Voice typing couldn't start")}}
-  kbFocus(t);
-  t.onblur=()=>{done=true;if(rec)VR.release();commit(t.value)};
+  const LN={hing:"Hinglish",hi:"हिंदी",en:"English"},vb=id=>$("#"+id);
+  const ui=()=>{vb("vb-mic").classList.toggle("rec",listening);vb("vb-mic").classList.toggle("on",listening);vb("vb-mic").hidden=!SRC;vb("vb-lang").hidden=!SRC;vb("vb-lang").textContent=LN[TXL]||"";vb("vb-kb").classList.toggle("on",!listening&&!t.readOnly)};
+  /* the box shows:  text before the cursor + what you said + text after the cursor  — so every new dictation lands exactly where the cursor is, also in an existing box */
+  const paint=()=>{const d=[committed,sess.filter(Boolean).join(" ")].filter(Boolean).join(" ").trim(),c=TXL=="hing"?D2R(d):d,
+      g1=pre&&c&&!/\s$/.test(pre)?" ":"",g2=post&&c&&!/^\s/.test(post)?" ":"";
+    t.value=pre+g1+c+g2+post;const pos=(pre+g1+c).length;try{t.setSelectionRange(pos,pos)}catch(e){}fit()};
+  const anchor=()=>{const a=t.selectionStart==null?t.value.length:t.selectionStart,b=t.selectionEnd==null?a:t.selectionEnd;pre=t.value.slice(0,a);post=t.value.slice(b);committed="";sess=[]};
+  const H={
+    result:(e,b)=>{if(done||frozen)return;b=b||0;for(let k=b;k<e.results.length;k++)sess[k-b]=(e.results[k][0].transcript||"").trim();sess.length=Math.max(0,e.results.length-b);paint()},
+    /* a listening session ended (normal after a pause): keep what was heard so the next session continues after it */
+    end:()=>{if(sess.length){const x=sess.filter(Boolean).join(" ");if(x)committed=committed?committed+" "+x:x;sess=[]}},
+    error:e=>{const er=e&&e.error;listening=false;ui();
+      if(er=="not-allowed"||er=="service-not-allowed")st("🎤 Microphone is blocked for this app. Tap the 🔒/ⓘ icon next to the address (or Site settings) → Microphone → Allow. You only need to do this once.");
+      else if(er=="idle")st("🎤 Mic paused — it was quiet for a while. Tap 🎤 to continue");
+      else if(er=="network")st("🎤 Voice typing needs internet — check the connection, then tap 🎤");
+      else if(er=="audio-capture")st("🎤 No microphone found");
+      else st(er=="loop"?"🎤 Voice typing keeps stopping — tap 🎤 and speak again":"🎤 Couldn't start voice typing — tap 🎤 to try again")}};
+  const micOn=()=>{if(done||listening||!SRC)return;frozen=false;anchor();
+    if(!t.readOnly||document.activeElement!==t)swap(()=>{t.readOnly=true;try{t.blur()}catch(x){}try{t.focus({preventScroll:true})}catch(x){}});   /* read-only = the keyboard goes away, the box stays active */
+    listening=true;used=true;ui();st("🎤 Listening… pause as long as you like · tap ✓ Done when finished");
+    VR.start(TXL=="en"?"en-IN":"hi-IN",H)};
+  const micOff=quiet=>{if(!listening)return;listening=false;VR.pause();ui();if(!quiet)st("🎤 Mic paused — tap 🎤 to speak again")};
+  const kbOn=()=>{if(done)return;micOff(true);frozen=true;committed="";sess=[];swap(()=>{t.readOnly=false;try{t.blur()}catch(x){}});kbFocus(t);ui();st("⌨️ Type with the keyboard · tap 🎤 to speak again")};
+  const langNext=()=>{if(done)return;TXL=TXL=="hing"?"hi":TXL=="hi"?"en":"hing";lsSet("pa_txlang",TXL);txSync();
+    if(listening){const v=t.value,c=t.selectionStart==null?v.length:t.selectionStart;pre=v.slice(0,c);post=v.slice(c);committed="";sess=[];VR.setLang(TXL=="en"?"en-IN":"hi-IN")}   /* what is already written stays exactly as it is */
+    ui();st("🎤 "+LN[TXL])};
+  const finish=()=>{if(done)return;done=true;listening=false;if(used)VR.release();VB.hide(api);commit(t.value)};
+  const api={hold:()=>{holdUntil=Date.now()+700},mic:()=>listening?micOff():micOn(),kb:kbOn,lang:langNext,done:finish};
+  t.oninput=()=>{frozen=true;committed="";sess=[];if(listening)micOff(true);fit()};   /* typing and dictating never overwrite each other */
+  t.readOnly=speak;if(speak)t.placeholder="🎤";
+  if(ex){try{t.setSelectionRange(t.value.length,t.value.length)}catch(x){}}
+  kbFocus(t);VB.show(api);ui();
+  if(speak)micOn();
+  /* leaving the box (tap outside) finishes it; taps on the voice bar only hold the focus for a moment */
+  t.onblur=()=>{if(done||swapping)return;if(Date.now()<holdUntil){setTimeout(()=>{if(!done)try{t.focus({preventScroll:true})}catch(x){}},0);return}finish()};
 }
 function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;if(CROP)cropCancel();if(selT){selT=null;$("#tbar").hidden=true}
   const top=a[a.length-1];if(top&&top[0]==="__page__"){a.pop();b.push(top);restorePageState(r?top[1].after:top[1].before).then(()=>st(r?"↪ Page action restored":"↶ Page action undone")).catch(()=>st("❌ Couldn't restore page history"));return}
@@ -2274,7 +2359,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.50",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.51",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -2397,7 +2482,7 @@ document.body.insertAdjacentHTML("beforeend",`
 <div id="lasso-panel" class="fpanel" hidden><div class="fpanel-title">Lasso Select</div>
   <div class="hintp">Loop around handwriting, text, images, or shapes to select. Drag to move, corner handle to resize, and the selection bar to copy or delete. Writing tools stay active; one-use tools return here.</div></div>
 <div id="sel-panel" class="fpanel" hidden><div class="fpanel-title">Select</div>
-  <div class="hintp"><b>Image:</b> drag to move · bottom-right corner to resize · ✂ (top-left) to crop · red ✕ to remove.<br><b>Text:</b> tap to select, then drag to move, blue corner = font size, orange ↔ = wrap into more/fewer lines. Drag the text to move it. Drag the blue bottom-right handle diagonally to resize text; drag the orange ↔ handle to change text width and wrapping. Tap it again (or ✎ Edit) to change the words. The bar has bold, color, copy and delete. Tap an empty spot to deselect.</div></div>`);
+  <div class="hintp"><b>Image:</b> drag to move · bottom-right corner to resize · ✂ (top-left) to crop · red ✕ to remove.<br><b>Text:</b> tap to select, then drag to move, blue corner = font size, orange ↔ = wrap into more/fewer lines. Drag the text to move it. Drag the blue bottom-right handle diagonally to resize text; drag the orange ↔ handle to change text width and wrapping. Tap it again (or ✎ Edit) to change the words. The bar has bold, color, copy and delete, plus A− / A+ (size) and ← ↑ ↓ → (move; hold to repeat) that work with a finger too. Tap an empty spot to deselect.</div></div>`);
 const SH_SIZES=[1,2,3,5,8,12].map(n=>({px:n,label:n+"pt"}));
 buildSizeRow("sh-sizes",SH_SIZES,(i,x)=>{W=x.px;syncW()},2,false);
 function drawShPrev(){const cv=$("#sh-prev");if(!cv)return;const c=cv.getContext("2d"),w=cv.width,h=cv.height;c.clearRect(0,0,w,h);
@@ -2414,7 +2499,7 @@ $$(".crow").forEach(r=>{COL.forEach(c=>{const b=document.createElement("button")
   b.onclick=()=>{const s=$$(".sw").find(x=>x.dataset.c==c);if(s)s.click();else{color=c;$("#cc").value=c}syncW();drawHlPreview()};r.append(b)});
   const m=document.createElement("button");m.className="cdot";m.dataset.c="custom";m.textContent="🎨";m.style.cssText="background:var(--btn-bg);font-size:14px";m.onclick=()=>$("#cc").click();r.append(m)});
 $("#cc").addEventListener("input",()=>syncW());
-const VH="Free · no download · uses your phone's own speech recognition (internet needed)";
+const VH="Free · no download · uses your phone's own speech recognition (internet needed). It keeps listening while you pause; tap 🎤 in the bar to speak again in the same box.";
 function txSync(){$("#tx-voice").hidden=TXM!="speak";$$("[data-txl]").forEach(x=>x.classList.toggle("on",x.dataset.txl==TXL));$("#tx-vh").textContent=VH;$$("[data-txm]").forEach(x=>x.classList.toggle("on",x.dataset.txm==TXM));$("#tx-bold").classList.toggle("on",TXB);$$("[data-txa]").forEach(x=>x.classList.toggle("on",x.dataset.txa==TXA))}
 const txSel=()=>selT&&(tool=="text"||tool=="note");
 $$("[data-txm]").forEach(b=>b.onclick=()=>{TXM=b.dataset.txm;lsSet(TXK.m,TXM);txSync()});
