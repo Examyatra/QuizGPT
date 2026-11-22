@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.33">
+<meta name="app-version" content="1.4.46">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -42,7 +42,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 
 /* Compact status area: keep save/export/theme and a tiny connectivity indicator */
 #bar #st{display:none!important}
-/* v1.4.33: two rows — row 1: back · PDF tabs (scroll left/right) · save / export / theme; row 2: tool strip */
+/* v1.4.41: two rows — row 1: back · PDF tabs (scroll left/right) · save / export / theme; row 2: tool strip */
 #bar .tabs{display:flex;justify-content:flex-start;flex:1;min-width:0}
 #dtabs{display:flex;gap:6px;overflow-x:auto;max-width:100%;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x}
 #dtabs::-webkit-scrollbar{display:none}
@@ -50,12 +50,15 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .dtab.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .dtab:first-child{margin-left:auto}.dtab:last-child{margin-right:auto}
 #doctab{display:none!important}
-#bar .net{display:none}   /* one connection light only (the dot at the right end) */
 #bar #manualsave{order:2}#bar #saveb{order:3}#bar .thb{order:4}#bar #net{order:5}
 #bar .bar-top{gap:8px}
-#net{width:10px;height:10px;flex:0 0 10px;border-radius:50%;background:#9ca3af;margin:0 4px 0 2px;box-shadow:0 0 0 2px color-mix(in srgb,var(--tx) 10%,transparent)}
-#net[data-online="1"]{background:#16a34a}
-#net[data-online="0"]{background:#ef4444}
+#net{width:38px;height:38px;flex:0 0 38px;margin:0;display:flex;align-items:center;justify-content:center;border-radius:9px}
+#net::before{content:"";width:20px;height:20px;border-radius:50%;background:#9ca3af;box-shadow:0 0 0 2px color-mix(in srgb,var(--tx) 10%,transparent)}
+#net[data-online="1"]::before{background:#16a34a}
+#net[data-online="0"]::before{background:#ef4444}
+/* automatic backup indicator: green circle on the save button for 5 s */
+#manualsave.autook::after{content:"";position:absolute;top:3px;right:3px;width:14px;height:14px;border-radius:50%;background:#22c55e;border:2px solid var(--bar);box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:autook 1.4s ease-out infinite;pointer-events:none}
+@keyframes autook{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}100%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
 #manualsave{font-size:18px}
 #manualsave.saving{opacity:.65}
 /* ===== TOP TOOLBAR — GoodNotes style ===== */
@@ -269,6 +272,20 @@ body.nobar #showbar{display:block}body.pres #showbar{display:none!important}
 .hnav{display:block;width:100%;text-align:left;background:transparent;color:var(--tx);border:none;border-radius:12px;padding:13px 14px;font-size:15px;font-weight:600;cursor:pointer;line-height:1.3}
 .hnav:hover{background:var(--btn-hover)}
 .hnav.on{background:var(--ac);color:#fff}
+.hnav{display:flex;align-items:center;gap:10px;white-space:nowrap;overflow:hidden;min-height:48px;transition:background .15s}
+.hnav .hi{flex:0 0 1.6em;text-align:center;font-size:1.15em;line-height:1}
+.hnav.on{box-shadow:0 2px 10px rgba(52,120,246,.35)}
+#hp-bk .bkc{display:flex;flex-direction:column;gap:14px;max-width:560px;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:16px;padding:18px}
+#hp-bk #hbk{font-size:15px;font-weight:600;opacity:1;margin:0;line-height:1.4}
+#hp-bk #hst{font-size:13px;opacity:.8;min-height:1.3em;margin:0;line-height:1.4}
+#hp-bk .bkr{display:flex;gap:10px;flex-wrap:wrap}
+.bkb{background:var(--ac);color:#fff;border:none;border-radius:12px;padding:12px 22px;font-size:16px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(52,120,246,.35);transition:background .15s,transform .1s}
+.bkb:hover{background:#2860d8}.bkb:active{transform:scale(.98)}.bkb:disabled{opacity:.6;cursor:default;box-shadow:none}
+.bks{background:var(--btn-bg);color:var(--tx);border:1px solid var(--bd);border-radius:12px;padding:12px 18px;font-size:14px;cursor:pointer}
+.bks:hover{background:var(--btn-hover)}
+.bkh{max-width:560px;margin-top:20px;font-size:14px;line-height:1.6;opacity:.85}
+.bkh ul{margin:8px 0 0;padding-left:20px}.bkh li{margin:5px 0}
+#htoast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:30;max-width:min(520px,86vw);background:var(--panel-bg);color:var(--tx);border:1px solid var(--panel-bd);border-radius:12px;padding:10px 16px;font-size:14px;line-height:1.4;box-shadow:var(--panel-shadow);text-align:center}
 #hmain{position:relative;flex:1;min-width:0;overflow:auto;padding:20px 24px 110px;-webkit-overflow-scrolling:touch}
 .hti{margin:6px 0 14px;font-size:28px;font-weight:700}
 #hcorner{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:16px;z-index:20;display:flex;align-items:center;gap:8px}
@@ -279,18 +296,19 @@ body.nobar #showbar{display:block}body.pres #showbar{display:none!important}
 .tlc.need{opacity:.6}
 #htm{font-size:13px;min-height:1.2em;opacity:.85}
 #hside .ver{margin-top:auto;text-align:center;font-size:11px;opacity:.5;padding-top:12px}
-@media(max-width:600px){#hside{flex-basis:110px;min-width:110px;padding:14px 6px}.hnav{font-size:12.5px;padding:10px 8px}.hbrand{font-size:15px}#hmain{padding:16px 12px 110px}.hti{font-size:22px}}
+@media(max-width:600px){#hside{flex-basis:110px;min-width:110px;padding:14px 6px}.hnav{font-size:12.5px;padding:10px 6px;gap:6px;min-height:44px}.hnav .hi{flex-basis:1.3em}.bkb,.bks{width:100%}.hbrand{font-size:15px}#hmain{padding:16px 12px 110px}.hti{font-size:22px}}
 .cta{
   background:var(--ac);color:#fff;border:none;font-size:16px;font-weight:600;
   padding:10px 20px;border-radius:12px;box-shadow:0 4px 16px rgba(52,120,246,0.4);
   cursor:pointer;transition:background .15s,transform .1s;
 }
 #hmain>.cta{position:fixed;right:22px;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:20}
+#hmain>#mkpdf{bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--panel-bg);color:var(--ac);border:2px solid var(--ac);padding:8px 18px}
 .cta:hover{background:#2860d8;transform:translateY(-1px)}
+#hmain>#mkpdf:hover{background:var(--panel-bg)}
+#cpdf-dlg input[type=text],#cpdf-dlg input[type=number]{background:var(--btn-bg);color:var(--tx);border:1px solid var(--bd,rgba(128,128,128,.4));border-radius:10px;padding:11px 12px;font-size:16px;width:100%;box-sizing:border-box}
+#cpdf-dlg label{font-size:13px;opacity:.75;margin-top:4px}
 .cta:active{transform:none}
-#hact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;padding:0 10px;align-items:center}
-#hact button{background:var(--btn-bg);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:7px 14px;font-size:13px;cursor:pointer}
-#hact button:hover{background:var(--btn-hover)}
 #hbk,#hst{font-size:13px;opacity:.75;min-height:1.2em;margin:4px 0}
 #nbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:24px 16px;margin-top:20px}
 .nb{display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;min-width:0}
@@ -398,8 +416,8 @@ html:has(body.pres){scroll-snap-type:y proximity}
     </div></div>
     <span id="st" aria-hidden="true"></span>
     <button class="ibtn" id="manualsave" title="Save locally and back up to Telegram" aria-label="Manual save">💾</button>
-    <button class="ibtn" id="saveb" title="Export annotated PDF">⬇️</button>
-    <button class="ibtn thb" title="Theme">🌓</button>
+    <button class="ibtn" id="saveb" title="Export annotated PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4"/><path d="M8 8l4-4 4 4"/><path d="M5 13v5.5a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5V13"/></svg></button>
+    <button class="ibtn thb" title="Theme"></button>
     <span id="net" role="status" aria-label="Internet connection status" title="Internet connection status"></span>
   </div>
   <div id="tools-wrap"><div id="tstrip">
@@ -468,10 +486,6 @@ html:has(body.pres){scroll-snap-type:y proximity}
       <span class="slider-val" id="pen-slider-val">3mm</span>
     </div>
   </div>
-  <div style="display:flex;gap:8px">
-    <button class="panel-tab on" data-ptab="draw" style="flex:1;padding:8px;border-radius:9px;border:1px solid var(--panel-bd);background:var(--btn-bg);cursor:pointer;font-size:13px;font-weight:600">✏️ Draw</button>
-    <button class="panel-tab" data-ptab="color" style="flex:1;padding:8px;border-radius:9px;border:1px solid var(--bd);background:transparent;cursor:pointer;font-size:13px;font-weight:600;opacity:.5">🎨 Color</button>
-  </div>
 </div>
 
 <!-- ===== PEN SETTINGS SUB-PANEL ===== -->
@@ -497,8 +511,8 @@ html:has(body.pres){scroll-snap-type:y proximity}
   <div class="setting-row">
     <div class="setting-label">Width Smoothing <span class="setting-hint" title="Reduces sudden changes in width">?</span></div>
     <div class="slider-row">
-      <input type="range" id="ps-widthsmooth" min="0" max="100" step="5" value="30">
-      <span class="slider-val" id="ps-widthsmooth-val">30%</span>
+      <input type="range" id="ps-widthsmooth" min="0" max="100" step="5" value="60">
+      <span class="slider-val" id="ps-widthsmooth-val">60%</span>
     </div>
   </div>
   <div class="setting-row">
@@ -521,21 +535,6 @@ html:has(body.pres){scroll-snap-type:y proximity}
     <div class="fpanel-section-label" style="margin-bottom:10px">Size</div>
     <div class="size-row" id="er-sizes"></div>
   </div>
-  <div>
-    <div class="fpanel-section-label" style="margin-bottom:4px">Options</div>
-    <div class="eraser-option">
-      <div class="eraser-option-label">Erase Whole Stroke</div>
-      <button class="toggle-sw" data-eo="wholeline"></button>
-    </div>
-    <div class="eraser-option">
-      <div class="eraser-option-label">Highlighter Only</div>
-      <button class="toggle-sw" data-eo="hlonly"></button>
-    </div>
-    <div class="eraser-option">
-      <div class="eraser-option-label">Erase Shapes</div>
-      <button class="toggle-sw on" data-eo="shapes"></button>
-    </div>
-  </div>
 </div>
 
 <!-- ===== HIGHLIGHTER PANEL ===== -->
@@ -555,22 +554,37 @@ html:has(body.pres){scroll-snap-type:y proximity}
 <div id="home" hidden>
   <nav id="hside" aria-label="Home">
     <div class="hbrand">📓 Vpdf</div>
-    <button class="hnav on" data-ht="nb">📓 Notebook</button>
-    <button class="hnav" id="bk">✈️ Back up to Telegram</button>
-    <button class="hnav" id="rs" title="Select the backup .zip files you downloaded from Telegram">♻️ Restore from Telegram</button>
-    <button class="hnav" data-ht="tools">🧰 PDF tools</button>
-    <div id="hact"></div>
+    <button class="hnav on" data-ht="nb"><span class="hi">📓</span>Notebook</button>
+    <button class="hnav" data-ht="bk"><span class="hi">✈️</span>Backup</button>
+    <button class="hnav" id="rs" title="Select the backup .zip files you downloaded from Telegram"><span class="hi">♻️</span>Restore</button>
+    <button class="hnav" data-ht="tools"><span class="hi">🧰</span>PDF tools</button>
   </nav>
   <main id="hmain">
     <div id="hcorner">
-      <button class="ibtn thb" title="Theme">🌓</button>
+      <button class="ibtn thb" title="Theme"></button>
       <button class="th-btn" id="tg">⚙️ Settings</button>
     </div>
     <section id="hp-nb">
       <h1 class="hti">📓 Notebooks</h1>
-      <div id="hbk"></div><div id="hst"></div>
       <div id="nbs"></div>
       <div id="empty" hidden>📄 No notebooks yet.<br>Tap "＋ Add PDF" below.<br><span style="font-size:13px">Your PDF stays on your device; only annotations are saved.</span></div>
+    </section>
+    <section id="hp-bk" hidden>
+      <h1 class="hti">✈️ Back up to Telegram</h1>
+      <div class="bkc">
+        <div id="hbk"></div>
+        <div class="bkr"><button class="bkb" id="bknow">⬆️ Backup now</button><button class="bks" id="bkset">⚙️ Telegram settings</button></div>
+        <div id="hst" role="status" aria-live="polite"></div>
+      </div>
+      <div class="bkh"><b>How it works</b>
+        <ul>
+          <li>Your notes are always saved on this device first.</li>
+          <li>Backups go to your Telegram chat automatically: about 2 minutes after your last edit, when you leave the app, when the internet returns, and every 15 minutes.</li>
+          <li>Tap <b>Backup now</b> to send right away.</li>
+          <li>First time? Tap <b>Telegram settings</b> and follow the 4 steps.</li>
+          <li>To get your notes back, download the .zip files from Telegram and tap <b>Restore</b>.</li>
+        </ul>
+      </div>
     </section>
     <section id="hp-tools" hidden>
       <h1 class="hti">🧰 PDF tools</h1>
@@ -584,8 +598,10 @@ html:has(body.pres){scroll-snap-type:y proximity}
         <button class="tlc need" data-tl="blank"><b>📄 Blank page after current page</b><span>Open a notebook first, then use ⊕ More tools → PDF tools.</span></button>
       </div>
     </section>
+    <button class="cta" id="mkpdf">📄 Create PDF</button>
     <button class="cta" id="open">＋ Add PDF</button>
   </main>
+  <div id="htoast" role="status" aria-live="polite" hidden></div>
 </div>
 
 <!-- ===== SETTINGS MODAL ===== -->
@@ -596,6 +612,10 @@ html:has(body.pres){scroll-snap-type:y proximity}
    <button class="smb" id="sm-ins">📖 Instructions</button>
    <button class="smb" id="sm-tgb">✈️ Connect Telegram</button>
    <button class="smb" id="stb">💾 Full backup now</button>
+   <button class="smb" id="sm-bkf">📤 Save backup file to this device</button>
+   <button class="smb" id="sm-imp">📥 Import backup file</button>
+   <button class="smb" id="sm-trash">🗑 Recover deleted notebooks</button>
+   <input type="file" id="sm-impf" accept=".json,application/json" hidden>
    <div id="smf" role="status" aria-live="polite"></div>
    <label>🎨 Theme</label>
    <div class="row">
@@ -657,7 +677,6 @@ html:has(body.pres){scroll-snap-type:y proximity}
    <div id="stinfo"></div>
    <button id="stp">🔒 Request persistent storage</button>
    <input type="checkbox" id="pinv">
-   <input id="svu" type="url"><input id="svt" type="password"><input type="checkbox" id="sva"><button id="svn">Send now</button>
    <button id="strb">↺ Reset toolbar layout</button>
  </div>
 </div></div>
@@ -681,12 +700,12 @@ html:has(body.pres){scroll-snap-type:y proximity}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";   /* if a library is missing (first visit offline) the app still opens; it reloads itself once the internet is back */
 let theme=(()=>{try{return localStorage.getItem("pa_theme")||"auto"}catch(e){return"auto"}})();
 let pinv=(()=>{try{return localStorage.getItem("pa_pinv")!="0"}catch(e){return true}})();
 let DK=false;
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],PL=PDFLib;
-const LOW=(navigator.deviceMemory||4)<=2,MAXPX=LOW?1.2e6:3e6,DPR=Math.min(devicePixelRatio||1,LOW?1:2);
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],PL=window.PDFLib;
+const LOW=(navigator.deviceMemory||4)<=2,MAXPX=LOW?1.2e6:5e6,DPR=Math.min(devicePixelRatio||1,LOW?1:3);   /* v1.4.46: sharper canvas — the page and the ink are drawn at up to 5 Mpx (was 3 Mpx), so they are no longer stretched on iPad */
 let pdf,file,url,name="",docId=null,zoom=LOW?1:1.2,tool="pen",previousTool="lasso",color="#e11d48",W=3,HW=12,penOnly=(()=>{try{return localStorage.getItem("pa_penonly")!=="0"}catch(e){return true}})(),curPage=0;
 let ina,anns={},sizes=[],hist=[],redo=[],timer,vis=new Set(),q=Promise.resolve();
 const COL=["#e11d48","#2563eb","#16a34a","#f59e0b","#111111","#ffffff"];
@@ -698,11 +717,13 @@ const isV=v=>typeof v=="string";
 const vSize=v=>{const m=/^b([\d.]+)x([\d.]+)$/.exec(v);return m?{w:+m[1],h:+m[2]}:{w:595.28,h:841.89}};
 const mkV=z=>"b"+(+z.w).toFixed(2)+"x"+(+z.h).toFixed(2);
 const okOrd=(o,n)=>Array.isArray(o)&&o.every(v=>isV(v)?/^b[\d.]+x[\d.]+$/.test(v):(Number.isInteger(v)&&v>=0&&v<n))&&new Set(o.filter(v=>!isV(v))).size==n;
-const st=t=>{$("#st").textContent=t;const h=$("#hst");if(h)h.textContent=t;const f=$("#smf");if(f)f.textContent=t;const tm=$("#htm");if(tm)tm.textContent=t};
+const st=t=>{$("#st").textContent=t;const h=$("#hst");if(h)h.textContent=t;const f=$("#smf");if(f)f.textContent=t;const tm=$("#htm");if(tm)tm.textContent=t;const tz=$("#htoast");if(tz&&!$("#home").hidden&&!$("#hp-nb").hidden&&t&&!/^✅ Saved safely/.test(t)){tz.textContent=t;tz.hidden=false;clearTimeout(tz._t);tz._t=setTimeout(()=>{tz.hidden=true},4500)}};
 
 /* ===== TEXT + IMAGE EDITING ===== */
 let selT=null,CROP=null,TEDIT=null;
 const MC=document.createElement("canvas").getContext("2d");
+const TXK={m:"pa_txmode",b:"pa_txbold",a:"pa_txalign",s:"pa_txsize"},lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let TXS=(()=>{const v=+lsGet(TXK.s);return v>=6&&v<=120?v:18})(),TXM=lsGet(TXK.m)=="speak"?"speak":"type",TXL=["hing","hi","en"].includes(lsGet("pa_txlang"))?lsGet("pa_txlang"):"hing",TXB=lsGet(TXK.b)=="1",TXA=["l","c","r"].includes(lsGet(TXK.a))?lsGet(TXK.a):"l";
 const tFont=o=>`${o.b?"700 ":""}${o.s}px system-ui,"Noto Sans Devanagari",sans-serif`;
 function tLines(o){const c=MC;c.font=tFont(o);const out=[];
   String(o.v).split("\n").forEach(par=>{
@@ -722,19 +743,20 @@ function setLines(o,tg){const P=String(o.v).split("\n").length;delete o.bw;if(tg
   o.bw=lo}
 /* END-HELPERS */
 document.body.insertAdjacentHTML("beforeend",`<div id="tbar" hidden><div id="tb-btns">
-<button class="pb" id="tb-b" title="Bold"><b>B</b></button>
+<button class="pb" id="tb-b" title="Bold"><b>B</b></button><button class="pb" data-tba="l" title="Left">⇤</button><button class="pb" data-tba="c" title="Middle">↔</button><button class="pb" data-tba="r" title="Right">⇥</button>
 <button class="pb" id="tb-ed">✎ Edit</button><button class="pb" id="tb-cp" title="Duplicate">⧉</button><button class="pb" id="tb-dl" title="Delete">🗑</button></div>
 <div id="tb-cols"></div></div>
 <div id="cbar" hidden><button class="pb on" id="cb-ok">✓ Done</button><button class="pb" id="cb-rs">↺ Reset</button><button class="pb" id="cb-x">✕ Cancel</button></div>`);
 function selTSet(o,i){const old=selT?selT.i:-1;selT=o?{o,i}:null;if(old>=0&&old!=i)draw(old);if(i>=0)draw(i);showTbar()}
 function showTbar(){const b=$("#tbar");if(!selT||TEDIT||CROP){b.hidden=true;return}b.hidden=false;const o=selT.o;
-  {const _n=$("#tb-n");if(_n)_n.textContent=tBox(o).L.length}$("#tb-b").classList.toggle("on",!!o.b);
+  {const _n=$("#tb-n");if(_n)_n.textContent=tBox(o).L.length}$("#tb-b").classList.toggle("on",!!o.b);$$("[data-tba]").forEach(x=>x.classList.toggle("on",x.dataset.tba==(o.al||"l")));
   const cs=$("#tb-cols");cs.innerHTML="";const seen=new Set();
   $$(".sw").forEach(sw=>{const c=sw.dataset.c;if(!c||seen.has(c))return;seen.add(c);const d=document.createElement("button");d.className="tbc"+(c.toLowerCase()==String(o.c).toLowerCase()?" on":"");d.style.background=c;d.onclick=()=>tChange(()=>{o.c=c});cs.append(d)});
   const lb=document.createElement("label");lb.className="tbc";lb.title="Custom color";lb.innerHTML='+<input type="color">';
   const inp=lb.querySelector("input");inp.value=/^#[0-9a-f]{6}$/i.test(o.c)?o.c:"#000000";inp.onchange=()=>tChange(()=>{o.c=inp.value});cs.append(lb)}
 function tChange(fn){if(!selT)return;snap(selT.i);fn(selT.o);draw(selT.i);change();showTbar()}
 $("#tb-b").onclick=()=>tChange(o=>{o.b=o.b?0:1;if(!o.b)delete o.b});
+$$("[data-tba]").forEach(b=>b.onclick=()=>tChange(o=>{if(b.dataset.tba=="l")delete o.al;else o.al=b.dataset.tba}));
 $("#tb-ed").onclick=()=>openEdit();
 $("#tb-cp").onclick=()=>{if(!selT)return;const i=selT.i;snap(i);const n=JSON.parse(JSON.stringify(selT.o));n.x+=14;n.y+=14;anns[i].push(n);selTSet(n,i);change()};
 $("#tb-dl").onclick=()=>{if(!selT)return;const i=selT.i,o=selT.o;snap(i);anns[i]=(anns[i]||[]).filter(x=>x!==o);selTSet(null,i);change()};
@@ -770,7 +792,7 @@ function drawTextSel(c,i,k){if(!selT||selT.i!=i||TEDIT)return;const o=selT.o,B=t
   c.save();c.scale(k,k);c.setLineDash([5/zoom,4/zoom]);c.strokeStyle="#2563eb";c.lineWidth=1.5/zoom;c.strokeRect(o.x-2/zoom,o.y-2/zoom,B.w+4/zoom,B.h+4/zoom);c.setLineDash([]);
   /* Direct-manipulation handles: bottom-right scales text; right-middle changes wrapping width. */
   c.fillStyle="#2563eb";c.beginPath();c.arc(o.x+B.w,o.y+B.h,h,0,Math.PI*2);c.fill();c.strokeStyle="#fff";c.lineWidth=1.5/zoom;c.beginPath();c.moveTo(o.x+B.w-h*.45,o.y+B.h+h*.45);c.lineTo(o.x+B.w+h*.45,o.y+B.h-h*.45);c.moveTo(o.x+B.w-h*.1,o.y+B.h-h*.45);c.lineTo(o.x+B.w+h*.45,o.y+B.h-h*.45);c.lineTo(o.x+B.w+h*.45,o.y+B.h+h*.1);c.stroke();
-  c.fillStyle="#f59e0b";c.beginPath();c.arc(wx,o.y+B.h/2,h*1.1,0,Math.PI*2);c.fill();c.fillStyle="#fff";c.font=`${h*1.4}px sans-serif`;c.textAlign="center";c.textBaseline="middle";c.fillText("↔",wx,o.y+B.h/2);c.restore()}
+  c.fillStyle="#f59e0b";c.beginPath();c.arc(wx,o.y+B.h/2,h*1.1,0,Math.PI*2);c.fill();c.fillStyle="#fff";c.font=`${h*1.4}px sans-serif`;c.textAlign="center";c.textBaseline="middle";c.fillText("↕",wx,o.y+B.h/2);c.restore()}
 /* ===== END TEXT + IMAGE EDITING ===== */
 
 const rmCol=(()=>{try{return JSON.parse(localStorage.getItem("pa_colrm"))||[]}catch(e){return[]}})();
@@ -833,7 +855,11 @@ buildSizeRow("pen-sizes",PEN_SIZES,(i,s)=>{
   activePenSize=i;W=s.px;$("#pen-slider").value=s.px;$("#pen-slider-val").textContent=s.label;drawPenPreview();
 },activePenSize,false);
 
-buildSizeRow("er-sizes",ER_SIZES,(i,s)=>{W=s},-1,true);
+/* Eraser size: its own value (never touches pen/shape/highlighter W), saved in the browser */
+const ER_KEY="pa_eraser_size";
+let ERW=(()=>{try{const v=+localStorage.getItem(ER_KEY);return ER_SIZES.includes(v)?v:20}catch(e){return 20}})();
+const saveERW=()=>{try{localStorage.setItem(ER_KEY,String(ERW))}catch(e){}};
+buildSizeRow("er-sizes",ER_SIZES,(i,s)=>{ERW=s;saveERW()},ER_SIZES.indexOf(ERW),true);
 
 buildSizeRow("hl-sizes",HL_SIZES,(i,s)=>{HW=s.px;$("#hl-slider").value=s.px;$("#hl-slider-val").textContent=s.label;drawHlPreview()},2,false);
 
@@ -851,7 +877,7 @@ $("#hl-slider").oninput=e=>{HW=+e.target.value;$("#hl-slider-val").textContent=H
   try{const sv=localStorage.getItem("pa_pen_"+k);if(sv){el.value=sv;val.textContent=sv+(k==="minw"||k==="widthsmooth"?"%":"")}}catch(e){}
 });
 document.getElementById("ps-reset").onclick=()=>{
-  [["ps-pressure","4"],["ps-minw","50"],["ps-widthsmooth","30"],["ps-motionsmooth","2"]].forEach(([id,v])=>{
+  [["ps-pressure","4"],["ps-minw","50"],["ps-widthsmooth","60"],["ps-motionsmooth","2"]].forEach(([id,v])=>{
     const el=document.getElementById(id);if(!el)return;el.value=v;
     const lbl=document.getElementById(id+"-val");if(lbl)lbl.textContent=v+(/minw|widthsmooth/.test(id)?"%":"");
   });
@@ -888,7 +914,7 @@ function placePanel(){
 function openPanel(id,anchor){if(anchor)panelAnchor=anchor;panelOpen=id;
   PANELS.forEach(pid=>{const p=document.getElementById(pid);if(p)p.hidden=(pid!==id)});placePanel()}
 
-const TOOL_PANEL={pen:"pen-panel",hl:"hl-panel",er:"er-panel",stamp:"st-panel",line:"shape-panel",arrow:"shape-panel",rect:"shape-panel",oval:"shape-panel",text:"text-panel",note:"text-panel",lasso:"lasso-panel",sel:"sel-panel",laser:"lz-panel"};
+const TOOL_PANEL={pen:"pen-panel",hl:"hl-panel",er:"er-panel",stamp:"st-panel",line:"shape-panel",arrow:"shape-panel",rect:"shape-panel",oval:"shape-panel",text:"text-panel",note:"text-panel",sel:"sel-panel",laser:"lz-panel"};
 // Tool button click → open relevant panel OR toggle off
 $$("[data-t]").forEach(b=>b.onclick=function(){
   const t=this.dataset.t;
@@ -919,17 +945,9 @@ document.querySelector('[data-t="pen"]').classList.add("on");
 document.getElementById("pen-gear-btn").onclick=e=>{e.stopPropagation();openPanel("pen-settings-panel")};
 document.getElementById("pen-settings-back").onclick=()=>openPanel("pen-panel");
 
-// Eraser modes mirror Goodnotes: standard partial erasing, stroke erasing, filters, and optional auto-deselect.
-const ERASER_PREF_KEY="pa_eraser_modes";
-const eraserModes={wholeline:false,hlonly:false,autoprev:false,shapes:true};
-try{Object.assign(eraserModes,JSON.parse(localStorage.getItem(ERASER_PREF_KEY)||"{}"))}catch(e){}
-// Writing tools (Pen, Highlighter, Eraser, Laser and Shapes) stay active until user selects another tool.
-eraserModes.autoprev=false;
-function syncEraserModes(){$$('[data-eo]').forEach(b=>b.classList.toggle("on",!!eraserModes[b.dataset.eo]))}
-function saveEraserModes(){try{localStorage.setItem(ERASER_PREF_KEY,JSON.stringify(eraserModes))}catch(e){}}
-syncEraserModes();
-$("#er-reset").onclick=()=>{Object.assign(eraserModes,{wholeline:false,hlonly:false,autoprev:false,shapes:true});saveEraserModes();syncEraserModes()};
-$$('[data-eo]').forEach(b=>b.onclick=function(){const k=this.dataset.eo;eraserModes[k]=!eraserModes[k];saveEraserModes();syncEraserModes()});
+// Eraser: one simple behaviour — whatever the eraser touches (pen, highlighter, shapes) is erased. Only the size is a setting.
+try{localStorage.removeItem("pa_eraser_modes")}catch(e){}
+$("#er-reset").onclick=()=>{ERW=20;saveERW();buildSizeRow("er-sizes",ER_SIZES,(i,s)=>{ERW=s;saveERW()},ER_SIZES.indexOf(ERW),true)};
 
 // Close panels on doc click
 document.addEventListener("click",e=>{
@@ -950,10 +968,11 @@ function dc(c){if(!DK||!/^#[0-9a-f]{6}$/i.test(c))return c;
   if(.2126*R+.7152*G+.0722*B<95){const t=.3;R+=(255-R)*t;G+=(255-G)*t;B+=(255-B)*t}
   return hx(R,G,B)}
 const mq=matchMedia("(prefers-color-scheme: dark)"),eff=()=>theme=="dark"||(theme=="auto"&&mq.matches);
+const TH_SUN='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></svg>',TH_MOON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>';
 function applyTheme(re){
   const R=document.documentElement;
   if(theme=="auto")R.removeAttribute("data-theme");else R.dataset.theme=theme;
-  DK=eff()&&pinv;R.classList.toggle("dkp",DK);
+  DK=eff()&&pinv;R.classList.toggle("dkp",DK);$$(".thb").forEach(b=>{b.innerHTML=eff()?TH_SUN:TH_MOON});
   const m=$('meta[name="theme-color"]');if(m)m.content=eff()?"#1a1a2e":"#1a1a2e";
   $$(".sw").forEach(b=>b.style.background=dc(b.dataset.c));
   $$("[data-th]").forEach(b=>b.classList.toggle("on",b.dataset.th==theme));
@@ -993,7 +1012,7 @@ const DB_VER=6;
 let DB=openDB();
 function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open("pa",DB_VER);
   r.onupgradeneeded=()=>{const d=r.result;[["docs",{keyPath:"id"}],["imgs"],["bk",{keyPath:"id"}],["th"],["meta"]].forEach(([n,o])=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n,o)})}; /* add-only — never delete */
-  r.onsuccess=()=>{const d=r.result;d.onversionchange=()=>{d.close();location.reload()};d.onclose=()=>{DB=openDB()};res(d)};r.onerror=()=>rej(r.error)})}
+  r.onsuccess=()=>{const d=r.result;d.onversionchange=()=>{Promise.resolve().then(()=>persist(true)).catch(()=>{}).then(()=>{try{d.close()}catch(e){}location.reload()})};d.onclose=()=>{DB=openDB()};res(d)};r.onerror=()=>rej(r.error)})}
 /* every IndexedDB call: reopens a dead connection, never hangs forever (abort + 20 s timeout) */
 const idb=async(store,m,f,retry)=>{let d;try{d=await DB}catch(e){DB=openDB();d=await DB}
   return new Promise((res,rej)=>{let fin=0;const to=setTimeout(()=>{if(!fin){fin=1;rej(new Error("IndexedDB timeout"))}},2e4);
@@ -1005,20 +1024,23 @@ const tx=(m,f)=>idb("docs",m,f);
 const itx=(m,f)=>idb("imgs",m,f);
 const btx=(m,f)=>idb("bk",m,f);
 const thx=(m,f)=>idb("th",m,f);
-const iGet=id=>itx("readonly",o=>o.get(id)),iPut=(id,b)=>itx("readwrite",o=>o.put(b,id));
+const iGet=id=>itx("readonly",o=>o.get(id)),iPut=async(id,b)=>{await itx("readwrite",o=>o.put(b,id));mirImgPut(id,b).catch(()=>{});opfsImgPut(id,b).catch(()=>{})};
 const bGet=id=>btx("readonly",o=>o.get(id)),bPut=v=>btx("readwrite",o=>o.put(v)),bAll=()=>btx("readonly",o=>o.getAll());
 const thGet=id=>thx("readonly",o=>o.get(id)),thPut=(id,b)=>thx("readwrite",o=>o.put(b,id)),thDel=id=>thx("readwrite",o=>o.delete(id));
+const isGen=id=>typeof id=="string"&&id.startsWith("gen:");   /* notebooks made with "Create PDF": the blank PDF is rebuilt from the page count, so it never has to be stored or backed up */
 const IM={};
 async function ldImg(id,cb){IM[id]=1;const r=await iGet(id);if(!r){delete IM[id];return}const im=new Image();im.onload=()=>{IM[id]=im;cb()};im.src=URL.createObjectURL(new Blob([r]))}
-const dbGet=id=>tx("readonly",o=>o.get(id)),dbPut=v=>tx("readwrite",o=>o.put(v)),dbDel=id=>{mirDel(id);return tx("readwrite",o=>o.delete(id))},dbAll=()=>tx("readonly",o=>o.getAll());
+const dbGet=id=>tx("readonly",o=>o.get(id)),dbPut=v=>tx("readwrite",o=>o.put(v)),dbDel=async id=>{try{const r=await dbGet(id);if(r)await metaPut("trash:"+id,{t:Date.now(),doc:r})}catch(e){}mirDel(id);opfsDel(id);return tx("readwrite",o=>o.delete(id))},dbAll=()=>tx("readonly",o=>o.getAll());
 
 let saveChain=Promise.resolve(),saveRevision=0,dirtySince=0,maxSaveTimer=0,saveRetryTimer=0;
 // Writing must never be interrupted by persistence. Save only after a long pause,
 // or at a safety checkpoint once the pointer is up. The latest live stroke is
 // always rendered immediately; IndexedDB work is serialized in the background.
-const SAVE_IDLE_MS=30000, SAVE_MAX_MS=60000, SAVE_POINTER_GUARD_MS=1200;
+const SAVE_IDLE_MS=8000, SAVE_MAX_MS=20000, SAVE_POINTER_GUARD_MS=1200;
 function clearSaveTimers(){clearTimeout(timer);clearTimeout(maxSaveTimer);clearTimeout(saveRetryTimer);timer=0;maxSaveTimer=0;saveRetryTimer=0}
 function deferUntilPointerUp(){clearTimeout(saveRetryTimer);saveRetryTimer=setTimeout(()=>persist(false),SAVE_POINTER_GUARD_MS)}
+let autoT=0;
+function autoSaved(){const b=$("#manualsave");if(!b)return;b.classList.add("autook");clearTimeout(autoT);autoT=setTimeout(()=>b.classList.remove("autook"),5000)}
 async function persist(urgent=false){
   if(!docId||!pdf)return;
   // Do not clone large annotation arrays while a pen/finger is actively drawing.
@@ -1032,7 +1054,7 @@ async function persist(urgent=false){
   try{snapshot=structuredClone(anns)}catch(e){st("⚠️ Draft kept in memory · checkpoint retry");saveRetryTimer=setTimeout(()=>persist(false),3000);return}
   const snap={id,fp,pfp,sv:SCHEMA,name:docName,anns:snapshot,page,t:Date.now(),np,ord:order,bm:bookmarks,tpl:templates,n:Object.values(snapshot).reduce((a,l)=>a+l.length,0)};
   saveChain=saveChain.catch(()=>{}).then(()=>dbPutM(snap));
-  try{await saveChain;if(rev===saveRevision){dirtySince=0;st("✅ Saved safely");}}
+  try{await saveChain;if(rev===saveRevision){dirtySince=0;try{localStorage.removeItem("pa_emerg")}catch(x){}st("✅ Saved safely");if(!urgent)autoSaved()}}
   catch(e){st("⚠️ Save failed — draft retained, retrying");saveRetryTimer=setTimeout(()=>persist(false),3000)}
 }
 function idleSave(){if(Date.now()-lastInk<1500&&(!dirtySince||Date.now()-dirtySince<18e4)){clearTimeout(saveRetryTimer);saveRetryTimer=setTimeout(idleSave,1500);return}persist(false)}   /* wait for a real pause in writing */
@@ -1048,7 +1070,7 @@ function change(){
 let want=null,THU=[];const FILES={};
 function syncViewerTop(){const b=$("#bar");if(b&&!b.hidden)document.documentElement.style.setProperty("--viewer-top",Math.ceil(b.getBoundingClientRect().bottom)+"px")}
 addEventListener("resize",syncViewerTop,{passive:true});
-function homeTab(t){$$("#hside [data-ht]").forEach(b=>b.classList.toggle("on",b.dataset.ht===t));$("#hp-nb").hidden=t!=="nb";$("#hp-tools").hidden=t!=="tools";$("#open").hidden=t!=="nb";const m=$("#hmain");if(m)m.scrollTop=0}
+function homeTab(t){$$("#hside [data-ht]").forEach(b=>b.classList.toggle("on",b.dataset.ht===t));$("#hp-nb").hidden=t!=="nb";$("#hp-bk").hidden=t!=="bk";$("#hp-tools").hidden=t!=="tools";$("#open").hidden=t!=="nb";$("#mkpdf").hidden=t!=="nb";const m=$("#hmain");if(m)m.scrollTop=0}
 function fsEnter(){try{const e=document.documentElement,f=e.requestFullscreen||e.webkitRequestFullscreen;if(f&&!document.fullscreenElement&&!document.webkitFullscreenElement){const r=f.call(e);if(r&&r.catch)r.catch(()=>{})}}catch(x){}}
 function fsExit(){try{if(document.fullscreenElement||document.webkitFullscreenElement){const f=document.exitFullscreen||document.webkitExitFullscreen,r=f.call(document);if(r&&r.catch)r.catch(()=>{})}}catch(x){}}
 ["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>{requestAnimationFrame(()=>{syncViewerTop();dispatchEvent(new Event("resize"))})}));
@@ -1067,19 +1089,20 @@ async function showLib(){
   $("#doc").innerHTML="";go("home");THU.forEach(u=>URL.revokeObjectURL(u));THU=[];
   const L=((await dbAll())||[]).sort((a,b)=>b.t-a.t),g=$("#nbs");g.innerHTML="";$("#empty").hidden=!!L.length;
   const last=+localStorage.getItem("pa_lastbackup")||0,days=Math.floor((Date.now()-last)/864e5);
-  $("#hbk").textContent=TG()?tgLine():!L.length?"":"⚠️ Telegram backup not set up — tap ⚙️ Settings";
+  $("#hbk").textContent=TG()?tgLine():"⚠️ Telegram backup isn't set up yet — tap Telegram settings";
   for(const r of L){
     const c=document.createElement("div"),tb=document.createElement("div"),th=await thGet(r.id),x=document.createElement("button"),t=document.createElement("b"),m=document.createElement("small");
     c.className="nb";tb.className="tb";
     if(th){const im=new Image(),u=URL.createObjectURL(new Blob([th],{type:"image/jpeg"}));THU.push(u);im.src=u;tb.append(im)}else tb.classList.add("cv");
     const ag=document.createElement("i");ag.className="ag";ag.textContent=age(r.t);x.className="dl";x.textContent="🗑";tb.append(ag,x);
     t.textContent=r.name.replace(/\.pdf$/i,"");m.textContent=`${r.np}p · ${r.n} ann`;
-    x.onclick=async e=>{e.stopPropagation();if(confirm("Delete annotations?")){await dbDel(r.id);await thDel(r.id);delete FILES[r.id];showLib()}};
+    x.onclick=async e=>{e.stopPropagation();if(confirm("Delete this notebook's annotations?\n\n(They stay in Settings → Recover deleted notebooks for 30 days.)")){await dbDel(r.id);await thDel(r.id);delete FILES[r.id];showLib()}};
     tb.onclick=t.onclick=()=>openNb(r);c.append(tb,t,m);g.append(c);
   }
 }
 function openNb(r){fsEnter();const f=FILES[r.id];if(f){openFile(f,r.id).catch(()=>st("❌ Couldn't open the PDF"));return}
-  want=r.id;$("#hst").textContent="📂 «"+r.name.replace(/\.pdf$/i,"")+"» — select the PDF";$("#fi").click()}
+  if(isGen(r.id)){openGen(r).catch(()=>st("❌ Couldn't open the notebook"));return}
+  want=r.id;st("📂 «"+r.name.replace(/\.pdf$/i,"")+"» — select the PDF");$("#fi").click()}
 async function thumb(P,id){try{if(await thGet(id))return;const pg=await P.getPage(1),v=pg.getViewport({scale:260/pg.getViewport({scale:1}).width}),c=document.createElement("canvas");
   c.width=Math.round(v.width);c.height=Math.round(v.height);await pg.render({canvasContext:c.getContext("2d"),viewport:v}).promise;pg.cleanup();
   const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.7));c.width=c.height=0;await thPut(id,await b.arrayBuffer())}catch(e){}}
@@ -1130,11 +1153,11 @@ async function draw1(i){
 }
 function paintSeg(c,o,from,raw){const P=o.p,n=P.length;c.lineCap=c.lineJoin="round";c.strokeStyle=raw?o.c:dc(o.c);   /* variable-width stroke; segments of equal width share one path */
   const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];let bk=-1,open=false;
-  for(let j=Math.max(1,from);j<n;j++){const a=j==1?P[0]:mid(P[j-1],P[j]),e=j<n-1?mid(P[j],P[j+1]):P[j],w=o.w*(P[j][2]||1),b=Math.round(w*6);
+  for(let j=Math.max(1,from);j<n;j++){const a=j==1?P[0]:mid(P[j-1],P[j]),e=j<n-1?mid(P[j],P[j+1]):P[j],w=o.w*(P[j][2]||1),b=Math.round(w*12);
     if(b!==bk){if(open)c.stroke();c.beginPath();c.moveTo(a[0],a[1]);c.lineWidth=w;bk=b;open=true}
     c.quadraticCurveTo(P[j][0],P[j][1],e[0],e[1])}
   if(open)c.stroke()}
-const penPar=()=>{const g=id=>{const v=parseFloat((document.getElementById(id)||{}).value);return isNaN(v)?null:v};return{s:(g("ps-pressure")||4)/8,m:(g("ps-minw")==null?50:g("ps-minw"))/100,w:(g("ps-widthsmooth")==null?30:g("ps-widthsmooth"))/100}};
+const penPar=()=>{const g=id=>{const v=parseFloat((document.getElementById(id)||{}).value);return isNaN(v)?null:v};return{s:(g("ps-pressure")||4)/8,m:(g("ps-minw")==null?50:g("ps-minw"))/100,w:(g("ps-widthsmooth")==null?60:g("ps-widthsmooth"))/100}};
 function paint(c,o,k,raw){
   c.save();c.scale(k,k);c.lineCap=c.lineJoin="round";c.strokeStyle=c.fillStyle=raw?o.c:dc(o.c);c.lineWidth=o.w;if(o.pt=="pencil")c.globalAlpha=.78;
   if(o.t=="img"){if(!raw&&CROP&&CROP.o===o){c.restore();return}const m=IM[o.id];if(m&&m.naturalWidth){const cr=o.cr;if(cr){const nw=m.naturalWidth,nh=m.naturalHeight;c.drawImage(m,cr[0]*nw,cr[1]*nh,nw*(1-cr[0]-cr[2]),nh*(1-cr[1]-cr[3]),o.x,o.y,o.w,o.h)}else c.drawImage(m,o.x,o.y,o.w,o.h)}
@@ -1143,7 +1166,7 @@ function paint(c,o,k,raw){
   if(o.t=="hl"){c.globalAlpha=DK&&!raw?.5:.35;c.lineWidth=o.w*4;c.lineCap="butt"}
   if(o.t=="pen"&&o.p.length>2&&o.p[0].length>2){paintSeg(c,o,1,raw)}
   else if(o.t=="pen"||o.t=="hl"){c.beginPath();smoothPath(c,o.p);if(o.p.length==1)c.lineTo(o.p[0][0]+.1,o.p[0][1]);c.stroke()}
-  else if(o.t=="text"){if(o===TEDIT){c.restore();return}c.font=tFont(o);c.textBaseline="top";const B=tBox(o);if(o.bg){c.fillStyle=o.bg;c.fillRect(o.x,o.y,B.w,B.h);c.fillStyle="#1f2937"}B.L.forEach((l,j)=>c.fillText(l,o.x+(o.bg?2:0),o.y+j*o.s*1.25))}
+  else if(o.t=="text"){if(o===TEDIT){c.restore();return}c.font=tFont(o);c.textBaseline="top";const B=tBox(o);if(o.bg){c.fillStyle=o.bg;c.fillRect(o.x,o.y,B.w,B.h);c.fillStyle="#1f2937"}B.L.forEach((l,j)=>{const pw=B.w-(o.bg?4:0),ax=o.al=="c"?(pw-c.measureText(l).width)/2:o.al=="r"?pw-c.measureText(l).width:0;c.fillText(l,o.x+(o.bg?2:0)+Math.max(0,ax),o.y+j*o.s*1.25)})}
   else{const[a,b]=o.p;c.beginPath();
     if(o.t=="rect")c.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
     else if(o.t=="oval"){c.ellipse((a[0]+b[0])/2,(a[1]+b[1])/2,Math.abs(b[0]-a[0])/2,Math.abs(b[1]-a[1])/2,0,0,7);c.stroke()}
@@ -1170,7 +1193,7 @@ function bind(ink,p,i){
   const liveDraw=()=>{if(rq)return;rq=requestAnimationFrame(()=>{rq=0;if(!(down&&cur))return;draw(i,cur)})};
   ink.addEventListener("touchstart",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});   /* Pencil never scrolls, selects or opens menus */
   ink.addEventListener("touchmove",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});ink.oncontextmenu=e=>e.preventDefault();
-  const pt=e=>{const r=R||ink.getBoundingClientRect();return[+((e.clientX-r.left)/zoom).toFixed(1),+((e.clientY-r.top)/zoom).toFixed(1)]};
+  const pt=e=>{const r=R||ink.getBoundingClientRect();return[+((e.clientX-r.left)/zoom).toFixed(2),+((e.clientY-r.top)/zoom).toFixed(2)]};
   ink.onpointerdown=e=>{
     if(e.pointerType=="touch"&&down&&cur&&e.pointerId!==pid){if(cur.p.length<=8&&Date.now()-dT<300){down=false;cur=null;mv=null;draw(i)}return}   /* palm / extra finger landing while writing: keep the stroke */
     if(e.pointerType=="touch"&&othersFresh(e.pointerId)){down=false;cur=null;mv=null;draw(i);return}
@@ -1181,7 +1204,7 @@ function bind(ink,p,i){
       const ae=document.activeElement;if(ae&&ae.tagName=="TEXTAREA")ae.blur();
       if(selT&&selT.i==i){const o=selT.o,B=tBox(o),sw_=(sizes[i]||sizes[0]).w,wx=Math.min(o.x+B.w+14/zoom,sw_-8/zoom),
         dS=Math.hypot(q[0]-(o.x+B.w),q[1]-(o.y+B.h)),dW=Math.hypot(q[0]-wx,q[1]-(o.y+B.h/2));
-        if(Math.min(dS,dW)<22/zoom){mt={o,k:dS<=dW?"s":"w",s0:o.s,bw0:o.bw,w0:Math.max(8,B.w),h0:Math.max(8,B.h),x0:o.x+B.w,y0:o.y+B.h,sn:0};down=true;return}}
+        if(Math.min(dS,dW)<22/zoom){mt={o,k:dS<=dW?"s":"w",L0:B.L.length,qy:q[1],s0:o.s,bw0:o.bw,w0:Math.max(8,B.w),h0:Math.max(8,B.h),x0:o.x+B.w,y0:o.y+B.h,sn:0};down=true;return}}
       const TL=anns[i]||[];let ft=null;
       for(let j=TL.length-1;j>=0;j--){const o=TL[j];if(o.t!="text")continue;const B=tBox(o),r=6/zoom;if(q[0]>o.x-r&&q[0]<o.x+B.w+r&&q[1]>o.y-r&&q[1]<o.y+B.h+r){ft=o;break}}
       if(ft){const was=!!(selT&&selT.o===ft);if(!was)selTSet(ft,i);mt={o:ft,k:"m",dx:q[0]-ft.x,dy:q[1]-ft.y,moved:false,was,sn:0};down=true;return}
@@ -1208,7 +1231,7 @@ function bind(ink,p,i){
     if(CROP){cropMove(q);return}
     if(mt){const o=mt.o;
       if(mt.k=="m"){if(!mt.moved&&Math.hypot(q[0]-mt.dx-o.x,q[1]-mt.dy-o.y)<4/zoom)return;if(!mt.sn){snap(i);mt.sn=1}mt.moved=true;o.x=q[0]-mt.dx;o.y=q[1]-mt.dy}
-      else{if(!mt.sn){snap(i);mt.sn=1}if(mt.k=="s"){const f=Math.max(.15,Math.hypot(q[0]-o.x,q[1]-o.y)/Math.max(8,Math.hypot(mt.x0-o.x,mt.y0-o.y)));o.s=Math.max(6,+(mt.s0*f).toFixed(2));if(mt.bw0)o.bw=mt.bw0*f}else o.bw=Math.max(o.s*1.2,q[0]-o.x)}
+      else{if(!mt.sn){snap(i);mt.sn=1}if(mt.k=="s"){const f=Math.max(.15,Math.hypot(q[0]-o.x,q[1]-o.y)/Math.max(8,Math.hypot(mt.x0-o.x,mt.y0-o.y)));o.s=Math.max(6,+(mt.s0*f).toFixed(2));if(mt.bw0)o.bw=mt.bw0*f}else setLines(o,Math.max(1,Math.min(12,mt.L0+Math.round((q[1]-mt.qy)/(o.s*1.25)))))}
       draw(i);return}
     if(tool=="lasso"){lassoMove(i,q);return}
     if(mv){const o=mv.o;if(mv.rs){const r=o.h/o.w;o.w=Math.max(30,q[0]-o.x);o.h=o.w*r}else{o.x=q[0]-mv.dx;o.y=q[1]-mv.dy}draw(i);return}
@@ -1229,44 +1252,106 @@ function bind(ink,p,i){
   ink.onpointerup=ink.onpointercancel=e=>{if(!down)return;if(e&&cur&&e.pointerId!==pid)return;down=false;R=null;lastInk=Date.now();if(rq){cancelAnimationFrame(rq);rq=0}
     if(cur&&lastRaw&&(cur.t=="pen"||cur.t=="hl")){const l=cur.p[cur.p.length-1];if(Math.hypot(l[0]-lastRaw[0],l[1]-lastRaw[1])>.35)cur.p.push(lastRaw)}   /* the last point of every stroke is always kept */
     if(CROP){CROP.drag=null;return}
-    if(mt){const m=mt;mt=null;if(m.k=="m"&&!m.moved&&m.was){openEdit();return}if(m.sn)change();draw(i);showTbar();return}
+    if(mt){const m=mt;mt=null;if(m.k=="m"&&!m.moved&&m.was){openEdit();return}if(m.sn)change();if(m.k=="s"&&m.o.s){TXS=Math.round(m.o.s);lsSet(TXK.s,TXS)}draw(i);showTbar();return}
     if(tool=="lasso"){lassoUp(i);return}if(mv){mv=null;draw(i);change();return}
-    if(cur){if(shapeOn&&cur.t=="pen"&&Date.now()-lastMv>450)cur=recog(cur)||cur;if((cur.t=="pen"||cur.t=="hl")&&cur.p.length>3)cur.p=rdp(cur.p,.3);snap(i);(anns[i]=anns[i]||[]).push(cur);cur=null;draw(i)}change();};
+    if(cur){if(shapeOn&&cur.t=="pen"&&Date.now()-lastMv>450)cur=recog(cur)||cur;if((cur.t=="pen"||cur.t=="hl")&&cur.p.length>3)cur.p=rdp(cur.p,.08);snap(i);(anns[i]=anns[i]||[]).push(cur);cur=null;draw(i)}change();};
 }
-/* handwriting compaction: Douglas-Peucker, tolerance 0.3 pt (≈0.1 mm, invisible) */
+/* handwriting compaction: Douglas-Peucker, tolerance 0.08 pt (≈0.03 mm) — small enough that the stroke does not change shape when the Pencil lifts */
 function rdp(P,e){const n=P.length;if(n<4)return P;const keep=new Uint8Array(n);keep[0]=keep[n-1]=1;const st=[[0,n-1]],e2=e*e;
   while(st.length){const[a,b]=st.pop();let md=0,mi=-1;const[ax,ay]=P[a],dx=P[b][0]-ax,dy=P[b][1]-ay,L=dx*dx+dy*dy;
     for(let i=a+1;i<b;i++){let d;if(!L)d=(P[i][0]-ax)**2+(P[i][1]-ay)**2;else{let t=((P[i][0]-ax)*dx+(P[i][1]-ay)*dy)/L;t=t<0?0:t>1?1:t;d=(P[i][0]-ax-t*dx)**2+(P[i][1]-ay-t*dy)**2}if(d>md){md=d;mi=i}}
     if(md>e2&&mi>0){keep[mi]=1;st.push([a,mi],[mi,b])}}
   return P.filter((_,i)=>keep[i])}
-function erase(i,q){
-  const a=anns[i]||[],r=Math.max(6,6+W/2),next=[];let changed=false;
+function erase(i,q,sc){
+  const a=anns[i]||[],r=ERW/2/(sc||zoom),next=[];let changed=false;
   const dseg=(x,y,A,B)=>{const dx=B[0]-A[0],dy=B[1]-A[1],ll=dx*dx+dy*dy;if(!ll)return Math.hypot(x-A[0],y-A[1]);const t=Math.max(0,Math.min(1,((x-A[0])*dx+(y-A[1])*dy)/ll));return Math.hypot(x-(A[0]+t*dx),y-(A[1]+t*dy))};
   for(const o of a){
     if(o.t==="pen"||o.t==="hl"){
-      if(eraserModes.hlonly&&o.t!=="hl"){next.push(o);continue}
       const P=o.p||[];let touched=P.some(pt=>Math.hypot(pt[0]-q[0],pt[1]-q[1])<=r);
       for(let j=1;j<P.length&&!touched;j++)touched=dseg(q[0],q[1],P[j-1],P[j])<=r;
-      if(!touched){next.push(o);continue}changed=true;if(eraserModes.wholeline)continue;
+      if(!touched){next.push(o);continue}changed=true;
       const fragments=[];let cur=[];const flush=()=>{if(cur.length)fragments.push(cur);cur=[]};
       const sample=(A,B)=>{const len=Math.hypot(B[0]-A[0],B[1]-A[1]),n=Math.max(1,Math.ceil(len/3));for(let k=1;k<=n;k++){const t=k/n,pt=[A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t];if(Math.hypot(pt[0]-q[0],pt[1]-q[1])<=r)flush();else{if(!cur.length)cur.push([A[0]+(B[0]-A[0])*(k-1)/n,A[1]+(B[1]-A[1])*(k-1)/n]);cur.push(pt)}}};
       if(P.length===1){if(Math.hypot(P[0][0]-q[0],P[0][1]-q[1])>r)fragments.push(P.slice())}else{if(Math.hypot(P[0][0]-q[0],P[0][1]-q[1])>r)cur.push(P[0]);for(let j=1;j<P.length;j++)sample(P[j-1],P[j]);flush()}
       fragments.forEach(f=>next.push({...o,p:f}));continue;
     }
     // Eraser acts on ink/highlights and optional shapes, not PDF content, text boxes, or images.
-    if(["line","arrow","rect","oval"].includes(o.t)&&eraserModes.shapes&&hit(o,q[0],q[1],r)){changed=true;continue}
+    if(["line","arrow","rect","oval"].includes(o.t)&&hit(o,q[0],q[1],r)){changed=true;continue}
     next.push(o);
   }
   if(changed){anns[i]=next;draw(i)}
 }
+/* ===== free voice typing: the browser's own speech recognition (no download, no key, no account) ===== */
+/* Devanagari → Roman letters (Hinglish), keeps English words as they are */
+const D2R=(()=>{const C={"क":"k","ख":"kh","ग":"g","घ":"gh","ङ":"n","च":"ch","छ":"chh","ज":"j","झ":"jh","ञ":"n","ट":"t","ठ":"th","ड":"d","ढ":"dh","ण":"n","त":"t","थ":"th","द":"d","ध":"dh","न":"n","प":"p","फ":"ph","ब":"b","भ":"bh","म":"m","य":"y","र":"r","ल":"l","ळ":"l","व":"v","श":"sh","ष":"sh","स":"s","ह":"h"},
+  NK={"ज":"z","फ":"f","ड":"r","ढ":"rh","क":"q","ख":"kh","ग":"g"},
+  V={"अ":"a","आ":"aa","इ":"i","ई":"ee","उ":"u","ऊ":"oo","ऋ":"ri","ए":"e","ऐ":"ai","ओ":"o","औ":"au","ऑ":"o","ऍ":"e"},
+  M={"ा":"aa","ि":"i","ी":"i","ु":"u","ू":"u","ृ":"ri","े":"e","ै":"ai","ो":"o","ौ":"au","ॉ":"o","ॅ":"e"},
+  DIC={"में":"mein","है":"hai","हैं":"hain","नहीं":"nahi","और":"aur","का":"ka","की":"ki","के":"ke","को":"ko","से":"se","पर":"par","यह":"yeh","वह":"woh","क्या":"kya","कि":"ki","तो":"to","भी":"bhi","हम":"hum","आप":"aap","मैं":"main","मेरा":"mera","मेरी":"meri","हो":"ho","था":"tha","थी":"thi","थे":"the","एक":"ek","ये":"ye","वो":"woh","जो":"jo","कोई":"koi","बहुत":"bahut","अच्छा":"accha","अच्छी":"acchi","ठीक":"theek","आज":"aaj","कल":"kal","अब":"ab","फिर":"phir","कैसे":"kaise","कौन":"kaun","क्यों":"kyun","हूँ":"hun","हूं":"hun","तुम":"tum","उसके":"uske","इसके":"iske","लिए":"liye","साथ":"saath","बाद":"baad","पहले":"pehle","जब":"jab","तब":"tab","कुछ":"kuch","सब":"sab","यहाँ":"yahan","वहाँ":"wahan","अगर":"agar","लेकिन":"lekin","क्योंकि":"kyunki","होता":"hota","होती":"hoti","होते":"hote","करना":"karna","करते":"karte","करता":"karta","करती":"karti","चाहिए":"chahiye","सकता":"sakta","सकते":"sakte"};
+  const isC=ch=>ch in C;
+  function word(w){if(w in DIC)return DIC[w];const t=w.normalize("NFD"),S=[];
+    for(let k=0;k<t.length;k++){const ch=t[k];
+      if(isC(ch)){let c=C[ch];if(t[k+1]=="\u093C"){c=NK[ch]||c;k++}S.push({c,v:"a",inh:true})}
+      else if(ch in M){const l=S[S.length-1];if(l&&l.c!==undefined&&l.inh){l.v=M[ch];l.inh=false}else S.push({c:"",v:M[ch]})}
+      else if(ch=="\u094D"){const l=S[S.length-1];if(l){l.v="";l.inh=false}}
+      else if(ch in V)S.push({c:"",v:V[ch]})
+      else if(ch=="\u0902"||ch=="\u0901")S.push({c:"n",v:""})
+      else if(ch=="\u0903")S.push({c:"h",v:""})
+      else if(ch=="\u093C"){}
+      else S.push({c:ch,v:""})}
+    const n=S.length,del=new Array(n).fill(false);
+    if(n&&S[n-1].inh)del[n-1]=true;
+    for(let k=n-2;k>=1;k--){if(!S[k].inh)continue;const L=S[k-1],R=S[k+1];if(L.v!==""&&!del[k-1]&&R.v!==""&&!del[k+1])del[k]=true}
+    let out="";S.forEach((x,k)=>{let v=del[k]?"":x.v;if(v=="aa"&&k==n-1&&x.c)v="a";out+=x.c+v});return out}
+  return txt=>txt.replace(/[।॥]/g,".").replace(/[०-९]/g,c=>"०१२३४५६७८९".indexOf(c)).replace(/[\u0900-\u097F]+/g,word)})();
+/* ===== v1.4.46 — microphone: ask once, remember, reuse one recognizer ===== */
+const VR=(()=>{const SRC=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,lang="",on=false,want=false,cb=null,base=0,lastLen=0,idleT=0,fast=0,t0=0;
+  const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+  /* permission state from the browser (Chrome/Edge/Android); null where the Permissions API can't tell (Safari) */
+  const state=async()=>{try{if(navigator.permissions&&navigator.permissions.query){const q=await navigator.permissions.query({name:"microphone"});q.onchange=()=>{ls("pa_mic",q.state=="granted"?"1":q.state=="denied"?"0":"");};return q.state}}catch(e){}return null};
+  /* one tiny getUserMedia call (released immediately) makes Chrome store the "Allow" for this site; only when the browser says it hasn't been asked yet */
+  const prime=async()=>{try{if((await state())!=="prompt"||!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia))return;const m=await navigator.mediaDevices.getUserMedia({audio:true});m.getTracks().forEach(t=>t.stop());ls("pa_mic","1")}catch(e){if(e&&(e.name=="NotAllowedError"||e.name=="SecurityError"))ls("pa_mic","0")}};
+  const make=l=>{if(rec&&lang===l)return rec;if(rec){try{rec.abort()}catch(e){}rec=null;on=false}
+    rec=new SRC();lang=l;rec.lang=l;rec.continuous=true;rec.interimResults=true;
+    rec.onstart=()=>{on=true;t0=Date.now();lastLen=0;base=0};   /* a fresh session numbers its results from 0 */
+    rec.onaudiostart=()=>{ls("pa_mic","1");fast=0};   /* audio really started = permission is granted; remember it */
+    rec.onresult=e=>{lastLen=e.results.length;if(cb)cb.result(e,base)};
+    rec.onerror=e=>{if(e.error=="not-allowed"||e.error=="service-not-allowed"){ls("pa_mic","0");want=false}if(cb)cb.error(e)};
+    rec.onend=()=>{on=false;if(!want)return;if(Date.now()-t0<600){if(++fast>=3){want=false;if(cb)cb.error({error:"loop"});return}}else fast=0;setTimeout(()=>{if(want&&!on)try{rec.start()}catch(e){}},fast?250:0)};
+    return rec};
+  return{ok:!!SRC,
+    async start(l,h){clearTimeout(idleT);cb=h;want=true;base=lastLen;   /* a session kept warm from the previous text box is reused: no new start, no new permission request */
+      if(ls("pa_mic")!=="1")await prime();
+      const st0=await state();if(st0==="denied"){want=false;h.error({error:"not-allowed"});return}
+      try{const r=make(l);if(!on)r.start()}catch(e){if(!(e&&e.name=="InvalidStateError")){want=false;h.error({error:"start"})}}},
+    /* the text box is finished: keep the recognizer alive 12 s so the next tap needs no restart, then release the microphone */
+    release(){cb=null;clearTimeout(idleT);idleT=setTimeout(()=>{want=false;try{rec&&rec.stop()}catch(e){}},12000)},
+    stopNow(){cb=null;clearTimeout(idleT);want=false;try{rec&&rec.stop()}catch(e){}}}})();
 function textBox(p,i,q,note,ex){
-  const t=document.createElement("textarea"),s=ex?ex.s:W*3+10;
-  t.style.left=(ex?ex.x:q[0])*zoom+"px";t.style.top=(ex?ex.y:q[1])*zoom+"px";t.style.fontSize=s*zoom+"px";t.style.color=dc(ex?ex.c:color);
-  if(ex){t.value=ex.v;if(ex.b)t.style.fontWeight="700";const B=tBox(ex);t.style.width=Math.max(120,(ex.bw||B.w+24)*zoom)+"px";t.style.height=Math.max(32,(B.h+6)*zoom)+"px";TEDIT=ex;$("#tbar").hidden=true;draw(i)}
-  p.append(t);t.focus();
-  t.onblur=()=>{const v=t.value.trim();t.remove();
+  const SRC=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let speak=!ex&&TXM=="speak";if(speak&&!SRC){speak=false;st("🎤 Voice typing isn't available here — use the 🎙 on the keyboard")}
+  const t=document.createElement("textarea"),s=ex?ex.s:TXS,bold=ex?!!ex.b:TXB,al=ex?(ex.al||"l"):TXA,x0=ex?ex.x:q[0],y0=ex?ex.y:q[1],pw=(sizes[i]||sizes[0]).w;
+  const st_=t.style;st_.left=x0*zoom-4+"px";st_.top=y0*zoom-1+"px";st_.fontSize=s*zoom+"px";st_.color=dc(ex?ex.c:color);st_.fontWeight=bold?"700":"400";st_.textAlign=al==="c"?"center":al==="r"?"right":"left";
+  st_.fontFamily='system-ui,"Noto Sans Devanagari",sans-serif';st_.lineHeight="1.25";st_.padding="0 3px";st_.minWidth="0";st_.minHeight="0";st_.resize="none";st_.overflow="hidden";st_.boxSizing="content-box";st_.whiteSpace="pre";
+  if(note)st_.background="#fde68a";
+  const maxW=Math.max(40,(pw-x0)*zoom-14);
+  /* small box that grows with the text (like a phone editor); long text wraps at the page edge */
+  const fit=()=>{if(ex&&ex.bw){st_.whiteSpace="pre-wrap";st_.width=ex.bw*zoom+"px"}else{st_.whiteSpace="pre";st_.width="1px";const w=t.scrollWidth;if(w>maxW){st_.whiteSpace="pre-wrap";st_.width=maxW+"px"}else st_.width=Math.max(s*zoom*1.6,w+2)+"px"}
+    st_.height="1px";st_.height=Math.max(s*zoom*1.25,t.scrollHeight)+"px"};
+  if(ex){t.value=ex.v;TEDIT=ex;$("#tbar").hidden=true;draw(i)}
+  p.append(t);fit();t.oninput=fit;
+  let rec=null,done=false,bad=false;
+  const commit=v=>{v=(v||"").trim();t.remove();
     if(ex){TEDIT=null;if(v!==ex.v){snap(i);if(v)ex.v=v;else{anns[i]=(anns[i]||[]).filter(x=>x!==ex);if(selT&&selT.o===ex)selT=null}change()}draw(i);showTbar();return}
-    if(v){snap(i);const o={t:"text",x:q[0],y:q[1],s,c:color,w:1,v,...(note?{bg:"#fde68a"}:{})};(anns[i]=anns[i]||[]).push(o);selTSet(o,i);change();autoReturnToLasso()}};
+    if(v){snap(i);const o={t:"text",x:q[0],y:q[1],s,c:color,w:1,v,...(bold?{b:1}:{}),...(al!="l"?{al}:{}),...(note?{bg:"#fde68a"}:{})};(anns[i]=anns[i]||[]).push(o);selTSet(o,i);change()}};
+  if(speak){t.readOnly=true;t.placeholder="🎤";
+    try{let fin="";rec=VR;
+      VR.start(TXL=="en"?"en-IN":"hi-IN",{
+        result:(e,b)=>{let it="";for(let k=Math.max(e.resultIndex,b||0);k<e.results.length;k++){const r=e.results[k];if(r.isFinal)fin+=(fin?" ":"")+r[0].transcript.trim();else it+=r[0].transcript}t.value=(v=>TXL=="hing"?D2R(v):v)((fin+(it?(fin?" ":"")+it:"")).trim());fit()},
+        error:e=>{if(e.error=="not-allowed"||e.error=="service-not-allowed")st("🎤 Microphone is blocked for this app. Tap the 🔒/ⓘ icon next to the address (or Site settings) → Microphone → Allow. You only need to do this once.");else if(e.error=="no-speech"||e.error=="aborted")return;else bad=true,st(e.error=="loop"?"🎤 Voice typing keeps stopping — tap again and speak":"🎤 Couldn't hear — tap again and speak")}});
+      st("🎤 Listening… tap outside to finish")}catch(x){st("🎤 Voice typing couldn't start")}}
+  t.focus();
+  t.onblur=()=>{done=true;if(rec)VR.release();commit(t.value)};
 }
 function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;if(CROP)cropCancel();if(selT){selT=null;$("#tbar").hidden=true}
   const top=a[a.length-1];if(top&&top[0]==="__page__"){a.pop();b.push(top);restorePageState(r?top[1].after:top[1].before).then(()=>st(r?"↪ Page action restored":"↶ Page action undone")).catch(()=>st("❌ Couldn't restore page history"));return}
@@ -1313,7 +1398,9 @@ docEl.addEventListener("touchend",pzEnd,{passive:true});docEl.addEventListener("
 $("#po").classList.toggle("on",penOnly);
 $("#po").onclick=e=>{penOnly=!penOnly;try{localStorage.setItem("pa_penonly",penOnly?"1":"0")}catch(x){}$("#po").classList.toggle("on",penOnly);st(penOnly?"✍️ Pencil writes · finger scrolls":"✍️ Finger can write too");$$(".pg canvas:last-child").forEach(c=>c.style.touchAction=penOnly?"pan-x pan-y":"none")};
 let sct;$("#doc").addEventListener("scroll",()=>{clearTimeout(sct);sct=setTimeout(()=>{if(!pdf)return;const top=$("#doc").getBoundingClientRect().top+80;for(const p of $$(".pg"))if(p.getBoundingClientRect().bottom>top){const next=+p.dataset.i;if(next!==curPage){curPage=next;change()}break}},300)},{passive:true});
-addEventListener("visibilitychange",()=>{if(document.hidden){persist(true);clearTimeout(ina)}});addEventListener("pagehide",()=>{persist(true)});
+/* v1.4.46: iOS may kill the app before an async IndexedDB write finishes. localStorage is synchronous, so keep a last-resort copy of unsaved work there; it is recovered at the next start. */
+function emergSave(){try{if(!docId||!pdf||!dirtySince)return;const o={id:docId,fp:curFp,pfp:curPfp,sv:SCHEMA,name,anns,page:curPage,t:Date.now(),np:pdf.numPages,ord:[...ord],bm:[...bm],tpl,n:Object.values(anns).reduce((a,l)=>a+l.length,0)},j=JSON.stringify(o);if(j.length<3e6)localStorage.setItem("pa_emerg",j)}catch(e){}}
+addEventListener("visibilitychange",()=>{if(document.hidden){emergSave();persist(true);clearTimeout(ina);saveSettings()}});addEventListener("pagehide",()=>{emergSave();persist(true)});
 
 /* ===== EXPORT ===== */
 async function mk(doc,o,H){
@@ -1424,17 +1511,11 @@ const LZ={col:"#ff2d55",draw:true,strokes:[],cur:null,pos:null,down:false,raf:0}
 document.body.insertAdjacentHTML("beforeend",`<canvas id="lzc"></canvas><button class="pb on" id="showbar">☰ Show toolbar</button>
 <div id="lz-panel" class="fpanel" hidden style="min-width:270px"><div class="fpanel-title">Presentation Tool</div>
 <div class="fpanel-section-label">Pointer Style</div><div id="lz-cols" style="display:flex;gap:12px;margin:8px 0 6px"></div>
-<label class="lzrow"><span>／ Draw Lines</span><input type="checkbox" id="lz-draw" checked></label>
-<div class="fpanel-section-label" style="margin-top:12px">Display Options</div>
-<label class="lzrow"><span>Hide Toolbar UI</span><input type="checkbox" id="lz-hide"></label>
-<button class="lzrow" id="lz-full" style="width:100%;border:none;color:inherit"><span>⛶ Full screen</span></button>
+<div id="lz-mode" style="display:flex;gap:8px;margin-top:6px"><button class="pb on" data-lzm="line" style="flex:1;padding:12px 8px;font-size:15px">／ Line</button><button class="pb" data-lzm="point" style="flex:1;padding:12px 8px;font-size:15px">● Point only</button></div>
 <div class="hintp" style="margin-top:8px">Touch or hover with the pen/mouse to show the pointer. For screen mirroring, use your iPad/phone’s own Screen Mirroring (AirPlay / Cast).</div></div>`);
 LZCOLS.forEach(c=>{const b=document.createElement("button");b.className="lzd"+(c==LZ.col?" on":"");b.style.background=c;b.dataset.c=c;
   b.onclick=()=>{LZ.col=c;$$(".lzd").forEach(x=>x.classList.toggle("on",x===b))};$("#lz-cols").append(b)});
-$("#lz-draw").onchange=e=>{LZ.draw=e.target.checked;LZ.strokes=[];LZ.cur=null;lzGo()};
-const nobar=on=>{document.body.classList.toggle("nobar",on);$("#lz-hide").checked=on;if(on)closeAllPanels();setTimeout(()=>dispatchEvent(new Event("resize")),50)};
-$("#lz-hide").onchange=e=>nobar(e.target.checked);$("#showbar").onclick=()=>nobar(false);
-$("#lz-full").onclick=()=>{const d=document;if(d.fullscreenElement)d.exitFullscreen().catch(()=>{});else if(d.documentElement.requestFullscreen)d.documentElement.requestFullscreen().catch(()=>{})};
+$$("[data-lzm]").forEach(b=>b.onclick=()=>{LZ.draw=b.dataset.lzm=="line";$$("[data-lzm]").forEach(x=>x.classList.toggle("on",x===b));LZ.strokes=[];LZ.cur=null;lzGo()});
 const lzOn=e=>tool=="laser"&&e.target&&e.target.closest&&e.target.closest("#doc");
 const lzPt=e=>({x:e.clientX,y:e.clientY,t:performance.now()});
 function lzGo(){if(!LZ.raf)LZ.raf=requestAnimationFrame(lzLoop)}
@@ -1485,8 +1566,9 @@ const imgIds=A=>[...new Set(Object.values(A).flat().filter(o=>o.t=="img").map(o=
 async function syncOne(r){
   const b=(await bGet(r.id))||{id:r.id,name:r.name,last:{},imgs:[],parts:[{n:1,es:[],ids:[],bytes:0,dirty:0}]},A=r.anns||{},ch={};b.name=r.name;
   for(const i of new Set([...Object.keys(A),...Object.keys(b.last)])){const x=JSON.stringify(A[i]||[]);if(x!==(b.last[i]||"[]")){ch[i]=A[i]||[];b.last[i]=x}}
-  const nk=Object.keys(ch).length,ms=JSON.stringify({n:r.name,np:r.np,o:r.ord,b:r.bm,t:r.tpl});
-  if(!nk){if(b.meta===undefined){b.meta=ms;await bPut(b);return}if(ms===b.meta)return;if(!cnt(A)&&!b.parts.some(x=>x.mid||x.es.length))return}
+  const nk=Object.keys(ch).length,ms=JSON.stringify({n:r.name,np:r.np,o:r.ord,b:r.bm,t:r.tpl}),needGen=isGen(r.id)&&!b.gensent;
+  if(needGen)b.gensent=1;   /* a created notebook is backed up once even with no ink yet (its PDF + page styles) */
+  if(!nk&&!needGen){if(b.meta===undefined){b.meta=ms;await bPut(b);return}if(ms===b.meta)return;if(!cnt(A)&&!b.parts.some(x=>x.mid||x.es.length))return}
   b.meta=ms;
   const nw=imgIds(ch).filter(id=>!b.imgs.includes(id)),ts=Date.now(),d=JSON.stringify({ts,doc:{id:r.id,name:r.name,np:r.np,page:r.page,fp:r.fp,pfp:r.pfp,ord:r.ord,bm:r.bm,tpl:r.tpl},pages:ch});
   let add=d.length;for(const id of nw){const x=await iGet(id);add+=x?x.byteLength:0}
@@ -1549,7 +1631,7 @@ function flush(manual,force,full){if(!manual&&!force&&Date.now()-lastInk<8000){c
       try{if(navigator.canShare&&navigator.canShare({files:fs}))await navigator.share({files:fs,title:"PDF annotation backup",text:"#annotations_backup"});else throw 0}
       catch(e){if(e&&e.name=="AbortError"){st("Backup cancelled");return}for(const f of fs){const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=f.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),6e4)}}
       for(const[b,p]of out){done(p);await bPut(b)}n=out.length}
-    if(n){try{localStorage.setItem("pa_lastbackup",Date.now())}catch(e){}$("#bn").hidden=true;if(tg)tgNote(1);if(!pdf)await showLib();st(tg?`✈️ ${n} backup file(s) sent to Telegram`:"🛟 Backup saved on this device")}
+    if(n){if(!manual)autoSaved();try{localStorage.setItem("pa_lastbackup",Date.now())}catch(e){}$("#bn").hidden=true;if(tg)tgNote(1);if(!pdf)await showLib();st(tg?`✈️ ${n} backup file(s) sent to Telegram`:"🛟 Backup saved on this device")}
     else if(manual)st(tg?"✈️ Telegram backup is up to date — nothing new to send":"🛟 Nothing new to back up")
   }catch(e){const msg=(e&&e.message)||String(e);
     if(TG()){if(!document.hidden)tgNote(0,msg);if(!pdf){showLib();checkBackup()}st("❌ Telegram backup failed: "+msg)}else if(manual)st("❌ Backup failed: "+msg);
@@ -1565,7 +1647,8 @@ function updateNet(){
 addEventListener("online",()=>{updateNet();flush(0)});
 addEventListener("offline",updateNet);
 updateNet();
-$("#bk").onclick=()=>flush(1);
+$("#bknow").onclick=async e=>{const b=e.currentTarget;if(b.disabled)return;const t0=b.textContent;b.disabled=true;b.textContent="⏳ Backing up…";try{await flush(1)}finally{b.disabled=false;b.textContent=t0}};
+$("#bkset").onclick=()=>{$("#tg").click();smView("tg")};
 /* One-tap manual checkpoint: persist to local IndexedDB, then immediately flush Telegram backup. */
 $("#manualsave").onclick=async()=>{
   const b=$("#manualsave");
@@ -1956,7 +2039,6 @@ $("#cc").onchange=e=>{const c=e.target.value;
   const ri=rmCol.indexOf(c);if(ri>=0){rmCol.splice(ri,1);saveRm()}
   cust.push(c);if(cust.length>6){cust.shift();const o=$$(".sw.cu")[0];if(o)o.remove()}
   try{localStorage.setItem("pa_cust",JSON.stringify(cust))}catch(x){}pickC(c,addSw(c))};
-$('[data-ptab="color"]').onclick=()=>$("#cc").click();
 
 /* page nav, bookmarks, reorder */
 const inPres=()=>document.body.classList.contains("pres");
@@ -2012,8 +2094,8 @@ function zwDraw(){if(!zwOn)return;const p=$(`.pg[data-i="${zr.i}"]`);if(!p||!p.c
   x.fillStyle="#fff";x.fillRect(0,0,zwc.width,zwc.height);for(const s of[c,ink])try{x.drawImage(s,zr.x*k,zr.y*k,zr.w*k,zr.h*k,0,0,zwc.width,zwc.height)}catch(e){}}
 const zpt=e=>{const r=zwc.getBoundingClientRect();return[zr.x+(e.clientX-r.left)/r.width*zr.w,zr.y+(e.clientY-r.top)/r.height*zr.h]};
 zwc.onpointerdown=e=>{if(palmBlock(e))return;e.preventDefault();zwc.setPointerCapture(e.pointerId);const q=zpt(e);
-  if(tool=="er"){snap(zr.i);erase(zr.i,q);zcur="er";return}zcur={t:tool=="hl"?"hl":"pen",c:color,w:tool=="hl"?HW:W,p:[q]}};
-zwc.onpointermove=e=>{if(!zcur)return;const q=zpt(e);if(zcur=="er"){erase(zr.i,q);return}const l=zcur.p[zcur.p.length-1];if(Math.hypot(l[0]-q[0],l[1]-q[1])<.3)return;
+  if(tool=="er"){snap(zr.i);erase(zr.i,q,zwc.getBoundingClientRect().width/zr.w);zcur="er";return}zcur={t:tool=="hl"?"hl":"pen",c:color,w:tool=="hl"?HW:W,p:[q]}};
+zwc.onpointermove=e=>{if(!zcur)return;const q=zpt(e);if(zcur=="er"){erase(zr.i,q,zwc.getBoundingClientRect().width/zr.w);return}const l=zcur.p[zcur.p.length-1];if(Math.hypot(l[0]-q[0],l[1]-q[1])<.3)return;
   zcur.p.push(q);if(q[0]>zr.x+zr.w*.88){const s=sizes[zr.i]||sizes[0];zr.x=Math.min(s.w-zr.w,zr.x+zr.w*.4)}draw(zr.i,zcur)};
 zwc.onpointerup=zwc.onpointercancel=()=>{if(!zcur)return;if(zcur!="er"){snap(zr.i);(anns[zr.i]=anns[zr.i]||[]).push(zcur)}zcur=null;draw(zr.i);change()};
 $$("[data-z]").forEach(b=>b.onclick=()=>{const s=sizes[zr.i]||sizes[0],k=b.dataset.z,cl=(v,m)=>Math.max(0,Math.min(m,v));
@@ -2040,25 +2122,26 @@ function onHome(){selT=null;CROP=null;TEDIT=null;$("#tbar").hidden=true;$("#cbar
 /* ===== PRO FEATURES 2 ===== */
 let penType="ball",fitMode=0;
 $$(".pen-type-btn").forEach(b=>b.onclick=()=>{penType=b.dataset.pt;$$(".pen-type-btn").forEach(x=>x.classList.toggle("on",x===b))});
-/* pen presets */
-let presets=(()=>{try{return JSON.parse(localStorage.getItem("pa_presets"))||[]}catch(e){return[]}})();
-{const pr=document.createElement("div");pr.innerHTML='<div class="fpanel-section-label" style="margin-bottom:8px">Presets <span style="text-transform:none;font-weight:400">(tap: apply · long-press: remove)</span></div><div id="prs" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></div>';$("#pen-panel").append(pr)}
-const savePre=()=>{try{localStorage.setItem("pa_presets",JSON.stringify(presets))}catch(e){}};
-function rPre(){const c=$("#prs");c.innerHTML="";presets.forEach((p,i)=>{const b=document.createElement("button");b.className="pb";let tm,lp=0;
-  b.innerHTML=`<span style="display:inline-block;vertical-align:middle;width:${Math.max(8,Math.min(p.w*2.2,22))}px;height:${Math.max(8,Math.min(p.w*2.2,22))}px;border-radius:50%;background:${p.c}"></span> ${{ball:"🖊",fine:"✒️",brush:"🖌️",pencil:"✏️"}[p.pt]||""}`;
-  b.onpointerdown=()=>{lp=0;tm=setTimeout(()=>{lp=1;if(confirm("Delete this preset?")){presets.splice(i,1);savePre();rPre()}},650)};b.onpointerup=b.onpointerleave=()=>clearTimeout(tm);
-  b.onclick=e=>{e.stopPropagation();if(lp)return;penType=p.pt;color=p.c;W=p.w;$$(".pen-type-btn").forEach(x=>x.classList.toggle("on",x.dataset.pt==penType));$("#pen-slider").value=W;$("#pen-slider-val").textContent=W+"mm";$("#cc").value=p.c;$$(".sw").forEach(x=>x.classList.toggle("on",x.dataset.c==p.c));drawPenPreview()};c.append(b)});
-  const a=document.createElement("button");a.className="pb on";a.textContent="＋ Save";a.onclick=e=>{e.stopPropagation();if(presets.length>=8)presets.shift();presets.push({pt:penType,c:color,w:W});savePre();rPre()};c.append(a)}
-rPre();
 
 /* page indicator + fit */
-document.body.insertAdjacentHTML("beforeend",`<div id="pgi" aria-label="PDF page navigation"><input id="pgn" type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" autocomplete="off" aria-label="Current page number"><span id="pgt" aria-label="Total pages"></span></div>`);
+document.body.insertAdjacentHTML("beforeend",`<div id="pgi" aria-label="PDF page navigation"><input id="pgn" type="text" inputmode="none" readonly autocomplete="off" aria-label="Current page number — tap to go to a page"><span id="pgt" aria-label="Total pages"></span></div>`);
 function pgUpd(){if(document.activeElement===$("#pgn"))return;$("#pgn").value=curPage+1;$("#pgt").textContent="/ "+ord.length}
 setInterval(pgUpd,800);
 function jumpFromInput(){const raw=$("#pgn").value.trim(),v=Number.parseInt(raw,10);if(!raw||!Number.isFinite(v)){pgUpd();return}goPage(Math.max(0,Math.min(ord.length-1,v-1)));pgUpd()}
 $("#pgn").addEventListener("keydown",e=>{if(e.key==="Enter"||e.keyCode===13){e.preventDefault();e.stopPropagation();jumpFromInput();e.target.blur()}else if(e.key==="Escape"){pgUpd();e.target.blur()}});
 $("#pgn").addEventListener("change",jumpFromInput);
 $("#pgn").addEventListener("blur",pgUpd);
+/* tap the page number → "Go to page" box opens with the number keyboard ready */
+document.body.insertAdjacentHTML("beforeend",`<div class="mod" id="pgj" hidden><div><h3>Go to page</h3><input id="pgjn" type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" autocomplete="off" aria-label="Page number" style="font-size:22px;padding:10px;text-align:center;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);width:100%;box-sizing:border-box"><div class="zr"><button class="pb" id="pgjx" style="flex:1;text-align:center">Cancel</button><button class="pb on" id="pgjg" style="flex:1;text-align:center">Go</button></div></div></div>`);
+const pgjClose=()=>{$("#pgj").hidden=true;$("#pgjn").blur();pgUpd()};
+function pgjGo(){const v=Number.parseInt($("#pgjn").value.trim(),10);pgjClose();if(Number.isFinite(v)&&ord.length)goPage(Math.max(0,Math.min(ord.length-1,v-1)))}
+function pgjOpen(){if(!ord.length)return;const n=$("#pgjn");$("#pgj").hidden=false;n.value="";n.placeholder="1 – "+ord.length;n.focus();setTimeout(()=>{if(document.activeElement!==n)n.focus()},60)}
+$("#pgn").addEventListener("pointerdown",e=>e.preventDefault());
+$("#pgn").addEventListener("focus",e=>e.target.blur());
+$("#pgi").addEventListener("click",pgjOpen);
+$("#pgjg").addEventListener("click",pgjGo);$("#pgjx").addEventListener("click",pgjClose);
+$("#pgj").addEventListener("click",e=>{if(e.target===e.currentTarget)pgjClose()});
+$("#pgjn").addEventListener("keydown",e=>{if(e.key==="Enter"||e.keyCode===13){e.preventDefault();e.stopPropagation();pgjGo()}else if(e.key==="Escape")pgjClose()});
 
 /* tools: merge / split / extract / blank / images->pdf / compress / signature */
 document.body.insertAdjacentHTML("beforeend",`<div class="mod" id="tm" hidden><div><h3>🧰 PDF tools</h3>
@@ -2174,54 +2257,16 @@ function placeSig(){if(!pdf){st("Open a PDF first");return}if(!sig){sg0();return
 $("#sig").onclick=placeSig;
 
 
-/* ===== PWA + OFFLINE-FIRST SERVER SYNC ===== */
+/* ===== PWA + OFFLINE-FIRST ===== */
 if("serviceWorker"in navigator&&/^https?:$/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{const u=()=>r.update().catch(()=>{});setInterval(u,18e5);document.addEventListener("visibilitychange",()=>{if(!document.hidden)u()});navigator.serviceWorker.ready.then(x=>x.active&&x.active.postMessage({type:"get-version"}))}).catch(()=>{}));
+/* offline-first: whenever the internet is available the service worker fills in any file it is missing; if a PDF library was missing at start, the app reloads itself once when the internet returns */
+if("serviceWorker"in navigator&&/^https?:$/.test(location.protocol)){const warm=()=>navigator.serviceWorker.ready.then(x=>x.active&&x.active.postMessage({type:"warm"})).catch(()=>{});addEventListener("load",()=>setTimeout(warm,3000));addEventListener("online",warm)}
+if(!window.pdfjsLib||!window.PDFLib||!window.JSZip){setTimeout(()=>st("📴 PDF engine not loaded yet — it loads by itself when the internet is available"),1500);addEventListener("online",()=>setTimeout(()=>{try{if(sessionStorage.getItem("pa_lib"))return;sessionStorage.setItem("pa_lib","1")}catch(e){}if(!pdf)location.reload()},2500))}
 if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[0])openFile(await p.files[0].getFile()).catch(()=>st("❌ Couldn't open the PDF"))});
-const SV=()=>{try{return JSON.parse(localStorage.getItem("pa_srv"))}catch(e){return null}};
-const svSave=o=>{try{localStorage.setItem("pa_srv",JSON.stringify({...(SV()||{auto:true}),...o}))}catch(e){}};
-const devId=()=>{let d=localStorage.getItem("pa_dev");if(!d){d="d"+Math.random().toString(36).slice(2,10);try{localStorage.setItem("pa_dev",d)}catch(e){}}return d};
-const lsJ=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
-const b64=buf=>{const u=new Uint8Array(buf);let s="";for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)};
-let svBusy=false;
-async function svSync(manual){
-  const c=SV();if(!c||!c.u){if(manual)st("☁️ Enter the server URL in Settings first");return}
-  if(!navigator.onLine){if(manual)st("📴 No internet — will send automatically when back online");return}
-  if(svBusy)return;svBusy=true;
-  try{if(pdf&&docId)await persist();
-    const last=lsJ("pa_srvlast",{}),sent=new Set(lsJ("pa_srvimg",[])),dirty=((await dbAll())||[]).filter(r=>(last[r.id]||0)<(r.t||0));
-    if(!dirty.length){if(manual)st("☁️ Everything is synced");return}
-    let n=0;
-    for(const r of dirty){const imgs={},ids=imgIds(r.anns||{}).filter(id=>!sent.has(id));
-      for(const id of ids){const x=await iGet(id);if(x)imgs[id]=b64(x)}
-      const res=await fetch(c.u,{method:"POST",headers:{"Content-Type":"application/json",...(c.t?{Authorization:"Bearer "+c.t}:{})},body:JSON.stringify({device:devId(),sentAt:Date.now(),doc:r,imgs})});
-      if(!res.ok)throw new Error("HTTP "+res.status);
-      last[r.id]=r.t;ids.forEach(id=>sent.add(id));
-      try{localStorage.setItem("pa_srvlast",JSON.stringify(last));localStorage.setItem("pa_srvimg",JSON.stringify([...sent]))}catch(e){}
-      st(`☁️ ${++n}/${dirty.length}`)}
-    st(`☁️ Sent to server (${n})`)
-  }catch(e){st("❌ Sync failed ("+(e.message||e)+") — will retry")}
-  finally{svBusy=false;netUpd()}
-}
-async function netUpd(){const c=SV();let p=0;
-  if(c&&c.u){const last=lsJ("pa_srvlast",{});try{p=((await dbAll())||[]).filter(r=>(last[r.id]||0)<(r.t||0)).length}catch(e){}}
-  $$(".net").forEach(e=>e.textContent=(navigator.onLine?"🟢":"🔴 Offline")+(p?` · ⏳${p} pending`:""))}
-/* UI: toolbar, home, settings */
-$("#st").insertAdjacentHTML("beforebegin",'<span class="net" style="font-size:12px;opacity:.75;white-space:nowrap"></span>');
-$("#tools").closest(".mcell").insertAdjacentHTML("beforebegin",'<div class="mcell"><button class="ibtn" id="svb" title="Send to server now">☁️</button><span>Send to server</span></div>');
-$("#hact").insertAdjacentHTML("beforeend",'<button id="svh">☁️ Send to server</button><span class="net" style="font-size:13px;opacity:.8;align-self:center"></span>');
-$("#svh").hidden=true;{const m=$("#svb").closest(".mcell");if(m)m.hidden=true}
-$("#svb").onclick=$("#svh").onclick=()=>svSync(1);
-$("#tg").addEventListener("click",()=>{const c=SV()||{auto:true};$("#svu").value=c.u||"";$("#svt").value=c.t||"";$("#sva").checked=c.auto!==false});
-$("#svu").oninput=e=>svSave({u:e.target.value.trim()});$("#svt").oninput=e=>svSave({t:e.target.value.trim()});$("#sva").onchange=e=>svSave({auto:e.target.checked});
-$("#svn").onclick=()=>svSync(1);
-const svAuto=()=>{const c=SV();if(c&&c.u&&c.auto!==false)svSync(0)};
-addEventListener("online",()=>{netUpd();svAuto()});addEventListener("offline",netUpd);
-addEventListener("visibilitychange",()=>{if(document.hidden)svAuto()});
-setInterval(()=>{netUpd();svAuto()},30000);setTimeout(()=>{netUpd();svAuto()},3000);
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.33",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.46",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -2239,22 +2284,81 @@ async function resolveId(f,fp,wid){const all=(await dbAll())||[];
 /* meta store + mirror DB (second copy) */
 const mx=(m,f)=>idb("meta",m,f);
 const metaGet=k=>mx("readonly",o=>o.get(k)),metaPut=(k,v)=>mx("readwrite",o=>o.put(v,k));
-const MDB=new Promise((res,rej)=>{const r=indexedDB.open("pa_mirror",1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("docs"))r.result.createObjectStore("docs",{keyPath:"id"})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
-const mirPut=async v=>{try{(await MDB).transaction("docs","readwrite").objectStore("docs").put(v)}catch(e){}};
-const mirDel=async id=>{try{(await MDB).transaction("docs","readwrite").objectStore("docs").delete(id)}catch(e){}};
-const mirAll=async()=>{try{const d=await MDB;return await new Promise((res,rej)=>{const q=d.transaction("docs").objectStore("docs").getAll();q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}catch(e){return[]}};
-const dbPutM=async v=>{await dbPut(v);mirPut(v)};
-async function askPersist(){try{if(!navigator.storage)return false;let p=await navigator.storage.persisted();if(!p&&navigator.storage.persist)p=await navigator.storage.persist();return p}catch(e){return false}}
-document.addEventListener("click",askPersist,{once:true});askPersist();addEventListener("pageshow",()=>askPersist());document.addEventListener("visibilitychange",()=>{if(!document.hidden)askPersist()});
+/* ===== v1.4.46 — three independent copies of every notebook =====
+   1) IndexedDB "pa" (main)  2) IndexedDB "pa_mirror"  3) OPFS folder "vpdf-safe" (a different browser storage engine).
+   Every save writes all three; every start compares them and heals whichever is missing / older. */
+const openM=()=>new Promise((res,rej)=>{const r=indexedDB.open("pa_mirror",2);
+  r.onupgradeneeded=()=>{const d=r.result;["docs","imgs","meta"].forEach(n=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n,n=="docs"?{keyPath:"id"}:undefined)})};
+  r.onsuccess=()=>{const d=r.result;d.onversionchange=()=>d.close();d.onclose=()=>{MDBp=openM()};res(d)};r.onerror=()=>rej(r.error)});
+let MDBp=openM();
+const getM=async()=>{try{return await MDBp}catch(e){MDBp=openM();return await MDBp}};
+const mtx=(store,mode,f)=>new Promise(async(res,rej)=>{try{const d=await getM(),t=d.transaction(store,mode),o=f(t.objectStore(store));
+  t.oncomplete=()=>res(o&&o.result);t.onerror=t.onabort=()=>rej(t.error||new Error("mirror aborted"))}catch(e){rej(e)}});
+const mirPut=v=>mtx("docs","readwrite",o=>o.put(v));
+const mirDel=id=>mtx("docs","readwrite",o=>o.delete(id)).catch(()=>{});
+const mirAll=()=>mtx("docs","readonly",o=>o.getAll()).catch(()=>[]);
+const mirImgPut=(id,b)=>mtx("imgs","readwrite",o=>o.put(b,id));
+const mirImgGet=id=>mtx("imgs","readonly",o=>o.get(id));
+const mirImgKeys=()=>mtx("imgs","readonly",o=>o.getAllKeys()).catch(()=>[]);
+/* OPFS (private file system) — silently skipped on browsers that don't support writing to it */
+const cyr=str=>{let a=0xdeadbeef,b=0x41c6ce57;for(let i=0;i<str.length;i++){const c=str.charCodeAt(i);a=Math.imul(a^c,2654435761);b=Math.imul(b^c,1597334677)}a=Math.imul(a^(a>>>16),2246822507)^Math.imul(b^(b>>>13),3266489909);b=Math.imul(b^(b>>>16),2246822507)^Math.imul(a^(a>>>13),3266489909);return(4294967296*(2097151&b)+(a>>>0)).toString(36)+"_"+str.length.toString(36)};
+let _opRoot=null;
+const opSub=async n=>{if(!_opRoot){if(!(navigator.storage&&navigator.storage.getDirectory))throw new Error("no OPFS");const r=await navigator.storage.getDirectory();_opRoot=await r.getDirectoryHandle("vpdf-safe",{create:true})}return _opRoot.getDirectoryHandle(n,{create:true})};
+const opWrite=async(dir,name,data)=>{const d=await opSub(dir),h=await d.getFileHandle(name,{create:true});if(!h.createWritable)throw new Error("no createWritable");const w=await h.createWritable();try{await w.write(data);await w.close()}catch(e){try{await w.abort()}catch(x){}throw e}};
+const opfsPut=v=>opWrite("docs",cyr(v.id)+".json",JSON.stringify(v));
+const opfsDel=async id=>{try{const d=await opSub("docs");await d.removeEntry(cyr(id)+".json")}catch(e){}};
+const opfsAll=async()=>{const out=[];try{const d=await opSub("docs");for await(const[n,h]of d.entries()){if(h.kind!="file"||!n.endsWith(".json"))continue;try{out.push(JSON.parse(await(await h.getFile()).text()))}catch(e){}}}catch(e){}return out};
+const opfsImgPut=(id,b)=>opWrite("imgs",id+".bin",b);
+const opfsImgIds=async()=>{const o=[];try{const d=await opSub("imgs");for await(const[n,h]of d.entries())if(h.kind=="file"&&n.endsWith(".bin"))o.push(n.slice(0,-4))}catch(e){}return o};
+const opfsImgGet=async id=>{const d=await opSub("imgs"),h=await d.getFileHandle(id+".bin");return await(await h.getFile()).arrayBuffer()};
+/* save = all copies in parallel. The save counts as done if at least one copy succeeded (the others are healed on the next start) */
+const dbPutM=async v=>{const r=await Promise.allSettled([dbPut(v),mirPut(v),opfsPut(v)]);
+  if(r[0].status=="fulfilled")return;
+  if(r[1].status=="fulfilled"||r[2].status=="fulfilled"){setTimeout(async()=>{try{const c=await dbGet(v.id);if(!c||(c.t||0)<=(v.t||0))await dbPut(v)}catch(e){}},4000);return}
+  throw r[0].reason};
+/* persistent storage: ask until the browser says yes (Chrome grants it from engagement / install; Firefox needs a tap) */
+async function askPersist(){try{if(!navigator.storage)return false;let p=navigator.storage.persisted?await navigator.storage.persisted():false;if(!p&&navigator.storage.persist)p=await navigator.storage.persist();return !!p}catch(e){return false}}
+{let n=0;const h=async()=>{if(await askPersist()||++n>=8)document.removeEventListener("click",h,true)};document.addEventListener("click",h,true)}
+askPersist();addEventListener("pageshow",()=>askPersist());document.addEventListener("visibilitychange",()=>{if(!document.hidden)askPersist()});
+/* settings (Telegram link, signature, colours, toolbar order …) get a second copy too; restored only after the browser wiped localStorage */
+const VOLK=["pa_tgstat","pa_emerg","pa_lastbackup","pa_schema","pa_ok","pa_lib"];
+const allSettings=(noTok)=>{const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("pa_")&&!VOLK.includes(k)&&!(noTok&&k=="pa_tg"))o[k]=localStorage.getItem(k)}}catch(e){}return o};
+let _lastSet="";
+async function saveSettings(){try{const o=allSettings(),j=JSON.stringify(o);if(j===_lastSet)return;_lastSet=j;const v={t:Date.now(),o};await metaPut("settings",v);mtx("meta","readwrite",x=>x.put(v,"settings")).catch(()=>{});opWrite("meta","settings.json",j).catch(()=>{});localStorage.setItem("pa_ok","1")}catch(e){}}
+async function restoreSettings(){try{if(localStorage.getItem("pa_ok")!=null)return 0;let v=await metaGet("settings").catch(()=>null);if(!v)v=await mtx("meta","readonly",x=>x.get("settings")).catch(()=>null);if(!v||!v.o)return 0;let n=0;for(const k in v.o)if(k.startsWith("pa_")&&localStorage.getItem(k)==null){localStorage.setItem(k,v.o[k]);n++}return n}catch(e){return 0}}
+/* images: restore any that vanished from the main store, top up the other copies */
+async function healImgs(){try{const[mk,ok,ik]=await Promise.all([mirImgKeys(),opfsImgIds(),itx("readonly",o=>o.getAllKeys())]);const have=new Set(ik),ms=new Set(mk),os=new Set(ok);
+  for(const id of new Set([...mk,...ok]))if(!have.has(id)){let b=null;try{b=await mirImgGet(id)}catch(e){}if(!b)try{b=await opfsImgGet(id)}catch(e){}if(b){await itx("readwrite",o=>o.put(b,id));have.add(id)}}
+  for(const id of have)if(!ms.has(id)||!os.has(id)){const b=await iGet(id);if(b){if(!ms.has(id))await mirImgPut(id,b).catch(()=>{});if(!os.has(id))await opfsImgPut(id,b).catch(()=>{})}}}catch(e){}}
 async function bootStorage(){
-  askPersist();let docs=(await dbAll())||[];
-  if(!docs.length){const m=await mirAll();if(m.length){for(const r of m)await dbPut(r);docs=m;st(`♻️ ${m.length} notebook(s) restored automatically`)}}
-  else for(const r of docs)mirPut(r);
+  askPersist();
+  const rs=await restoreSettings();if(rs){try{localStorage.setItem("pa_ok","1")}catch(e){}if(!sessionStorage.getItem("pa_rs")){try{sessionStorage.setItem("pa_rs","1")}catch(e){}location.reload();return}}
+  let docs=[];try{docs=(await dbAll())||[]}catch(e){st("⚠️ Main storage did not open — using the backup copies")}
+  const[mir,opf]=await Promise.all([mirAll(),opfsAll().catch(()=>[])]);
+  const byId=new Map(docs.map(r=>[r.id,r])),heal=[];
+  for(const src of[mir,opf])for(const r of src){if(!r||!r.id)continue;const c=byId.get(r.id);if(c&&(c.t||0)>=(r.t||0))continue;
+    let tr=null;try{tr=await metaGet("trash:"+r.id)}catch(e){}if(tr&&tr.t>=(r.t||0))continue;   /* deleted on purpose after its last edit — do not bring it back */
+    byId.set(r.id,r);heal.push(r)}
+  let healed=0;for(const r of new Set(heal)){const f=byId.get(r.id);if(f!==r)continue;try{await dbPut(r);healed++}catch(e){}}
+  if(healed)st(`♻️ ${healed} notebook(s) recovered from the backup copy`);
+  /* last-resort copy of unsaved work from the previous session */
+  try{const raw=localStorage.getItem("pa_emerg");if(raw){const e=JSON.parse(raw);if(e&&e.id){const c=byId.get(e.id);if(!c||(c.t||0)<e.t){await dbPutM(e);byId.set(e.id,e);st("♻️ Unsaved changes from the last session were recovered")}}localStorage.removeItem("pa_emerg")}}catch(e){}
+  docs=[...byId.values()];
+  /* top up the other copies in the background */
+  (async()=>{const mm=new Map(mir.map(r=>[r.id,r.t||0])),om=new Map(opf.map(r=>[r.id,r.t||0]));for(const r of docs){if((mm.get(r.id)??-1)<(r.t||0))await mirPut(r).catch(()=>{});if((om.get(r.id)??-1)<(r.t||0))await opfsPut(r).catch(()=>{})}})();
+  if(healed)await healImgs();else healImgs();
+  /* did the browser wipe everything? */
+  let had=0;try{had=+localStorage.getItem("pa_had")||0}catch(e){}
+  if(docs.length){try{localStorage.setItem("pa_had",String(docs.length))}catch(e){}}
+  else if(had>0){setTimeout(()=>alert("⚠️ Your notebooks are no longer on this device — the browser cleared its data.\n\nGet them back with: Home → ♻️ Restore (your Telegram backup zips), or Settings → 📥 Import backup file."),800)}
   const mt=await metaGet("schema"),old=(mt&&mt.v)||+localStorage.getItem("pa_schema")||1;
   if(old<SCHEMA&&docs.length){await metaPut("snap_v"+old,{t:Date.now(),docs});             /* full snapshot before migration */
     for(const r of docs){let ch=0;if(!r.anns){r.anns={};ch=1}if(!r.sv||r.sv<SCHEMA){r.sv=SCHEMA;ch=1}if(ch)await dbPutM(r)}}
   if(!mt||mt.v<=SCHEMA)await metaPut("schema",{v:Math.max(SCHEMA,(mt&&mt.v)||0),app:APP_VERSION,t:Date.now()});
-  try{localStorage.setItem("pa_schema",String(SCHEMA))}catch(e){}}
+  try{localStorage.setItem("pa_schema",String(SCHEMA))}catch(e){}
+  saveSettings();setInterval(saveSettings,6e4);
+  /* purge trash older than 30 days */
+  try{const ks=await mx("readonly",o=>o.getAllKeys());for(const k of ks)if(String(k).startsWith("trash:")){const t=await metaGet(k);if(t&&Date.now()-t.t>30*864e5)await mx("readwrite",o=>o.delete(k))}}catch(e){}}
 /* Update: as soon as a new version is found, save and reload (data stays safe in IndexedDB) */
 async function applyUpdate(v,guard){if(updating)return;if(guard){try{if(sessionStorage.getItem("pa_upd")==v)return;sessionStorage.setItem("pa_upd",v)}catch(e){}}
   updating=true;st("🔄 New version "+v+" — updating…");try{await persist()}catch(e){}setTimeout(()=>location.reload(),500)}
@@ -2266,7 +2370,7 @@ $("#hside").insertAdjacentHTML("beforeend",'<div class="ver"></div>');verUpd();
 async function stInfo(){let q="",p=await askPersist(),n=((await dbAll())||[]).length,m=(await mirAll()).length;
   try{const e=await navigator.storage.estimate();q=`${(e.usage/1e6).toFixed(1)} MB / ${(e.quota/1e9).toFixed(1)} GB`}catch(x){}
   const ins=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
-  $("#stinfo").innerHTML=`<b>Version:</b> v${APP_VERSION} · schema ${SCHEMA}${SWV?" · SW v"+SWV:""}<br><b>Notebooks:</b> ${n} (second copy: ${m})<br><b>Storage:</b> ${q||"—"}<br>`+
+  $("#stinfo").innerHTML=`<b>Version:</b> v${APP_VERSION} · schema ${SCHEMA}${SWV?" · SW v"+SWV:""}<br><b>Notebooks:</b> ${n} (copy 2: ${m} · copy 3: ${(await opfsAll().catch(()=>[])).length})<br><b>Storage:</b> ${q||"—"}<br>`+
    (p?"🔒 Persistent storage is on — the browser won't clear your data automatically":"⚠️ Persistent storage is off — the browser may clear data when space runs low")+"<br>"+(ins?"📲 Installed as an app":"ℹ️ Installing the app keeps your data safer")}
 $("#tg").addEventListener("click",stInfo);$("#stp").onclick=async()=>{await askPersist();stInfo()};$("#stb").onclick=()=>{if(!TG()){smView("tg");tgMsg("Connect Telegram first, then tap Full backup now.","err");return}st("⏳ Full backup started…");flush(1,1,1)};
 
@@ -2278,11 +2382,10 @@ document.body.insertAdjacentHTML("beforeend",`
   <div class="slider-row" style="margin-top:10px"><input type="range" id="sh-slider" min="1" max="12" step="0.5" value="3"><span class="slider-val" id="sh-slider-val">3</span></div></div>
   <div><div class="fpanel-section-label" style="margin-bottom:8px">Color</div><div class="crow"></div></div></div>
 <div id="text-panel" class="fpanel" hidden><div class="fpanel-title" id="tx-title">Text</div>
-  <div id="tx-prev" style="background:var(--btn-bg);border-radius:10px;padding:10px 14px;min-height:56px;display:flex;align-items:center;overflow:hidden;width:240px;box-sizing:border-box">Sample text</div>
-  <div><div class="fpanel-section-label" style="margin-bottom:8px">Font size</div>
-  <div class="slider-row"><input type="range" id="tx-slider" min="1" max="12" step="1" value="3"><span class="slider-val" id="tx-slider-val">19 px</span></div></div>
-  <div><div class="fpanel-section-label" style="margin-bottom:8px">Color</div><div class="crow"></div></div>
-  <div class="hintp">Tap anywhere on the page to type. Tap outside the box to finish.</div></div>
+  <div style="display:flex;gap:8px"><button class="pb" data-txm="type" style="flex:1;padding:12px 8px;font-size:15px">⌨️ Type</button><button class="pb" data-txm="speak" style="flex:1;padding:12px 8px;font-size:15px">🎤 Speak to type</button></div>
+  <div style="display:flex;gap:8px;margin-top:8px"><button class="pb" id="tx-bold" style="padding:12px 16px;font-size:15px"><b>B</b></button><button class="pb" data-txa="l" style="flex:1;font-size:14px">Left</button><button class="pb" data-txa="c" style="flex:1;font-size:14px">Middle</button><button class="pb" data-txa="r" style="flex:1;font-size:14px">Right</button></div>
+  <div id="tx-voice" hidden style="margin-top:8px"><div style="display:flex;gap:8px"><button class="pb" data-txl="hing" style="flex:1;font-size:14px">Hinglish</button><button class="pb" data-txl="hi" style="flex:1;font-size:14px">हिंदी</button><button class="pb" data-txl="en" style="flex:1;font-size:14px">English</button></div>
+  <div class="hintp" id="tx-vh" style="margin-top:6px"></div></div></div>
 <div id="lasso-panel" class="fpanel" hidden><div class="fpanel-title">Lasso Select</div>
   <div class="hintp">Loop around handwriting, text, images, or shapes to select. Drag to move, corner handle to resize, and the selection bar to copy or delete. Writing tools stay active; one-use tools return here.</div></div>
 <div id="sel-panel" class="fpanel" hidden><div class="fpanel-title">Select</div>
@@ -2294,16 +2397,24 @@ function drawShPrev(){const cv=$("#sh-prev");if(!cv)return;const c=cv.getContext
   if(tool=="rect")c.strokeRect(50,12,w-100,h-24);
   else if(tool=="oval"){c.ellipse(w/2,h/2,(w-100)/2,(h-24)/2,0,0,7);c.stroke()}
   else{c.moveTo(30,h/2);c.lineTo(w-30,h/2);c.stroke();if(tool=="arrow"){c.beginPath();c.moveTo(w-30,h/2);c.lineTo(w-48,h/2-10);c.moveTo(w-30,h/2);c.lineTo(w-48,h/2+10);c.stroke()}}}
-function txPrev(){const e=$("#tx-prev");if(!e)return;e.style.fontSize=Math.min(W*3+10,44)+"px";e.style.color=color;e.style.background=tool=="note"?"#fde68a":"var(--btn-bg)";if(tool=="note")e.style.color="#111"}
+function txPrev(){return;const e=$("#tx-prev");if(!e)return;e.style.fontSize=Math.min(W*3+10,44)+"px";e.style.color=color;e.style.background=tool=="note"?"#fde68a":"var(--btn-bg)";if(tool=="note")e.style.color="#111"}
 function updateRows(){$$(".crow .cdot").forEach(b=>b.classList.toggle("on",b.dataset.c.toLowerCase()==String(color).toLowerCase()))}
 function syncW(){[["#pen-slider","#pen-slider-val",W+"mm"],["#sh-slider","#sh-slider-val",W],["#tx-slider","#tx-slider-val",(W*3+10)+" px"]].forEach(([a,b,l])=>{const e=$(a),x=$(b);if(e)e.value=W;if(x)x.textContent=l});
   drawPenPreview();drawShPrev();txPrev();updateRows()}
-$("#sh-slider").oninput=e=>{W=+e.target.value;syncW()};$("#tx-slider").oninput=e=>{W=+e.target.value;syncW()};
+$("#sh-slider").oninput=e=>{W=+e.target.value;syncW()};
 $$(".crow").forEach(r=>{COL.forEach(c=>{const b=document.createElement("button");b.className="cdot";b.dataset.c=c;b.style.background=c;b.title=c;
   b.onclick=()=>{const s=$$(".sw").find(x=>x.dataset.c==c);if(s)s.click();else{color=c;$("#cc").value=c}syncW();drawHlPreview()};r.append(b)});
   const m=document.createElement("button");m.className="cdot";m.dataset.c="custom";m.textContent="🎨";m.style.cssText="background:var(--btn-bg);font-size:14px";m.onclick=()=>$("#cc").click();r.append(m)});
 $("#cc").addEventListener("input",()=>syncW());
-window.onPanelOpen=t=>{const n={line:"Line",arrow:"Arrow",rect:"Rectangle",oval:"Oval"};if(n[t])$("#sh-title").textContent=n[t];
+const VH="Free · no download · uses your phone's own speech recognition (internet needed)";
+function txSync(){$("#tx-voice").hidden=TXM!="speak";$$("[data-txl]").forEach(x=>x.classList.toggle("on",x.dataset.txl==TXL));$("#tx-vh").textContent=VH;$$("[data-txm]").forEach(x=>x.classList.toggle("on",x.dataset.txm==TXM));$("#tx-bold").classList.toggle("on",TXB);$$("[data-txa]").forEach(x=>x.classList.toggle("on",x.dataset.txa==TXA))}
+const txSel=()=>selT&&(tool=="text"||tool=="note");
+$$("[data-txm]").forEach(b=>b.onclick=()=>{TXM=b.dataset.txm;lsSet(TXK.m,TXM);txSync()});
+$$("[data-txl]").forEach(b=>b.onclick=()=>{TXL=b.dataset.txl;lsSet("pa_txlang",TXL);txSync()});
+$("#tx-bold").onclick=()=>{TXB=!TXB;lsSet(TXK.b,TXB?"1":"0");if(txSel())tChange(o=>{if(TXB)o.b=1;else delete o.b});txSync()};
+$$("[data-txa]").forEach(b=>b.onclick=()=>{TXA=b.dataset.txa;lsSet(TXK.a,TXA);if(txSel())tChange(o=>{if(TXA=="l")delete o.al;else o.al=TXA});txSync()});
+txSync();
+window.onPanelOpen=t=>{txSync();const n={line:"Line",arrow:"Arrow",rect:"Rectangle",oval:"Oval"};if(n[t])$("#sh-title").textContent=n[t];
   if(t=="text"||t=="note")$("#tx-title").textContent=t=="note"?"Sticky Note":"Text";syncW()};
 $$(".sw").forEach(b=>b.addEventListener("click",()=>setTimeout(syncW,0)));
 
@@ -2363,6 +2474,66 @@ document.addEventListener("pointerup",e=>{const d=_pd;_pd=null;if(!d||e.pointerT
 
 /* ===== v1.4.30 — home layout: left menu / right content ===== */
 $$("#hside [data-ht]").forEach(b=>b.addEventListener("click",()=>homeTab(b.dataset.ht)));
-["#bk","#rs"].forEach(id=>$(id).addEventListener("click",()=>homeTab("nb")));   /* show progress / status in the Notebook pane */
+["#rs"].forEach(id=>$(id).addEventListener("click",()=>homeTab("nb")));   /* restore progress / result shows in the Notebook pane */
 homeTab("nb");
+
+/* ===== v1.4.46 — extra safety: backup file on the device, import, recover deleted notebooks ===== */
+const bufB64=b=>{const u=new Uint8Array(b);let o="";for(let i=0;i<u.length;i+=32768)o+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(o)};
+const b64Buf=t=>{const r=atob(t),u=new Uint8Array(r.length);for(let i=0;i<r.length;i++)u[i]=r.charCodeAt(i);return u.buffer};
+$("#sm-bkf").onclick=async()=>{try{if(pdf)await persist(true);st("⏳ Preparing backup file…");
+  const docs=(await dbAll())||[];if(!docs.length){st("Nothing to back up yet");return}
+  const ik=await itx("readonly",o=>o.getAllKeys()),parts=[`{"app":"vpdf-all","v":1,"t":${Date.now()},"settings":${JSON.stringify(allSettings(true))},"docs":${JSON.stringify(docs)},"imgs":{`];
+  let first=1;for(const id of ik){const b=await iGet(id);if(!b)continue;parts.push((first?"":",")+JSON.stringify(id)+":"+JSON.stringify(bufB64(b)));first=0}
+  parts.push("}}");const blob=new Blob(parts,{type:"application/json"}),fn="Vpdf-backup-"+new Date().toISOString().slice(0,10)+".json";
+  try{const f=new File([blob],fn,{type:"application/json"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:fn});st("✅ Backup file shared / saved");return}}catch(e){if(e&&e.name=="AbortError")return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fn;document.body.append(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(a.href)},4000);st("✅ Backup file downloaded ("+docs.length+" notebooks)")}catch(e){st("❌ Backup file failed: "+(e&&e.message||e))}};
+$("#sm-imp").onclick=()=>$("#sm-impf").click();
+$("#sm-impf").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const j=JSON.parse(await f.text());if(!j||j.app!="vpdf-all"||!Array.isArray(j.docs))throw new Error("not a Vpdf backup file");
+  let nd=0,ni=0;for(const r of j.docs){if(!r||!r.id)continue;const x=await dbGet(r.id);if(!x||(x.t||0)<(r.t||0)){await dbPutM(r);nd++}}
+  for(const id in(j.imgs||{})){if(!(await iGet(id))){await iPut(id,b64Buf(j.imgs[id]));ni++}}
+  st(`✅ Imported ${nd} notebook(s), ${ni} image(s) (newer local pages were kept)`);try{await showLib()}catch(x){}}catch(x){st("❌ Import failed: "+(x&&x.message||x))}};
+$("#sm-trash").onclick=async()=>{try{const ks=(await mx("readonly",o=>o.getAllKeys())).filter(k=>String(k).startsWith("trash:"));let n=0;
+  for(const k of ks){const t=await metaGet(k);if(t&&t.doc){await dbPutM(t.doc);await mx("readwrite",o=>o.delete(k));n++}}
+  st(n?`♻️ ${n} deleted notebook(s) recovered`:"No deleted notebooks to recover");if(n)try{await showLib()}catch(x){}}catch(x){st("❌ Couldn't recover: "+(x&&x.message||x))}};
+
+/* ===== v1.4.46 — Create PDF: new notebook with N pages of a chosen style ===== */
+/* the blank PDF is rebuilt byte-for-byte from (token, page count): fixed dates, no random parts → same fingerprint every time */
+async function genBytes(token,n){const o=await PL.PDFDocument.create({updateMetadata:false}),d=new Date(Date.UTC(2026,0,1));
+  for(let i=0;i<n;i++)o.addPage([595.28,841.89]);
+  o.setCreator("Vpdf");o.setProducer("Vpdf");o.setCreationDate(d);o.setModificationDate(d);o.setKeywords(["vpdf-"+token]);
+  return await o.save()}
+async function openGen(r){
+  if(!window.PDFLib){st("📴 PDF engine not loaded yet — try again when the internet is available");return}
+  const f=new File([await genBytes(r.id.slice(4),r.np||1)],r.name,{type:"application/pdf"});
+  const fp=await fpOf(f);if(r.fp&&r.fp!==fp){const x=await dbGet(r.id);if(x){x.fp=fp;await dbPutM(x)}}   /* safety: never let a fingerprint difference create a second notebook */
+  await openFile(f,r.id)}
+let makingPdf=false;
+async function createPdfNb(kind,n,nm){
+  if(makingPdf)return;if(!window.PDFLib){st("📴 PDF engine not loaded yet — try again when the internet is available");return}
+  makingPdf=true;
+  try{st("⏳ Creating PDF…");
+    const token=Date.now().toString(36)+Math.random().toString(36).slice(2,10),id="gen:"+token;   /* unique token → unique content → never mixed with another notebook */
+    const bytes=await genBytes(token,n),file=new File([bytes],nm+".pdf",{type:"application/pdf"}),fp=await fpOf(file);
+    const tp=kind?Object.fromEntries([...Array(n).keys()].map(i=>[i,kind])):{};
+    await dbPutM({id,fp,pfp:"",sv:SCHEMA,name:file.name,anns:{},page:0,t:Date.now(),np:n,ord:[...Array(n).keys()],bm:[],tpl:tp,n:0});
+    fsEnter();await openFile(file,id);st(`✅ Created «${nm}» · ${n} page(s)`)}
+  catch(e){st("❌ Couldn't create the PDF: "+(e&&e.message||e))}
+  finally{makingPdf=false}}
+function showCreatePdfDialog(){
+  if($("#cpdf-dlg"))return;
+  const d=new Date(),pad=x=>String(x).padStart(2,"0"),def="Notebook "+d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+"."+pad(d.getMinutes());
+  const dlg=document.createElement("div");dlg.id="cpdf-dlg";dlg.className="mod";
+  dlg.innerHTML='<div role="dialog" aria-modal="true" aria-labelledby="cpdf-t" style="width:340px"><h3 id="cpdf-t" style="margin:0">📄 Create PDF</h3>'+
+   '<label>Page style</label><div class="add-page-options"><button class="pb on" data-k="">＋ Blank</button><button class="pb" data-k="lined">☰ Ruled / lined</button><button class="pb" data-k="graph">▦ Grid</button><button class="pb" data-k="dotted">⠿ Dotted</button></div>'+
+   '<label>Number of pages (1 – 500)</label><input type="number" id="cpdf-n" inputmode="numeric" min="1" max="500" value="10">'+
+   '<label>Name</label><input type="text" id="cpdf-nm" maxlength="80">'+
+   '<div style="display:flex;gap:8px;margin-top:8px"><button class="pb" id="cpdf-x" style="flex:1">Cancel</button><button class="cta" id="cpdf-go" style="flex:1;box-shadow:none">Create</button></div></div>';
+  document.body.appendChild(dlg);$("#cpdf-nm").value=def;let kind="";
+  dlg.addEventListener("click",e=>{
+    if(e.target===dlg||e.target.id=="cpdf-x"){dlg.remove();return}
+    const b=e.target.closest("[data-k]");if(b){kind=b.dataset.k;$$("#cpdf-dlg [data-k]").forEach(x=>x.classList.toggle("on",x===b));return}
+    if(e.target.id=="cpdf-go"){let n=parseInt($("#cpdf-n").value,10);if(!(n>=1)){$("#cpdf-n").focus();return}n=Math.min(500,n);
+      const nm=($("#cpdf-nm").value.replace(/[\\/:*?"<>|]/g,"").replace(/\.pdf$/i,"").trim())||def;dlg.remove();createPdfNb(kind,n,nm)}});
+  setTimeout(()=>{const i=$("#cpdf-n");if(i){i.focus();i.select()}},50)}
+$("#mkpdf").onclick=showCreatePdfDialog;
 </script></body></html>
