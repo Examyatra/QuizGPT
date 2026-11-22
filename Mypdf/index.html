@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="hi"><head><meta charset="utf-8">
+<html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="PDF नोट्स"><meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.1.0">
-<title>PDF एनोटेटर</title>
+<meta name="app-version" content="1.3.5">
+<title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
 :root{
@@ -40,24 +40,41 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 [hidden]{display:none!important}
 
 /* ===== TOP TOOLBAR — GoodNotes style ===== */
-#bar{
-  position:sticky;top:env(safe-area-inset-top,0px);z-index:50;
-  background:var(--bar);border-bottom:1px solid var(--bd);
-  display:flex;align-items:center;gap:2px;padding:6px 10px;
-  min-height:52px;
-}
-#bar .bar-left{display:flex;align-items:center;gap:4px;flex-shrink:0}
-#bar .bar-center{display:flex;align-items:center;gap:2px;flex:1;justify-content:center;overflow-x:auto;scrollbar-width:none}
-#bar .bar-center::-webkit-scrollbar{display:none}
-#bar .bar-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
+#bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--bar);border-bottom:1px solid var(--bd)}
+#bar .bar-top{display:flex;align-items:center;gap:6px;padding:6px 10px;min-height:48px}
+#bar .tabs{flex:1;display:flex;justify-content:center;min-width:0}
+#bar .bar-top #st{max-width:32vw;overflow:hidden;text-overflow:ellipsis}
+#tools-wrap{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;border-top:1px solid var(--bd)}
+#tools-wrap::-webkit-scrollbar{display:none}
+#tstrip{position:relative;display:flex;align-items:center;gap:4px;padding:6px 10px;width:max-content;min-width:100%}
+#tstrip>*{flex-shrink:0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:pan-x}
+#tstrip>.dragging{z-index:10;background:var(--tool-hover);box-shadow:0 6px 18px rgba(0,0,0,.35);transition:none;cursor:grabbing}
+#tstrip .tgrp{display:flex;align-items:center;gap:6px;padding:0 6px}
+/* GoodNotes-style icon strip: line icons, active tool = blue icon, round colour dots */
+.ibtn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#tstrip .ibtn[data-t].on,#tstrip .ibtn[data-t].on:hover{background:transparent;color:var(--tool-active)}
+#tstrip .sw{width:30px!important;height:30px!important;border:3px solid transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+#tstrip .sw.on{border-color:var(--tx);transform:none}
+.mgrid{display:grid;grid-template-columns:repeat(3,76px);gap:12px 8px;justify-content:center}.mgrid.g4{grid-template-columns:repeat(4,70px)}
+.mcell{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;font-size:11px;text-align:center;line-height:1.2}
+.mcell .ibtn{width:50px;height:50px;border-radius:13px;background:var(--btn-bg)}.mcell .ibtn.on{background:var(--tool-active)}
+.mcell span{opacity:.75}
+#palm+span::after,#shp+span::after,#po+span::after{display:block;content:"OFF";opacity:.7}
+#palm.on+span::after,#shp.on+span::after,#po.on+span::after{content:"ON";color:var(--tool-active);opacity:1;font-weight:700}
+.fpanel.pop::before{content:"";position:absolute;top:-7px;left:var(--cx,50%);width:13px;height:13px;background:var(--panel-bg);border-left:1px solid var(--panel-bd);border-top:1px solid var(--panel-bd);transform:translateX(-50%) rotate(45deg)}
+.crow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cdot{width:28px;height:28px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px var(--bd);cursor:pointer;padding:0}
+.cdot.on{border-color:var(--ac)}
+.hintp{font-size:13px;line-height:1.55;opacity:.8;max-width:260px}
 
 /* Tab-style document name in bar */
 .doc-tab{
   display:flex;align-items:center;gap:6px;padding:4px 12px;
   background:var(--tool-hover);border:1px solid var(--bd);border-radius:8px;
-  font-size:13px;font-weight:500;max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  font-size:13px;font-weight:500;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
   cursor:default;user-select:none;
 }
+.doc-tab{min-width:0}.doc-tab>span{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .doc-tab-close{
   width:16px;height:16px;border-radius:50%;background:transparent;border:none;
   color:var(--tx);opacity:.5;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;
@@ -195,7 +212,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .panel-header .reset-btn{margin-left:0;color:var(--ac);font-size:14px;font-weight:600;cursor:pointer;border:none;background:none}
 
 /* ===== DOCUMENT AREA ===== */
-#doc{padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px;overflow-x:auto}
+#doc{padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px;overflow-x:auto;touch-action:pan-x pan-y}
 .pg{scroll-margin-top:64px;position:relative;background:#fff;box-shadow:0 2px 16px rgba(0,0,0,0.15);flex:none;border-radius:3px;overflow:hidden}
 .pg canvas{position:absolute;inset:0;width:100%;height:100%}
 .pg textarea{position:absolute;z-index:3;min-width:120px;min-height:2em;border:1px dashed var(--ac);background:#fff9;color:#000;font-family:inherit;resize:both}
@@ -241,7 +258,11 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 #sm input{width:100%;padding:10px 12px;font-size:15px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
 #sm hr{border:0;border-top:1px solid var(--bd)}
 #sm .row{display:flex;gap:8px;flex-wrap:wrap}
-#sms{font-size:13px;min-height:1.3em}
+#sms{font-size:13px;line-height:1.5;word-break:break-word;white-space:pre-wrap}
+#sms:not(:empty){padding:10px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--btn-bg)}
+#sms[data-s=ok]{border-color:#16a34a;color:#16a34a}
+#sms[data-s=err]{border-color:#e11d48;color:#e11d48}
+#sm button:disabled{opacity:.6;cursor:wait}
 #sm input[type=checkbox]{width:auto}
 .ck{display:flex;gap:8px;align-items:flex-start;font-weight:400!important}
 #sm button{background:var(--btn-bg);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:8px 14px;font-size:14px;cursor:pointer}
@@ -258,7 +279,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 #bn button:hover{background:rgba(255,255,255,0.3)}
 
 /* ===== PRO FEATURES ===== */
-#sb{position:fixed;left:0;top:calc(52px + env(safe-area-inset-top,0px));bottom:0;width:min(280px,86vw);background:var(--panel-bg);border-right:1px solid var(--panel-bd);z-index:150;display:flex;flex-direction:column;box-shadow:var(--panel-shadow)}
+#sb{position:fixed;left:0;top:calc(var(--barh,100px) + env(safe-area-inset-top,0px));bottom:0;width:min(280px,86vw);background:var(--panel-bg);border-right:1px solid var(--panel-bd);z-index:150;display:flex;flex-direction:column;box-shadow:var(--panel-shadow)}
 .sbh{display:flex;gap:4px;padding:8px;border-bottom:1px solid var(--panel-bd)}
 .sbh button,.pb{padding:7px 10px;border:1px solid var(--bd);border-radius:9px;background:var(--btn-bg);color:var(--tx);cursor:pointer;font-size:14px}
 .sbh button{flex:1}.sbh button.on,.pb.on{background:var(--ac);color:#fff;border-color:var(--ac)}
@@ -272,7 +293,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .thi .bmk{position:absolute;top:2px;right:4px}
 .srow{display:block;width:100%;text-align:left;padding:8px;border:none;border-bottom:1px solid var(--panel-bd);background:none;color:var(--tx);cursor:pointer;font-size:13px}
 #sq{width:100%;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);margin-bottom:8px}
-#lbar{position:fixed;top:calc(62px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:210;display:flex;gap:6px;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:12px;padding:6px;box-shadow:var(--panel-shadow)}
+#lbar{position:fixed;top:calc(var(--barh,100px) + 12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:210;display:flex;gap:6px;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:12px;padding:6px;box-shadow:var(--panel-shadow)}
 #zwb{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:220;background:var(--panel-bg);border:2px solid var(--ac);border-radius:14px;padding:6px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--panel-shadow)}
 #zwc{background:#fff;border-radius:8px;touch-action:none;display:block}
 #zwb .zr{display:flex;gap:4px;justify-content:center}
@@ -295,44 +316,58 @@ html:has(body.pres){scroll-snap-type:y proximity}
 
 <!-- ===== TOP BAR ===== -->
 <div id="bar" hidden>
-  <div class="bar-left">
-    <button class="ibtn" id="lib" title="होम">←</button>
-    <div id="doctab" class="doc-tab" hidden>
+  <div class="bar-top">
+    <button class="ibtn" id="lib" title="Home">←</button>
+    <div class="tabs"><div id="doctab" class="doc-tab" hidden>
       <span id="doctab-name">PDF</span>
       <button class="doc-tab-close" id="doctab-close">✕</button>
-    </div>
-  </div>
-
-  <div class="bar-center">
-    <div class="vsep"></div>
-    <button class="ibtn" data-t="pen" title="पेन" id="tbpen">🖊</button>
-    <button class="ibtn" data-t="hl" title="हाइलाइटर" id="tbhl">🖍</button>
-    <button class="ibtn" data-t="er" title="इरेज़र" id="tber">⌫</button>
-    <button class="ibtn" data-t="text" title="टेक्स्ट">𝐓</button><button class="ibtn" data-t="note" title="स्टिकी नोट">🗒</button>
-    <button class="ibtn" data-t="line" title="रेखा">╱</button>
-    <button class="ibtn" data-t="arrow" title="तीर">➚</button>
-    <button class="ibtn" data-t="rect" title="आयत">▭</button>
-    <button class="ibtn" data-t="oval" title="वृत्त">◯</button><button class="ibtn" data-t="lasso" title="लासो सिलेक्ट">⬚</button><button class="ibtn" data-t="stamp" title="स्टैम्प">⭐</button>
-    <div class="vsep"></div>
-    <span id="sws" style="display:flex;gap:5px;align-items:center"></span>
-    <div class="vsep"></div>
-    <button class="ibtn" id="un" title="Undo">↶</button>
-    <button class="ibtn" id="re" title="Redo">↷</button>
-    <div class="vsep"></div>
-    <button class="ibtn" id="zo" title="छोटा">−</button>
-    <button class="ibtn" id="zi" title="बड़ा">+</button><div class="vsep"></div><button class="ibtn" id="sbt" title="पेज / बुकमार्क / सर्च">☰</button><button class="ibtn" id="bkm" title="बुकमार्क">🔖</button><button class="ibtn" id="tpl" title="पेज टेम्पलेट">▦</button><button class="ibtn" id="zw" title="ज़ूम विंडो">🔍</button><button class="ibtn on" id="shp" title="शेप रिकग्निशन (लिखकर आख़िर में रुकें)">◇</button><button class="ibtn on" id="palm" title="पाम रिजेक्शन">🖐</button><button class="ibtn" id="pres" title="प्रेज़ेंटेशन">⛶</button><input type="color" id="cc" value="#e11d48" title="कस्टम रंग" style="width:30px;height:30px;border:none;background:none;padding:0;cursor:pointer;flex-shrink:0">
-  </div>
-
-  <div class="bar-right">
+    </div></div>
     <span id="st"></span>
-    <button class="ibtn" id="imb" title="इमेज जोड़ें">🖼</button>
-    <button class="ibtn" data-t="sel" title="इमेज खिसकाओ">✋</button>
-    <button class="ibtn" id="po" title="सिर्फ़ पेन से लिखें">✍️</button>
-    <div class="vsep"></div>
-    <button class="ibtn" id="sig" title="हस्ताक्षर लगाएँ">🖋</button><button class="ibtn" id="tools" title="PDF टूल्स">🧰</button><button class="ibtn" id="saveb" title="एक्सपोर्ट">⬇️</button>
-    <button class="ibtn thb" title="थीम">🌓</button>
+    <button class="ibtn" id="pres" title="Presentation">⛶</button>
+    <button class="ibtn" id="saveb" title="Export">⬇️</button>
+    <button class="ibtn thb" title="Theme">🌓</button>
   </div>
+  <div id="tools-wrap"><div id="tstrip">
+    <button class="ibtn" id="sbt" title="Pages / Bookmarks / Search"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg></button>
+    <button class="ibtn" data-t="note" title="Sticky note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v10l-6 6H5z"/><path d="M19 14h-6v6"/></svg></button>
+    <button class="ibtn" id="imb" title="Add image"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></svg></button>
+    <button class="ibtn" data-t="sel" title="Move image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 013 0V11"/><path d="M11 10.5V4a1.5 1.5 0 013 0v6.5"/><path d="M14 10.5V5.5a1.5 1.5 0 013 0v7"/><path d="M17 9.5a1.5 1.5 0 013 0V14c0 4-3 7-7 7h-.5c-3 0-4.5-1.5-6-4l-2-3.4a1.5 1.5 0 012.5-1.6L8 14"/></svg></button>
+    <button class="ibtn" data-t="text" title="Text"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3" stroke-dasharray="3 3"/><path d="M8.5 16.5l3.5-9 3.5 9M9.8 13.5h4.4"/></svg></button>
+    <button class="ibtn" id="shpb" title="Shapes"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="9.5" width="11" height="11" rx="2.5"/><rect x="9.5" y="3.5" width="11" height="11" rx="2.5"/></svg></button>
+    <button class="ibtn" data-t="stamp" title="Stamp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8z"/></svg></button>
+    <button class="ibtn" id="mor" title="More tools"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></button>
+    <button class="ibtn" data-t="lasso" title="Lasso select"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4c4.6 0 8 1.9 8 4.5S16.6 13 12 13 4 11.1 4 8.5 7.4 4 12 4z"/><path d="M9 13c-1.2 1.6-1.2 3.6.8 4.6s2.4 2 1.4 3.4"/></svg></button>
+    <button class="ibtn" data-t="er" title="Eraser" id="tber"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 15l9-9.5 7 7-6.2 6.5H7z"/><path d="M9 9.5l7 7M13 19h7.5"/></svg></button>
+    <button class="ibtn" data-t="hl" title="Highlighter" id="tbhl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3.5l5.5 5.5-8.8 9-5.5-5.5z"/><path d="M6.2 12.5L4 19l3.5.8 2.6-2.4M4 21h7"/></svg></button>
+    <button class="ibtn" data-t="pen" title="Pen" id="tbpen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-5L17 3l4 4L9 19z"/><path d="M15 5l4 4"/></svg></button>
+    <button class="ibtn" id="un" title="Undo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button>
+    <button class="ibtn" id="re" title="Redo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 000 12h3"/></svg></button>
+    <div class="tgrp" data-k="colors"><span id="sws" style="display:flex;gap:5px;align-items:center"></span><input type="color" id="cc" value="#e11d48" title="Custom color" style="width:30px;height:30px;border:none;background:none;padding:0;cursor:pointer;flex-shrink:0"></div>
+  </div></div>
 </div>
+
+<!-- ===== SHAPES / MORE TOOLS POPOVERS ===== -->
+<div id="shp-panel" class="fpanel" hidden data-anchor="#shpb"><div class="fpanel-title">Shapes</div>
+  <div class="mgrid g4">
+    <div class="mcell"><button class="ibtn" data-t="line" title="Line"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19L19 5"/></svg></button><span>Line</span></div>
+    <div class="mcell"><button class="ibtn" data-t="arrow" title="Arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19L19 5M9 5h10v10"/></svg></button><span>Arrow</span></div>
+    <div class="mcell"><button class="ibtn" data-t="rect" title="Rectangle"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="2"/></svg></button><span>Rectangle</span></div>
+    <div class="mcell"><button class="ibtn" data-t="oval" title="Oval"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="8.5" ry="6.5"/></svg></button><span>Oval</span></div>
+  </div></div>
+<div id="more-panel" class="fpanel" hidden data-anchor="#mor"><div class="fpanel-title">More tools</div>
+  <div class="mgrid">
+    <div class="mcell"><button class="ibtn" id="zw" title="Zoom window"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg></button><span>Zoom window</span></div>
+    <div class="mcell"><button class="ibtn" id="sig" title="Insert signature"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4.5L15.5 5l3.5 3.5L8.5 19z"/><path d="M13.5 7l3.5 3.5"/><path d="M19.5 2v3.5M17.8 3.8h3.5"/></svg></button><span>Signature</span></div>
+    <div class="mcell"><button class="ibtn" id="bkm" title="Bookmark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h11v17L12 16.5l-5.5 4z"/></svg></button><span>Bookmark</span></div>
+    <div class="mcell"><button class="ibtn" id="tpl" title="Page template"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M3.5 9.5h17M9.5 9.5v11"/></svg></button><span>Template</span></div>
+    <div class="mcell"><button class="ibtn" id="zo" title="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><span>Zoom out</span></div>
+    <div class="mcell"><button class="ibtn" id="zi" title="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button><span>Zoom in</span></div>
+    <div class="mcell"><button class="ibtn on" id="shp" title="Shape recognition (pause at the end of a stroke)">◇</button><span>Shape snap</span></div>
+    <div class="mcell"><button class="ibtn on" id="palm" title="Palm rejection"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 013 0V11"/><path d="M11 10.5V4a1.5 1.5 0 013 0v6.5"/><path d="M14 10.5V5.5a1.5 1.5 0 013 0v7"/><path d="M17 9.5a1.5 1.5 0 013 0V14c0 4-3 7-7 7h-.5c-3 0-4.5-1.5-6-4l-2-3.4a1.5 1.5 0 012.5-1.6L8 14"/></svg></button><span>Palm rejection</span></div>
+    <div class="mcell"><button class="ibtn" id="po" title="Write with pen only">✍️</button><span>Pen only</span></div>
+    <div class="mcell"><button class="ibtn" id="cmp" title="Compact handwriting (smaller backup)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h6V3M20 9h-6V3M4 15h6v6M20 15h-6v6"/></svg></button><span>Compact ink</span></div>
+    <div class="mcell"><button class="ibtn" id="tools" title="PDF tools">🧰</button><span>PDF tools</span></div>
+  </div></div>
 
 <!-- ===== PEN FLOATING PANEL ===== -->
 <div id="pen-panel" class="fpanel" hidden style="top:62px;left:50%;transform:translateX(-50%)">
@@ -340,10 +375,10 @@ html:has(body.pres){scroll-snap-type:y proximity}
   <div>
     <div class="fpanel-section-label" style="margin-bottom:8px">Pen</div>
     <div class="pen-types">
-      <button class="pen-type-btn on" data-pt="ball" title="बॉलपॉइंट">🖊</button>
-      <button class="pen-type-btn" data-pt="fine" title="फाइनलाइनर">✒️</button>
-      <button class="pen-type-btn" data-pt="brush" title="ब्रश पेन">🖌️</button><button class="pen-type-btn" data-pt="pencil" title="पेंसिल">✏️</button>
-      <button class="pen-settings-gear" id="pen-gear-btn" title="सेटिंग">⚙️</button>
+      <button class="pen-type-btn on" data-pt="ball" title="Ballpoint">🖊</button>
+      <button class="pen-type-btn" data-pt="fine" title="Fineliner">✒️</button>
+      <button class="pen-type-btn" data-pt="brush" title="Brush pen">🖌️</button><button class="pen-type-btn" data-pt="pencil" title="Pencil">✏️</button>
+      <button class="pen-settings-gear" id="pen-gear-btn" title="Settings">⚙️</button>
     </div>
   </div>
   <div>
@@ -369,28 +404,28 @@ html:has(body.pres){scroll-snap-type:y proximity}
     <div style="flex:1;text-align:center;font-size:16px;font-weight:700">Settings</div>
   </div>
   <div class="setting-row">
-    <div class="setting-label">Writing Pressure <span class="setting-hint" title="स्टाइलस के दबाव से मोटाई बदलती है">?</span></div>
+    <div class="setting-label">Writing Pressure <span class="setting-hint" title="Stroke width changes with stylus pressure">?</span></div>
     <div class="slider-row">
       <input type="range" id="ps-pressure" min="1" max="8" step="1" value="4">
       <span class="slider-val" id="ps-pressure-val">4</span>
     </div>
   </div>
   <div class="setting-row">
-    <div class="setting-label">Min Width <span class="setting-hint" title="कम दबाव में न्यूनतम मोटाई">?</span></div>
+    <div class="setting-label">Min Width <span class="setting-hint" title="Minimum width at light pressure">?</span></div>
     <div class="slider-row">
       <input type="range" id="ps-minw" min="0" max="100" step="5" value="50">
       <span class="slider-val" id="ps-minw-val">50%</span>
     </div>
   </div>
   <div class="setting-row">
-    <div class="setting-label">Width Smoothing <span class="setting-hint" title="मोटाई में अचानक बदलाव कम करता है">?</span></div>
+    <div class="setting-label">Width Smoothing <span class="setting-hint" title="Reduces sudden changes in width">?</span></div>
     <div class="slider-row">
       <input type="range" id="ps-widthsmooth" min="0" max="100" step="5" value="30">
       <span class="slider-val" id="ps-widthsmooth-val">30%</span>
     </div>
   </div>
   <div class="setting-row">
-    <div class="setting-label">Motion Smoothing <span class="setting-hint" title="हाथ का कंपन कम करता है, रेखाएँ चिकनी बनती हैं">?</span></div>
+    <div class="setting-label">Motion Smoothing <span class="setting-hint" title="Reduces hand tremor for smoother lines">?</span></div>
     <div class="slider-row">
       <input type="range" id="ps-motionsmooth" min="1" max="8" step="1" value="2">
       <span class="slider-val" id="ps-motionsmooth-val">2</span>
@@ -450,55 +485,57 @@ html:has(body.pres){scroll-snap-type:y proximity}
 <!-- ===== HOME ===== -->
 <div id="home" hidden>
   <div id="hh">
-    <h1>📓 नोटबुक</h1>
+    <h1>📓 Notebooks</h1>
     <div class="hr">
-      <button class="ibtn thb" title="थीम">🌓</button>
-      <button class="th-btn" id="tg">⚙️ सेटिंग</button>
-      <button class="cta" id="open">＋ PDF जोड़ें</button>
+      <button class="ibtn thb" title="Theme">🌓</button>
+      <button class="th-btn" id="tg">⚙️ Settings</button>
+      <button class="cta" id="open">＋ Add PDF</button>
     </div>
   </div>
   <div id="hact">
-    <button id="bk">🛟 बैकअप</button>
-    <button id="rs">♻️ रिस्टोर</button><button id="tools2">🧰 PDF टूल्स</button>
+    <button id="bk">✈️ Back up to Telegram</button>
+    <button id="rs" title="Select the backup .zip files you downloaded from Telegram">♻️ Restore</button><button id="tools2">🧰 PDF tools</button>
   </div>
   <div id="hbk"></div><div id="hst"></div>
   <div id="nbs"></div>
-  <div id="empty" hidden>📄 अभी कोई नोटबुक नहीं है।<br>ऊपर "＋ PDF जोड़ें" दबाइए।<br><span style="font-size:13px">PDF आपके फ़ोन में ही रहती है, सिर्फ़ एनोटेशन सेव होते हैं।</span></div>
+  <div id="empty" hidden>📄 No notebooks yet.<br>Tap "＋ Add PDF" above.<br><span style="font-size:13px">Your PDF stays on your device; only annotations are saved.</span></div>
 </div>
 
 <!-- ===== SETTINGS MODAL ===== -->
 <div id="sm" hidden><div>
-  <h2>⚙️ सेटिंग</h2>
-  <label>🎨 थीम</label>
+  <h2>⚙️ Settings</h2>
+  <label>🎨 Theme</label>
   <div class="row">
-    <button class="th-btn" data-th="auto">ऑटो</button>
-    <button class="th-btn" data-th="light">☀️ लाइट</button>
-    <button class="th-btn" data-th="dark">🌙 डार्क</button>
+    <button class="th-btn" data-th="auto">Auto</button>
+    <button class="th-btn" data-th="light">☀️ Light</button>
+    <button class="th-btn" data-th="dark">🌙 Dark</button>
   </div>
-  <label class="ck"><input type="checkbox" id="pinv"><span>डार्क में PDF पेज भी काले करें</span></label>
+  <label class="ck"><input type="checkbox" id="pinv"><span>Also darken PDF pages in dark theme</span></label>
   <hr>
-  <label>✈️ टेलीग्राम बैकअप</label>
-  <label for="stk">Bot token (@BotFather से)</label>
+  <label>✈️ Telegram backup <span style="font-weight:400;opacity:.7">(primary — all backups go to Telegram)</span></label>
+  <label for="stk">Bot token (from @BotFather)</label>
   <input id="stk" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="123456789:AAH...">
-  <label for="stc">Chat ID</label>
+  <label for="stc">Chat ID (a number, or @channelname)</label>
   <input id="stc" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="123456789">
   <div class="row">
-    <button id="stv">👁 token दिखाएँ</button>
-    <button id="stt">🧪 टेस्ट भेजें</button>
+    <button id="stv">👁 Show token</button>
+    <button id="stt">🧪 Send test</button>
   </div>
-  <div id="sms"></div>
-  <small>token और chat ID सिर्फ़ इसी ब्राउज़र के लोकल स्टोरेज में सेव होते हैं।</small>
+  <div id="sms" role="status" aria-live="polite"></div>
+  <small>Your bot token and chat ID are stored only in this browser's local storage. Before testing, open your bot in Telegram and press Start (for a group or channel, add the bot to it first).</small>
   <div class="row">
-    <button id="stsave" class="on">सेव करें</button>
-    <button id="strm">🗑 हटाएँ</button>
-    <button id="smx">बंद करें</button>
+    <button id="stsave" class="on">Save</button>
+    <button id="strm">🗑 Remove</button>
+    <button id="smx">Close</button>
   </div>
+  <div class="row"><button id="strb">↺ Reset toolbar layout</button></div>
+  <div style="text-align:center;font-size:12px;opacity:.6;margin-top:4px">Vpdf · Powered by Vishal Yadav</div>
 </div></div>
 
 <!-- ===== BACKUP BANNER ===== -->
 <div id="bn" hidden>
-  <span>🛟 24 घंटे से बैकअप नहीं लिया — डेटा सुरक्षित करें</span>
-  <button id="bnb">बैकअप लें</button>
+  <span id="bnt">✈️ Telegram backup isn't set up — your notes exist only on this device</span>
+  <button id="bnb">Set up</button>
   <button id="bnx">✕</button>
 </div>
 
@@ -608,12 +645,22 @@ function drawHlPreview(){
 drawPenPreview();drawHlPreview();
 
 /* ===== PANEL OPEN/CLOSE LOGIC ===== */
-const PANELS=["pen-panel","pen-settings-panel","er-panel","hl-panel"];
-function closeAllPanels(){PANELS.forEach(id=>{const p=document.getElementById(id);if(p)p.hidden=true})}
-function openPanel(id){
-  PANELS.forEach(pid=>{const p=document.getElementById(pid);if(p)p.hidden=(pid!==id)});
-}
+const PANELS=["pen-panel","pen-settings-panel","er-panel","hl-panel","shape-panel","text-panel","lasso-panel","sel-panel","shp-panel","more-panel"];
+let panelAnchor=null,panelOpen=null,panelFor=null;
+function closeAllPanels(){PANELS.forEach(id=>{const p=document.getElementById(id);if(p)p.hidden=true});panelOpen=null;panelFor=null}
+function placePanel(){
+  const p=panelOpen&&document.getElementById(panelOpen);if(!p||p.hidden)return;
+  let a=panelAnchor&&document.body.contains(panelAnchor)?panelAnchor:null;{const hp=a&&a.closest(".fpanel[data-anchor]");if(hp)a=document.querySelector(hp.dataset.anchor)||a}
+  p.style.overflowY="visible";p.style.maxHeight="";
+  if(!a){p.style.top="70px";p.style.left="50%";p.style.transform="translateX(-50%)";p.classList.remove("pop");return}
+  const r=a.getBoundingClientRect(),w=p.offsetWidth,left=Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2));
+  p.style.transform="none";p.style.left=left+"px";p.style.top=(r.bottom+10)+"px";
+  p.style.setProperty("--cx",Math.max(20,Math.min(w-20,r.left+r.width/2-left))+"px");p.classList.add("pop");
+  const mh=innerHeight-(r.bottom+22);if(p.offsetHeight>mh){p.style.maxHeight=mh+"px";p.style.overflowY="auto"}}
+function openPanel(id,anchor){if(anchor)panelAnchor=anchor;panelOpen=id;
+  PANELS.forEach(pid=>{const p=document.getElementById(pid);if(p)p.hidden=(pid!==id)});placePanel()}
 
+const TOOL_PANEL={pen:"pen-panel",hl:"hl-panel",er:"er-panel",stamp:"st-panel",line:"shape-panel",arrow:"shape-panel",rect:"shape-panel",oval:"shape-panel",text:"text-panel",note:"text-panel",lasso:"lasso-panel",sel:"sel-panel"};
 // Tool button click → open relevant panel OR toggle off
 $$("[data-t]").forEach(b=>b.onclick=function(){
   const t=this.dataset.t;
@@ -621,14 +668,19 @@ $$("[data-t]").forEach(b=>b.onclick=function(){
   tool=t;
   $$("[data-t]").forEach(x=>x.classList.toggle("on",x===this));
   if(t!="lasso"&&selObjs.length)clearSel();$$(".pg").forEach(p=>draw(+p.dataset.i));
-  // Panel logic
-  if(t==="pen"){if(document.getElementById("pen-panel").hidden){openPanel("pen-panel")}else closeAllPanels()}
-  else if(t==="hl"){if(document.getElementById("hl-panel").hidden){openPanel("hl-panel")}else closeAllPanels()}
-  else if(t==="er"){if(document.getElementById("er-panel").hidden){openPanel("er-panel")}else closeAllPanels()}
-  else if(t=="stamp"){document.getElementById("st-panel").hidden?openPanel("st-panel"):closeAllPanels()}
+  // Panel logic: every tool that has settings opens its own popover under the tool; tap again to close
+  const pid=TOOL_PANEL[t];
+  if(pid){if(panelFor===t&&panelOpen===pid)closeAllPanels();else{openPanel(pid,this);panelFor=t;if(window.onPanelOpen)onPanelOpen(t)}}
   else closeAllPanels();
 });
 
+/* Shapes picker + More-tools popover (the "+" button) */
+const SHT=["line","arrow","rect","oval"];
+[["#shpb","shp-panel"],["#mor","more-panel"]].forEach(([b,id])=>$(b).onclick=function(){if(panelOpen===id)closeAllPanels();else{openPanel(id,this);panelFor=null}});
+$$("[data-t]").forEach(b=>b.addEventListener("click",()=>$("#shpb").classList.toggle("on",SHT.includes(tool))));
+$$(".mcell").forEach(c=>c.addEventListener("click",e=>{if(!e.target.closest(".ibtn"))c.querySelector(".ibtn").click()}));
+["zw","sig","bkm","tools"].forEach(id=>$("#"+id).addEventListener("click",()=>closeAllPanels()));
+$("#cmp").onclick=()=>{if(!pdf)return;let a=0,b=0;for(const i in anns)(anns[i]||[]).forEach(o=>{if((o.t=="pen"||o.t=="hl")&&o.p.length>3){a+=o.p.length;o.p=rdp(o.p,.3);b+=o.p.length}});$$(".pg").forEach(p=>draw(+p.dataset.i));change();closeAllPanels();st(`🗜 Ink compacted: ${a} → ${b} points`)};
 // Set pen active by default
 document.querySelector('[data-t="pen"]').classList.add("on");
 
@@ -647,7 +699,7 @@ $$("[data-eo]").forEach(b=>b.onclick=function(){this.classList.toggle("on")});
 
 // Close panels on doc click
 document.addEventListener("click",e=>{
-  if(!e.target.closest(".fpanel")&&!e.target.closest("[data-t]")&&!e.target.closest("#pen-gear-btn"))
+  if(!e.target.closest(".fpanel")&&!e.target.closest("[data-t]")&&!e.target.closest("#shpb,#mor")&&!e.target.closest("#pen-gear-btn"))
     closeAllPanels();
 },{passive:true});
 
@@ -705,7 +757,7 @@ async function darken(page,vp,c){
 /* ===== INDEXEDDB ===== */
 const DB_VER=6;
 const DB=new Promise((res,rej)=>{const r=indexedDB.open("pa",DB_VER);
-  r.onupgradeneeded=()=>{const d=r.result;[["docs",{keyPath:"id"}],["imgs"],["bk",{keyPath:"id"}],["th"],["meta"]].forEach(([n,o])=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n,o)})}; /* सिर्फ़ जोड़ना — कभी delete नहीं */
+  r.onupgradeneeded=()=>{const d=r.result;[["docs",{keyPath:"id"}],["imgs"],["bk",{keyPath:"id"}],["th"],["meta"]].forEach(([n,o])=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n,o)})}; /* add-only — never delete */
   r.onsuccess=()=>{const d=r.result;d.onversionchange=()=>{d.close();location.reload()};res(d)};r.onerror=()=>rej(r.error)});
 const tx=async(m,f)=>{const d=await DB;return new Promise((res,rej)=>{const t=d.transaction("docs",m),o=f(t.objectStore("docs"));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)})};
 const itx=async(m,f)=>{const d=await DB;return new Promise((res,rej)=>{const t=d.transaction("imgs",m),o=f(t.objectStore("imgs"));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)})};
@@ -720,10 +772,10 @@ const dbGet=id=>tx("readonly",o=>o.get(id)),dbPut=v=>tx("readwrite",o=>o.put(v))
 
 async function persist(){
   if(!docId||!pdf)return;clearTimeout(timer);
-  try{await dbPutM({id:docId,fp:curFp,pfp:curPfp,sv:SCHEMA,name,anns,page:curPage,t:Date.now(),np:pdf.numPages,ord,bm:[...bm],tpl,n:Object.values(anns).reduce((a,l)=>a+l.length,0)});st("✅ सेव")}
-  catch(e){st("❌ स्टोरेज भरा")}
+  try{await dbPutM({id:docId,fp:curFp,pfp:curPfp,sv:SCHEMA,name,anns,page:curPage,t:Date.now(),np:pdf.numPages,ord,bm:[...bm],tpl,n:Object.values(anns).reduce((a,l)=>a+l.length,0)});st("✅ Saved")}
+  catch(e){st("❌ Storage full")}
 }
-function change(){st("✏️ बदलाव…");clearTimeout(timer);timer=setTimeout(persist,700);clearTimeout(ina);ina=setTimeout(autoSync,INACT)}
+function change(){st("✏️ Changes…");clearTimeout(timer);timer=setTimeout(persist,700);clearTimeout(ina);ina=setTimeout(autoSync,INACT)}
 
 let want=null,THU=[];const FILES={};
 const go=v=>{const h=v=="home";if(h)try{onHome()}catch(e){}$("#home").hidden=!h;$("#bar").hidden=h;$("#doc").hidden=h;scrollTo(0,0)};
@@ -733,19 +785,19 @@ async function showLib(){
   $("#doc").innerHTML="";go("home");THU.forEach(u=>URL.revokeObjectURL(u));THU=[];
   const L=((await dbAll())||[]).sort((a,b)=>b.t-a.t),g=$("#nbs");g.innerHTML="";$("#empty").hidden=!!L.length;
   const last=+localStorage.getItem("pa_lastbackup")||0,days=Math.floor((Date.now()-last)/864e5);
-  $("#hbk").textContent=TG()?"✈️ टेलीग्राम बैकअप चालू":!L.length?"":!last?"⚠️ बैकअप नहीं बना":days>=7?`⚠️ आखिरी बैकअप ${days}d पहले`:`🛟 बैकअप ${days}d पहले`;
+  $("#hbk").textContent=TG()?tgLine():!L.length?"":"⚠️ Telegram backup not set up — tap ⚙️ Settings";
   for(const r of L){
     const c=document.createElement("div"),tb=document.createElement("div"),th=await thGet(r.id),x=document.createElement("button"),t=document.createElement("b"),m=document.createElement("small");
     c.className="nb";tb.className="tb";
     if(th){const im=new Image(),u=URL.createObjectURL(new Blob([th],{type:"image/jpeg"}));THU.push(u);im.src=u;tb.append(im)}else tb.classList.add("cv");
     const ag=document.createElement("i");ag.className="ag";ag.textContent=age(r.t);x.className="dl";x.textContent="🗑";tb.append(ag,x);
     t.textContent=r.name.replace(/\.pdf$/i,"");m.textContent=`${r.np}p · ${r.n} ann`;
-    x.onclick=async e=>{e.stopPropagation();if(confirm("एनोटेशन हटाएँ?")){await dbDel(r.id);await thDel(r.id);showLib()}};
+    x.onclick=async e=>{e.stopPropagation();if(confirm("Delete annotations?")){await dbDel(r.id);await thDel(r.id);showLib()}};
     tb.onclick=t.onclick=()=>openNb(r);c.append(tb,t,m);g.append(c);
   }
 }
-function openNb(r){const f=FILES[r.id];if(f){openFile(f,r.id).catch(()=>st("❌ PDF नहीं खुली"));return}
-  want=r.id;$("#hst").textContent="📂 «"+r.name.replace(/\.pdf$/i,"")+"» PDF चुनिए";$("#fi").click()}
+function openNb(r){const f=FILES[r.id];if(f){openFile(f,r.id).catch(()=>st("❌ Couldn't open the PDF"));return}
+  want=r.id;$("#hst").textContent="📂 «"+r.name.replace(/\.pdf$/i,"")+"» — select the PDF";$("#fi").click()}
 async function thumb(P,id){try{if(await thGet(id))return;const pg=await P.getPage(1),v=pg.getViewport({scale:260/pg.getViewport({scale:1}).width}),c=document.createElement("canvas");
   c.width=Math.round(v.width);c.height=Math.round(v.height);await pg.render({canvasContext:c.getContext("2d"),viewport:v}).promise;pg.cleanup();
   const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.7));c.width=c.height=0;await thPut(id,await b.arrayBuffer())}catch(e){}}
@@ -763,7 +815,7 @@ async function openFile(f,wid){
   const dt=document.getElementById("doctab");dt.hidden=false;
   document.getElementById("doctab-name").textContent=name.replace(/\.pdf$/i,"");
   for(let i=0;i<pdf.numPages;i++){const p=document.createElement("div");p.className="pg";p.dataset.i=i;sz(p,i);d.append(p);io.observe(p)}
-  st("✅ ऑटो सेव चालू");persist();thumb(pdf,docId);
+  st("✅ Auto-save on");persist();thumb(pdf,docId);
   requestAnimationFrame(()=>{const p=$(`.pg[data-i="${curPage}"]`);if(p)p.scrollIntoView()});
 }
 const sz=(p,i)=>{const s=sizes[i]||sizes[0];p.style.width=s.w*zoom+"px";p.style.height=s.h*zoom+"px"};
@@ -777,7 +829,7 @@ async function draw1(i){
   const k=Math.min(zoom*DPR,Math.sqrt(MAXPX/(v1.width*v1.height))),vp=page.getViewport({scale:k});
   p.innerHTML="<canvas></canvas><canvas></canvas>";
   const [c,ink]=p.children;c.width=ink.width=vp.width;c.height=ink.height=vp.height;
-  ink.style.touchAction=penOnly?"pan-y pinch-zoom":"none";bind(ink,p,i);
+  ink.style.touchAction=penOnly?"pan-x pan-y":"none";bind(ink,p,i);
   await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}page.cleanup();draw(i);
 }
 function paint(c,o,k,raw){
@@ -809,6 +861,7 @@ function bind(ink,p,i){
   let cur=null,down=false,mv=null;ink.oncontextmenu=e=>e.preventDefault();
   const pt=e=>{const r=ink.getBoundingClientRect();return[+((e.clientX-r.left)/zoom).toFixed(1),+((e.clientY-r.top)/zoom).toFixed(1)]};
   ink.onpointerdown=e=>{
+    if(e.pointerType=="touch"&&tp.size>1){down=false;cur=null;mv=null;draw(i);return}
     if((penOnly&&e.pointerType=="touch")||palmBlock(e))return;if(e.pointerType=="mouse"&&e.button)return;e.preventDefault();const q=pt(e);ink.setPointerCapture(e.pointerId);
     if(tool=="text"||tool=="note"){textBox(p,i,q,tool=="note");return}
     if(tool=="lasso"){lassoDown(i,q);down=true;return}
@@ -823,14 +876,20 @@ function bind(ink,p,i){
     if(tool=="hl")cur.w=HW;lastMv=Date.now();if(tool=="pen"){cur.pt=penType;cur.w=+(cur.w*({fine:.6,brush:1.5,pencil:.8}[penType]||1)).toFixed(1)}
     down=true;
   };
-  ink.onpointermove=e=>{if(!down)return;const q=pt(e);
+  ink.onpointermove=e=>{if(e.pointerType=="touch"&&tp.size>1){if(down){down=false;cur=null;mv=null;if(tool=="lasso")lassoUp(i);draw(i)}return}if(!down)return;const q=pt(e);
     if(tool=="lasso"){lassoMove(i,q);return}
     if(mv){const o=mv.o;if(mv.rs){const r=o.h/o.w;o.w=Math.max(30,q[0]-o.x);o.h=o.w*r}else{o.x=q[0]-mv.dx;o.y=q[1]-mv.dy}draw(i);return}
     if(tool=="er"){erase(i,q);return}
     if(["pen","hl"].includes(tool)){const l=cur.p[cur.p.length-1];if(Math.hypot(l[0]-q[0],l[1]-q[1])<.6)return;if(tool=="pen"){const a=1/(1+(+$("#ps-motionsmooth").value||2)*.3);q[0]=l[0]+(q[0]-l[0])*a;q[1]=l[1]+(q[1]-l[1])*a}cur.p.push(q);lastMv=Date.now()}else cur.p[1]=q;draw(i,cur)};
   ink.onpointerup=ink.onpointercancel=()=>{if(!down)return;down=false;if(tool=="lasso"){lassoUp(i);return}if(mv){mv=null;draw(i);change();return}
-    if(cur){if(shapeOn&&cur.t=="pen"&&Date.now()-lastMv>450)cur=recog(cur)||cur;snap(i);(anns[i]=anns[i]||[]).push(cur);cur=null;draw(i)}change()};
+    if(cur){if(shapeOn&&cur.t=="pen"&&Date.now()-lastMv>450)cur=recog(cur)||cur;if((cur.t=="pen"||cur.t=="hl")&&cur.p.length>3)cur.p=rdp(cur.p,.3);snap(i);(anns[i]=anns[i]||[]).push(cur);cur=null;draw(i)}change()};
 }
+/* handwriting compaction: Douglas-Peucker, tolerance 0.3 pt (≈0.1 mm, invisible) */
+function rdp(P,e){const n=P.length;if(n<4)return P;const keep=new Uint8Array(n);keep[0]=keep[n-1]=1;const st=[[0,n-1]],e2=e*e;
+  while(st.length){const[a,b]=st.pop();let md=0,mi=-1;const[ax,ay]=P[a],dx=P[b][0]-ax,dy=P[b][1]-ay,L=dx*dx+dy*dy;
+    for(let i=a+1;i<b;i++){let d;if(!L)d=(P[i][0]-ax)**2+(P[i][1]-ay)**2;else{let t=((P[i][0]-ax)*dx+(P[i][1]-ay)*dy)/L;t=t<0?0:t>1?1:t;d=(P[i][0]-ax-t*dx)**2+(P[i][1]-ay-t*dy)**2}if(d>md){md=d;mi=i}}
+    if(md>e2&&mi>0){keep[mi]=1;st.push([a,mi],[mi,b])}}
+  return P.filter((_,i)=>keep[i])}
 function erase(i,q){const a=anns[i]||[],n=a.filter(o=>o.t=="img"||!hit(o,q[0],q[1],8+W));if(n.length!=a.length){anns[i]=n;draw(i)}}
 function textBox(p,i,q,note){
   const t=document.createElement("textarea"),s=W*3+10;t.style.left=q[0]*zoom+"px";t.style.top=q[1]*zoom+"px";t.style.fontSize=s*zoom+"px";t.style.color=dc(color);
@@ -841,7 +900,32 @@ function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;const[i,s
 $("#un").onclick=()=>undo(0);$("#re").onclick=()=>undo(1);
 function setZoom(z){zoom=Math.max(.5,Math.min(3,z));$$(".pg").forEach(p=>{const i=+p.dataset.i;sz(p,i);free(i);if(vis.has(i))render(i)})}
 $("#zi").onclick=()=>setZoom(zoom+.2);$("#zo").onclick=()=>setZoom(zoom-.2);
-$("#po").onclick=e=>{penOnly=!penOnly;e.target.classList.toggle("on",penOnly);$$(".pg canvas:last-child").forEach(c=>c.style.touchAction=penOnly?"pan-y pinch-zoom":"none")};
+
+/* ===== 2-finger pinch zoom (works while scrolling AND while writing) ===== */
+const tp=new Set();let pz=null;const docEl=$("#doc");
+document.addEventListener("pointerdown",e=>{if(e.pointerType=="touch")tp.add(e.pointerId)},{capture:true,passive:true});
+["pointerup","pointercancel"].forEach(ev=>document.addEventListener(ev,e=>{if(e.pointerType=="touch")tp.delete(e.pointerId)},{capture:true,passive:true}));
+const tdist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY),tmid=t=>[(t[0].clientX+t[1].clientX)/2,(t[0].clientY+t[1].clientY)/2];
+docEl.addEventListener("touchstart",e=>{
+  if(!pdf||inPres())return;
+  if(e.touches.length==2&&!pz){const m=tmid(e.touches),r=docEl.getBoundingClientRect();let best=null,bd=1e9;
+    $$(".pg").forEach(p=>{const b=p.getBoundingClientRect(),d=m[1]<b.top?b.top-m[1]:m[1]>b.bottom?m[1]-b.bottom:0;if(d<bd){bd=d;best=p}});
+    if(!best)return;const b=best.getBoundingClientRect();
+    pz={d:tdist(e.touches)||1,z0:zoom,z:zoom,sx:m[0],sy:m[1],mx:m[0],my:m[1],i:best.dataset.i,fx:(m[0]-b.left)/b.width,fy:(m[1]-b.top)/b.height};
+    docEl.style.transformOrigin=(m[0]-r.left)+"px "+(m[1]-r.top)+"px";docEl.style.willChange="transform"}
+  if(pz&&e.cancelable)e.preventDefault()},{passive:false});
+docEl.addEventListener("touchmove",e=>{
+  if(!pz||e.touches.length<2)return;if(e.cancelable)e.preventDefault();
+  const m=tmid(e.touches),z=Math.max(.5,Math.min(3,pz.z0*tdist(e.touches)/pz.d));pz.z=z;pz.mx=m[0];pz.my=m[1];
+  docEl.style.transform=`translate(${m[0]-pz.sx}px,${m[1]-pz.sy}px) scale(${z/pz.z0})`},{passive:false});
+function pzEnd(e){
+  if(!pz||e.touches.length>=2)return;const p=pz;pz=null;
+  docEl.style.transform="";docEl.style.transformOrigin="";docEl.style.willChange="";
+  if(Math.abs(p.z-p.z0)<.01)return;
+  setZoom(p.z);const pg=$(`.pg[data-i="${p.i}"]`);
+  if(pg){const r=pg.getBoundingClientRect();docEl.scrollLeft+=r.left+p.fx*r.width-p.mx;window.scrollBy(0,r.top+p.fy*r.height-p.my)}}
+docEl.addEventListener("touchend",pzEnd,{passive:true});docEl.addEventListener("touchcancel",pzEnd,{passive:true});
+$("#po").onclick=e=>{penOnly=!penOnly;e.target.classList.toggle("on",penOnly);$$(".pg canvas:last-child").forEach(c=>c.style.touchAction=penOnly?"pan-x pan-y":"none")};
 let sct;addEventListener("scroll",()=>{clearTimeout(sct);sct=setTimeout(()=>{if(!pdf)return;for(const p of $$(".pg"))if(p.getBoundingClientRect().bottom>80){curPage=+p.dataset.i;persist();break}},500)},{passive:true});
 addEventListener("visibilitychange",()=>{if(document.hidden)persist()});addEventListener("pagehide",persist);
 
@@ -876,37 +960,77 @@ async function mk(doc,o,H){
 }
 $("#saveb").onclick=async()=>{
   if(!file)return;
-  if(file.size>60e6&&!confirm("बड़ी फ़ाइल है। एक्सपोर्ट करें?"))return;
-  st("⏳ एक्सपोर्ट…");
+  if(file.size>60e6&&!confirm("This is a large file. Export anyway?"))return;
+  st("⏳ Exporting…");
   try{
     let doc=await PL.PDFDocument.load(new Uint8Array(await file.arrayBuffer()));
     if(ord.some((v,i)=>v!=i)){const o2=await PL.PDFDocument.create();(await o2.copyPages(doc,ord)).forEach(p=>o2.addPage(p));doc=o2}
     const pgs=doc.getPages();
     for(const i in anns){const pg=pgs[i];if(!pg)continue;for(const o of anns[i])pg.node.addAnnot(await mk(doc,o,pg.getHeight()))}
     const a=document.createElement("a"),u=URL.createObjectURL(new Blob([await doc.save()],{type:"application/pdf"}));
-    a.href=u;a.download=name.replace(/\.pdf$/i,"")+"-annotated.pdf";a.click();setTimeout(()=>URL.revokeObjectURL(u),6e4);st("⬇️ एक्सपोर्ट हो गया");
-  }catch(e){st("❌ एक्सपोर्ट नहीं हुआ")}
+    a.href=u;a.download=name.replace(/\.pdf$/i,"")+"-annotated.pdf";a.click();setTimeout(()=>URL.revokeObjectURL(u),6e4);st("⬇️ Exported");
+  }catch(e){st("❌ Export failed")}
 };
 
 /* ===== SETTINGS MODAL ===== */
 const TG=()=>{try{return JSON.parse(localStorage.getItem("pa_tg"))}catch(e){return null}};
 const sm=$("#sm"),nc=c=>{const m=/^(?:https?:\/\/)?t\.me\/([A-Za-z]\w{3,})\/?$/i.exec(c.trim());return m?"@"+m[1]:c.trim()};
-$("#tg").onclick=()=>{const o=TG()||{};$("#stk").value=o.t||"";$("#stc").value=o.c||"";$("#stk").type="password";$("#stv").textContent="👁 दिखाएँ";$("#sms").textContent=o.t?"✅ सेव है":"";sm.hidden=false};
+const tgStat=()=>{try{return JSON.parse(localStorage.getItem("pa_tgstat"))||{}}catch(e){return{}}};
+const tgNote=(ok,msg)=>{try{const x=tgStat();if(ok){x.ok=Date.now();delete x.err;delete x.et}else{x.err=String(msg||"Unknown error").slice(0,300);x.et=Date.now()}localStorage.setItem("pa_tgstat",JSON.stringify(x))}catch(e){}};
+const tgFailing=()=>{const x=tgStat();return !!(x.err&&(!x.ok||(x.et||0)>=x.ok))};
+const agoT=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
+const tgLine=()=>{const x=tgStat();return tgFailing()?"⚠️ Telegram backup failed — open ⚙️ Settings":x.ok?"✈️ Telegram backup on · last sent "+agoT(x.ok):"✈️ Telegram backup on · waiting for the first backup"};
+const tgMsg=(txt,kind)=>{const m=$("#sms");m.textContent=txt;m.dataset.s=kind||"";if(txt){try{m.scrollIntoView({block:"nearest",behavior:"smooth"})}catch(e){}}};
+const tgValid=(t,c)=>{
+  if(!t&&!c)return"Enter both the bot token and the chat ID.";
+  if(!t)return"The bot token is empty — paste the token you got from @BotFather.";
+  if(!c)return"The chat ID is empty — enter your numeric chat ID (or @channelname).";
+  if(!/^\d{5,}:[A-Za-z0-9_-]{20,}$/.test(t))return"That doesn't look like a bot token. It should look like 123456789:AAH… — copy it again from @BotFather.";
+  if(!/^-?\d+$/.test(c)&&!/^@[A-Za-z]\w{3,}$/.test(c))return"The chat ID should be a number (like 123456789 or -1001234567890) or a channel name like @mychannel.";
+  return""};
+function tgErr(j,status){const d=(j&&j.description)||"",c=(j&&j.error_code)||status||0;
+  if(c==401||/unauthorized/i.test(d))return"Invalid bot token — copy it again from @BotFather.";
+  if(c==404)return"Telegram doesn't recognise this bot token — check for a missing or extra character.";
+  if(c==400&&/chat not found/i.test(d))return"Chat not found — check the chat ID, and open your bot in Telegram and press Start first.";
+  if(c==403)return"The bot isn't allowed to message this chat (blocked, not started, or not added to the group/channel). Open the bot in Telegram and press Start.";
+  if(c==413)return"The backup file is too large for Telegram (50 MB limit).";
+  if(c==429)return"Telegram is rate-limiting requests — wait "+((j&&j.parameters&&j.parameters.retry_after)||"a few")+" seconds and try again.";
+  return"Telegram error"+(c?" ("+c+")":"")+(d?": "+d:"")}
+async function tgCall(token,method,body,ms){
+  const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),ms||20000);let r,j=null;
+  try{r=await fetch(`https://api.telegram.org/bot${token}/${method}`,{method:"POST",body,signal:ac.signal})}
+  catch(e){clearTimeout(tm);throw new Error(e&&e.name=="AbortError"?"Telegram didn't respond in time. Check your internet connection (or VPN) and try again.":navigator.onLine===false?"You're offline — connect to the internet and try again.":"Couldn't reach Telegram. Check your internet connection (or VPN / ad-blocker) and try again.")}
+  try{j=await r.json()}catch(e){}finally{clearTimeout(tm)}
+  if(!j||!j.ok){const e=new Error(tgErr(j,r.status));e.api=1;e.desc=(j&&j.description)||"";throw e}
+  return j.result}
+$("#tg").onclick=()=>{const o=TG()||{},x=tgStat();$("#stk").value=o.t||"";$("#stc").value=o.c||"";$("#stk").type="password";$("#stv").textContent="👁 Show token";
+  if(!o.t)tgMsg("Telegram backup isn't set up yet. Enter your bot token and chat ID, tap “Send test”, then Save.","");
+  else if(tgFailing())tgMsg("⚠️ The last backup attempt failed: "+x.err,"err");
+  else tgMsg("✅ Telegram backup is set up."+(x.ok?" Last backup sent "+agoT(x.ok)+".":" Waiting for the first backup."),"ok");
+  sm.hidden=false};
 $("#smx").onclick=()=>sm.hidden=true;sm.onclick=e=>{if(e.target===sm)sm.hidden=true};
-$("#stv").onclick=()=>{const h=$("#stk").type=="password";$("#stk").type=h?"text":"password";$("#stv").textContent=h?"🙈 छिपाएँ":"👁 दिखाएँ"};
-$("#stt").onclick=async()=>{const t=$("#stk").value.trim(),c=nc($("#stc").value),m=$("#sms");$("#stc").value=c;if(!t||!c){m.textContent="दोनों भरिए";return}
-  m.textContent="⏳ जाँच…";
-  try{const j=await(await fetch(`https://api.telegram.org/bot${t}/sendMessage`,{method:"POST",body:new URLSearchParams({chat_id:c,text:"✅ PDF एनोटेटर जुड़ गया"})})).json();
-    m.textContent=j.ok?"✅ भेज दिया":"❌ "+(j.description||"गड़बड़")}
-  catch(e){m.textContent="❌ इंटरनेट की दिक्कत"}};
-$("#stsave").onclick=()=>{const t=$("#stk").value.trim(),c=nc($("#stc").value);
-  try{if(!t&&!c)localStorage.removeItem("pa_tg");else if(!t||!c){$("#sms").textContent="दोनों भरिए";return}else localStorage.setItem("pa_tg",JSON.stringify({t,c}))}
-  catch(e){$("#sms").textContent="❌ सेव नहीं हुआ";return}
-  sm.hidden=true;showLib();if(t&&c)flush(0)};
-$("#strm").onclick=()=>{try{localStorage.removeItem("pa_tg")}catch(e){}$("#stk").value=$("#stc").value="";$("#sms").textContent="🗑 हटा दिया";showLib()};
+$("#stv").onclick=()=>{const h=$("#stk").type=="password";$("#stk").type=h?"text":"password";$("#stv").textContent=h?"🙈 Hide token":"👁 Show token"};
+$("#stt").onclick=async()=>{
+  const b=$("#stt"),t=$("#stk").value.trim(),c=nc($("#stc").value);$("#stc").value=c;
+  const bad=tgValid(t,c);if(bad){tgMsg("❌ "+bad,"err");return}
+  const lab=b.textContent;b.disabled=true;b.textContent="⏳ Testing…";tgMsg("⏳ Step 1 of 2: checking the bot token…","");
+  try{
+    const me=await tgCall(t,"getMe",new URLSearchParams(),20000);
+    tgMsg("⏳ Step 2 of 2: sending a test message from @"+me.username+"…","");
+    await tgCall(t,"sendMessage",new URLSearchParams({chat_id:c,text:"✅ Vpdf is connected. Your backups will arrive in this chat."}),20000);
+    tgMsg("✅ Success! A test message was sent from @"+me.username+". Check Telegram, then tap Save.","ok");st("✅ Telegram test message sent")}
+  catch(err){const m="❌ "+((err&&err.message)||String(err));tgMsg(m,"err");st(m)}
+  finally{b.disabled=false;b.textContent=lab}};
+$("#stsave").onclick=()=>{const t=$("#stk").value.trim(),c=nc($("#stc").value);$("#stc").value=c;
+  if(!t&&!c){try{localStorage.removeItem("pa_tg");localStorage.removeItem("pa_tgstat")}catch(e){}sm.hidden=true;showLib();return}
+  const bad=tgValid(t,c);if(bad){tgMsg("❌ "+bad,"err");return}
+  try{localStorage.setItem("pa_tg",JSON.stringify({t,c}));localStorage.removeItem("pa_tgstat")}
+  catch(e){tgMsg("❌ Couldn't save — browser storage is unavailable or full.","err");return}
+  sm.hidden=true;showLib();flush(1)};
+$("#strm").onclick=()=>{try{localStorage.removeItem("pa_tg");localStorage.removeItem("pa_tgstat")}catch(e){}$("#stk").value=$("#stc").value="";tgMsg("🗑 Telegram settings removed. Backups will NOT be sent until you set it up again.","");showLib()};
 
 /* ===== IMAGE INSERT ===== */
-$("#imb").onclick=()=>{if(!pdf){st("पहले PDF खोलिए");return}$("#fm").click()};
+$("#imb").onclick=()=>{if(!pdf){st("Open a PDF first");return}$("#fm").click()};
 $("#fm").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f||!pdf)return;
   try{const bm=await createImageBitmap(f),sc=Math.min(1,1000/Math.max(bm.width,bm.height)),iw=Math.round(bm.width*sc),ih=Math.round(bm.height*sc),cv=document.createElement("canvas");cv.width=iw;cv.height=ih;
     const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,iw,ih);x.drawImage(bm,0,0,iw,ih);if(bm.close)bm.close();
@@ -914,13 +1038,13 @@ $("#fm").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f||!
     const id="im"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await iPut(id,await b.arrayBuffer());
     const i=curPage,sp=sizes[i]||sizes[0],w=sp.w*.4;snap(i);(anns[i]=anns[i]||[]).push({t:"img",id,x:sp.w*.3,y:sp.h*.3,w,h:w*ih/iw,c:"#000000"});
     $('[data-t="sel"]').click();draw(i);change()}
-  catch(err){st("❌ इमेज नहीं जुड़ी")}};
+  catch(err){st("❌ Couldn't add the image")}};
 
 /* ===== FILE OPEN ===== */
 $("#open").onclick=()=>{want=null;$("#fi").click()};
 $("#fi").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;const w=want;want=null;let wid=null;
-  try{if(w){const fp=await fpOf(f),r=await dbGet(w);if(r&&(r.fp?r.fp==fp:w==f.name+"|"+f.size))wid=w;else if(!confirm("यह वही PDF नहीं लगती, नई नोटबुक बनेगी। फिर भी खोलें?"))return}}catch(x){}
-  openFile(f,wid).catch(()=>st("❌ PDF नहीं खुली"))};
+  try{if(w){const fp=await fpOf(f),r=await dbGet(w);if(r&&(r.fp?r.fp==fp:w==f.name+"|"+f.size))wid=w;else if(!confirm("This doesn't look like the same PDF — a new notebook will be created. Open anyway?"))return}}catch(x){}
+  openFile(f,wid).catch(()=>st("❌ Couldn't open the PDF"))};
 $("#lib").onclick=()=>{if(location.hash=="#read")history.back();else showLib()};
 addEventListener("hashchange",()=>{if(location.hash!="#read"&&pdf)showLib()});
 
@@ -936,45 +1060,58 @@ async function syncOne(r){
   let add=d.length;for(const id of nw){const x=await iGet(id);add+=x?x.byteLength:0}
   let p=b.parts[b.parts.length-1];
   if(p.bytes&&p.bytes+add>LIM){p.sealed=1;p.dirty=1;p=b.parts[b.parts.length]={n:p.n+1,es:[],ids:[],bytes:0,dirty:0}}
+  if(p.es.length){let rm=0;p.es=p.es.filter(e=>{try{const o=JSON.parse(e.d);let hit=0;for(const k of Object.keys(ch))if(o.pages&&k in o.pages){delete o.pages[k];hit=1}
+    if(!hit)return true;if(!Object.keys(o.pages).length){rm+=e.d.length;return false}const nd=JSON.stringify(o);rm+=e.d.length-nd.length;e.d=nd;return true}catch(x){return true}});p.bytes=Math.max(0,p.bytes-rm)}  /* newer snapshot replaces older ones of the same page → zip stays small */
   p.es.push({f:stamp(ts)+".json",d});p.ids.push(...nw);b.imgs.push(...nw);p.bytes+=add;p.dirty=1;await bPut(b);
 }
-async function autoSync(){await persist();if(docId)lock(async()=>{const r=await dbGet(docId);if(r)await syncOne(r)})}
+async function autoSync(){await persist();flush(0)}
 addEventListener("visibilitychange",()=>{if(document.hidden)autoSync()});
-async function zipOf(b,p){const z=new JSZip();z.file("info.json",JSON.stringify({app:"pdf-annotator",appVersion:APP_VERSION,schema:SCHEMA,doc:{id:b.id,name:b.name},part:p.n,created:Date.now()}));for(const e of p.es)z.file("entries/"+e.f,e.d,{compression:"DEFLATE"});
+/* app settings (signature, pen presets, colors, theme) travel inside every backup zip — never the Telegram token */
+const SETK=k=>k=="pa_sig"||k=="pa_presets"||k=="pa_cust"||k=="pa_toolorder"||k=="pa_theme"||k=="pa_pinv"||k.startsWith("pa_pen_");
+const appSettings=()=>{const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(SETK(k))o[k]=localStorage.getItem(k)}}catch(e){}return o};
+async function zipOf(b,p){const z=new JSZip();z.file("info.json",JSON.stringify({app:"pdf-annotator",appVersion:APP_VERSION,schema:SCHEMA,doc:{id:b.id,name:b.name},part:p.n,created:Date.now()}));z.file("app-settings.json",JSON.stringify(appSettings()));for(const e of p.es)z.file("entries/"+e.f,e.d,{compression:"DEFLATE",compressionOptions:{level:9}});
   for(const id of p.ids){const x=await iGet(id);if(x)z.file("img/"+id+".jpg",x)}
   return new File([await z.generateAsync({type:"blob",compression:"STORE"})],`${bn(b.name)}-${sid(b.id)}-part${p.n}.zip`,{type:"application/zip"})}
-const capOf=(b,p,f)=>`#annotations_backup #${bn(b.name)} #id_${sid(b.id)} · ${b.name.replace(/\.pdf$/i,"").slice(0,60)} Part ${p.n} ${p.sealed?"(पूरा)":"(चालू)"} · ${p.es.length} एंट्री · ${(f.size/1e6).toFixed(1)} MB · ${new Date().toLocaleString("en-GB")}`;
+const capOf=(b,p,f)=>`#annotations_backup #${bn(b.name)} #id_${sid(b.id)} · ${b.name.replace(/\.pdf$/i,"").slice(0,60)} Part ${p.n} ${p.sealed?"(complete)":"(active)"} · ${p.es.length} entries · ${(f.size/1e6).toFixed(1)} MB · ${new Date().toLocaleString("en-GB")}`;
+const UPMS=3e5;
 async function tgSend(tg,f,c,mid){
-  const call=async(m,fd)=>(await fetch(`https://api.telegram.org/bot${tg.t}/${m}`,{method:"POST",body:fd})).json();
   if(mid){const fd=new FormData();fd.append("chat_id",tg.c);fd.append("message_id",mid);fd.append("media",JSON.stringify({type:"document",media:"attach://f",caption:c}));fd.append("f",f);
-    const j=await call("editMessageMedia",fd);if(j.ok)return mid}
+    try{await tgCall(tg.t,"editMessageMedia",fd,UPMS);return mid}
+    catch(e){if(!e.api)throw e;if(/not modified/i.test(e.desc))return mid}}   /* message deleted / not editable → send a new one */
   const g=new FormData();g.append("chat_id",tg.c);g.append("caption",c);g.append("document",f);
-  const j=await call("sendDocument",g);if(!j.ok)throw new Error(j.description||"Telegram");return j.result.message_id}
+  return(await tgCall(tg.t,"sendDocument",g,UPMS)).message_id}
 const done=(p)=>{p.dirty=0;p.sent=Date.now();if(p.sealed){p.es=[];p.ids=[]}};
 function flush(manual){return lock(async()=>{
   try{
     if(pdf&&docId)await persist();
     for(const r of (await dbAll())||[])await syncOne(r);
-    const tg=TG(),out=[];let n=0;if(!tg&&!manual)return;
-    for(const b of (await bAll())||[])for(const p of b.parts){if(!p.dirty)continue;if(manual)st(`⏳ ${b.name} पार्ट ${p.n}…`);
+    const tg=TG(),out=[];let n=0;
+    if(!tg){if(!manual)return;
+      if(confirm("Telegram backup isn't set up yet.\n\nOK = set up Telegram now (recommended)\nCancel = just save a backup file on this device")){$("#tg").click();return}}
+    if(tg&&!manual&&navigator.onLine===false)return;   /* offline: retried automatically later */
+    for(const b of (await bAll())||[])for(const p of b.parts){if(!p.dirty)continue;if(manual)st(`⏳ Sending ${b.name} (part ${p.n}) to Telegram…`);
       const f=await zipOf(b,p);
       if(tg){p.mid=await tgSend(tg,f,capOf(b,p,f),p.mid);done(p);await bPut(b);n++}else out.push([b,p,f])}
     if(out.length){const fs=out.map(x=>x[2]);
-      try{if(navigator.canShare&&navigator.canShare({files:fs}))await navigator.share({files:fs,title:"PDF एनोटेशन बैकअप",text:"#annotations_backup"});else throw 0}
-      catch(e){if(e&&e.name=="AbortError"){st("बैकअप रद्द");return}for(const f of fs){const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=f.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),6e4)}}
+      try{if(navigator.canShare&&navigator.canShare({files:fs}))await navigator.share({files:fs,title:"PDF annotation backup",text:"#annotations_backup"});else throw 0}
+      catch(e){if(e&&e.name=="AbortError"){st("Backup cancelled");return}for(const f of fs){const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=f.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),6e4)}}
       for(const[b,p]of out){done(p);await bPut(b)}n=out.length}
-    if(n){try{localStorage.setItem("pa_lastbackup",Date.now())}catch(e){}$("#bn").hidden=true;if(!pdf)await showLib();st(tg?`✈️ ${n} ज़िप`:"🛟 बैकअप हो गया")}
-    else if(manual)st("🛟 कुछ नया नहीं")
-  }catch(e){if(manual||TG())st("❌ बैकअप नहीं: "+(e.message||e))}
+    if(n){try{localStorage.setItem("pa_lastbackup",Date.now())}catch(e){}$("#bn").hidden=true;if(tg)tgNote(1);if(!pdf)await showLib();st(tg?`✈️ ${n} backup file(s) sent to Telegram`:"🛟 Backup saved on this device")}
+    else if(manual)st(tg?"✈️ Telegram backup is up to date — nothing new to send":"🛟 Nothing new to back up")
+  }catch(e){const msg=(e&&e.message)||String(e);
+    if(TG()){tgNote(0,msg);if(!pdf){showLib();checkBackup()}st("❌ Telegram backup failed: "+msg)}else if(manual)st("❌ Backup failed: "+msg);
+    if(manual)alert("❌ Backup failed\n\n"+msg+"\n\nYour notes are still safe on this device, and the app will retry automatically.")}
 })}
+addEventListener("online",()=>flush(0));
 $("#bk").onclick=()=>flush(1);
 $("#rs").onclick=()=>$("#fj").click();
 const putDoc=async r=>{const x=await dbGet(r.id);if(!x||(x.t||0)<(r.t||0)){await dbPut(r);return 1}return 0};
-$("#fj").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(!fl.length)return;let n=0,mx=0;const E=[],ds=new Set();
+$("#fj").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(!fl.length)return;let n=0,mx=0,ns=0;const E=[],ds=new Set();
   try{for(const f of fl){const m=/-part(\d+)/i.exec(f.name);if(m)mx=Math.max(mx,+m[1]);
       if(/\.zip$/i.test(f.name)){const z=await JSZip.loadAsync(f);for(const p in z.files){const y=z.files[p];if(y.dir)continue;
         if(p.startsWith("img/"))await iPut(p.slice(4).replace(/\.jpg$/,""),await y.async("arraybuffer"));
         else if(p.startsWith("entries/"))E.push(JSON.parse(await y.async("string")));
+        else if(p=="app-settings.json"){try{const o=JSON.parse(await y.async("string"));for(const k in o)if(SETK(k)&&localStorage.getItem(k)==null){localStorage.setItem(k,o[k]);ns++}}catch(x){}}
         else if(p=="meta.json")n+=await putDoc(JSON.parse(await y.async("string")))}}
       else{const j=JSON.parse(await f.text());for(const r of j.docs||[])n+=await putDoc(r)}}
     E.sort((a,b)=>a.ts-b.ts);
@@ -982,8 +1119,8 @@ $("#fj").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(!f
       for(const i in en.pages)x.anns[i]=en.pages[i];Object.assign(x,{name:en.doc.name,np:en.doc.np,page:en.doc.page,t:en.ts,n:cnt(x.anns)},en.doc.fp?{fp:en.doc.fp,pfp:en.doc.pfp||""}:{},en.doc.ord&&en.doc.ord.length==en.doc.np?{ord:en.doc.ord,bm:en.doc.bm||[],tpl:en.doc.tpl||{}}:{});await dbPut(x);ds.add(x.id)}
     for(const id of ds){if(await bGet(id))continue;const x=await dbGet(id),last={};for(const i in x.anns)last[i]=JSON.stringify(x.anns[i]);
       await bPut({id,name:x.name,last,imgs:imgIds(x.anns),parts:[{n:mx+1,es:[],ids:[],bytes:0,dirty:0}]})}
-    await showLib();st(`♻️ ${ds.size+n} PDF लौटे`)}
-  catch(err){st("❌ बैकअप फ़ाइल सही नहीं")}};
+    await showLib();st(`♻️ ${ds.size+n} PDF(s) restored`+(ns?" · settings restored — reload the app to apply them":""))}
+  catch(err){st("❌ Invalid backup file — select the .zip files downloaded from Telegram")}};
 
 /* ===== KEYBOARD ===== */
 addEventListener("keydown",e=>{if(e.key=="Escape"){sm.hidden=true;closeAllPanels()}
@@ -991,11 +1128,11 @@ addEventListener("keydown",e=>{if(e.key=="Escape"){sm.hidden=true;closeAllPanels
   const k=e.key.toLowerCase();if((e.ctrlKey||e.metaKey)&&k=="z"){e.preventDefault();undo(e.shiftKey?1:0)}else if((e.ctrlKey||e.metaKey)&&k=="y"){e.preventDefault();undo(1)}});
 
 /* ===== BACKUP BANNER ===== */
-const LIM=45e6,INACT=3e5,EVERY=36e5;
+const LIM=45e6,INACT=12e4,EVERY=9e5;   /* Telegram: send 2 min after the last edit, when leaving the app, when back online, and every 15 min */
 let busy=Promise.resolve();const lock=f=>busy=busy.catch(()=>{}).then(f);
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
-async function checkBackup(){if(TG())return;const docs=(await dbAll())||[];if(!docs.some(r=>r.n>0))return;const last=+localStorage.getItem("pa_lastbackup")||0;if(Date.now()-last>864e5)$("#bn").hidden=false}
-$("#bnb").onclick=()=>$("#bk").click();$("#bnx").onclick=()=>$("#bn").hidden=true;
+async function checkBackup(){const t=TG(),bad=t&&tgFailing();if(t&&!bad)return;const docs=(await dbAll())||[];if(!docs.some(r=>r.n>0))return;$("#bnt").textContent=bad?"⚠️ Telegram backup is failing: "+tgStat().err:"✈️ Telegram backup isn't set up — your notes exist only on this device";$("#bnb").textContent=bad?"Fix":"Set up";$("#bn").hidden=false}
+$("#bnb").onclick=()=>{$("#bn").hidden=true;$("#tg").click()};$("#bnx").onclick=()=>$("#bn").hidden=true;
 
 
 /* ===== PRO FEATURES JS ===== */
@@ -1004,11 +1141,11 @@ document.body.insertAdjacentHTML("beforeend",`
 <div id="st-panel" class="fpanel" hidden style="top:62px;left:50%;transform:translateX(-50%)"><div class="fpanel-title">Stamps</div>
 <div class="stg" id="stg"></div><div class="slider-row"><input type="range" id="sts" min="20" max="90" value="40"><span class="slider-val" id="stsv">40</span></div></div>
 <div id="tpl-panel" class="fpanel" hidden style="top:62px;left:50%;transform:translateX(-50%)"><div class="fpanel-title">Page Template</div>
-<div style="display:flex;gap:6px;flex-wrap:wrap" id="tplb"></div><label style="font-size:14px"><input type="checkbox" id="tpla"> सभी पेज पर लगाएँ</label></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap" id="tplb"></div><label style="font-size:14px"><input type="checkbox" id="tpla"> Apply to all pages</label></div>
 <div id="lbar" hidden><button class="pb" id="lbd">🗑 Delete</button><button class="pb" id="lbc">⧉ Copy</button><button class="pb" id="lbx">✕</button></div>
-<div id="zwb" hidden><canvas id="zwc"></canvas><div class="zr"><button class="pb" data-z="l">◀</button><button class="pb" data-z="r">▶</button><button class="pb" data-z="u">▲</button><button class="pb" data-z="d">▼</button><button class="pb" data-z="n">↵ अगली लाइन</button><button class="pb" data-z="x">✕</button></div></div>
-<div id="sb" hidden><div class="sbh"><button data-sb="pg" class="on">पेज</button><button data-sb="bm">🔖</button><button data-sb="se">🔎</button><button id="sbx">✕</button></div><div id="sbc"></div></div>
-<div id="laser"></div><button class="pb" id="pex">✕ बाहर</button>`);
+<div id="zwb" hidden><canvas id="zwc"></canvas><div class="zr"><button class="pb" data-z="l">◀</button><button class="pb" data-z="r">▶</button><button class="pb" data-z="u">▲</button><button class="pb" data-z="d">▼</button><button class="pb" data-z="n">↵ Next line</button><button class="pb" data-z="x">✕</button></div></div>
+<div id="sb" hidden><div class="sbh"><button data-sb="pg" class="on">Pages</button><button data-sb="bm">🔖</button><button data-sb="se">🔎</button><button id="sbx">✕</button></div><div id="sbc"></div></div>
+<div id="laser"></div><button class="pb" id="pex">✕ Exit</button>`);
 
 /* smoothing */
 function smoothPath(c,p){c.moveTo(p[0][0],p[0][1]);if(p.length<3){p.forEach(q=>c.lineTo(q[0],q[1]));return}
@@ -1019,8 +1156,8 @@ function smoothPath(c,p){c.moveTo(p[0][0],p[0][1]);if(p.length<3){p.forEach(q=>c
 document.addEventListener("pointermove",e=>{if(e.pointerType=="pen")lastPen=Date.now()},{capture:true,passive:true});
 document.addEventListener("pointerdown",e=>{if(e.pointerType=="pen")lastPen=Date.now()},{capture:true,passive:true});
 const palmBlock=e=>palm&&e.pointerType=="touch"&&(Date.now()-lastPen<1200||Math.max(e.width||0,e.height||0)>35);
-$("#palm").onclick=e=>{palm=!palm;e.currentTarget.classList.toggle("on",palm);st(palm?"🖐 पाम रिजेक्शन चालू":"🖐 पाम रिजेक्शन बंद")};
-$("#shp").onclick=e=>{shapeOn=!shapeOn;e.currentTarget.classList.toggle("on",shapeOn);st(shapeOn?"◇ लिखकर आख़िर में रुकें → शेप सीधा":"◇ शेप रिकग्निशन बंद")};
+$("#palm").onclick=e=>{palm=!palm;e.currentTarget.classList.toggle("on",palm);st(palm?"🖐 Palm rejection on":"🖐 Palm rejection off")};
+$("#shp").onclick=e=>{shapeOn=!shapeOn;e.currentTarget.classList.toggle("on",shapeOn);st(shapeOn?"◇ Pause at the end of a stroke → shape snaps straight":"◇ Shape recognition off")};
 
 /* shape recognition (hold at end of stroke) */
 function recog(o){const P=o.p;if(P.length<8)return;
@@ -1078,7 +1215,7 @@ $("#sts").oninput=e=>{stampS=+e.target.value;$("#stsv").textContent=stampS};
 /* templates */
 [["","📄 PDF"],["blank","▢ Blank"],["lined","☰ Lined"],["dotted","⋯ Dotted"],["graph","▦ Graph"]].forEach(([t,l])=>{const b=document.createElement("button");b.className="pb";b.textContent=l;
   b.onclick=()=>{if(!pdf)return;const set=i=>{if(t)tpl[i]=t;else delete tpl[i]};if($("#tpla").checked)ord.forEach((_,i)=>set(i));else set(curPage);redrawAll();change()};$("#tplb").append(b)});
-$("#tpl").onclick=e=>{e.stopPropagation();if(!pdf){st("पहले PDF खोलिए");return}openPanel("tpl-panel")};
+$("#tpl").onclick=e=>{e.stopPropagation();if(!pdf){st("Open a PDF first");return}openPanel("tpl-panel",e.currentTarget)};
 
 /* custom palette */
 const cust=(()=>{try{return JSON.parse(localStorage.getItem("pa_cust"))||[]}catch(e){return[]}})();
@@ -1093,7 +1230,7 @@ $('[data-ptab="color"]').onclick=()=>$("#cc").click();
 /* page nav, bookmarks, reorder */
 const inPres=()=>document.body.classList.contains("pres");
 function goPage(i){curPage=i;const p=$(`.pg[data-i="${i}"]`);if(p)p.scrollIntoView(inPres()?{block:"center"}:{behavior:"smooth"})}
-$("#bkm").onclick=()=>{if(!pdf)return;bm.has(curPage)?bm.delete(curPage):bm.add(curPage);$("#bkm").classList.toggle("on",bm.has(curPage));st(bm.has(curPage)?"🔖 पेज "+(curPage+1)+" बुकमार्क":"बुकमार्क हटा");change();renderSb()};
+$("#bkm").onclick=()=>{if(!pdf)return;bm.has(curPage)?bm.delete(curPage):bm.add(curPage);$("#bkm").classList.toggle("on",bm.has(curPage));st(bm.has(curPage)?"🔖 Page "+(curPage+1)+" bookmarked":"Bookmark removed");change();renderSb()};
 let bt;addEventListener("scroll",()=>{clearTimeout(bt);bt=setTimeout(()=>$("#bkm").classList.toggle("on",bm.has(curPage)),650)},{passive:true});
 function movePage(f,t){const n=ord.length;if(f==t||t<0||t>=n)return;
   const map=i=>i==f?t:(f<t&&i>f&&i<=t)?i-1:(f>t&&i>=t&&i<f)?i+1:i,o2=ord.slice(),[x]=o2.splice(f,1);o2.splice(t,0,x);ord=o2;
@@ -1115,14 +1252,14 @@ function renderSb(){if(!pdf||SB.hidden)return;const c=$("#sbc");c.innerHTML="";c
       d.ondragleave=()=>d.classList.remove("over");d.ondrop=e=>{e.preventDefault();movePage(+e.dataTransfer.getData("text/plain"),i)};g.append(d);
       thQ=thQ.then(async()=>{if(v!=sbv||!pdf)return;const pg=await pdf.getPage(s+1),w=pg.getViewport({scale:1}).width,vv=pg.getViewport({scale:120/w});
         cv.width=vv.width;cv.height=vv.height;await pg.render({canvasContext:cv.getContext("2d"),viewport:vv}).promise;pg.cleanup()}).catch(()=>{})})}
-  else if(sbTab=="bm"){if(!bm.size)c.textContent="कोई बुकमार्क नहीं — 🔖 दबाकर पेज जोड़ें";
-    [...bm].sort((a,b)=>a-b).forEach(i=>{const b=document.createElement("button");b.className="srow";b.textContent="🔖 पेज "+(i+1)+"  (हटाएँ ✕ = लंबा दबाएँ)";
+  else if(sbTab=="bm"){if(!bm.size)c.textContent="No bookmarks — tap 🔖 to add the current page";
+    [...bm].sort((a,b)=>a-b).forEach(i=>{const b=document.createElement("button");b.className="srow";b.textContent="🔖 Page "+(i+1)+"  (long-press to remove ✕)";
       b.onclick=()=>goPage(i);b.oncontextmenu=e=>{e.preventDefault();bm.delete(i);change();renderSb()};c.append(b)})}
-  else{c.innerHTML='<input id="sq" placeholder="PDF में खोजें…"><div id="sr"></div>';const q=$("#sq");q.value=lastQ;
+  else{c.innerHTML='<input id="sq" placeholder="Search in PDF…"><div id="sr"></div>';const q=$("#sq");q.value=lastQ;
     q.onkeydown=e=>{if(e.key=="Enter")doSearch(q.value)};if(lastRes)showRes(lastRes)}}
 const pgText=async s=>{if(TXT[s])return TXT[s];const pg=await pdf.getPage(s+1),tc=await pg.getTextContent(),v=pg.getViewport({scale:1});pg.cleanup();return TXT[s]={items:tc.items,v}};
-function showRes(h){const r=$("#sr");if(!r)return;r.innerHTML="";if(!h.length){r.textContent="कुछ नहीं मिला (स्कैन की हुई PDF में टेक्स्ट सर्च नहीं होता)";return}
-  h.forEach(x=>{const b=document.createElement("button");b.className="srow";b.textContent=`पेज ${x.i+1}: …${x.snip}…`;b.onclick=()=>goPage(x.i);r.append(b)})}
+function showRes(h){const r=$("#sr");if(!r)return;r.innerHTML="";if(!h.length){r.textContent="No results (text search doesn't work on scanned PDFs)";return}
+  h.forEach(x=>{const b=document.createElement("button");b.className="srow";b.textContent=`Page ${x.i+1}: …${x.snip}…`;b.onclick=()=>goPage(x.i);r.append(b)})}
 async function doSearch(qs){const q=qs.trim().toLowerCase();lastQ=qs;SR={};const hits=[],r=$("#sr");if(!q){redrawAll();return}
   const cp=pdf;for(let i=0;i<ord.length&&hits.length<300;i++){if(pdf!==cp)return;if(r)r.textContent=`⏳ ${i+1}/${ord.length}`;
     const{items,v}=await pgText(ord[i]),rects=[];
@@ -1134,7 +1271,7 @@ async function doSearch(qs){const q=qs.trim().toLowerCase();lastQ=qs;SR={};const
 
 /* zoom window */
 let zwOn=false,zr={i:0,x:0,y:0,w:100,h:50},zcur=null;const zwc=$("#zwc");
-function zwOpen(){if(!pdf){st("पहले PDF खोलिए");return}zwOn=true;$("#zwb").hidden=false;const bw=Math.min(innerWidth*.94,720),bh=150;
+function zwOpen(){if(!pdf){st("Open a PDF first");return}zwOn=true;$("#zwb").hidden=false;const bw=Math.min(innerWidth*.94,720),bh=150;
   zwc.width=bw*DPR;zwc.height=bh*DPR;zwc.style.width=bw+"px";zwc.style.height=bh+"px";zr.i=curPage;zr.w=bw/(zoom*3);zr.h=bh/(zoom*3);
   const s=sizes[zr.i]||sizes[0],p=$(`.pg[data-i="${zr.i}"]`),t=p?p.getBoundingClientRect().top:0;zr.x=s.w*.05;zr.y=Math.max(0,Math.min(s.h-zr.h,(innerHeight*.4-t)/zoom));zwDraw()}
 function zwClose(){zwOn=false;$("#zwb").hidden=true;zcur=null}
@@ -1172,17 +1309,17 @@ let penType="ball",fitMode=0;
 $$(".pen-type-btn").forEach(b=>b.onclick=()=>{penType=b.dataset.pt;$$(".pen-type-btn").forEach(x=>x.classList.toggle("on",x===b))});
 /* pen presets */
 let presets=(()=>{try{return JSON.parse(localStorage.getItem("pa_presets"))||[]}catch(e){return[]}})();
-{const pr=document.createElement("div");pr.innerHTML='<div class="fpanel-section-label" style="margin-bottom:8px">Presets <span style="text-transform:none;font-weight:400">(टैप: लगाएँ · दबाए रखें: हटाएँ)</span></div><div id="prs" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></div>';$("#pen-panel").append(pr)}
+{const pr=document.createElement("div");pr.innerHTML='<div class="fpanel-section-label" style="margin-bottom:8px">Presets <span style="text-transform:none;font-weight:400">(tap: apply · long-press: remove)</span></div><div id="prs" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></div>';$("#pen-panel").append(pr)}
 const savePre=()=>{try{localStorage.setItem("pa_presets",JSON.stringify(presets))}catch(e){}};
 function rPre(){const c=$("#prs");c.innerHTML="";presets.forEach((p,i)=>{const b=document.createElement("button");b.className="pb";let tm,lp=0;
   b.innerHTML=`<span style="display:inline-block;vertical-align:middle;width:${Math.max(8,Math.min(p.w*2.2,22))}px;height:${Math.max(8,Math.min(p.w*2.2,22))}px;border-radius:50%;background:${p.c}"></span> ${{ball:"🖊",fine:"✒️",brush:"🖌️",pencil:"✏️"}[p.pt]||""}`;
-  b.onpointerdown=()=>{lp=0;tm=setTimeout(()=>{lp=1;if(confirm("यह प्रीसेट हटाएँ?")){presets.splice(i,1);savePre();rPre()}},650)};b.onpointerup=b.onpointerleave=()=>clearTimeout(tm);
+  b.onpointerdown=()=>{lp=0;tm=setTimeout(()=>{lp=1;if(confirm("Delete this preset?")){presets.splice(i,1);savePre();rPre()}},650)};b.onpointerup=b.onpointerleave=()=>clearTimeout(tm);
   b.onclick=e=>{e.stopPropagation();if(lp)return;penType=p.pt;color=p.c;W=p.w;$$(".pen-type-btn").forEach(x=>x.classList.toggle("on",x.dataset.pt==penType));$("#pen-slider").value=W;$("#pen-slider-val").textContent=W+"mm";$("#cc").value=p.c;$$(".sw").forEach(x=>x.classList.toggle("on",x.dataset.c==p.c));drawPenPreview()};c.append(b)});
-  const a=document.createElement("button");a.className="pb on";a.textContent="＋ सेव";a.onclick=e=>{e.stopPropagation();if(presets.length>=8)presets.shift();presets.push({pt:penType,c:color,w:W});savePre();rPre()};c.append(a)}
+  const a=document.createElement("button");a.className="pb on";a.textContent="＋ Save";a.onclick=e=>{e.stopPropagation();if(presets.length>=8)presets.shift();presets.push({pt:penType,c:color,w:W});savePre();rPre()};c.append(a)}
 rPre();
 
 /* page indicator + fit */
-document.body.insertAdjacentHTML("beforeend",`<div id="pgi"><button class="pb" id="pgp">‹</button><input id="pgn" type="number" min="1"><span id="pgt"></span><button class="pb" id="pgx">›</button><button class="pb" id="pgf" title="स्क्रीन में फ़िट">⤢</button></div>`);
+document.body.insertAdjacentHTML("beforeend",`<div id="pgi"><button class="pb" id="pgp">‹</button><input id="pgn" type="number" min="1"><span id="pgt"></span><button class="pb" id="pgx">›</button><button class="pb" id="pgf" title="Fit to screen">⤢</button></div>`);
 function pgUpd(){if(document.activeElement===$("#pgn"))return;$("#pgn").value=curPage+1;$("#pgt").textContent="/ "+ord.length}
 setInterval(pgUpd,800);
 $("#pgn").onchange=e=>{goPage(Math.max(0,Math.min(ord.length-1,(+e.target.value||1)-1)));pgUpd()};
@@ -1190,11 +1327,11 @@ $("#pgp").onclick=()=>{goPage(Math.max(0,curPage-1));pgUpd()};$("#pgx").onclick=
 $("#pgf").onclick=()=>{if(!pdf)return;fitMode^=1;const s=sizes[curPage]||sizes[0];setZoom(fitMode?Math.min((innerWidth-24)/s.w,(innerHeight-130)/s.h):(innerWidth-24)/s.w);setTimeout(()=>goPage(curPage),150)};
 
 /* tools: merge / split / extract / blank / images->pdf / compress / signature */
-document.body.insertAdjacentHTML("beforeend",`<div class="mod" id="tm" hidden><div><h3>🧰 PDF टूल्स</h3>
-<button class="pb" data-tl="merge">🧩 कई PDF जोड़ें (Merge)</button><button class="pb" data-tl="ext">✂️ पेज निकालें / Split</button>
-<button class="pb" data-tl="blank">📄 अभी के पेज के बाद खाली पेज</button><button class="pb" data-tl="img">🖼 इमेज → PDF</button>
-<button class="pb" data-tl="cmp">🗜 PDF Compress</button><button class="pb" data-tl="sig">🖋 नया हस्ताक्षर बनाएँ</button><button class="pb on" id="tmx">बंद करें</button></div></div>
-<div class="mod" id="sg" hidden><div><h3>🖋 हस्ताक्षर करें</h3><canvas id="sgc" width="320" height="140"></canvas><div class="zr"><button class="pb" id="sgcl">साफ़</button><button class="pb on" id="sgs">सेव + लगाएँ</button><button class="pb" id="sgx">रद्द</button></div></div></div>
+document.body.insertAdjacentHTML("beforeend",`<div class="mod" id="tm" hidden><div><h3>🧰 PDF tools</h3>
+<button class="pb" data-tl="merge">🧩 Merge multiple PDFs</button><button class="pb" data-tl="ext">✂️ Extract pages / Split</button>
+<button class="pb" data-tl="blank">📄 Blank page after the current page</button><button class="pb" data-tl="img">🖼 Images → PDF</button>
+<button class="pb" data-tl="cmp">🗜 PDF Compress</button><button class="pb" data-tl="sig">🖋 Create new signature</button><button class="pb on" id="tmx">Close</button></div></div>
+<div class="mod" id="sg" hidden><div><h3>🖋 Sign</h3><canvas id="sgc" width="320" height="140"></canvas><div class="zr"><button class="pb" id="sgcl">Clear</button><button class="pb on" id="sgs">Save + place</button><button class="pb" id="sgx">Cancel</button></div></div></div>
 <input type="file" id="fmg" accept="application/pdf" multiple hidden><input type="file" id="fip" accept="image/*" multiple hidden>`);
 const dl=(b,n)=>{const a=document.createElement("a"),u=URL.createObjectURL(b);a.href=u;a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(u),6e4)};
 const pdfBlob=async d=>new Blob([await d.save()],{type:"application/pdf"});
@@ -1206,28 +1343,28 @@ $("#tools").onclick=$("#tools2").onclick=()=>$("#tm").hidden=false;$("#tmx").onc
 $("#tm").onclick=e=>{if(e.target.id=="tm")$("#tm").hidden=true};
 $$("[data-tl]").forEach(b=>b.onclick=()=>{$("#tm").hidden=true;const k=b.dataset.tl;
   if(k=="merge")$("#fmg").click();else if(k=="img")$("#fip").click();else if(k=="sig"){sg0()}
-  else if(!pdf)st("पहले PDF खोलिए");else if(k=="ext")extractP();else if(k=="blank")blankP();else if(k=="cmp")compressP()});
-$("#fmg").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(fl.length<2){st("कम से कम 2 PDF चुनें");return}st("⏳ मर्ज…");
-  try{const o=await PL.PDFDocument.create();for(const f of fl){const d=await PL.PDFDocument.load(new Uint8Array(await f.arrayBuffer()));(await o.copyPages(d,d.getPageIndices())).forEach(p=>o.addPage(p))}dl(await pdfBlob(o),"merged.pdf");st("✅ मर्ज हो गया")}catch(x){st("❌ मर्ज नहीं हुआ")}};
-async function extractP(){const s=prompt("पेज रेंज (जैसे 1-3,5)।\nअलग-अलग फ़ाइलें चाहिए तो ; से बाँटें (जैसे 1-3;4-6)",`1-${ord.length}`);if(!s)return;st("⏳ …");
-  try{const b=await bake(true),parts=s.split(";").map(x=>parseR(x,ord.length)).filter(x=>x.length);if(!parts.length){st("रेंज सही नहीं");return}const files=[];
+  else if(!pdf)st("Open a PDF first");else if(k=="ext")extractP();else if(k=="blank")blankP();else if(k=="cmp")compressP()});
+$("#fmg").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(fl.length<2){st("Select at least 2 PDFs");return}st("⏳ Merging…");
+  try{const o=await PL.PDFDocument.create();for(const f of fl){const d=await PL.PDFDocument.load(new Uint8Array(await f.arrayBuffer()));(await o.copyPages(d,d.getPageIndices())).forEach(p=>o.addPage(p))}dl(await pdfBlob(o),"merged.pdf");st("✅ Merged")}catch(x){st("❌ Merge failed")}};
+async function extractP(){const s=prompt("Page range (e.g. 1-3,5).\nFor separate files, separate ranges with ; (e.g. 1-3;4-6)",`1-${ord.length}`);if(!s)return;st("⏳ …");
+  try{const b=await bake(true),parts=s.split(";").map(x=>parseR(x,ord.length)).filter(x=>x.length);if(!parts.length){st("Invalid range");return}const files=[];
     for(const[k,ix]of parts.entries()){const o=await PL.PDFDocument.create();(await o.copyPages(b,ix)).forEach(p=>o.addPage(p));files.push([`${bn(name)}-${parts.length>1?"part"+(k+1):"extract"}.pdf`,await o.save()])}
-    if(files.length==1)dl(new Blob([files[0][1]],{type:"application/pdf"}),files[0][0]);else{const z=new JSZip();files.forEach(([n,d])=>z.file(n,d));dl(await z.generateAsync({type:"blob"}),bn(name)+"-split.zip")}st("✅ हो गया")}catch(x){st("❌ नहीं हो पाया")}}
+    if(files.length==1)dl(new Blob([files[0][1]],{type:"application/pdf"}),files[0][0]);else{const z=new JSZip();files.forEach(([n,d])=>z.file(n,d));dl(await z.generateAsync({type:"blob"}),bn(name)+"-split.zip")}st("✅ Done")}catch(x){st("❌ Couldn't complete")}}
 async function blankP(){const at=curPage,old=docId;try{const d=await bake(false),s=sizes[at]||sizes[0];d.insertPage(at+1,[s.w,s.h]);
     const nf=new File([await d.save()],name,{type:"application/pdf"}),sh=i=>i>at?i+1:i,A={},T={};
     Object.keys(anns).forEach(i=>A[sh(+i)]=anns[i]);Object.keys(tpl).forEach(i=>T[sh(+i)]=tpl[i]);const B=[...bm].map(sh);
-    await persist();await dbDel(old);await thDel(old);await openFile(nf);anns=A;tpl=T;bm=new Set(B);curPage=at+1;await persist();redrawAll();goPage(at+1);st("📄 खाली पेज जुड़ा")}catch(x){st("❌ खाली पेज नहीं जुड़ा")}}
-$("#fip").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(!fl.length)return;st("⏳ PDF बन रही…");
+    await persist();await dbDel(old);await thDel(old);await openFile(nf);anns=A;tpl=T;bm=new Set(B);curPage=at+1;await persist();redrawAll();goPage(at+1);st("📄 Blank page added")}catch(x){st("❌ Couldn't add a blank page")}}
+$("#fip").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(!fl.length)return;st("⏳ Creating PDF…");
   try{const o=await PL.PDFDocument.create();for(const f of fl){const b=await createImageBitmap(f),sc=Math.min(1,2000/Math.max(b.width,b.height)),w=Math.round(b.width*sc),h=Math.round(b.height*sc),cv=document.createElement("canvas");cv.width=w;cv.height=h;
       const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(b,0,0,w,h);const j=await new Promise(r=>cv.toBlob(r,"image/jpeg",.85)),im=await o.embedJpg(new Uint8Array(await j.arrayBuffer())),ph=Math.round(595*h/w);
-      o.addPage([595,ph]).drawImage(im,{x:0,y:0,width:595,height:ph});cv.width=cv.height=0}dl(await pdfBlob(o),"images.pdf");st("✅ PDF बन गई")}catch(x){st("❌ नहीं बनी")}};
-async function compressP(){if(!confirm("कम्प्रेस करने पर पेज इमेज बन जाते हैं (टेक्स्ट सर्च/सेलेक्ट नहीं होगा) और एनोटेशन पेज में जुड़ जाते हैं। जारी रखें?"))return;
+      o.addPage([595,ph]).drawImage(im,{x:0,y:0,width:595,height:ph});cv.width=cv.height=0}dl(await pdfBlob(o),"images.pdf");st("✅ PDF created")}catch(x){st("❌ Couldn't create the PDF")}};
+async function compressP(){if(!confirm("Compressing turns pages into images (text search/select will no longer work) and merges annotations into the pages. Continue?"))return;
   try{const o=await PL.PDFDocument.create(),cv=document.createElement("canvas");
     for(let i=0;i<ord.length;i++){st(`⏳ ${i+1}/${ord.length}`);const pg=await pdf.getPage(ord[i]+1),v1=pg.getViewport({scale:1}),k=Math.min(1.4,Math.sqrt(2.5e6/(v1.width*v1.height))),vp=pg.getViewport({scale:k});
       cv.width=vp.width;cv.height=vp.height;const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,cv.width,cv.height);await pg.render({canvasContext:x,viewport:vp}).promise;pg.cleanup();
       (anns[i]||[]).forEach(a=>{if(a.t!="img"||(IM[a.id]&&IM[a.id].naturalWidth))paint(x,a,k,true)});
       const j=await new Promise(r=>cv.toBlob(r,"image/jpeg",.6)),im=await o.embedJpg(new Uint8Array(await j.arrayBuffer()));o.addPage([v1.width,v1.height]).drawImage(im,{x:0,y:0,width:v1.width,height:v1.height})}
-    cv.width=cv.height=0;const b=await pdfBlob(o);dl(b,bn(name)+"-compressed.pdf");st(`🗜 ${(file.size/1e6).toFixed(1)} → ${(b.size/1e6).toFixed(1)} MB`)}catch(x){st("❌ कम्प्रेस नहीं हुआ")}}
+    cv.width=cv.height=0;const b=await pdfBlob(o);dl(b,bn(name)+"-compressed.pdf");st(`🗜 ${(file.size/1e6).toFixed(1)} → ${(b.size/1e6).toFixed(1)} MB`)}catch(x){st("❌ Compression failed")}}
 
 /* signature (vector strokes -> movable/resizable via lasso) */
 let sig=(()=>{try{return JSON.parse(localStorage.getItem("pa_sig"))}catch(e){return null}})(),sgS=[],sgD=false;
@@ -1240,15 +1377,15 @@ function sg0(){$("#sg").hidden=false;sgS=[];sgR()}
 $("#sgcl").onclick=()=>{sgS=[];sgR()};$("#sgx").onclick=()=>$("#sg").hidden=true;
 $("#sgs").onclick=()=>{if(!sgS.length)return;const a=sgS.flat(),x0=Math.min(...a.map(q=>q[0])),y0=Math.min(...a.map(q=>q[1])),x1=Math.max(...a.map(q=>q[0]));
   sig={w:Math.max(1,x1-x0),s:sgS.map(s=>s.map(q=>[q[0]-x0,q[1]-y0]))};try{localStorage.setItem("pa_sig",JSON.stringify(sig))}catch(e){}$("#sg").hidden=true;placeSig()};
-function placeSig(){if(!pdf){st("पहले PDF खोलिए");return}if(!sig){sg0();return}
+function placeSig(){if(!pdf){st("Open a PDF first");return}if(!sig){sg0();return}
   const s=sizes[curPage]||sizes[0],f=Math.min(180,s.w*.35)/sig.w,ox=s.w*.3,oy=s.h*.4,os=sig.s.map(z=>({t:"pen",c:"#111111",w:2,p:z.map(q=>[+(ox+q[0]*f).toFixed(1),+(oy+q[1]*f).toFixed(1)])}));
-  snap(curPage);(anns[curPage]=anns[curPage]||[]).push(...os);$('[data-t="lasso"]').click();selObjs=os;selPage=curPage;lbar();draw(curPage);change();st("🖋 खींचकर सही जगह रखें")}
+  snap(curPage);(anns[curPage]=anns[curPage]||[]).push(...os);$('[data-t="lasso"]').click();selObjs=os;selPage=curPage;lbar();draw(curPage);change();st("🖋 Drag it into position")}
 $("#sig").onclick=placeSig;
 
 
 /* ===== PWA + OFFLINE-FIRST SERVER SYNC ===== */
 if("serviceWorker"in navigator&&/^https?:$/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{const u=()=>r.update().catch(()=>{});setInterval(u,18e5);document.addEventListener("visibilitychange",()=>{if(!document.hidden)u()});navigator.serviceWorker.ready.then(x=>x.active&&x.active.postMessage({type:"get-version"}))}).catch(()=>{}));
-if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[0])openFile(await p.files[0].getFile()).catch(()=>st("❌ PDF नहीं खुली"))});
+if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[0])openFile(await p.files[0].getFile()).catch(()=>st("❌ Couldn't open the PDF"))});
 const SV=()=>{try{return JSON.parse(localStorage.getItem("pa_srv"))}catch(e){return null}};
 const svSave=o=>{try{localStorage.setItem("pa_srv",JSON.stringify({...(SV()||{auto:true}),...o}))}catch(e){}};
 const devId=()=>{let d=localStorage.getItem("pa_dev");if(!d){d="d"+Math.random().toString(36).slice(2,10);try{localStorage.setItem("pa_dev",d)}catch(e){}}return d};
@@ -1256,12 +1393,12 @@ const lsJ=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){ret
 const b64=buf=>{const u=new Uint8Array(buf);let s="";for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)};
 let svBusy=false;
 async function svSync(manual){
-  const c=SV();if(!c||!c.u){if(manual)st("☁️ पहले सेटिंग में सर्वर URL डालें");return}
-  if(!navigator.onLine){if(manual)st("📴 इंटरनेट नहीं — मिलते ही अपने आप जाएगा");return}
+  const c=SV();if(!c||!c.u){if(manual)st("☁️ Enter the server URL in Settings first");return}
+  if(!navigator.onLine){if(manual)st("📴 No internet — will send automatically when back online");return}
   if(svBusy)return;svBusy=true;
   try{if(pdf&&docId)await persist();
     const last=lsJ("pa_srvlast",{}),sent=new Set(lsJ("pa_srvimg",[])),dirty=((await dbAll())||[]).filter(r=>(last[r.id]||0)<(r.t||0));
-    if(!dirty.length){if(manual)st("☁️ सब कुछ सिंक है");return}
+    if(!dirty.length){if(manual)st("☁️ Everything is synced");return}
     let n=0;
     for(const r of dirty){const imgs={},ids=imgIds(r.anns||{}).filter(id=>!sent.has(id));
       for(const id of ids){const x=await iGet(id);if(x)imgs[id]=b64(x)}
@@ -1270,23 +1407,23 @@ async function svSync(manual){
       last[r.id]=r.t;ids.forEach(id=>sent.add(id));
       try{localStorage.setItem("pa_srvlast",JSON.stringify(last));localStorage.setItem("pa_srvimg",JSON.stringify([...sent]))}catch(e){}
       st(`☁️ ${++n}/${dirty.length}`)}
-    st(`☁️ सर्वर पर भेज दिया (${n})`)
-  }catch(e){st("❌ सिंक नहीं हुआ ("+(e.message||e)+") — फिर कोशिश होगी")}
+    st(`☁️ Sent to server (${n})`)
+  }catch(e){st("❌ Sync failed ("+(e.message||e)+") — will retry")}
   finally{svBusy=false;netUpd()}
 }
 async function netUpd(){const c=SV();let p=0;
   if(c&&c.u){const last=lsJ("pa_srvlast",{});try{p=((await dbAll())||[]).filter(r=>(last[r.id]||0)<(r.t||0)).length}catch(e){}}
-  $$(".net").forEach(e=>e.textContent=(navigator.onLine?"🟢":"🔴 ऑफ़लाइन")+(p?` · ⏳${p} भेजना बाकी`:""))}
+  $$(".net").forEach(e=>e.textContent=(navigator.onLine?"🟢":"🔴 Offline")+(p?` · ⏳${p} pending`:""))}
 /* UI: toolbar, home, settings */
 $("#st").insertAdjacentHTML("beforebegin",'<span class="net" style="font-size:12px;opacity:.75;white-space:nowrap"></span>');
-$("#tools").insertAdjacentHTML("beforebegin",'<button class="ibtn" id="svb" title="सर्वर पर अभी भेजें">☁️</button>');
-$("#hact").insertAdjacentHTML("beforeend",'<button id="svh">☁️ सर्वर पर भेजें</button><span class="net" style="font-size:13px;opacity:.8;align-self:center"></span>');
+$("#tools").closest(".mcell").insertAdjacentHTML("beforebegin",'<div class="mcell"><button class="ibtn" id="svb" title="Send to server now">☁️</button><span>Send to server</span></div>');
+$("#hact").insertAdjacentHTML("beforeend",'<button id="svh">☁️ Send to server</button><span class="net" style="font-size:13px;opacity:.8;align-self:center"></span>');
 $("#svb").onclick=$("#svh").onclick=()=>svSync(1);
-$("#sm hr").insertAdjacentHTML("beforebegin",`<label>☁️ अपना सर्वर (ऑफ़लाइन-फ़र्स्ट सिंक)</label>
-<label for="svu">सर्वर URL (POST endpoint)</label><input id="svu" type="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://yourserver.com/api/annotations">
-<label for="svt">Token (वैकल्पिक, Bearer)</label><input id="svt" type="password" autocomplete="off" spellcheck="false">
-<label class="ck"><input type="checkbox" id="sva"><span>इंटरनेट मिलते ही अपने आप भेजें</span></label>
-<div class="row"><button id="svn">☁️ अभी भेजें</button></div><hr>`);
+$("#sm hr").insertAdjacentHTML("beforebegin",`<label>☁️ Your own server (optional, secondary sync)</label>
+<label for="svu">Server URL (POST endpoint)</label><input id="svu" type="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://yourserver.com/api/annotations">
+<label for="svt">Token (optional, Bearer)</label><input id="svt" type="password" autocomplete="off" spellcheck="false">
+<label class="ck"><input type="checkbox" id="sva"><span>Send automatically when online</span></label>
+<div class="row"><button id="svn">☁️ Send now</button></div><hr>`);
 $("#tg").addEventListener("click",()=>{const c=SV()||{auto:true};$("#svu").value=c.u||"";$("#svt").value=c.t||"";$("#sva").checked=c.auto!==false});
 $("#svu").oninput=e=>svSave({u:e.target.value.trim()});$("#svt").oninput=e=>svSave({t:e.target.value.trim()});$("#sva").onchange=e=>svSave({auto:e.target.checked});
 $("#svn").onclick=()=>svSync(1);
@@ -1297,7 +1434,7 @@ setInterval(()=>{netUpd();svAuto()},30000);setTimeout(()=>{netUpd();svAuto()},30
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.1.0",SCHEMA=2;  /* APP_VERSION को sw.js के APP_VERSION के साथ ही बदलें; SCHEMA तभी बढ़ाएँ जब डेटा-फ़ॉर्मेट बदले */
+const APP_VERSION="1.3.5",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -1305,12 +1442,12 @@ async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,2621
   const u=new Uint8Array(b);let h=2166136261;for(let i=0;i<u.length;i++){h^=u[i];h=Math.imul(h,16777619)}return"f"+(h>>>0).toString(16)+"-"+f.size}catch(e){return"n"+f.name+"-"+f.size}}
 async function resolveId(f,fp,wid){const all=(await dbAll())||[];
   if(wid){const r=all.find(x=>x.id==wid);if(r&&(!r.fp||r.fp==fp)){if(!r.fp){r.fp=fp;await dbPut(r)}return wid}}
-  const m=all.find(x=>x.fp==fp);if(m)return m.id;                       /* नाम बदल जाए तब भी वही नोटबुक */
-  const leg=f.name+"|"+f.size,l=all.find(x=>x.id==leg);if(l&&!l.fp){l.fp=fp;await dbPut(l);return leg}  /* पुराने डेटा को अपनाओ */
+  const m=all.find(x=>x.fp==fp);if(m)return m.id;                       /* same notebook even if the file is renamed */
+  const leg=f.name+"|"+f.size,l=all.find(x=>x.id==leg);if(l&&!l.fp){l.fp=fp;await dbPut(l);return leg}  /* adopt legacy data */
   if(all.some(x=>x.pfp)){let u;try{u=URL.createObjectURL(f);const t=await pdfjsLib.getDocument({url:u,disableAutoFetch:true,rangeChunkSize:131072}).promise,pf=t.fingerprints&&t.fingerprints[0];t.destroy();
     const m2=pf&&all.find(x=>x.pfp==pf);if(m2){m2.fp=fp;await dbPut(m2);return m2.id}}catch(e){}finally{if(u)URL.revokeObjectURL(u)}}
-  return"fp:"+fp}                                                       /* अलग PDF → अलग ID, कभी मिक्स नहीं */
-/* meta store + mirror DB (दूसरी कॉपी) */
+  return"fp:"+fp}                                                       /* different PDF → different ID, never mixed */
+/* meta store + mirror DB (second copy) */
 const mx=async(m,f)=>{const d=await DB;return new Promise((res,rej)=>{const t=d.transaction("meta",m),o=f(t.objectStore("meta"));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)})};
 const metaGet=k=>mx("readonly",o=>o.get(k)),metaPut=(k,v)=>mx("readwrite",o=>o.put(v,k));
 const MDB=new Promise((res,rej)=>{const r=indexedDB.open("pa_mirror",1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("docs"))r.result.createObjectStore("docs",{keyPath:"id"})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
@@ -1322,29 +1459,102 @@ async function askPersist(){try{if(!navigator.storage)return false;let p=await n
 document.addEventListener("click",askPersist,{once:true});
 async function bootStorage(){
   askPersist();let docs=(await dbAll())||[];
-  if(!docs.length){const m=await mirAll();if(m.length){for(const r of m)await dbPut(r);docs=m;st(`♻️ ${m.length} नोटबुक अपने-आप लौटाई गईं`)}}
+  if(!docs.length){const m=await mirAll();if(m.length){for(const r of m)await dbPut(r);docs=m;st(`♻️ ${m.length} notebook(s) restored automatically`)}}
   else for(const r of docs)mirPut(r);
   const mt=await metaGet("schema"),old=(mt&&mt.v)||+localStorage.getItem("pa_schema")||1;
-  if(old<SCHEMA&&docs.length){await metaPut("snap_v"+old,{t:Date.now(),docs});             /* माइग्रेशन से पहले पूरा स्नैपशॉट */
+  if(old<SCHEMA&&docs.length){await metaPut("snap_v"+old,{t:Date.now(),docs});             /* full snapshot before migration */
     for(const r of docs){let ch=0;if(!r.anns){r.anns={};ch=1}if(!r.sv||r.sv<SCHEMA){r.sv=SCHEMA;ch=1}if(ch)await dbPutM(r)}}
   if(!mt||mt.v<=SCHEMA)await metaPut("schema",{v:Math.max(SCHEMA,(mt&&mt.v)||0),app:APP_VERSION,t:Date.now()});
   try{localStorage.setItem("pa_schema",String(SCHEMA))}catch(e){}}
-/* अपडेट: नया वर्शन मिलते ही सेव करके रिलोड (डेटा IndexedDB में सुरक्षित रहता है) */
+/* Update: as soon as a new version is found, save and reload (data stays safe in IndexedDB) */
 async function applyUpdate(v,guard){if(updating)return;if(guard){try{if(sessionStorage.getItem("pa_upd")==v)return;sessionStorage.setItem("pa_upd",v)}catch(e){}}
-  updating=true;st("🔄 नया संस्करण "+v+" — अपडेट हो रहा…");try{await persist()}catch(e){}setTimeout(()=>location.reload(),500)}
+  updating=true;st("🔄 New version "+v+" — updating…");try{await persist()}catch(e){}setTimeout(()=>location.reload(),500)}
 if("serviceWorker"in navigator){let had=!!navigator.serviceWorker.controller;
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)applyUpdate("नया");had=true});
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)applyUpdate("new");had=true});
   navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.type=="sw-version"){SWV=e.data.v;verUpd();if(SWV!==APP_VERSION)applyUpdate(SWV,1)}})}
-function verUpd(){const t=`v${APP_VERSION} · डेटा-स्कीमा ${SCHEMA}`+(SWV?` · SW v${SWV}`:"");$$(".ver").forEach(e=>e.textContent=t)}
+function verUpd(){const t=`v${APP_VERSION} · data schema ${SCHEMA}`+(SWV?` · SW v${SWV}`:"");$$(".ver").forEach(e=>e.textContent=t)}
 $("#home").insertAdjacentHTML("beforeend",'<div class="ver" style="text-align:center;font-size:12px;opacity:.5;margin-top:24px"></div>');verUpd();
 $("#sm h2").insertAdjacentHTML("afterend",`<div id="stinfo" style="font-size:13px;line-height:1.7;background:var(--btn-bg);border-radius:10px;padding:10px"></div>
-<div class="row"><button id="stp">🔒 स्थायी स्टोरेज माँगें</button><button id="stb">💾 पूरा बैकअप अभी</button></div>`);
+<div class="row"><button id="stp">🔒 Request persistent storage</button><button id="stb">💾 Full backup now</button></div>`);
 async function stInfo(){let q="",p=await askPersist(),n=((await dbAll())||[]).length,m=(await mirAll()).length;
   try{const e=await navigator.storage.estimate();q=`${(e.usage/1e6).toFixed(1)} MB / ${(e.quota/1e9).toFixed(1)} GB`}catch(x){}
   const ins=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
-  $("#stinfo").innerHTML=`<b>संस्करण:</b> v${APP_VERSION} · स्कीमा ${SCHEMA}${SWV?" · SW v"+SWV:""}<br><b>नोटबुक:</b> ${n} (दूसरी कॉपी: ${m})<br><b>स्टोरेज:</b> ${q||"—"}<br>`+
-   (p?"🔒 स्थायी स्टोरेज चालू — ब्राउज़र अपने-आप नहीं हटाएगा":"⚠️ स्थायी स्टोरेज चालू नहीं — खाली जगह कम होने पर ब्राउज़र हटा सकता है")+"<br>"+(ins?"📲 ऐप के रूप में install है":"ℹ️ Install करने पर डेटा ज़्यादा सुरक्षित रहता है")}
+  $("#stinfo").innerHTML=`<b>Version:</b> v${APP_VERSION} · schema ${SCHEMA}${SWV?" · SW v"+SWV:""}<br><b>Notebooks:</b> ${n} (second copy: ${m})<br><b>Storage:</b> ${q||"—"}<br>`+
+   (p?"🔒 Persistent storage is on — the browser won't clear your data automatically":"⚠️ Persistent storage is off — the browser may clear data when space runs low")+"<br>"+(ins?"📲 Installed as an app":"ℹ️ Installing the app keeps your data safer")}
 $("#tg").addEventListener("click",stInfo);$("#stp").onclick=async()=>{await askPersist();stInfo()};$("#stb").onclick=()=>{sm.hidden=true;flush(1)};
+
+/* ===== TOOLBAR: popovers for every tool + scroll + drag-to-reorder ===== */
+document.body.insertAdjacentHTML("beforeend",`
+<div id="shape-panel" class="fpanel" hidden><div class="fpanel-title" id="sh-title">Line</div>
+  <canvas id="sh-prev" width="240" height="56" style="border-radius:10px;background:var(--btn-bg);display:block;width:240px"></canvas>
+  <div><div class="fpanel-section-label" style="margin-bottom:8px">Size</div><div class="size-row" id="sh-sizes"></div>
+  <div class="slider-row" style="margin-top:10px"><input type="range" id="sh-slider" min="1" max="12" step="0.5" value="3"><span class="slider-val" id="sh-slider-val">3</span></div></div>
+  <div><div class="fpanel-section-label" style="margin-bottom:8px">Color</div><div class="crow"></div></div></div>
+<div id="text-panel" class="fpanel" hidden><div class="fpanel-title" id="tx-title">Text</div>
+  <div id="tx-prev" style="background:var(--btn-bg);border-radius:10px;padding:10px 14px;min-height:56px;display:flex;align-items:center;overflow:hidden;width:240px;box-sizing:border-box">Sample text</div>
+  <div><div class="fpanel-section-label" style="margin-bottom:8px">Font size</div>
+  <div class="slider-row"><input type="range" id="tx-slider" min="1" max="12" step="1" value="3"><span class="slider-val" id="tx-slider-val">19 px</span></div></div>
+  <div><div class="fpanel-section-label" style="margin-bottom:8px">Color</div><div class="crow"></div></div>
+  <div class="hintp">Tap anywhere on the page to type. Tap outside the box to finish.</div></div>
+<div id="lasso-panel" class="fpanel" hidden><div class="fpanel-title">Lasso Select</div>
+  <div class="hintp">Draw a loop around objects to select them. Drag to move them, drag the corner handle to resize, and use the bar that appears to copy or delete.</div></div>
+<div id="sel-panel" class="fpanel" hidden><div class="fpanel-title">Move Image</div>
+  <div class="hintp">Drag an image to move it. Tap the red ✕ at its corner to remove it.</div></div>`);
+const SH_SIZES=[1,2,3,5,8,12].map(n=>({px:n,label:n+"pt"}));
+buildSizeRow("sh-sizes",SH_SIZES,(i,x)=>{W=x.px;syncW()},2,false);
+function drawShPrev(){const cv=$("#sh-prev");if(!cv)return;const c=cv.getContext("2d"),w=cv.width,h=cv.height;c.clearRect(0,0,w,h);
+  c.strokeStyle=color;c.lineWidth=Math.min(W,14);c.lineCap=c.lineJoin="round";c.beginPath();
+  if(tool=="rect")c.strokeRect(50,12,w-100,h-24);
+  else if(tool=="oval"){c.ellipse(w/2,h/2,(w-100)/2,(h-24)/2,0,0,7);c.stroke()}
+  else{c.moveTo(30,h/2);c.lineTo(w-30,h/2);c.stroke();if(tool=="arrow"){c.beginPath();c.moveTo(w-30,h/2);c.lineTo(w-48,h/2-10);c.moveTo(w-30,h/2);c.lineTo(w-48,h/2+10);c.stroke()}}}
+function txPrev(){const e=$("#tx-prev");if(!e)return;e.style.fontSize=Math.min(W*3+10,44)+"px";e.style.color=color;e.style.background=tool=="note"?"#fde68a":"var(--btn-bg)";if(tool=="note")e.style.color="#111"}
+function updateRows(){$$(".crow .cdot").forEach(b=>b.classList.toggle("on",b.dataset.c.toLowerCase()==String(color).toLowerCase()))}
+function syncW(){[["#pen-slider","#pen-slider-val",W+"mm"],["#sh-slider","#sh-slider-val",W],["#tx-slider","#tx-slider-val",(W*3+10)+" px"]].forEach(([a,b,l])=>{const e=$(a),x=$(b);if(e)e.value=W;if(x)x.textContent=l});
+  drawPenPreview();drawShPrev();txPrev();updateRows()}
+$("#sh-slider").oninput=e=>{W=+e.target.value;syncW()};$("#tx-slider").oninput=e=>{W=+e.target.value;syncW()};
+$$(".crow").forEach(r=>{COL.forEach(c=>{const b=document.createElement("button");b.className="cdot";b.dataset.c=c;b.style.background=c;b.title=c;
+  b.onclick=()=>{const s=$$(".sw").find(x=>x.dataset.c==c);if(s)s.click();else{color=c;$("#cc").value=c}syncW();drawHlPreview()};r.append(b)});
+  const m=document.createElement("button");m.className="cdot";m.dataset.c="custom";m.textContent="🎨";m.style.cssText="background:var(--btn-bg);font-size:14px";m.onclick=()=>$("#cc").click();r.append(m)});
+$("#cc").addEventListener("input",()=>syncW());
+window.onPanelOpen=t=>{const n={line:"Line",arrow:"Arrow",rect:"Rectangle",oval:"Oval"};if(n[t])$("#sh-title").textContent=n[t];
+  if(t=="text"||t=="note")$("#tx-title").textContent=t=="note"?"Sticky Note":"Text";syncW()};
+$$(".sw").forEach(b=>b.addEventListener("click",()=>setTimeout(syncW,0)));
+
+(()=>{
+  const strip=$("#tstrip"),wrap=$("#tools-wrap"),KEY="pa_toolorder",bar=$("#bar");
+  [...strip.children].forEach(el=>{el.dataset.k=el.dataset.k||el.id||(el.dataset.t?"t_"+el.dataset.t:"x")});
+  const DEF=[...strip.children].map(el=>el.dataset.k);
+  function applyOrder(){let sv=[];try{sv=JSON.parse(localStorage.getItem(KEY))||[]}catch(e){}
+    const m=new Map([...strip.children].map(el=>[el.dataset.k,el]));
+    [...sv.filter(k=>m.has(k)),...DEF.filter(k=>!sv.includes(k))].forEach(k=>strip.appendChild(m.get(k)))}
+  try{if(localStorage.getItem("pa_tb_gn2")!="1"){localStorage.removeItem(KEY);localStorage.setItem("pa_tb_gn2","1")}}catch(e){}
+  applyOrder();
+  $("#strb").onclick=()=>{try{localStorage.removeItem(KEY)}catch(e){}applyOrder();st("↺ Toolbar layout reset")};
+  try{new ResizeObserver(()=>{const h=bar.offsetHeight;if(h)document.documentElement.style.setProperty("--barh",h+"px")}).observe(bar)}catch(e){}
+  wrap.addEventListener("wheel",e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){wrap.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+  wrap.addEventListener("scroll",placePanel,{passive:true});addEventListener("resize",placePanel);
+  strip.addEventListener("contextmenu",e=>e.preventDefault());
+  let d=null,sup=false,raf=0;
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify([...strip.children].map(e=>e.dataset.k)))}catch(e){}};
+  function place(){if(!d||!d.on)return;const it=d.it,left=d.cx-strip.getBoundingClientRect().left-d.grab,ctr=()=>left+it.offsetWidth/2;
+    let p=it.previousElementSibling,n=it.nextElementSibling;
+    while(p&&ctr()<p.offsetLeft+p.offsetWidth/2){strip.insertBefore(p,it.nextSibling);p=it.previousElementSibling}
+    while(n&&ctr()>n.offsetLeft+n.offsetWidth/2){strip.insertBefore(n,it);n=it.nextElementSibling}
+    it.style.transform=`translateX(${left-it.offsetLeft}px) scale(1.12)`}
+  function begin(){if(!d||d.on)return;d.on=true;d.it.classList.add("dragging");closeAllPanels();try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}
+    d.grab=d.cx-d.it.getBoundingClientRect().left;
+    const f=()=>{if(!d||!d.on)return;const wr=wrap.getBoundingClientRect();if(d.cx<wr.left+36)wrap.scrollLeft-=10;else if(d.cx>wr.right-36)wrap.scrollLeft+=10;place();raf=requestAnimationFrame(f)};raf=requestAnimationFrame(f)}
+  strip.addEventListener("pointerdown",e=>{const it=e.target.closest("#tstrip>*");if(!it||(e.pointerType=="mouse"&&e.button))return;
+    d={it,x:e.clientX,y:e.clientY,cx:e.clientX,on:false,id:e.pointerId,type:e.pointerType};if(d.type!="mouse")d.tm=setTimeout(begin,360)});
+  addEventListener("pointermove",e=>{if(!d||e.pointerId!==d.id)return;d.cx=e.clientX;
+    if(!d.on){if(Math.hypot(e.clientX-d.x,e.clientY-d.y)>(d.type=="mouse"?6:9)){if(d.type=="mouse")begin();else{clearTimeout(d.tm);d=null}}return}
+    if(e.cancelable)e.preventDefault()},{passive:false});
+  const end=e=>{if(!d||e.pointerId!==d.id)return;clearTimeout(d.tm);cancelAnimationFrame(raf);
+    if(d.on){d.it.classList.remove("dragging");d.it.style.transform="";save();sup=true;setTimeout(()=>sup=false,80)}d=null};
+  addEventListener("pointerup",end);addEventListener("pointercancel",end);
+  strip.addEventListener("click",e=>{if(sup){e.stopPropagation();e.preventDefault()}},true);
+  strip.addEventListener("touchmove",e=>{if(d&&d.on&&e.cancelable)e.preventDefault()},{passive:false});
+})();
 
 applyTheme(0);if(location.hash=="#read")history.replaceState(null,"",location.pathname+location.search);bootStorage().catch(()=>{}).then(()=>{showLib();checkBackup()});flush(0);setInterval(()=>flush(0),EVERY);
 </script></body></html>

@@ -1,9 +1,9 @@
 {
   "id": "./",
-  "name": "PDF एनोटेटर",
-  "short_name": "PDF नोट्स",
-  "description": "ऑफ़लाइन PDF एनोटेशन — इंटरनेट मिलते ही सर्वर पर सिंक",
-  "lang": "hi",
+  "name": "Vpdf",
+  "short_name": "Vpdf",
+  "description": "Offline PDF annotation — backed up to Telegram when you are online",
+  "lang": "en",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
