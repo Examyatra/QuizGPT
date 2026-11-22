@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "PDF एनोटेटर",
+  "short_name": "PDF नोट्स",
+  "description": "ऑफ़लाइन PDF एनोटेशन — इंटरनेट मिलते ही सर्वर पर सिंक",
+  "lang": "hi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "categories": ["productivity", "education"],
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "file_handlers": [{"action": "./", "accept": {"application/pdf": [".pdf"]}}]
+}
