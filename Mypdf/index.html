@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.28">
+<meta name="app-version" content="1.4.33">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -42,6 +42,16 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 
 /* Compact status area: keep save/export/theme and a tiny connectivity indicator */
 #bar #st{display:none!important}
+/* v1.4.33: two rows — row 1: back · PDF tabs (scroll left/right) · save / export / theme; row 2: tool strip */
+#bar .tabs{display:flex;justify-content:flex-start;flex:1;min-width:0}
+#dtabs{display:flex;gap:6px;overflow-x:auto;max-width:100%;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x}
+#dtabs::-webkit-scrollbar{display:none}
+.dtab{flex:0 0 auto;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--btn-bg);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:7px 14px;font-size:14px;font-weight:600;cursor:pointer}
+.dtab.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.dtab:first-child{margin-left:auto}.dtab:last-child{margin-right:auto}
+#doctab{display:none!important}
+#bar .net{display:none}   /* one connection light only (the dot at the right end) */
+#bar #manualsave{order:2}#bar #saveb{order:3}#bar .thb{order:4}#bar #net{order:5}
 #bar .bar-top{gap:8px}
 #net{width:10px;height:10px;flex:0 0 10px;border-radius:50%;background:#9ca3af;margin:0 4px 0 2px;box-shadow:0 0 0 2px color-mix(in srgb,var(--tx) 10%,transparent)}
 #net[data-online="1"]{background:#16a34a}
@@ -253,18 +263,32 @@ body.nobar #showbar{display:block}body.pres #showbar{display:none!important}
 .pg canvas{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 
 /* ===== HOME SCREEN ===== */
-#home{max-width:1100px;margin:0 auto;padding:24px 16px 96px}
-#hh{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-#hh h1{margin:0;font-size:28px;font-weight:700}
-.hr{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#home{position:fixed;left:0;right:0;bottom:0;top:env(safe-area-inset-top,0px);display:flex;overflow:hidden}
+#hside{flex:0 0 20%;min-width:170px;max-width:300px;display:flex;flex-direction:column;gap:6px;padding:20px 12px calc(16px + env(safe-area-inset-bottom,0px));border-right:1px solid var(--bd);background:var(--panel-bg);overflow:auto}
+.hbrand{font-size:20px;font-weight:700;padding:4px 10px 14px}
+.hnav{display:block;width:100%;text-align:left;background:transparent;color:var(--tx);border:none;border-radius:12px;padding:13px 14px;font-size:15px;font-weight:600;cursor:pointer;line-height:1.3}
+.hnav:hover{background:var(--btn-hover)}
+.hnav.on{background:var(--ac);color:#fff}
+#hmain{position:relative;flex:1;min-width:0;overflow:auto;padding:20px 24px 110px;-webkit-overflow-scrolling:touch}
+.hti{margin:6px 0 14px;font-size:28px;font-weight:700}
+#hcorner{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:16px;z-index:20;display:flex;align-items:center;gap:8px}
+#hp-tools .tlg{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:14px}
+.tlc{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--btn-bg);color:var(--tx);border:1px solid var(--bd);border-radius:14px;padding:16px;cursor:pointer}
+.tlc:hover{background:var(--btn-hover)}
+.tlc b{font-size:16px}.tlc span{font-size:13px;opacity:.7;line-height:1.4}
+.tlc.need{opacity:.6}
+#htm{font-size:13px;min-height:1.2em;opacity:.85}
+#hside .ver{margin-top:auto;text-align:center;font-size:11px;opacity:.5;padding-top:12px}
+@media(max-width:600px){#hside{flex-basis:110px;min-width:110px;padding:14px 6px}.hnav{font-size:12.5px;padding:10px 8px}.hbrand{font-size:15px}#hmain{padding:16px 12px 110px}.hti{font-size:22px}}
 .cta{
   background:var(--ac);color:#fff;border:none;font-size:16px;font-weight:600;
   padding:10px 20px;border-radius:12px;box-shadow:0 4px 16px rgba(52,120,246,0.4);
   cursor:pointer;transition:background .15s,transform .1s;
 }
+#hmain>.cta{position:fixed;right:22px;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:20}
 .cta:hover{background:#2860d8;transform:translateY(-1px)}
 .cta:active{transform:none}
-#hact{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+#hact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;padding:0 10px;align-items:center}
 #hact button{background:var(--btn-bg);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:7px 14px;font-size:13px;cursor:pointer}
 #hact button:hover{background:var(--btn-hover)}
 #hbk,#hst{font-size:13px;opacity:.75;min-height:1.2em;margin:4px 0}
@@ -288,6 +312,13 @@ body.nobar #showbar{display:block}body.pres #showbar{display:none!important}
 #sm small{opacity:.7;line-height:1.5;font-size:13px}
 #sm input{width:100%;padding:10px 12px;font-size:15px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
 #sm hr{border:0;border-top:1px solid var(--bd)}
+.smv{display:flex;flex-direction:column;gap:12px}
+#sm .smb{width:100%;text-align:left;padding:14px 16px;font-size:16px;font-weight:600;border-radius:12px}
+#smf{font-size:13px;line-height:1.5;opacity:.85;min-height:0}
+#smf:empty{display:none}
+#sm .help h3{font-size:15px;font-weight:700;margin:14px 0 4px}
+#sm .help p{font-size:14px;line-height:1.55;opacity:.9;margin:0 0 6px}
+
 #sm .row{display:flex;gap:8px;flex-wrap:wrap}
 #sms{font-size:13px;line-height:1.5;word-break:break-word;white-space:pre-wrap}
 #sms:not(:empty){padding:10px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--btn-bg)}
@@ -361,7 +392,7 @@ html:has(body.pres){scroll-snap-type:y proximity}
 <div id="bar" hidden>
   <div class="bar-top">
     <button class="ibtn" id="lib" title="Home">←</button>
-    <div class="tabs"><div id="doctab" class="doc-tab" hidden>
+    <div class="tabs"><div id="dtabs"></div><div id="doctab" class="doc-tab" hidden>
       <span id="doctab-name">PDF</span>
       <button class="doc-tab-close" id="doctab-close">✕</button>
     </div></div>
@@ -522,55 +553,116 @@ html:has(body.pres){scroll-snap-type:y proximity}
 
 <!-- ===== HOME ===== -->
 <div id="home" hidden>
-  <div id="hh">
-    <h1>📓 Notebooks</h1>
-    <div class="hr">
+  <nav id="hside" aria-label="Home">
+    <div class="hbrand">📓 Vpdf</div>
+    <button class="hnav on" data-ht="nb">📓 Notebook</button>
+    <button class="hnav" id="bk">✈️ Back up to Telegram</button>
+    <button class="hnav" id="rs" title="Select the backup .zip files you downloaded from Telegram">♻️ Restore from Telegram</button>
+    <button class="hnav" data-ht="tools">🧰 PDF tools</button>
+    <div id="hact"></div>
+  </nav>
+  <main id="hmain">
+    <div id="hcorner">
       <button class="ibtn thb" title="Theme">🌓</button>
       <button class="th-btn" id="tg">⚙️ Settings</button>
-      <button class="cta" id="open">＋ Add PDF</button>
     </div>
-  </div>
-  <div id="hact">
-    <button id="bk">✈️ Back up to Telegram</button>
-    <button id="rs" title="Select the backup .zip files you downloaded from Telegram">♻️ Restore</button><button id="tools2">🧰 PDF tools</button>
-  </div>
-  <div id="hbk"></div><div id="hst"></div>
-  <div id="nbs"></div>
-  <div id="empty" hidden>📄 No notebooks yet.<br>Tap "＋ Add PDF" above.<br><span style="font-size:13px">Your PDF stays on your device; only annotations are saved.</span></div>
+    <section id="hp-nb">
+      <h1 class="hti">📓 Notebooks</h1>
+      <div id="hbk"></div><div id="hst"></div>
+      <div id="nbs"></div>
+      <div id="empty" hidden>📄 No notebooks yet.<br>Tap "＋ Add PDF" below.<br><span style="font-size:13px">Your PDF stays on your device; only annotations are saved.</span></div>
+    </section>
+    <section id="hp-tools" hidden>
+      <h1 class="hti">🧰 PDF tools</h1>
+      <div id="htm" role="status"></div>
+      <div class="tlg">
+        <button class="tlc" data-tl="merge"><b>🧩 Merge multiple PDFs</b><span>Combine several PDFs into one file.</span></button>
+        <button class="tlc" data-tl="img"><b>🖼 Images → PDF</b><span>Turn photos or images into a PDF.</span></button>
+        <button class="tlc" data-tl="sig"><b>🖋 Create new signature</b><span>Draw a signature you can place on pages.</span></button>
+        <button class="tlc need" data-tl="ext"><b>✂️ Extract pages / Split</b><span>Open a notebook first, then use ⊕ More tools → PDF tools.</span></button>
+        <button class="tlc need" data-tl="cmp"><b>🗜 PDF Compress</b><span>Open a notebook first, then use ⊕ More tools → PDF tools.</span></button>
+        <button class="tlc need" data-tl="blank"><b>📄 Blank page after current page</b><span>Open a notebook first, then use ⊕ More tools → PDF tools.</span></button>
+      </div>
+    </section>
+    <button class="cta" id="open">＋ Add PDF</button>
+  </main>
 </div>
 
 <!-- ===== SETTINGS MODAL ===== -->
 <div id="sm" hidden><div>
-  <h2>⚙️ Settings</h2>
-  <label>🎨 Theme</label>
-  <div class="row">
-    <button class="th-btn" data-th="auto">Auto</button>
-    <button class="th-btn" data-th="light">☀️ Light</button>
-    <button class="th-btn" data-th="dark">🌙 Dark</button>
-  </div>
-  <label class="ck"><input type="checkbox" id="pinv"><span>Also darken PDF pages in dark theme</span></label>
-  <hr>
-  <label>✈️ Telegram backup <span style="font-weight:400;opacity:.7">(primary — all backups go to Telegram)</span></label>
-  <label for="stk">Bot token (from @BotFather)</label>
-  <input id="stk" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="123456789:AAH...">
-  <label for="stc">Chat ID (a number, or @channelname)</label>
-  <input id="stc" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="123456789">
-  <div class="row">
-    <button id="stv">👁 Show token</button>
-    <button id="stt">🧪 Send test</button>
-  </div>
-  <div id="sms" role="status" aria-live="polite"></div>
-  <small>Your bot token and chat ID are stored only in this browser's local storage. Before testing, open your bot in Telegram and press Start (for a group or channel, add the bot to it first).</small>
-  <div class="row">
-    <button id="stsave" class="on">Save</button>
-    <button id="strm">🗑 Remove</button>
-    <button id="smx">Close</button>
-  </div>
-  <div class="row"><button id="strb">↺ Reset toolbar layout</button></div>
-  <div style="text-align:center;font-size:12px;opacity:.6;margin-top:4px">Vpdf · Powered by Vishal Yadav</div>
+ <!-- main view -->
+ <div id="sm-main" class="smv">
+   <h2>⚙️ Settings</h2>
+   <button class="smb" id="sm-ins">📖 Instructions</button>
+   <button class="smb" id="sm-tgb">✈️ Connect Telegram</button>
+   <button class="smb" id="stb">💾 Full backup now</button>
+   <div id="smf" role="status" aria-live="polite"></div>
+   <label>🎨 Theme</label>
+   <div class="row">
+     <button class="th-btn" data-th="auto">Auto</button>
+     <button class="th-btn" data-th="light">☀️ Light</button>
+     <button class="th-btn" data-th="dark">🌙 Dark</button>
+   </div>
+   <div class="row"><button id="smx">Close</button></div>
+   <div class="ver" style="text-align:center;font-size:12px;opacity:.6"></div>
+   <div style="text-align:center;font-size:12px;opacity:.6">Vpdf · Powered by Vishal Yadav</div>
+ </div>
+ <!-- Telegram view -->
+ <div id="sm-tg" class="smv" hidden>
+   <div class="row"><button data-smv="main">← Back</button></div>
+   <h2>✈️ Connect Telegram</h2>
+   <small>1. In Telegram open <b>@BotFather</b> → send <b>/newbot</b> → copy the bot token.<br>2. Open your new bot and press <b>Start</b> (for a group or channel, add the bot to it first).<br>3. Chat ID: your own number (message <b>@userinfobot</b> to get it), or @channelname.<br>4. Enter both below, tap <b>Send test</b>, then <b>Save</b>.</small>
+   <label for="stk">Bot token (from @BotFather)</label>
+   <input id="stk" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="123456789:AAH...">
+   <label for="stc">Chat ID (a number, or @channelname)</label>
+   <input id="stc" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="123456789">
+   <div class="row">
+     <button id="stv">👁 Show token</button>
+     <button id="stt">🧪 Send test</button>
+   </div>
+   <div id="sms" role="status" aria-live="polite"></div>
+   <small>Your bot token and chat ID are stored only in this browser's local storage.</small>
+   <div class="row">
+     <button id="stsave" class="on">Save</button>
+     <button id="strm">🗑 Remove</button>
+   </div>
+ </div>
+ <!-- Instructions view -->
+ <div id="sm-help" class="smv" hidden>
+   <div class="row"><button data-smv="main">← Back</button></div>
+   <h2>📖 Instructions</h2>
+   <div class="help">
+     <h3>Getting started</h3>
+     <p>Tap <b>＋ Add PDF</b> and pick a file. Your PDF stays on your device; only your notes (ink, text, images, page order, bookmarks) are saved. Every PDF becomes a notebook on the home screen. Tap its thumbnail to continue; if the app asks you to select the PDF, pick the same file again and all your notes come back.</p>
+     <h3>Writing &amp; tools</h3>
+     <p>Pen, highlighter, eraser, lasso, text, shapes, stamps and images are in the tool strip. Tap a tool to select it and open its options; tap again to close. Press and hold a tool, then drag, to reorder the strip. Everything else (pages, search, sticky note, zoom window, signature, bookmark, template, PDF tools) is under <b>⊕ More tools</b>.</p>
+     <p>Add a page with the ＋📄 button: it is inserted right after the page you are on (blank, ruled, grid or dotted). The PDF file itself is never changed.</p>
+     <h3>Saving</h3>
+     <p>Notes are saved automatically on this device a short while after you stop writing, and when you leave the app. Nothing needs to be saved by hand.</p>
+     <h3>Telegram backup</h3>
+     <p>Tap <b>Connect Telegram</b> and follow the 4 steps. After that, backups are sent automatically (a little after your last edit, when you leave the app, when the internet returns, and about every 15 minutes). <b>✈️ Back up to Telegram</b> on the home screen sends right now.</p>
+     <p><b>💾 Full backup now</b> sends a complete, fresh backup of every notebook, not just the recent changes.</p>
+     <h3>Restore</h3>
+     <p>Download the backup .zip files from Telegram, then on the home screen tap <b>♻️ Restore</b> and select them (select all parts, e.g. part1, part2). Then open your original PDF; the notes appear on the same pages.</p>
+     <h3>Storage</h3>
+     <p>Persistent storage is requested automatically, so the browser does not clear your data when space runs low. Install the app (Share → Add to Home Screen on iPad) to keep your data safest.</p>
+     <h3>Theme</h3>
+     <p>Auto follows the device, or choose Light / Dark. The 🌓 button on the home screen toggles quickly.</p>
+     <h3>If buttons stop responding</h3>
+     <p>The app now checks itself when you come back to it and reloads automatically if something is stuck. Your notes are not affected.</p>
+   </div>
+ </div>
+ <!-- legacy controls kept hidden so existing features keep working -->
+ <div id="sm-legacy" hidden>
+   <div id="stinfo"></div>
+   <button id="stp">🔒 Request persistent storage</button>
+   <input type="checkbox" id="pinv">
+   <input id="svu" type="url"><input id="svt" type="password"><input type="checkbox" id="sva"><button id="svn">Send now</button>
+   <button id="strb">↺ Reset toolbar layout</button>
+ </div>
 </div></div>
 
-<!-- ===== BACKUP BANNER ===== -->
+ <!-- ===== BACKUP BANNER ===== -->
 <div id="bn" hidden>
   <span id="bnt">✈️ Telegram backup isn't set up — your notes exist only on this device</span>
   <button id="bnb">Set up</button>
@@ -595,7 +687,7 @@ let pinv=(()=>{try{return localStorage.getItem("pa_pinv")!="0"}catch(e){return t
 let DK=false;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],PL=PDFLib;
 const LOW=(navigator.deviceMemory||4)<=2,MAXPX=LOW?1.2e6:3e6,DPR=Math.min(devicePixelRatio||1,LOW?1:2);
-let pdf,file,url,name="",docId=null,zoom=LOW?1:1.2,tool="pen",previousTool="lasso",color="#e11d48",W=3,HW=12,penOnly=false,curPage=0;
+let pdf,file,url,name="",docId=null,zoom=LOW?1:1.2,tool="pen",previousTool="lasso",color="#e11d48",W=3,HW=12,penOnly=(()=>{try{return localStorage.getItem("pa_penonly")!=="0"}catch(e){return true}})(),curPage=0;
 let ina,anns={},sizes=[],hist=[],redo=[],timer,vis=new Set(),q=Promise.resolve();
 const COL=["#e11d48","#2563eb","#16a34a","#f59e0b","#111111","#ffffff"];
 let ord=[],bm=new Set(),tpl={},SR={},TXT={},selObjs=[],selPage=-1,lz=null,lm=null,lastMv=0,lastPen=0,lastInk=0,shapeOn=false,palm=true,curStamp="✅",stampS=40;
@@ -606,7 +698,7 @@ const isV=v=>typeof v=="string";
 const vSize=v=>{const m=/^b([\d.]+)x([\d.]+)$/.exec(v);return m?{w:+m[1],h:+m[2]}:{w:595.28,h:841.89}};
 const mkV=z=>"b"+(+z.w).toFixed(2)+"x"+(+z.h).toFixed(2);
 const okOrd=(o,n)=>Array.isArray(o)&&o.every(v=>isV(v)?/^b[\d.]+x[\d.]+$/.test(v):(Number.isInteger(v)&&v>=0&&v<n))&&new Set(o.filter(v=>!isV(v))).size==n;
-const st=t=>{$("#st").textContent=t;const h=$("#hst");if(h)h.textContent=t};
+const st=t=>{$("#st").textContent=t;const h=$("#hst");if(h)h.textContent=t;const f=$("#smf");if(f)f.textContent=t;const tm=$("#htm");if(tm)tm.textContent=t};
 
 /* ===== TEXT + IMAGE EDITING ===== */
 let selT=null,CROP=null,TEDIT=null;
@@ -898,15 +990,23 @@ async function darken(page,vp,c){
 
 /* ===== INDEXEDDB ===== */
 const DB_VER=6;
-const DB=new Promise((res,rej)=>{const r=indexedDB.open("pa",DB_VER);
+let DB=openDB();
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open("pa",DB_VER);
   r.onupgradeneeded=()=>{const d=r.result;[["docs",{keyPath:"id"}],["imgs"],["bk",{keyPath:"id"}],["th"],["meta"]].forEach(([n,o])=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n,o)})}; /* add-only — never delete */
-  r.onsuccess=()=>{const d=r.result;d.onversionchange=()=>{d.close();location.reload()};res(d)};r.onerror=()=>rej(r.error)});
-const tx=async(m,f)=>{const d=await DB;return new Promise((res,rej)=>{const t=d.transaction("docs",m),o=f(t.objectStore("docs"));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)})};
-const itx=async(m,f)=>{const d=await DB;return new Promise((res,rej)=>{const t=d.transaction("imgs",m),o=f(t.objectStore("imgs"));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)})};
+  r.onsuccess=()=>{const d=r.result;d.onversionchange=()=>{d.close();location.reload()};d.onclose=()=>{DB=openDB()};res(d)};r.onerror=()=>rej(r.error)})}
+/* every IndexedDB call: reopens a dead connection, never hangs forever (abort + 20 s timeout) */
+const idb=async(store,m,f,retry)=>{let d;try{d=await DB}catch(e){DB=openDB();d=await DB}
+  return new Promise((res,rej)=>{let fin=0;const to=setTimeout(()=>{if(!fin){fin=1;rej(new Error("IndexedDB timeout"))}},2e4);
+    try{const t=d.transaction(store,m),o=f(t.objectStore(store));
+      t.oncomplete=()=>{fin=1;clearTimeout(to);res(o&&o.result)};
+      t.onerror=t.onabort=()=>{fin=1;clearTimeout(to);rej(t.error||new Error("IndexedDB aborted"))}}
+    catch(e){fin=1;clearTimeout(to);if(!retry&&e&&e.name=="InvalidStateError"){DB=openDB();idb(store,m,f,1).then(res,rej)}else rej(e)}})};
+const tx=(m,f)=>idb("docs",m,f);
+const itx=(m,f)=>idb("imgs",m,f);
+const btx=(m,f)=>idb("bk",m,f);
+const thx=(m,f)=>idb("th",m,f);
 const iGet=id=>itx("readonly",o=>o.get(id)),iPut=(id,b)=>itx("readwrite",o=>o.put(b,id));
-const btx=async(m,f)=>{const d=await DB;return new Promise((res,rej)=>{const t=d.transaction("bk",m),o=f(t.objectStore("bk"));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)})};
 const bGet=id=>btx("readonly",o=>o.get(id)),bPut=v=>btx("readwrite",o=>o.put(v)),bAll=()=>btx("readonly",o=>o.getAll());
-const thx=async(m,f)=>{const d=await DB;return new Promise((res,rej)=>{const t=d.transaction("th",m),o=f(t.objectStore("th"));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)})};
 const thGet=id=>thx("readonly",o=>o.get(id)),thPut=(id,b)=>thx("readwrite",o=>o.put(b,id)),thDel=id=>thx("readwrite",o=>o.delete(id));
 const IM={};
 async function ldImg(id,cb){IM[id]=1;const r=await iGet(id);if(!r){delete IM[id];return}const im=new Image();im.onload=()=>{IM[id]=im;cb()};im.src=URL.createObjectURL(new Blob([r]))}
@@ -948,8 +1048,20 @@ function change(){
 let want=null,THU=[];const FILES={};
 function syncViewerTop(){const b=$("#bar");if(b&&!b.hidden)document.documentElement.style.setProperty("--viewer-top",Math.ceil(b.getBoundingClientRect().bottom)+"px")}
 addEventListener("resize",syncViewerTop,{passive:true});
-const go=v=>{const h=v=="home";if(h)try{onHome()}catch(e){}$("#home").hidden=!h;$("#bar").hidden=h;$("#doc").hidden=h;if(!h)requestAnimationFrame(syncViewerTop);scrollTo(0,0)};
+function homeTab(t){$$("#hside [data-ht]").forEach(b=>b.classList.toggle("on",b.dataset.ht===t));$("#hp-nb").hidden=t!=="nb";$("#hp-tools").hidden=t!=="tools";$("#open").hidden=t!=="nb";const m=$("#hmain");if(m)m.scrollTop=0}
+function fsEnter(){try{const e=document.documentElement,f=e.requestFullscreen||e.webkitRequestFullscreen;if(f&&!document.fullscreenElement&&!document.webkitFullscreenElement){const r=f.call(e);if(r&&r.catch)r.catch(()=>{})}}catch(x){}}
+function fsExit(){try{if(document.fullscreenElement||document.webkitFullscreenElement){const f=document.exitFullscreen||document.webkitExitFullscreen,r=f.call(document);if(r&&r.catch)r.catch(()=>{})}}catch(x){}}
+["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>{requestAnimationFrame(()=>{syncViewerTop();dispatchEvent(new Event("resize"))})}));
+const go=v=>{const h=v=="home";if(h)fsExit();if(h&&$("#home").hidden)homeTab("nb");if(h)try{onHome()}catch(e){}$("#home").hidden=!h;$("#bar").hidden=h;$("#doc").hidden=h;if(!h)requestAnimationFrame(syncViewerTop);scrollTo(0,0)};
 const age=t=>{const x=(Date.now()-t)/1e3;return x<3600?Math.max(1,Math.floor(x/60))+"m":x<86400?Math.floor(x/3600)+"h":x<604800?Math.floor(x/86400)+"d":x<2592e3?Math.floor(x/604800)+"w":Math.floor(x/2592e3)+"M"};
+let switching=false;
+function renderTabs(){const c=$("#dtabs");if(!c)return;c.innerHTML="";let cur=null;
+  for(const id of Object.keys(FILES)){const b=document.createElement("button");b.className="dtab"+(id===docId?" on":"");b.textContent=FILES[id].name.replace(/\.pdf$/i,"");b.title=FILES[id].name;if(id===docId)cur=b;b.onclick=()=>switchNb(id);c.append(b)}
+  if(cur)c.scrollLeft=Math.max(0,cur.offsetLeft-c.clientWidth/2+cur.offsetWidth/2)}
+/* switch to another PDF opened in this session: save this one first, then open the other (no file picker needed) */
+async function switchNb(id){const f=FILES[id];if(!f||id===docId||switching)return;switching=true;
+  try{await persist(true);try{onHome()}catch(e){}io.disconnect();vis.clear();$("#doc").innerHTML="";pdf=null;docId=null;await openFile(f,id)}
+  catch(e){st("❌ Couldn't open the PDF");showLib()}finally{switching=false}}
 async function showLib(){
   await persist();pdf=null;docId=null;vis.clear();if(url){URL.revokeObjectURL(url);url=null}
   $("#doc").innerHTML="";go("home");THU.forEach(u=>URL.revokeObjectURL(u));THU=[];
@@ -962,11 +1074,11 @@ async function showLib(){
     if(th){const im=new Image(),u=URL.createObjectURL(new Blob([th],{type:"image/jpeg"}));THU.push(u);im.src=u;tb.append(im)}else tb.classList.add("cv");
     const ag=document.createElement("i");ag.className="ag";ag.textContent=age(r.t);x.className="dl";x.textContent="🗑";tb.append(ag,x);
     t.textContent=r.name.replace(/\.pdf$/i,"");m.textContent=`${r.np}p · ${r.n} ann`;
-    x.onclick=async e=>{e.stopPropagation();if(confirm("Delete annotations?")){await dbDel(r.id);await thDel(r.id);showLib()}};
+    x.onclick=async e=>{e.stopPropagation();if(confirm("Delete annotations?")){await dbDel(r.id);await thDel(r.id);delete FILES[r.id];showLib()}};
     tb.onclick=t.onclick=()=>openNb(r);c.append(tb,t,m);g.append(c);
   }
 }
-function openNb(r){const f=FILES[r.id];if(f){openFile(f,r.id).catch(()=>st("❌ Couldn't open the PDF"));return}
+function openNb(r){fsEnter();const f=FILES[r.id];if(f){openFile(f,r.id).catch(()=>st("❌ Couldn't open the PDF"));return}
   want=r.id;$("#hst").textContent="📂 «"+r.name.replace(/\.pdf$/i,"")+"» — select the PDF";$("#fi").click()}
 async function thumb(P,id){try{if(await thGet(id))return;const pg=await P.getPage(1),v=pg.getViewport({scale:260/pg.getViewport({scale:1}).width}),c=document.createElement("canvas");
   c.width=Math.round(v.width);c.height=Math.round(v.height);await pg.render({canvasContext:c.getContext("2d"),viewport:v}).promise;pg.cleanup();
@@ -983,18 +1095,30 @@ async function openFile(f,wid){
   const d=$("#doc");d.innerHTML="";go("read");if(location.hash!="#read")location.hash="read";
   // Update doc tab
   const dt=document.getElementById("doctab");dt.hidden=false;
-  document.getElementById("doctab-name").textContent=name.replace(/\.pdf$/i,"");
+  document.getElementById("doctab-name").textContent=name.replace(/\.pdf$/i,"");renderTabs();
   for(let i=0;i<ord.length;i++){const p=document.createElement("div");p.className="pg";p.dataset.i=i;sz(p,i);d.append(p);io.observe(p)}
-  st("✅ Auto-save on");persist();thumb(pdf,docId);
+  preloadSizes();st("✅ Auto-save on");persist();thumb(pdf,docId);
   requestAnimationFrame(()=>{const p=$(`.pg[data-i="${curPage}"]`);if(p)p.scrollIntoView()});
 }
 const sz=(p,i)=>{const s=sizes[i]||sizes[0];p.style.width=s.w*zoom+"px";p.style.height=s.h*zoom+"px"};
+/* Page sizes: every page is measured up front (not only when it is first drawn), and when a size does change above the
+   reader's position the scroll position is corrected by the same amount, so the document never jumps or "breaks" while scrolling. */
+function fitPage(i,z){const o=sizes[i];if(o&&Math.abs(o.w-z.w)<.01&&Math.abs(o.h-z.h)<.01)return false;
+  sizes[i]={w:z.w,h:z.h};const d=$("#doc");let p=d&&d.children[i];if(!p||+p.dataset.i!==i)p=$(`.pg[data-i="${i}"]`);if(!p)return true;
+  const r0=p.getBoundingClientRect(),top=d.getBoundingClientRect().top;sz(p,i);
+  if(r0.bottom<=top){const h1=p.getBoundingClientRect().height;if(h1!==r0.height)d.scrollTop+=h1-r0.height}
+  return true}
+let preTok=0;
+async function preloadSizes(){const tok=++preTok,P=pdf,o=[...ord];if(!P)return;
+  for(let i=0;i<o.length;i++){if(tok!==preTok||P!==pdf)return;if(isV(o[i]))continue;
+    try{const pg=await P.getPage(o[i]+1),v=pg.getViewport({scale:1});pg.cleanup();if(tok===preTok&&P===pdf)fitPage(i,{w:v.width,h:v.height})}catch(e){}
+    if(i%12==11)await new Promise(r=>setTimeout(r,0))}}
 const io=new IntersectionObserver(es=>es.forEach(e=>{const i=+e.target.dataset.i;if(e.isIntersecting){vis.add(i);render(i)}else{vis.delete(i);free(i)}}),{rootMargin:"300px"});
 function free(i){const p=$(`.pg[data-i="${i}"]`);if(!p)return;(anns[i]||[]).forEach(o=>{if(o.t=="img"&&IM[o.id]&&IM[o.id].src){URL.revokeObjectURL(IM[o.id].src);delete IM[o.id]}});p.querySelectorAll("canvas").forEach(c=>{c.width=c.height=0});p.innerHTML="";delete p.dataset.z}
 const render=i=>{q=q.then(()=>draw1(i)).catch(()=>{})};
 async function draw1(i){
   const p=$(`.pg[data-i="${i}"]`);if(!p||!pdf||!vis.has(i)||p.dataset.z==zoom)return;p.dataset.z=zoom;
-  const ov=ord[i],virt=isV(ov),page=virt?null:await pdf.getPage(ov+1),v1=virt?{width:vSize(ov).w,height:vSize(ov).h}:page.getViewport({scale:1});sizes[i]={w:v1.width,h:v1.height};sz(p,i);
+  const ov=ord[i],virt=isV(ov),page=virt?null:await pdf.getPage(ov+1),v1=virt?{width:vSize(ov).w,height:vSize(ov).h}:page.getViewport({scale:1});fitPage(i,{w:v1.width,h:v1.height});sz(p,i);
   if(!vis.has(i)){delete p.dataset.z;return}
   const k=Math.min(zoom*DPR,Math.sqrt(MAXPX/(v1.width*v1.height))),vp=virt?{width:v1.width*k,height:v1.height*k}:page.getViewport({scale:k});
   p.innerHTML="<canvas></canvas><canvas></canvas>";
@@ -1173,21 +1297,22 @@ docEl.addEventListener("touchstart",e=>{
     $$(".pg").forEach(p=>{const b=p.getBoundingClientRect(),d=m[1]<b.top?b.top-m[1]:m[1]>b.bottom?m[1]-b.bottom:0;if(d<bd){bd=d;best=p}});
     if(!best)return;const b=best.getBoundingClientRect();
     pz={d:tdist(e.touches)||1,z0:zoom,z:zoom,sx:m[0],sy:m[1],mx:m[0],my:m[1],i:best.dataset.i,pg:best,fx:(m[0]-b.left)/b.width,fy:(m[1]-b.top)/b.height};
-    best.style.transformOrigin=(m[0]-b.left)+"px "+(m[1]-b.top)+"px";best.style.willChange="transform"}
+    best.style.transformOrigin=(m[0]-b.left)+"px "+(m[1]-b.top)+"px";best.style.willChange="transform";docEl.style.overflow="hidden"}
   if(pz&&e.cancelable)e.preventDefault()},{passive:false});
 docEl.addEventListener("touchmove",e=>{
   if(!pz||e.touches.length<2)return;if(e.cancelable)e.preventDefault();
   const m=tmid(e.touches),z=Math.max(.5,Math.min(3,pz.z0*tdist(e.touches)/pz.d));pz.z=z;pz.mx=m[0];pz.my=m[1];
   pz.pg.style.transform=`translate(${m[0]-pz.sx}px,${m[1]-pz.sy}px) scale(${z/pz.z0})`},{passive:false});
 function pzEnd(e){
-  if(!pz||e.touches.length>=2)return;const p=pz;pz=null;
+  if(!pz||e.touches.length>=2)return;const p=pz;pz=null;docEl.style.overflow="";
   p.pg.style.transform="";p.pg.style.transformOrigin="";p.pg.style.willChange="";
   if(Math.abs(p.z-p.z0)<.01)return;
   setZoom(p.z);const pg=$(`.pg[data-i="${p.i}"]`);
   if(pg){const r=pg.getBoundingClientRect();docEl.scrollLeft+=r.left+p.fx*r.width-p.mx;docEl.scrollTop+=r.top+p.fy*r.height-p.my}}
 docEl.addEventListener("touchend",pzEnd,{passive:true});docEl.addEventListener("touchcancel",pzEnd,{passive:true});
-$("#po").onclick=e=>{penOnly=!penOnly;e.target.classList.toggle("on",penOnly);$$(".pg canvas:last-child").forEach(c=>c.style.touchAction=penOnly?"pan-x pan-y":"none")};
-let sct;addEventListener("scroll",()=>{clearTimeout(sct);sct=setTimeout(()=>{if(!pdf)return;for(const p of $$(".pg"))if(p.getBoundingClientRect().bottom>80){const next=+p.dataset.i;if(next!==curPage){curPage=next;change()}break}},500)},{passive:true});
+$("#po").classList.toggle("on",penOnly);
+$("#po").onclick=e=>{penOnly=!penOnly;try{localStorage.setItem("pa_penonly",penOnly?"1":"0")}catch(x){}$("#po").classList.toggle("on",penOnly);st(penOnly?"✍️ Pencil writes · finger scrolls":"✍️ Finger can write too");$$(".pg canvas:last-child").forEach(c=>c.style.touchAction=penOnly?"pan-x pan-y":"none")};
+let sct;$("#doc").addEventListener("scroll",()=>{clearTimeout(sct);sct=setTimeout(()=>{if(!pdf)return;const top=$("#doc").getBoundingClientRect().top+80;for(const p of $$(".pg"))if(p.getBoundingClientRect().bottom>top){const next=+p.dataset.i;if(next!==curPage){curPage=next;change()}break}},300)},{passive:true});
 addEventListener("visibilitychange",()=>{if(document.hidden){persist(true);clearTimeout(ina)}});addEventListener("pagehide",()=>{persist(true)});
 
 /* ===== EXPORT ===== */
@@ -1269,7 +1394,10 @@ $("#tg").onclick=()=>{const o=TG()||{},x=tgStat();$("#stk").value=o.t||"";$("#st
   if(!o.t)tgMsg("Telegram backup isn't set up yet. Enter your bot token and chat ID, tap “Send test”, then Save.","");
   else if(tgFailing())tgMsg("⚠️ The last backup attempt failed: "+x.err,"err");
   else tgMsg("✅ Telegram backup is set up."+(x.ok?" Last backup sent "+agoT(x.ok)+".":" Waiting for the first backup."),"ok");
-  sm.hidden=false};
+  sm.hidden=false;smView("main");smTgLabel();askPersist()};
+const smView=v=>{$$("#sm .smv").forEach(x=>x.hidden=x.id!=="sm-"+v);const b=$("#sm>div");if(b)b.scrollTop=0};
+const smTgLabel=()=>{$("#sm-tgb").textContent=(TG()||{}).t?"✈️ Telegram connected ✓ (edit)":"✈️ Connect Telegram"};
+$("#sm-ins").onclick=()=>smView("help");$("#sm-tgb").onclick=()=>smView("tg");$$("[data-smv]").forEach(b=>b.onclick=()=>smView(b.dataset.smv));
 $("#smx").onclick=()=>sm.hidden=true;sm.onclick=e=>{if(e.target===sm)sm.hidden=true};
 $("#stv").onclick=()=>{const h=$("#stk").type=="password";$("#stk").type=h?"text":"password";$("#stv").textContent=h?"🙈 Hide token":"👁 Show token"};
 $("#stt").onclick=async()=>{
@@ -1344,7 +1472,7 @@ $("#fm").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f||!
 
 /* ===== FILE OPEN ===== */
 $("#open").onclick=()=>{want=null;$("#fi").click()};
-$("#fi").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;const w=want;want=null;let wid=null;
+$("#fi").onchange=async e=>{fsEnter();const f=e.target.files[0];e.target.value="";if(!f)return;const w=want;want=null;let wid=null;
   try{if(w){const fp=await fpOf(f),r=await dbGet(w);if(r&&(r.fp?r.fp==fp:w==f.name+"|"+f.size))wid=w;else if(!confirm("This doesn't look like the same PDF — a new notebook will be created. Open anyway?"))return}}catch(x){}
   openFile(f,wid).catch(()=>st("❌ Couldn't open the PDF"))};
 $("#lib").onclick=()=>{if(location.hash=="#read")history.back();else showLib()};
@@ -1402,14 +1530,15 @@ async function tgSend(tg,f,c,mid){
   return ok(await tgCall(tg.t,"sendDocument",g,UPMS))}
 const done=(p)=>{p.dirty=0;p.sent=Date.now();if(p.sealed){p.es=[];p.ids=[]}};
 let flT=0;
-function flush(manual,force){if(!manual&&!force&&Date.now()-lastInk<8000){clearTimeout(flT);flT=setTimeout(()=>flush(0),8000);return Promise.resolve()}   /* background backup waits until you stop writing */
+function flush(manual,force,full){if(!manual&&!force&&Date.now()-lastInk<8000){clearTimeout(flT);flT=setTimeout(()=>flush(0),8000);return Promise.resolve()}   /* background backup waits until you stop writing */
   return lock(async()=>{
   try{
     if(pdf&&docId)await persist();
+    if(full){for(const r of (await dbAll())||[])await bPut({id:r.id,name:r.name,last:{},imgs:[],parts:[{n:1,es:[],ids:[],bytes:0,dirty:0}]})}   /* full backup: rebuild every notebook's backup from scratch and send it all */
     for(const r of (await dbAll())||[])await syncOne(r);
     const tg=TG(),out=[];let n=0;
     if(!tg){if(!manual)return;
-      if(confirm("Telegram backup isn't set up yet.\n\nOK = set up Telegram now (recommended)\nCancel = just save a backup file on this device")){$("#tg").click();return}}
+      if(confirm("Telegram backup isn't set up yet.\n\nOK = set up Telegram now (recommended)\nCancel = just save a backup file on this device")){$("#tg").click();smView("tg");return}}
     if(tg&&!manual&&navigator.onLine===false)return;   /* offline: retried automatically later */
     for(const b of (await bAll())||[])for(const p of b.parts){if(!p.dirty)continue;if(manual)st(`⏳ Sending ${b.name} (part ${p.n}) to Telegram…`);
       const f=await zipOf(b,p);
@@ -1724,7 +1853,7 @@ const LIM=45e6,INACT=12e4,EVERY=9e5;   /* Telegram: send 2 min after the last ed
 let busy=Promise.resolve();const lock=f=>busy=busy.catch(()=>{}).then(f);
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 async function checkBackup(){const t=TG(),bad=t&&tgFailing();if(t&&!bad)return;const docs=(await dbAll())||[];if(!docs.some(r=>r.n>0))return;$("#bnt").textContent=bad?"⚠️ Telegram backup is failing: "+tgStat().err:"✈️ Telegram backup isn't set up — your notes exist only on this device";$("#bnb").textContent=bad?"Fix":"Set up";$("#bn").hidden=false}
-$("#bnb").onclick=()=>{$("#bn").hidden=true;$("#tg").click()};$("#bnx").onclick=()=>$("#bn").hidden=true;
+$("#bnb").onclick=()=>{$("#bn").hidden=true;$("#tg").click();smView("tg")};$("#bnx").onclick=()=>$("#bn").hidden=true;
 
 
 /* ===== PRO FEATURES JS ===== */
@@ -1833,7 +1962,7 @@ $('[data-ptab="color"]').onclick=()=>$("#cc").click();
 const inPres=()=>document.body.classList.contains("pres");
 function goPage(i){curPage=i;const p=$(`.pg[data-i="${i}"]`);if(p)p.scrollIntoView(inPres()?{block:"center"}:{behavior:"smooth"})}
 $("#bkm").onclick=()=>{if(!pdf)return;bm.has(curPage)?bm.delete(curPage):bm.add(curPage);$("#bkm").classList.toggle("on",bm.has(curPage));st(bm.has(curPage)?"🔖 Page "+(curPage+1)+" bookmarked":"Bookmark removed");change();renderSb()};
-let bt;addEventListener("scroll",()=>{clearTimeout(bt);bt=setTimeout(()=>$("#bkm").classList.toggle("on",bm.has(curPage)),650)},{passive:true});
+let bt;$("#doc").addEventListener("scroll",()=>{clearTimeout(bt);bt=setTimeout(()=>$("#bkm").classList.toggle("on",bm.has(curPage)),650)},{passive:true});
 function movePage(f,t){const n=ord.length;if(f==t||t<0||t>=n)return;
   const map=i=>i==f?t:(f<t&&i>f&&i<=t)?i-1:(f>t&&i>=t&&i<f)?i+1:i,o2=ord.slice(),[x]=o2.splice(f,1);o2.splice(t,0,x);ord=o2;
   const A={},T={},Z=[],d=sizes.find(Boolean);for(let i=0;i<n;i++){if(anns[i])A[map(i)]=anns[i];if(tpl[i])T[map(i)]=tpl[i];if(sizes[i])Z[map(i)]=sizes[i]}
@@ -1954,7 +2083,7 @@ async function bake(ann){let d=await PL.PDFDocument.load(new Uint8Array(await fi
   d=await orderDoc(d);
   if(ann){const pg=d.getPages();for(const i in anns){if(!pg[i])continue;for(const o of anns[i])pg[i].node.addAnnot(await mk(d,o,pg[i].getHeight()))}}return d}
 function parseR(s,n){const out=[];for(const t of s.split(",")){const m=/^\s*(\d+)\s*(?:-\s*(\d+))?\s*$/.exec(t);if(!m)continue;let a=+m[1],b=+(m[2]||m[1]);if(a>b)[a,b]=[b,a];for(let i=Math.max(1,a);i<=Math.min(n,b);i++)out.push(i-1)}return out}
-$("#tools").onclick=$("#tools2").onclick=()=>$("#tm").hidden=false;$("#tmx").onclick=()=>$("#tm").hidden=true;
+$("#tools").onclick=()=>$("#tm").hidden=false;$("#tmx").onclick=()=>$("#tm").hidden=true;
 $("#tm").onclick=e=>{if(e.target.id=="tm")$("#tm").hidden=true};
 $$("[data-tl]").forEach(b=>b.onclick=()=>{$("#tm").hidden=true;const k=b.dataset.tl;
   if(k=="merge")$("#fmg").click();else if(k=="img")$("#fip").click();else if(k=="sig"){sg0()}
@@ -1969,7 +2098,7 @@ let addingPg=false;
 const pgNow=()=>Math.max(0,Math.min(curPage,ord.length-1));
 function pageState(){return{anns:structuredClone(anns),ord:[...ord],bm:[...bm],tpl:structuredClone(tpl),sizes:sizes.map(z=>z&&{w:z.w,h:z.h}),page:curPage}}
 function rebuildPages(){const d=$("#doc");io.disconnect();$$(".pg").forEach(p=>free(+p.dataset.i));vis.clear();d.innerHTML="";
-  for(let i=0;i<ord.length;i++){const p=document.createElement("div");p.className="pg";p.dataset.i=i;sz(p,i);d.append(p);io.observe(p)}}
+  for(let i=0;i<ord.length;i++){const p=document.createElement("div");p.className="pg";p.dataset.i=i;sz(p,i);d.append(p);io.observe(p)}preloadSizes()}
 async function restorePageState(S){
   if(!S||!Array.isArray(S.ord))throw new Error("Missing page-history snapshot");
   const H=hist,R=redo;clearSaveTimers();
@@ -2080,12 +2209,8 @@ async function netUpd(){const c=SV();let p=0;
 $("#st").insertAdjacentHTML("beforebegin",'<span class="net" style="font-size:12px;opacity:.75;white-space:nowrap"></span>');
 $("#tools").closest(".mcell").insertAdjacentHTML("beforebegin",'<div class="mcell"><button class="ibtn" id="svb" title="Send to server now">☁️</button><span>Send to server</span></div>');
 $("#hact").insertAdjacentHTML("beforeend",'<button id="svh">☁️ Send to server</button><span class="net" style="font-size:13px;opacity:.8;align-self:center"></span>');
+$("#svh").hidden=true;{const m=$("#svb").closest(".mcell");if(m)m.hidden=true}
 $("#svb").onclick=$("#svh").onclick=()=>svSync(1);
-$("#sm hr").insertAdjacentHTML("beforebegin",`<label>☁️ Your own server (optional, secondary sync)</label>
-<label for="svu">Server URL (POST endpoint)</label><input id="svu" type="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://yourserver.com/api/annotations">
-<label for="svt">Token (optional, Bearer)</label><input id="svt" type="password" autocomplete="off" spellcheck="false">
-<label class="ck"><input type="checkbox" id="sva"><span>Send automatically when online</span></label>
-<div class="row"><button id="svn">☁️ Send now</button></div><hr>`);
 $("#tg").addEventListener("click",()=>{const c=SV()||{auto:true};$("#svu").value=c.u||"";$("#svt").value=c.t||"";$("#sva").checked=c.auto!==false});
 $("#svu").oninput=e=>svSave({u:e.target.value.trim()});$("#svt").oninput=e=>svSave({t:e.target.value.trim()});$("#sva").onchange=e=>svSave({auto:e.target.checked});
 $("#svn").onclick=()=>svSync(1);
@@ -2096,7 +2221,7 @@ setInterval(()=>{netUpd();svAuto()},30000);setTimeout(()=>{netUpd();svAuto()},30
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.28",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.33",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -2112,7 +2237,7 @@ async function resolveId(f,fp,wid){const all=(await dbAll())||[];
   if(sn&&confirm(`Notes already exist for a PDF with this name:\n\n«${f.name.replace(/\.pdf$/i,"")}» · ${sn.n} annotations · edited ${agoT(sn.t||0)}\n\nOK = same PDF (keep using these notes)\nCancel = a different PDF (start a new notebook)`))return sn.id
   return"fp:"+fp}                                                       /* different PDF → different ID, never mixed */
 /* meta store + mirror DB (second copy) */
-const mx=async(m,f)=>{const d=await DB;return new Promise((res,rej)=>{const t=d.transaction("meta",m),o=f(t.objectStore("meta"));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)})};
+const mx=(m,f)=>idb("meta",m,f);
 const metaGet=k=>mx("readonly",o=>o.get(k)),metaPut=(k,v)=>mx("readwrite",o=>o.put(v,k));
 const MDB=new Promise((res,rej)=>{const r=indexedDB.open("pa_mirror",1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("docs"))r.result.createObjectStore("docs",{keyPath:"id"})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
 const mirPut=async v=>{try{(await MDB).transaction("docs","readwrite").objectStore("docs").put(v)}catch(e){}};
@@ -2120,7 +2245,7 @@ const mirDel=async id=>{try{(await MDB).transaction("docs","readwrite").objectSt
 const mirAll=async()=>{try{const d=await MDB;return await new Promise((res,rej)=>{const q=d.transaction("docs").objectStore("docs").getAll();q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}catch(e){return[]}};
 const dbPutM=async v=>{await dbPut(v);mirPut(v)};
 async function askPersist(){try{if(!navigator.storage)return false;let p=await navigator.storage.persisted();if(!p&&navigator.storage.persist)p=await navigator.storage.persist();return p}catch(e){return false}}
-document.addEventListener("click",askPersist,{once:true});
+document.addEventListener("click",askPersist,{once:true});askPersist();addEventListener("pageshow",()=>askPersist());document.addEventListener("visibilitychange",()=>{if(!document.hidden)askPersist()});
 async function bootStorage(){
   askPersist();let docs=(await dbAll())||[];
   if(!docs.length){const m=await mirAll();if(m.length){for(const r of m)await dbPut(r);docs=m;st(`♻️ ${m.length} notebook(s) restored automatically`)}}
@@ -2137,15 +2262,13 @@ if("serviceWorker"in navigator){let had=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)applyUpdate("new");had=true});
   navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.type=="sw-version"){SWV=e.data.v;verUpd();if(SWV!==APP_VERSION)applyUpdate(SWV,1)}})}
 function verUpd(){const t=`v${APP_VERSION} · data schema ${SCHEMA}`+(SWV?` · SW v${SWV}`:"");$$(".ver").forEach(e=>e.textContent=t)}
-$("#home").insertAdjacentHTML("beforeend",'<div class="ver" style="text-align:center;font-size:12px;opacity:.5;margin-top:24px"></div>');verUpd();
-$("#sm h2").insertAdjacentHTML("afterend",`<div id="stinfo" style="font-size:13px;line-height:1.7;background:var(--btn-bg);border-radius:10px;padding:10px"></div>
-<div class="row"><button id="stp">🔒 Request persistent storage</button><button id="stb">💾 Full backup now</button></div>`);
+$("#hside").insertAdjacentHTML("beforeend",'<div class="ver"></div>');verUpd();
 async function stInfo(){let q="",p=await askPersist(),n=((await dbAll())||[]).length,m=(await mirAll()).length;
   try{const e=await navigator.storage.estimate();q=`${(e.usage/1e6).toFixed(1)} MB / ${(e.quota/1e9).toFixed(1)} GB`}catch(x){}
   const ins=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
   $("#stinfo").innerHTML=`<b>Version:</b> v${APP_VERSION} · schema ${SCHEMA}${SWV?" · SW v"+SWV:""}<br><b>Notebooks:</b> ${n} (second copy: ${m})<br><b>Storage:</b> ${q||"—"}<br>`+
    (p?"🔒 Persistent storage is on — the browser won't clear your data automatically":"⚠️ Persistent storage is off — the browser may clear data when space runs low")+"<br>"+(ins?"📲 Installed as an app":"ℹ️ Installing the app keeps your data safer")}
-$("#tg").addEventListener("click",stInfo);$("#stp").onclick=async()=>{await askPersist();stInfo()};$("#stb").onclick=()=>{sm.hidden=true;flush(1)};
+$("#tg").addEventListener("click",stInfo);$("#stp").onclick=async()=>{await askPersist();stInfo()};$("#stb").onclick=()=>{if(!TG()){smView("tg");tgMsg("Connect Telegram first, then tap Full backup now.","err");return}st("⏳ Full backup started…");flush(1,1,1)};
 
 /* ===== TOOLBAR: popovers for every tool + scroll + drag-to-reorder ===== */
 document.body.insertAdjacentHTML("beforeend",`
@@ -2221,4 +2344,25 @@ $$(".sw").forEach(b=>b.addEventListener("click",()=>setTimeout(syncW,0)));
 })();
 
 applyTheme(0);if(location.hash=="#read")history.replaceState(null,"",location.pathname+location.search);bootStorage().catch(()=>{}).then(()=>{showLib();checkBackup()});flush(0);setInterval(()=>flush(0),EVERY);
+
+/* ===== v1.4.29 — resume guard: self-heal when iOS freezes the app in the background ===== */
+let _hid=0,_ck=0,_pd=null,_miss=0;
+function unstick(){try{if(!pdf){const d=$("#add-page-dialog");if(d)d.remove()}tp.clear();tpT.clear();tpS.clear();inkDown=false}catch(e){}}
+const _probe=()=>Promise.race([idb("docs","readonly",o=>o.count()).then(()=>1,()=>0),new Promise(r=>setTimeout(()=>r(0),5000))]);
+function safeReload(){if(pdf&&dirtySince)return;try{const l=+sessionStorage.getItem("pa_hc")||0;if(Date.now()-l<60000)return;sessionStorage.setItem("pa_hc",String(Date.now()))}catch(e){}location.reload()}
+async function healthCheck(){if(await _probe())return;DB=openDB();if(await _probe())return;safeReload()}
+document.addEventListener("visibilitychange",()=>{if(document.hidden){_hid=Date.now()}else{unstick();if(Date.now()-_hid>5000)healthCheck()}});
+addEventListener("pageshow",e=>{unstick();if(e.persisted)healthCheck()});
+/* dead-tap detector (home screen / settings only): a clean tap that never produces a click, 3 times in a row → reload */
+document.addEventListener("click",()=>{_ck=Date.now();_miss=0},true);
+document.addEventListener("pointerdown",e=>{_pd=(!pdf||!$("#sm").hidden)&&e.pointerType!=="pen"?{t:Date.now(),x:e.clientX,y:e.clientY}:null},{capture:true,passive:true});
+document.addEventListener("pointerup",e=>{const d=_pd;_pd=null;if(!d||e.pointerType==="pen")return;
+  if(Date.now()-d.t>600||Math.hypot(e.clientX-d.x,e.clientY-d.y)>10)return;
+  const b=e.target&&e.target.closest&&e.target.closest("#home button,#sm button");if(!b||b.disabled)return;
+  const t0=Date.now();setTimeout(()=>{if(_ck>=t0)return;if(++_miss>=3){_miss=0;safeReload()}},600)},{capture:true,passive:true});
+
+/* ===== v1.4.30 — home layout: left menu / right content ===== */
+$$("#hside [data-ht]").forEach(b=>b.addEventListener("click",()=>homeTab(b.dataset.ht)));
+["#bk","#rs"].forEach(id=>$(id).addEventListener("click",()=>homeTab("nb")));   /* show progress / status in the Notebook pane */
+homeTab("nb");
 </script></body></html>
