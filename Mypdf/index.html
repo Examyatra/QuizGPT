@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.21">
+<meta name="app-version" content="1.4.28">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -599,6 +599,13 @@ let pdf,file,url,name="",docId=null,zoom=LOW?1:1.2,tool="pen",previousTool="lass
 let ina,anns={},sizes=[],hist=[],redo=[],timer,vis=new Set(),q=Promise.resolve();
 const COL=["#e11d48","#2563eb","#16a34a","#f59e0b","#111111","#ffffff"];
 let ord=[],bm=new Set(),tpl={},SR={},TXT={},selObjs=[],selPage=-1,lz=null,lm=null,lastMv=0,lastPen=0,lastInk=0,shapeOn=false,palm=true,curStamp="✅",stampS=40;
+/* ===== virtual (inserted) pages =====
+   Added pages are NOT written into the PDF. The PDF file never changes, so its fingerprint stays the same and every backup/restore
+   finds the right notebook. An inserted page is just an entry in the page order (ord): a string "b<width>x<height>" instead of a PDF page number. */
+const isV=v=>typeof v=="string";
+const vSize=v=>{const m=/^b([\d.]+)x([\d.]+)$/.exec(v);return m?{w:+m[1],h:+m[2]}:{w:595.28,h:841.89}};
+const mkV=z=>"b"+(+z.w).toFixed(2)+"x"+(+z.h).toFixed(2);
+const okOrd=(o,n)=>Array.isArray(o)&&o.every(v=>isV(v)?/^b[\d.]+x[\d.]+$/.test(v):(Number.isInteger(v)&&v>=0&&v<n))&&new Set(o.filter(v=>!isV(v))).size==n;
 const st=t=>{$("#st").textContent=t;const h=$("#hst");if(h)h.textContent=t};
 
 /* ===== TEXT + IMAGE EDITING ===== */
@@ -629,7 +636,7 @@ document.body.insertAdjacentHTML("beforeend",`<div id="tbar" hidden><div id="tb-
 <div id="cbar" hidden><button class="pb on" id="cb-ok">✓ Done</button><button class="pb" id="cb-rs">↺ Reset</button><button class="pb" id="cb-x">✕ Cancel</button></div>`);
 function selTSet(o,i){const old=selT?selT.i:-1;selT=o?{o,i}:null;if(old>=0&&old!=i)draw(old);if(i>=0)draw(i);showTbar()}
 function showTbar(){const b=$("#tbar");if(!selT||TEDIT||CROP){b.hidden=true;return}b.hidden=false;const o=selT.o;
-  $("#tb-n").textContent=tBox(o).L.length;$("#tb-b").classList.toggle("on",!!o.b);
+  {const _n=$("#tb-n");if(_n)_n.textContent=tBox(o).L.length}$("#tb-b").classList.toggle("on",!!o.b);
   const cs=$("#tb-cols");cs.innerHTML="";const seen=new Set();
   $$(".sw").forEach(sw=>{const c=sw.dataset.c;if(!c||seen.has(c))return;seen.add(c);const d=document.createElement("button");d.className="tbc"+(c.toLowerCase()==String(o.c).toLowerCase()?" on":"");d.style.background=c;d.onclick=()=>tChange(()=>{o.c=c});cs.append(d)});
   const lb=document.createElement("label");lb.className="tbc";lb.title="Custom color";lb.innerHTML='+<input type="color">';
@@ -916,7 +923,7 @@ async function persist(urgent=false){
   if(!docId||!pdf)return;
   // Do not clone large annotation arrays while a pen/finger is actively drawing.
   // Even a visibility-triggered flush is deferred briefly if an active stroke exists.
-  if(down){deferUntilPointerUp();return}
+  if(inkIsDown()&&!urgent){deferUntilPointerUp();return}
   clearSaveTimers();
   const rev=++saveRevision;
   const id=docId, fp=curFp,pfp=curPfp,docName=name,page=curPage,np=pdf.numPages,order=[...ord],bookmarks=[...bm],templates=tpl;
@@ -971,13 +978,13 @@ async function openFile(f,wid){
   if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(f);
   try{pdf=await pdfjsLib.getDocument({url,disableAutoFetch:true,rangeChunkSize:131072}).promise}
   catch(e){pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise}
-  const v=(await pdf.getPage(1)).getViewport({scale:1});sizes=[{w:v.width,h:v.height}];curPfp=(pdf.fingerprints&&pdf.fingerprints[0])||"";ord=(ex&&ex.ord&&ex.ord.length==pdf.numPages)?ex.ord:[...Array(pdf.numPages).keys()];bm=new Set(ex&&ex.bm||[]);tpl=(ex&&ex.tpl)||{};SR={};TXT={};selObjs=[];
+  const v=(await pdf.getPage(1)).getViewport({scale:1});sizes=[{w:v.width,h:v.height}];curPfp=(pdf.fingerprints&&pdf.fingerprints[0])||"";ord=(ex&&okOrd(ex.ord,pdf.numPages))?[...ex.ord]:[...Array(pdf.numPages).keys()];ord.forEach((v,i)=>{if(isV(v))sizes[i]=vSize(v)});bm=new Set(ex&&ex.bm||[]);tpl=(ex&&ex.tpl)||{};SR={};TXT={};selObjs=[];
   zoom=Math.max(.5,Math.min(1.6,(innerWidth-24)/v.width));
   const d=$("#doc");d.innerHTML="";go("read");if(location.hash!="#read")location.hash="read";
   // Update doc tab
   const dt=document.getElementById("doctab");dt.hidden=false;
   document.getElementById("doctab-name").textContent=name.replace(/\.pdf$/i,"");
-  for(let i=0;i<pdf.numPages;i++){const p=document.createElement("div");p.className="pg";p.dataset.i=i;sz(p,i);d.append(p);io.observe(p)}
+  for(let i=0;i<ord.length;i++){const p=document.createElement("div");p.className="pg";p.dataset.i=i;sz(p,i);d.append(p);io.observe(p)}
   st("✅ Auto-save on");persist();thumb(pdf,docId);
   requestAnimationFrame(()=>{const p=$(`.pg[data-i="${curPage}"]`);if(p)p.scrollIntoView()});
 }
@@ -987,13 +994,15 @@ function free(i){const p=$(`.pg[data-i="${i}"]`);if(!p)return;(anns[i]||[]).forE
 const render=i=>{q=q.then(()=>draw1(i)).catch(()=>{})};
 async function draw1(i){
   const p=$(`.pg[data-i="${i}"]`);if(!p||!pdf||!vis.has(i)||p.dataset.z==zoom)return;p.dataset.z=zoom;
-  const page=await pdf.getPage(ord[i]+1),v1=page.getViewport({scale:1});sizes[i]={w:v1.width,h:v1.height};sz(p,i);
+  const ov=ord[i],virt=isV(ov),page=virt?null:await pdf.getPage(ov+1),v1=virt?{width:vSize(ov).w,height:vSize(ov).h}:page.getViewport({scale:1});sizes[i]={w:v1.width,h:v1.height};sz(p,i);
   if(!vis.has(i)){delete p.dataset.z;return}
-  const k=Math.min(zoom*DPR,Math.sqrt(MAXPX/(v1.width*v1.height))),vp=page.getViewport({scale:k});
+  const k=Math.min(zoom*DPR,Math.sqrt(MAXPX/(v1.width*v1.height))),vp=virt?{width:v1.width*k,height:v1.height*k}:page.getViewport({scale:k});
   p.innerHTML="<canvas></canvas><canvas></canvas>";
   const [c,ink]=p.children;c.width=ink.width=vp.width;c.height=ink.height=vp.height;
   ink.style.touchAction=penOnly?"pan-x pan-y":"none";bind(ink,p,i);
-  await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}page.cleanup();draw(i);
+  if(virt){const x=c.getContext("2d");x.fillStyle=DK?"#000":"#fff";x.fillRect(0,0,c.width,c.height)}
+  else{await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}page.cleanup()}
+  draw(i);
 }
 function paintSeg(c,o,from,raw){const P=o.p,n=P.length;c.lineCap=c.lineJoin="round";c.strokeStyle=raw?o.c:dc(o.c);   /* variable-width stroke; segments of equal width share one path */
   const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];let bk=-1,open=false;
@@ -1145,6 +1154,15 @@ $("#doc").addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault
 
 /* ===== 2-finger pinch zoom (works while scrolling AND while writing) ===== */
 let pz=null;const docEl=$("#doc");
+/* touch-pointer tracker (palm / extra-finger rejection + pinch) and global "stroke in progress" flag used by persist() */
+const tp=new Set(),tpT=new Map(),tpS=new Map(),TP_STALE=4000,TP_FRESH=1500;
+function tpPrune(){const n=Date.now();for(const id of[...tp])if(n-(tpT.get(id)||0)>TP_STALE){tp.delete(id);tpT.delete(id);tpS.delete(id)}}
+function othersFresh(id){const n=Date.now();for(const o of tp)if(o!==id&&n-(tpT.get(o)||0)<TP_FRESH)return true;return false}
+let inkDown=false,inkDownAt=0;
+const inkIsDown=()=>inkDown&&Date.now()-inkDownAt<8000;
+document.addEventListener("pointerdown",e=>{if(e.target&&e.target.closest&&e.target.closest("#doc")){inkDown=true;inkDownAt=Date.now()}},{capture:true,passive:true});
+document.addEventListener("pointermove",e=>{if(inkDown)inkDownAt=Date.now()},{capture:true,passive:true});
+["pointerup","pointercancel"].forEach(ev=>document.addEventListener(ev,()=>{inkDown=false},{capture:true,passive:true}));
 document.addEventListener("pointerdown",e=>{if(e.pointerType=="touch"){tpPrune();tp.add(e.pointerId);tpT.set(e.pointerId,Date.now());tpS.set(e.pointerId,Date.now())}},{capture:true,passive:true});
 document.addEventListener("pointermove",e=>{if(e.pointerType=="touch"&&tpT.has(e.pointerId))tpT.set(e.pointerId,Date.now())},{capture:true,passive:true});
 ["pointerup","pointercancel"].forEach(ev=>document.addEventListener(ev,e=>{if(e.pointerType=="touch"){tp.delete(e.pointerId);tpT.delete(e.pointerId);tpS.delete(e.pointerId)}},{capture:true,passive:true}));
@@ -1207,7 +1225,7 @@ $("#saveb").onclick=async()=>{
   st("⏳ Exporting…");
   try{
     let doc=await PL.PDFDocument.load(new Uint8Array(await file.arrayBuffer()));
-    if(ord.some((v,i)=>v!=i)){const o2=await PL.PDFDocument.create();(await o2.copyPages(doc,ord)).forEach(p=>o2.addPage(p));doc=o2}
+    doc=await orderDoc(doc);
     const pgs=doc.getPages();
     for(const i in anns){const pg=pgs[i];if(!pg)continue;for(const o of anns[i])pg.node.addAnnot(await mk(doc,o,pg.getHeight()))}
     const a=document.createElement("a"),u=URL.createObjectURL(new Blob([await doc.save()],{type:"application/pdf"}));
@@ -1349,10 +1367,11 @@ async function syncOne(r){
   if(p.es.length){let rm=0;p.es=p.es.filter(e=>{try{const o=JSON.parse(e.d);let hit=0;for(const k of Object.keys(ch))if(o.pages&&k in o.pages){delete o.pages[k];hit=1}
     if(!hit)return true;if(!Object.keys(o.pages).length){rm+=e.d.length;return false}const nd=JSON.stringify(o);rm+=e.d.length-nd.length;e.d=nd;return true}catch(x){return true}});p.bytes=Math.max(0,p.bytes-rm)}  /* newer snapshot replaces older ones of the same page → zip stays small */
   p.es=p.es.filter(e=>{try{return Object.keys(JSON.parse(e.d).pages||{}).length>0}catch(x){return true}});   /* the newest entry already carries the latest page order / bookmarks → drop old structure-only entries */
-  p.es.push({f:stamp(ts)+".json",d});p.ids.push(...nw);b.imgs.push(...nw);p.bytes+=add;p.dirty=1;await bPut(b);
+  const used=new Set(b.parts.flatMap(q=>q.es.map(e=>e.f)));let fn=stamp(ts),u=1;while(used.has(fn+".json"))fn=stamp(ts)+"-"+(++u);   /* two saves in the same second must never share a file name */
+  p.es.push({f:fn+".json",d});p.ids.push(...nw);b.imgs.push(...nw);p.bytes+=add;p.dirty=1;await bPut(b);
 }
 async function autoSync(){await persist();flush(0)}
-addEventListener("visibilitychange",()=>{if(document.hidden)clearTimeout(ina)});
+addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(ina);flush(0,1)}else flush(0)});   /* leaving the app: send what is pending right away (retried later if the phone suspends the app) */
 /* app settings (signature, pen presets, colors, theme) travel inside every backup zip — never the Telegram token */
 const SETK=k=>k=="pa_sig"||k=="pa_presets"||k=="pa_cust"||k=="pa_colrm"||k=="pa_toolorder"||k=="pa_theme"||k=="pa_pinv"||k.startsWith("pa_pen_");
 const appSettings=()=>{const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(SETK(k))o[k]=localStorage.getItem(k)}}catch(e){}return o};
@@ -1383,7 +1402,7 @@ async function tgSend(tg,f,c,mid){
   return ok(await tgCall(tg.t,"sendDocument",g,UPMS))}
 const done=(p)=>{p.dirty=0;p.sent=Date.now();if(p.sealed){p.es=[];p.ids=[]}};
 let flT=0;
-function flush(manual){if(!manual&&Date.now()-lastInk<8000){clearTimeout(flT);flT=setTimeout(()=>flush(0),8000);return Promise.resolve()}   /* background backup waits until you stop writing */
+function flush(manual,force){if(!manual&&!force&&Date.now()-lastInk<8000){clearTimeout(flT);flT=setTimeout(()=>flush(0),8000);return Promise.resolve()}   /* background backup waits until you stop writing */
   return lock(async()=>{
   try{
     if(pdf&&docId)await persist();
@@ -1404,7 +1423,7 @@ function flush(manual){if(!manual&&Date.now()-lastInk<8000){clearTimeout(flT);fl
     if(n){try{localStorage.setItem("pa_lastbackup",Date.now())}catch(e){}$("#bn").hidden=true;if(tg)tgNote(1);if(!pdf)await showLib();st(tg?`✈️ ${n} backup file(s) sent to Telegram`:"🛟 Backup saved on this device")}
     else if(manual)st(tg?"✈️ Telegram backup is up to date — nothing new to send":"🛟 Nothing new to back up")
   }catch(e){const msg=(e&&e.message)||String(e);
-    if(TG()){tgNote(0,msg);if(!pdf){showLib();checkBackup()}st("❌ Telegram backup failed: "+msg)}else if(manual)st("❌ Backup failed: "+msg);
+    if(TG()){if(!document.hidden)tgNote(0,msg);if(!pdf){showLib();checkBackup()}st("❌ Telegram backup failed: "+msg)}else if(manual)st("❌ Backup failed: "+msg);
     if(manual)alert("❌ Backup failed\n\n"+msg+"\n\nYour notes are still safe on this device, and the app will retry automatically.")}
 })}
 const netDot=$("#net");
@@ -1436,38 +1455,264 @@ $("#manualsave").onclick=async()=>{
 };
 $("#rs").onclick=()=>$("#fj").click();
 const putDoc=async r=>{const x=await dbGet(r.id);if(!x||(x.t||0)<(r.t||0)){await dbPut(r);return 1}return 0};
-$("#fj").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(!fl.length)return;let n=0,mx=0,ns=0;const E=[],ds=new Set(),bad=[],filled=new Set();
-  try{const loc=(await dbAll())||[],byFp=new Map();for(const r of loc){if(r.fp)byFp.set("f"+r.fp,r.id);if(r.pfp)byFp.set("p"+r.pfp,r.id)}
-    const mapId=d=>byFp.get("f"+d.fp)||byFp.get("p"+d.pfp)||d.id;   /* same PDF (by fingerprint) → same notebook, whatever the old ID or file name was */
-    for(const f of fl){const m=/-part(\d+)/i.exec(f.name);if(m)mx=Math.max(mx,+m[1]);
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RESTORE ENGINE v1.4.27 — ord-aware, per-page, conflict-safe
+   ══════════════════════════════════════════════════════════════════════════
+
+   Core insight:  anns keys are POSITION INDICES into the ord[] array.
+   ord[i] = real PDF page number  OR  virtual string "b<w>x<h>".
+   Two notebooks that have different ords cannot be merged by index alone —
+   the same index can point to different physical pages in each notebook.
+
+   Solution:  REMAP backup anns from backup-ord-space → local-ord-space
+   before merging, using PDF page numbers as the stable identity for real
+   pages, and position-among-virtuals as identity for blank inserted pages.
+
+   Rules applied after remapping (per remapped local slot):
+     1. Backup ts > local ts  → backup wins (overwrite).
+     2. Backup ts ≤ local ts, local slot empty  → backup fills.
+     3. Both have content, backup not newer  → union merge (no duplicates).
+     4. Backup has nothing for this slot  → local is kept as-is.
+
+   Virtual-page (blank inserted page) handling:
+     • Real page N exists in both ords  → matched by PDF page number.
+     • Virtual page at backup position i  → matched to the local slot that
+       is also virtual AND has the same relative ordinal among all virtual
+       pages in both ords.  If no match exists, the virtual page and its
+       annotations are APPENDED to local as a new page at the end.
+     • Appending a new virtual page requires extending local.ord; this is
+       done safely only when the entry is authoritative (newer than local).
+
+   Fingerprint mismatch (re-exported / externally-annotated PDF):
+     • When fp doesn't match any local notebook, we look for same-name
+       notebooks and ask the user once per PDF whether to merge.
+     • After user confirms, the remap still runs — so even when the other
+       app added/removed pages, every annotation lands on the right page.
+
+   Multi-part restore:
+     • Entries sorted oldest→newest; per-page timestamps (pageTs{}) decide
+       the winner, replacing the old "filled" Set that had a part-ordering bug.
+
+   Images restored before annotations so img-type objects resolve immediately.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Merge two annotation arrays — union, deduplicated by JSON equality. */
+function mergeAnns(local,backup){
+  if(!local||!local.length)return backup&&backup.length?backup:[];
+  if(!backup||!backup.length)return local;
+  const seen=new Set(local.map(o=>JSON.stringify(o)));
+  return [...local,...backup.filter(o=>!seen.has(JSON.stringify(o)))]}
+
+/* Build a lookup: ordArray → Map<pdfPageNum, localIndex>
+   and a list of [localIndex] for virtual pages in order. */
+function ordMaps(ordArr){
+  const realToIdx=new Map(),virtIdxs=[];
+  if(!Array.isArray(ordArr))return{realToIdx,virtIdxs};
+  ordArr.forEach((v,i)=>{if(typeof v==="string")virtIdxs.push(i);else realToIdx.set(v,i)});
+  return{realToIdx,virtIdxs}}
+
+/* Remap backup {pages} from backup-ord-space to local-ord-space.
+   Returns {remapped:{localIdx→anns[]}, orphanVirts:[{anns,vSize}]}
+   orphanVirts: virtual pages in backup that have no matching virtual in local
+   — caller decides whether to append them. */
+function remapPages(backupPages,backupOrd,localOrd){
+  const remapped={},orphanVirts=[];
+  if(!backupOrd||!localOrd){
+    /* No ord info — fall back to direct index copy (pre-v1 backups) */
+    for(const k in backupPages)remapped[k]=backupPages[k];
+    return{remapped,orphanVirts}}
+  const{realToIdx:localReal,virtIdxs:localVirts}=ordMaps(localOrd);
+  const{virtIdxs:backupVirts}=ordMaps(backupOrd);
+  /* Track which local virtual slots have already been claimed this call */
+  const usedLocalVirt=new Set();
+  backupOrd.forEach((bVal,bIdx)=>{
+    const anns=backupPages[bIdx];
+    if(!anns||!anns.length)return;   /* nothing to place */
+    if(typeof bVal==="string"){
+      /* Virtual page: match by ordinal position among virtual pages */
+      const vOrdinal=backupVirts.indexOf(bIdx);
+      /* Find the vOrdinal-th unused local virtual slot */
+      let matched=false;
+      for(let k=0;k<localVirts.length;k++){
+        const lv=localVirts[k];
+        if(usedLocalVirt.has(lv))continue;
+        if(k===vOrdinal){usedLocalVirt.add(lv);remapped[lv]=anns;matched=true;break}}
+      if(!matched){
+        /* No matching local virtual slot — this is an orphan virtual page */
+        const sz=/^b([\d.]+)x([\d.]+)$/.exec(bVal);
+        orphanVirts.push({anns,w:sz?+sz[1]:595.28,h:sz?+sz[2]:841.89})}}
+    else{
+      /* Real PDF page: match by PDF page number */
+      const lIdx=localReal.get(bVal);
+      if(lIdx!==undefined)remapped[lIdx]=anns;
+      /* else: this real PDF page doesn't exist in local ord (deleted/reordered) — skip */
+    }});
+  return{remapped,orphanVirts}}
+
+/* Ask user once per PDF-name whether to merge a fingerprint-mismatched backup. */
+const fpMergeCache=new Map();
+async function askFpMerge(backupName,localName,backupAnnCount){
+  const key=backupName+"||"+localName;
+  if(fpMergeCache.has(key))return fpMergeCache.get(key);
+  const r=confirm(
+    "📄 PDF re-exported or annotated externally — fingerprint differs.\n\n"+
+    "Backup:  «"+backupName.replace(/\.pdf$/i,"")+"»  ("+backupAnnCount+" annotation(s))\n"+
+    "Current: «"+localName.replace(/\.pdf$/i,"")+"»\n\n"+
+    "OK  = Merge backup annotations into the current notebook\n"+
+    "       (each annotation is placed on the matching PDF page;\n"+
+    "        inserted blank pages are matched by position)\n\n"+
+    "Cancel = Skip — keep the current notebook untouched");
+  fpMergeCache.set(key,r);return r}
+
+$("#fj").onchange=async e=>{
+  const fl=[...e.target.files];e.target.value="";if(!fl.length)return;
+  let n=0,mx=0,ns=0;
+  const E=[],ds=new Set(),bad=[],parts={};
+  try{
+    /* ── 1. Load local notebooks; build fingerprint→id maps ── */
+    const loc=(await dbAll())||[],byFp=new Map();
+    for(const r of loc){
+      if(r.fp)byFp.set("f"+r.fp,r.id);
+      if(r.pfp)byFp.set("p"+r.pfp+"|"+(r.np||0),r.id)}
+    const mapId=d=>{
+      if(d.fp){const v=byFp.get("f"+d.fp);if(v)return v}
+      if(d.pfp){const v=byFp.get("p"+d.pfp+"|"+(d.np||0));if(v)return v}
+      return d.id};
+
+    /* ── 2. Parse and CRC32+checksum-verify zip files ── */
+    for(const f of fl){
+      const m=/-part(\d+)/i.exec(f.name);if(m)mx=Math.max(mx,+m[1]);
       if(/\.zip$/i.test(f.name)){
         let ent=[],imgs=[],info=null,set=null,meta=null;
-        try{const z=await JSZip.loadAsync(f);
+        try{
+          const z=await JSZip.loadAsync(f,{checkCRC32:true});
           for(const p in z.files){const y=z.files[p];if(y.dir)continue;
             if(p.startsWith("img/"))imgs.push([p.slice(4).replace(/\.jpg$/,""),await y.async("arraybuffer")]);
             else if(p.startsWith("entries/")){const d=await y.async("string");ent.push({f:p.slice(8),d,o:JSON.parse(d)})}
             else if(p=="app-settings.json")set=await y.async("string");
             else if(p=="info.json")info=JSON.parse(await y.async("string"));
             else if(p=="meta.json")meta=JSON.parse(await y.async("string"))}
-          if(info&&info.checksum){const q=new Map(ent.map(x=>[x.f,x])),es=(info.files||[]).map(k=>q.get(k));if(es.some(x=>!x)||await sumOf(es)!==info.checksum)throw 0}}
-        catch(x){bad.push(f.name);continue}   /* damaged / incomplete zip → nothing from it is imported */
-        if(info&&info.part)mx=Math.max(mx,+info.part);
+          if(info&&info.checksum){
+            const q=new Map(ent.map(x=>[x.f,x])),es=(info.files||[]).map(k=>q.get(k));
+            if(es.some(x=>!x)||await sumOf(es)!==info.checksum)throw 0}}
+        catch(x){bad.push(f.name);continue}
+        if(info&&info.part){
+          mx=Math.max(mx,+info.part);
+          if(info.doc&&info.doc.id){
+            const P=parts[info.doc.id]=parts[info.doc.id]||{n:info.doc.name||"PDF",s:new Set()};
+            P.s.add(+info.part)}}
+        /* Images first — annotation objects referencing them resolve immediately */
         for(const[id,buf]of imgs)await iPut(id,buf);
         for(const x of ent)E.push(x.o);
         if(set){try{const o=JSON.parse(set);for(const k in o)if(SETK(k)&&localStorage.getItem(k)==null){localStorage.setItem(k,o[k]);ns++}}catch(x){}}
         if(meta)n+=await putDoc(meta)}
       else{try{const j=JSON.parse(await f.text());for(const r of j.docs||[])n+=await putDoc(r)}catch(x){bad.push(f.name)}}}
+
+    /* ── 3. Sort oldest→newest; later entries always win per-page ── */
     E.sort((a,b)=>a.ts-b.ts);
-    for(const en of E){const id=mapId(en.doc),x=(await dbGet(id))||{id,sv:SCHEMA,anns:{},t:0},newer=en.ts>(x.t||0);
-      for(const i in en.pages){const k=id+"|"+i;   /* an older backup never overwrites newer local work, but fills every page that is empty here */
-        if(newer||filled.has(k)||!(x.anns[i]&&x.anns[i].length)){x.anns[i]=en.pages[i];if(!newer)filled.add(k)}}
-      if(newer)Object.assign(x,{name:en.doc.name,np:en.doc.np,page:en.doc.page,t:en.ts},en.doc.fp?{fp:en.doc.fp,pfp:en.doc.pfp||""}:{},en.doc.ord&&en.doc.ord.length==en.doc.np?{ord:en.doc.ord,bm:en.doc.bm||[],tpl:en.doc.tpl||{}}:{});
+
+    /* Per-page timestamp: "notebookId|localPageIdx" → ts of last written data.
+       Replaces the old "filled" Set — handles multi-part correctly. */
+    const pageTs={};
+
+    /* ── 4. Apply entries with ord-aware remap and per-page merge ── */
+    for(const en of E){
+      let id=mapId(en.doc);
+      let x=(await dbGet(id))||{id,sv:SCHEMA,anns:{},t:0};
+
+      /* Fingerprint mismatch: offer name-matched merge */
+      if(id===en.doc.id&&en.doc.fp&&!byFp.has("f"+en.doc.fp)){
+        const sameNameNb=loc.filter(r=>r.name===en.doc.name&&r.n>0)
+                            .sort((a,b)=>(b.t||0)-(a.t||0))[0];
+        if(sameNameNb){
+          const totalAnns=Object.values(en.pages||{}).reduce((s,a)=>s+(a?a.length:0),0);
+          const allow=await askFpMerge(en.doc.name,sameNameNb.name,totalAnns);
+          if(!allow)continue;
+          id=sameNameNb.id;
+          x=(await dbGet(id))||{id,sv:SCHEMA,anns:{},t:0}}}
+
+      /* "Pristine" = never written to; backup IS the authoritative data. */
+      const pristine=!cnt(x.anns||{})&&
+                     (!x.ord||x.ord.every((v,i)=>v===i))&&
+                     !(x.bm&&x.bm.length)&&
+                     !Object.keys(x.tpl||{}).length;
+      const localT=pristine?0:(x.t||0);
+
+      /* Determine local ord: use whatever is already on the notebook. */
+      const backupOrd=en.doc.ord&&en.doc.ord.length?en.doc.ord:null;
+      /* Pristine notebook: adopt backup's page order outright so indices line up 1:1 */
+      if(pristine&&backupOrd&&okOrd(backupOrd,en.doc.np))x.ord=[...backupOrd];
+      const localOrd=x.ord&&x.ord.length?x.ord:
+                     (x.np?[...Array(x.np).keys()]:null);
+
+      /* ── Remap backup page indices → local page indices ── */
+      const{remapped,orphanVirts}=remapPages(en.pages||{},backupOrd,localOrd);
+
+      /* Apply remapped pages with timestamp-based conflict resolution */
+      for(const lIdxStr in remapped){
+        const lIdx=+lIdxStr;
+        const pgKey=id+"|"+lIdx;
+        const backupAnns=remapped[lIdxStr];
+        const localAnns=x.anns[lIdx];
+        const hasLocal=localAnns&&localAnns.length>0;
+        const hasBackup=backupAnns&&backupAnns.length>0;
+        const prevPageTs=pageTs[pgKey]||0;
+        if(!hasBackup)continue;
+        if(!hasLocal){x.anns[lIdx]=backupAnns;pageTs[pgKey]=en.ts;continue}
+        if(en.ts>Math.max(localT,prevPageTs)){x.anns[lIdx]=backupAnns;pageTs[pgKey]=en.ts}
+        else if(prevPageTs&&en.ts>prevPageTs){x.anns[lIdx]=mergeAnns(localAnns,backupAnns);pageTs[pgKey]=en.ts}
+        /* else: backup older than local (and no earlier part wrote this page) → keep local untouched */
+      }
+
+      /* Handle orphan virtual pages (blank pages with no matching local slot).
+         Only append when this entry is authoritative (newer than local) —
+         otherwise we'd create phantom pages from stale data. */
+      if(orphanVirts.length&&en.ts>localT){
+        const curOrd=x.ord&&x.ord.length?[...x.ord]:
+                    (x.np?[...Array(x.np).keys()]:[]);
+        orphanVirts.forEach(({anns:oAnns,w,h})=>{
+          const newIdx=curOrd.length;
+          curOrd.push(`b${w}x${h}`);
+          x.anns[newIdx]=oAnns;
+          pageTs[id+"|"+newIdx]=en.ts});
+        x.ord=curOrd}
+
+      /* Restore notebook metadata when backup is the authoritative version */
+      if(en.ts>localT){
+        Object.assign(x,{name:en.doc.name,np:en.doc.np,page:en.doc.page,t:en.ts},
+          en.doc.fp?{fp:en.doc.fp,pfp:en.doc.pfp||""}:{},
+          /* ord is NOT overwritten here: annotations were already placed in local-ord
+             space (and ord may have been extended with orphan virtual pages). */
+          okOrd(en.doc.ord,en.doc.np)?{bm:en.doc.bm||[],tpl:en.doc.tpl||{}}:{});}
+
       x.n=cnt(x.anns);await dbPutM(x);ds.add(id)}
-    for(const id of ds){if(await bGet(id))continue;const x=await dbGet(id),last={};for(const i in x.anns)last[i]=JSON.stringify(x.anns[i]);
-      await bPut({id,name:x.name,last,imgs:imgIds(x.anns),parts:[{n:mx+1,es:[],ids:[],bytes:0,dirty:0}]})}
-    await showLib();st(`♻️ ${ds.size+n} PDF(s) restored`+(ns?" · settings restored — reload the app to apply them":""));
-    if(bad.length)alert("⚠️ "+bad.length+" file(s) were skipped because they are damaged or incomplete:\n\n"+bad.join("\n")+"\n\nDownload them again from Telegram and restore again.")}
-  catch(err){st("❌ Invalid backup file — select the .zip files downloaded from Telegram")}};
+
+    /* ── 5. Bootstrap backup-state for newly restored notebooks ── */
+    for(const id of ds){
+      if(await bGet(id))continue;
+      const x=await dbGet(id),last={};
+      for(const i in x.anns)last[i]=JSON.stringify(x.anns[i]);
+      await bPut({id,name:x.name,last,imgs:imgIds(x.anns),
+                  parts:[{n:mx+1,es:[],ids:[],bytes:0,dirty:0}]})}
+
+    /* ── 6. Warnings ── */
+    const warn=[];
+    for(const k in parts){
+      const P=parts[k],top=Math.max(...P.s),gone=[];
+      for(let q=1;q<top;q++)if(!P.s.has(q))gone.push(q);
+      if(gone.length)warn.push("«"+String(P.n).replace(/\.pdf$/i,"")+"» — part "+gone.join(", ")+" was not selected")}
+    let miss=0;
+    for(const id of ds){const x=await dbGet(id);if(x)for(const m of imgIds(x.anns||{}))if(!(await iGet(m)))miss++}
+
+    await showLib();
+    st(`♻️ ${ds.size+n} PDF(s) restored`+(ns?" · settings restored — reload the app to apply them":""));
+    const msg=[];
+    if(bad.length)msg.push("⚠️ "+bad.length+" file(s) were skipped because they are damaged or incomplete:\n\n"+bad.join("\n")+"\n\nDownload them again from Telegram and restore again.");
+    if(warn.length)msg.push("⚠️ Some backup parts are missing, so older pages or images may be absent:\n\n"+warn.join("\n")+"\n\nSelect ALL the zip files of a PDF (part1, part2 …) in one go.");
+    if(miss)msg.push("⚠️ "+miss+" image(s) could not be restored because their zip was not selected.");
+    if(msg.length)alert(msg.join("\n\n"))}
+  catch(err){st("❌ Restore failed — "+((err&&err.message)||"invalid backup file"))}};
 
 /* ===== KEYBOARD ===== */
 addEventListener("keydown",e=>{if(e.key=="Escape"){sm.hidden=true;closeAllPanels()}
@@ -1607,7 +1852,7 @@ function renderSb(){if(!pdf||SB.hidden)return;const c=$("#sbc");c.innerHTML="";c
       l.onclick=e=>{e.stopPropagation();movePage(i,i-1)};r.onclick=e=>{e.stopPropagation();movePage(i,i+1)};
       d.onclick=()=>goPage(i);d.ondragstart=e=>e.dataTransfer.setData("text/plain",i);d.ondragover=e=>{e.preventDefault();d.classList.add("over")};
       d.ondragleave=()=>d.classList.remove("over");d.ondrop=e=>{e.preventDefault();movePage(+e.dataTransfer.getData("text/plain"),i)};g.append(d);
-      thQ=thQ.then(async()=>{if(v!=sbv||!pdf)return;const pg=await pdf.getPage(s+1),w=pg.getViewport({scale:1}).width,vv=pg.getViewport({scale:120/w});
+      thQ=thQ.then(async()=>{if(v!=sbv||!pdf)return;if(isV(s)){const z=vSize(s);cv.width=120;cv.height=Math.round(120*z.h/z.w);const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,cv.width,cv.height);return}const pg=await pdf.getPage(s+1),w=pg.getViewport({scale:1}).width,vv=pg.getViewport({scale:120/w});
         cv.width=vv.width;cv.height=vv.height;await pg.render({canvasContext:cv.getContext("2d"),viewport:vv}).promise;pg.cleanup()}).catch(()=>{})})}
   else if(sbTab=="bm"){if(!bm.size)c.textContent="No bookmarks — tap 🔖 to add the current page";
     [...bm].sort((a,b)=>a-b).forEach(i=>{const b=document.createElement("button");b.className="srow";b.textContent="🔖 Page "+(i+1)+"  (long-press to remove ✕)";
@@ -1619,6 +1864,7 @@ function showRes(h){const r=$("#sr");if(!r)return;r.innerHTML="";if(!h.length){r
   h.forEach(x=>{const b=document.createElement("button");b.className="srow";b.textContent=`Page ${x.i+1}: …${x.snip}…`;b.onclick=()=>goPage(x.i);r.append(b)})}
 async function doSearch(qs){const q=qs.trim().toLowerCase();lastQ=qs;SR={};const hits=[],r=$("#sr");if(!q){redrawAll();return}
   const cp=pdf;for(let i=0;i<ord.length&&hits.length<300;i++){if(pdf!==cp)return;if(r)r.textContent=`⏳ ${i+1}/${ord.length}`;
+    if(isV(ord[i]))continue;
     const{items,v}=await pgText(ord[i]),rects=[];
     for(const it of items){const s=it.str||"",ls=s.toLowerCase();let ix=0;if(!it.transform)continue;
       while((ix=ls.indexOf(q,ix))>-1){const t=pdfjsLib.Util.transform(v.transform,it.transform),ch=it.width/Math.max(1,s.length),h=it.height||Math.abs(t[3]);
@@ -1652,7 +1898,7 @@ function presOn(){if(!pdf||preS)return;preS={z:zoom};document.body.classList.add
   const el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen().catch(()=>{});
   const s=sizes[curPage]||sizes[0];setZoom(Math.min((innerWidth-8)/s.w,(innerHeight-72)/s.h));setTimeout(()=>goPage(curPage),250)}
 function presOff(){if(!preS)return;document.body.classList.remove("pres");requestAnimationFrame(syncViewerTop);if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});const z=preS.z;preS=null;$("#laser").style.display="none";setZoom(z)}
-$("#pres").onclick=presOn;$("#pex").onclick=presOff;
+{const _pb=$("#pres");if(_pb)_pb.onclick=presOn;const _px=$("#pex");if(_px)_px.onclick=presOff}
 document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement&&preS)presOff()});
 ["pointermove","pointerdown"].forEach(ev=>document.addEventListener(ev,e=>{if(!inPres())return;const l=$("#laser");l.style.display="block";l.style.left=e.clientX+"px";l.style.top=e.clientY+"px";clearTimeout(lt);lt=setTimeout(()=>l.style.display="none",1800)},{passive:true}));
 addEventListener("keydown",e=>{if(/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;
@@ -1694,8 +1940,18 @@ document.body.insertAdjacentHTML("beforeend",`<div class="mod" id="tm" hidden><d
 <input type="file" id="fmg" accept="application/pdf" multiple hidden><input type="file" id="fip" accept="image/*" multiple hidden>`);
 const dl=(b,n)=>{const a=document.createElement("a"),u=URL.createObjectURL(b);a.href=u;a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(u),6e4)};
 const pdfBlob=async d=>new Blob([await d.save()],{type:"application/pdf"});
+/* builds the PDF pages in the current order; inserted pages become real blank pages (with ruled/grid/dotted lines) only here, at export time */
+function tplPdf(pg,t,z){if(!t)return;const g=PL.rgb(.765,.812,.886),ln=(x1,y1,x2,y2,col)=>pg.drawLine({start:{x:x1,y:z.h-y1},end:{x:x2,y:z.h-y2},thickness:.6,color:col||g});
+  if(t=="lined"){for(let y=70;y<z.h-20;y+=26)ln(0,y,z.w,y);ln(56,0,56,z.h,PL.rgb(.945,.639,.639))}
+  else if(t=="graph"){for(let x=0;x<z.w;x+=18)ln(x,0,x,z.h);for(let y=0;y<z.h;y+=18)ln(0,y,z.w,y)}
+  else if(t=="dotted"){for(let x=18;x<z.w;x+=18)for(let y=18;y<z.h;y+=18)pg.drawCircle({x,y:z.h-y,size:1.1,color:g})}}
+async function orderDoc(d){
+  if(!ord.some((v,i)=>v!=i))return d;
+  const o=await PL.PDFDocument.create(),cp=await o.copyPages(d,ord.filter(v=>!isV(v)));let k=0;
+  ord.forEach((v,i)=>{if(isV(v)){const z=vSize(v),pg=o.addPage([z.w,z.h]);tplPdf(pg,tpl[i],z)}else o.addPage(cp[k++])});
+  return o}
 async function bake(ann){let d=await PL.PDFDocument.load(new Uint8Array(await file.arrayBuffer()));
-  if(ord.some((v,i)=>v!=i)){const o=await PL.PDFDocument.create();(await o.copyPages(d,ord)).forEach(p=>o.addPage(p));d=o}
+  d=await orderDoc(d);
   if(ann){const pg=d.getPages();for(const i in anns){if(!pg[i])continue;for(const o of anns[i])pg[i].node.addAnnot(await mk(d,o,pg[i].getHeight()))}}return d}
 function parseR(s,n){const out=[];for(const t of s.split(",")){const m=/^\s*(\d+)\s*(?:-\s*(\d+))?\s*$/.exec(t);if(!m)continue;let a=+m[1],b=+(m[2]||m[1]);if(a>b)[a,b]=[b,a];for(let i=Math.max(1,a);i<=Math.min(n,b);i++)out.push(i-1)}return out}
 $("#tools").onclick=$("#tools2").onclick=()=>$("#tm").hidden=false;$("#tmx").onclick=()=>$("#tm").hidden=true;
@@ -1711,11 +1967,16 @@ async function extractP(){const s=prompt("Page range (e.g. 1-3,5).\nFor separate
     if(files.length==1)dl(new Blob([files[0][1]],{type:"application/pdf"}),files[0][0]);else{const z=new JSZip();files.forEach(([n,d])=>z.file(n,d));dl(await z.generateAsync({type:"blob"}),bn(name)+"-split.zip")}st("✅ Done")}catch(x){st("❌ Couldn't complete")}}
 let addingPg=false;
 const pgNow=()=>Math.max(0,Math.min(curPage,ord.length-1));
-function pageState(){return{file,name,anns:structuredClone(anns),ord:[...ord],bm:[...bm],tpl:structuredClone(tpl),page:curPage}}
+function pageState(){return{anns:structuredClone(anns),ord:[...ord],bm:[...bm],tpl:structuredClone(tpl),sizes:sizes.map(z=>z&&{w:z.w,h:z.h}),page:curPage}}
+function rebuildPages(){const d=$("#doc");io.disconnect();$$(".pg").forEach(p=>free(+p.dataset.i));vis.clear();d.innerHTML="";
+  for(let i=0;i<ord.length;i++){const p=document.createElement("div");p.className="pg";p.dataset.i=i;sz(p,i);d.append(p);io.observe(p)}}
 async function restorePageState(S){
-  if(!S||!S.file)throw new Error("Missing page-history snapshot");
-  const H=hist,R=redo;clearSaveTimers();await openFile(S.file);anns=structuredClone(S.anns||{});ord=[...(S.ord||ord)];bm=new Set(S.bm||[]);tpl=structuredClone(S.tpl||{});curPage=Math.max(0,Math.min(S.page||0,pdf.numPages-1));
-  hist=H;redo=R;await persist(true);redrawAll();goPage(curPage)
+  if(!S||!Array.isArray(S.ord))throw new Error("Missing page-history snapshot");
+  const H=hist,R=redo;clearSaveTimers();
+  anns=structuredClone(S.anns||{});ord=[...S.ord];bm=new Set(S.bm||[]);tpl=structuredClone(S.tpl||{});sizes=(S.sizes||[]).map(z=>z&&{w:z.w,h:z.h});
+  ord.forEach((v,i)=>{if(isV(v))sizes[i]=vSize(v)});if(!sizes[0])sizes[0]={w:595.28,h:841.89};
+  SR={};selObjs=[];lz=null;curPage=Math.max(0,Math.min(S.page||0,ord.length-1));
+  rebuildPages();hist=H;redo=R;lbar();renderSb();await persist(true);goPage(curPage)
 }
 function showAddPageDialog(){
   let dlg=$("#add-page-dialog");
@@ -1733,25 +1994,24 @@ function showAddPageDialog(){
     dlg.hidden=false;
   }
 }
+/* Add Page: the PDF file is never touched. The page is only added to the page order, so nothing can be lost and
+   backup / restore always match the right PDF and put every annotation back on the same page number. */
 async function blankP(template=null){
   if(addingPg)return;addingPg=true;
-  const at=pgNow(),old=docId;
   try{
     st("⏳ Adding page…");
-    await persist(true);
-    const before=pageState(),d=await bake(false),s=sizes[at]||sizes[0];
-    d.insertPage(at+1,[s.w,s.h]);
-    const nf=new File([await d.save()],name,{type:"application/pdf"});
-    const shift=i=>i>at?i+1:i,A={},T={};
-    Object.keys(anns).forEach(i=>A[shift(+i)]=structuredClone(anns[i]));
+    const at=pgNow(),before=pageState(),ov=ord[at];let z;
+    if(isV(ov))z=vSize(ov);else{const pg=await pdf.getPage(ov+1),v=pg.getViewport({scale:1});z={w:v.width,h:v.height};pg.cleanup()}
+    const shift=i=>i>at?i+1:i,A={},T={},Z=[];
+    Object.keys(anns).forEach(i=>A[shift(+i)]=anns[i]);
     Object.keys(tpl).forEach(i=>T[shift(+i)]=tpl[i]);
+    sizes.forEach((q,i)=>{if(q)Z[shift(i)]=q});Z[at+1]={w:z.w,h:z.h};const d0=Z.find(Boolean);for(let i=0;i<=ord.length;i++)if(!Z[i])Z[i]=d0;
     if(template)T[at+1]=template;
-    const B=[...bm].map(shift);
-    await dbDel(old);await thDel(old);await openFile(nf);
-    anns=A;tpl=T;bm=new Set(B);curPage=at+1;
-    await persist(true);redrawAll();goPage(at+1);
-    const after=pageState(),rec={before,after};
-    hist.push(["__page__",rec]);if(hist.length>40)hist.shift();redo=[];
+    const o2=ord.slice();o2.splice(at+1,0,mkV(z));
+    anns=A;tpl=T;bm=new Set([...bm].map(shift));ord=o2;sizes=Z;curPage=at+1;SR={};selObjs=[];lz=null;
+    rebuildPages();hist=[];redo=[];lbar();renderSb();
+    await persist(true);goPage(at+1);
+    hist.push(["__page__",{before,after:pageState()}]);
     st("📄 Page added after page "+(at+1)+" · Undo removes it");
   }catch(x){console.error("Add page failed:",x);st("❌ Couldn't add page: "+(x&&x.message?x.message:"Please try again"))}
   finally{addingPg=false}
@@ -1762,8 +2022,8 @@ $("#fip").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(!
       o.addPage([595,ph]).drawImage(im,{x:0,y:0,width:595,height:ph});cv.width=cv.height=0}dl(await pdfBlob(o),"images.pdf");st("✅ PDF created")}catch(x){st("❌ Couldn't create the PDF")}};
 async function compressP(){if(!confirm("Compressing turns pages into images (text search/select will no longer work) and merges annotations into the pages. Continue?"))return;
   try{const o=await PL.PDFDocument.create(),cv=document.createElement("canvas");
-    for(let i=0;i<ord.length;i++){st(`⏳ ${i+1}/${ord.length}`);const pg=await pdf.getPage(ord[i]+1),v1=pg.getViewport({scale:1}),k=Math.min(1.4,Math.sqrt(2.5e6/(v1.width*v1.height))),vp=pg.getViewport({scale:k});
-      cv.width=vp.width;cv.height=vp.height;const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,cv.width,cv.height);await pg.render({canvasContext:x,viewport:vp}).promise;pg.cleanup();
+    for(let i=0;i<ord.length;i++){st(`⏳ ${i+1}/${ord.length}`);const ov=ord[i],vt=isV(ov),pg=vt?null:await pdf.getPage(ov+1),v1=vt?{width:vSize(ov).w,height:vSize(ov).h}:pg.getViewport({scale:1}),k=Math.min(1.4,Math.sqrt(2.5e6/(v1.width*v1.height))),vp=vt?{width:v1.width*k,height:v1.height*k}:pg.getViewport({scale:k});
+      cv.width=vp.width;cv.height=vp.height;const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,cv.width,cv.height);if(vt){if(tpl[i]){const dk=DK,sr=SR;DK=false;SR={};extras(x,i,k);DK=dk;SR=sr}}else{await pg.render({canvasContext:x,viewport:vp}).promise;pg.cleanup()}
       (anns[i]||[]).forEach(a=>{if(a.t!="img"||(IM[a.id]&&IM[a.id].naturalWidth))paint(x,a,k,true)});
       const j=await new Promise(r=>cv.toBlob(r,"image/jpeg",.6)),im=await o.embedJpg(new Uint8Array(await j.arrayBuffer()));o.addPage([v1.width,v1.height]).drawImage(im,{x:0,y:0,width:v1.width,height:v1.height})}
     cv.width=cv.height=0;const b=await pdfBlob(o);dl(b,bn(name)+"-compressed.pdf");st(`🗜 ${(file.size/1e6).toFixed(1)} → ${(b.size/1e6).toFixed(1)} MB`)}catch(x){st("❌ Compression failed")}}
@@ -1836,7 +2096,7 @@ setInterval(()=>{netUpd();svAuto()},30000);setTimeout(()=>{netUpd();svAuto()},30
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.21",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.28",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -1846,8 +2106,8 @@ async function resolveId(f,fp,wid){const all=(await dbAll())||[];
   if(wid){const r=all.find(x=>x.id==wid);if(r&&(!r.fp||r.fp==fp)){if(!r.fp){r.fp=fp;await dbPut(r)}return wid}}
   const m=all.find(x=>x.fp==fp);if(m)return m.id;                       /* same notebook even if the file is renamed */
   const leg=f.name+"|"+f.size,l=all.find(x=>x.id==leg);if(l&&!l.fp){l.fp=fp;await dbPut(l);return leg}  /* adopt legacy data */
-  if(all.some(x=>x.pfp)){let u;try{u=URL.createObjectURL(f);const t=await pdfjsLib.getDocument({url:u,disableAutoFetch:true,rangeChunkSize:131072}).promise,pf=t.fingerprints&&t.fingerprints[0];t.destroy();
-    const m2=pf&&all.find(x=>x.pfp==pf);if(m2){m2.fp=fp;await dbPut(m2);return m2.id}}catch(e){}finally{if(u)URL.revokeObjectURL(u)}}
+  if(all.some(x=>x.pfp)){let u;try{u=URL.createObjectURL(f);const t=await pdfjsLib.getDocument({url:u,disableAutoFetch:true,rangeChunkSize:131072}).promise,pf=t.fingerprints&&t.fingerprints[0],npg=t.numPages;t.destroy();
+    const m2=pf&&all.find(x=>x.pfp==pf&&(!x.np||x.np==npg));if(m2){m2.fp=fp;await dbPut(m2);return m2.id}}catch(e){}finally{if(u)URL.revokeObjectURL(u)}}
   const sn=all.filter(x=>x.name==f.name&&x.n>0).sort((a,b)=>(b.t||0)-(a.t||0))[0];   /* re-saved / re-exported PDF: content differs, name is the same */
   if(sn&&confirm(`Notes already exist for a PDF with this name:\n\n«${f.name.replace(/\.pdf$/i,"")}» · ${sn.n} annotations · edited ${agoT(sn.t||0)}\n\nOK = same PDF (keep using these notes)\nCancel = a different PDF (start a new notebook)`))return sn.id
   return"fp:"+fp}                                                       /* different PDF → different ID, never mixed */

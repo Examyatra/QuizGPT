@@ -1,5 +1,5 @@
 /* Vpdf — Service Worker (offline-first). Bump the version whenever the code changes */
-const APP_VERSION = "1.4.21";            // change together with APP_VERSION in index.html
+const APP_VERSION = "1.4.28";            // change together with APP_VERSION in index.html
 const VERSION = "pa-app-" + APP_VERSION;  // app-shell cache (new for every version)
 const LIBS = "pa-libs-1";                 // pdf.js etc. (version-pinned) — not re-downloaded on every update
 const SHELL = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
@@ -13,7 +13,8 @@ const CDN = [
 self.addEventListener("install", e => {
   e.waitUntil((async () => {
     const c = await caches.open(VERSION);
-    await Promise.allSettled(SHELL.map(u => c.add(new Request(u, {cache: "reload"}))));
+    const res = await Promise.allSettled(SHELL.map(u => c.add(new Request(u, {cache: "reload"}))));
+    if (res[1].status !== "fulfilled") throw new Error("index.html could not be cached — keeping the previous version");  // never activate a shell without the app page
     const l = await caches.open(LIBS);
     await Promise.allSettled(CDN.map(async u => { if (!(await l.match(u))) await l.add(u); }));
     await self.skipWaiting();                // activate the new version immediately
@@ -33,8 +34,11 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;               // never touch Telegram / server sync (POST) requests
   const u = new URL(req.url);
   if (req.mode === "navigate") {                  // pages: network first (4 s), then cache
-    e.respondWith(timeout(fetch(req), 4000).then(r => { const c = r.clone(); caches.open(VERSION).then(x => x.put("index.html", c)); return r; })
-      .catch(() => caches.match("index.html").then(r => r || caches.match("./"))));
+    e.respondWith(timeout(fetch(req), 4000).then(async r => {
+      if (r.ok) { const c = r.clone(); caches.open(VERSION).then(x => x.put("index.html", c)); return r; }   // cache successful pages only
+      if (r.status >= 500) { const m = await caches.match("index.html"); if (m) return m; }                 // server error → use the cached app
+      return r;
+    }).catch(() => caches.match("index.html").then(r => r || caches.match("./"))));
     return;
   }
   if (u.hostname === "cdnjs.cloudflare.com") {    // libraries: cache first
