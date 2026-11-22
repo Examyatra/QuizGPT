@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.13">
+<meta name="app-version" content="1.4.17">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -35,7 +35,8 @@
 /* ===== RESET ===== */
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Noto Sans Devanagari",sans-serif;overflow-x:hidden}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Noto Sans Devanagari",sans-serif;overflow-x:hidden}
+input,textarea,select,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:100}
 [hidden]{display:none!important}
 
@@ -394,7 +395,7 @@ html:has(body.pres){scroll-snap-type:y proximity}
     <div class="mcell"><button class="ibtn" id="tpl" title="Page template"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M3.5 9.5h17M9.5 9.5v11"/></svg></button><span>Template</span></div>
     <div class="mcell"><button class="ibtn" id="zo" title="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><span>Zoom out</span></div>
     <div class="mcell"><button class="ibtn" id="zi" title="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button><span>Zoom in</span></div>
-    <div class="mcell"><button class="ibtn on" id="shp" title="Shape recognition (pause at the end of a stroke)">◇</button><span>Shape snap</span></div>
+    <div class="mcell"><button class="ibtn" id="shp" title="Shape recognition (pause at the end of a stroke)">◇</button><span>Shape snap</span></div>
     <div class="mcell"><button class="ibtn on" id="palm" title="Palm rejection"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 013 0V11"/><path d="M11 10.5V4a1.5 1.5 0 013 0v6.5"/><path d="M14 10.5V5.5a1.5 1.5 0 013 0v7"/><path d="M17 9.5a1.5 1.5 0 013 0V14c0 4-3 7-7 7h-.5c-3 0-4.5-1.5-6-4l-2-3.4a1.5 1.5 0 012.5-1.6L8 14"/></svg></button><span>Palm rejection</span></div>
     <div class="mcell"><button class="ibtn" id="po" title="Write with pen only">✍️</button><span>Pen only</span></div>
     <div class="mcell"><button class="ibtn" id="cmp" title="Compact handwriting (smaller backup)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h6V3M20 9h-6V3M4 15h6v6M20 15h-6v6"/></svg></button><span>Compact ink</span></div>
@@ -584,7 +585,7 @@ const LOW=(navigator.deviceMemory||4)<=2,MAXPX=LOW?1.2e6:3e6,DPR=Math.min(device
 let pdf,file,url,name="",docId=null,zoom=LOW?1:1.2,tool="pen",previousTool="lasso",color="#e11d48",W=3,HW=12,penOnly=false,curPage=0;
 let ina,anns={},sizes=[],hist=[],redo=[],timer,vis=new Set(),q=Promise.resolve();
 const COL=["#e11d48","#2563eb","#16a34a","#f59e0b","#111111","#ffffff"];
-let ord=[],bm=new Set(),tpl={},SR={},TXT={},selObjs=[],selPage=-1,lz=null,lm=null,lastMv=0,lastPen=0,shapeOn=true,palm=true,curStamp="✅",stampS=40;
+let ord=[],bm=new Set(),tpl={},SR={},TXT={},selObjs=[],selPage=-1,lz=null,lm=null,lastMv=0,lastPen=0,lastInk=0,shapeOn=false,palm=true,curStamp="✅",stampS=40;
 const st=t=>{$("#st").textContent=t;const h=$("#hst");if(h)h.textContent=t};
 
 /* ===== TEXT + IMAGE EDITING ===== */
@@ -914,12 +915,13 @@ async function persist(urgent=false){
   try{await saveChain;if(rev===saveRevision){dirtySince=0;st("✅ Saved safely");}}
   catch(e){st("⚠️ Save failed — draft retained, retrying");saveRetryTimer=setTimeout(()=>persist(false),3000)}
 }
+function idleSave(){if(Date.now()-lastInk<1500&&(!dirtySince||Date.now()-dirtySince<18e4)){clearTimeout(saveRetryTimer);saveRetryTimer=setTimeout(idleSave,1500);return}persist(false)}   /* wait for a real pause in writing */
 function change(){
   if(!docId||!pdf)return;
   if(!dirtySince)dirtySince=Date.now();
   st("✍️ Writing · changes held safely in memory");
-  clearTimeout(timer);timer=setTimeout(()=>persist(false),SAVE_IDLE_MS);
-  if(!maxSaveTimer)maxSaveTimer=setTimeout(()=>persist(false),Math.max(0,SAVE_MAX_MS-(Date.now()-dirtySince)));
+  clearTimeout(timer);timer=setTimeout(idleSave,SAVE_IDLE_MS);
+  if(!maxSaveTimer)maxSaveTimer=setTimeout(idleSave,Math.max(0,SAVE_MAX_MS-(Date.now()-dirtySince)));
   clearTimeout(ina);ina=setTimeout(autoSync,INACT)
 }
 
@@ -978,13 +980,21 @@ async function draw1(i){
   ink.style.touchAction=penOnly?"pan-x pan-y":"none";bind(ink,p,i);
   await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}page.cleanup();draw(i);
 }
+function paintSeg(c,o,from,raw){const P=o.p,n=P.length;c.lineCap=c.lineJoin="round";c.strokeStyle=raw?o.c:dc(o.c);   /* variable-width stroke; segments of equal width share one path */
+  const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];let bk=-1,open=false;
+  for(let j=Math.max(1,from);j<n;j++){const a=j==1?P[0]:mid(P[j-1],P[j]),e=j<n-1?mid(P[j],P[j+1]):P[j],w=o.w*(P[j][2]||1),b=Math.round(w*6);
+    if(b!==bk){if(open)c.stroke();c.beginPath();c.moveTo(a[0],a[1]);c.lineWidth=w;bk=b;open=true}
+    c.quadraticCurveTo(P[j][0],P[j][1],e[0],e[1])}
+  if(open)c.stroke()}
+const penPar=()=>{const g=id=>{const v=parseFloat((document.getElementById(id)||{}).value);return isNaN(v)?null:v};return{s:(g("ps-pressure")||4)/8,m:(g("ps-minw")==null?50:g("ps-minw"))/100,w:(g("ps-widthsmooth")==null?30:g("ps-widthsmooth"))/100}};
 function paint(c,o,k,raw){
   c.save();c.scale(k,k);c.lineCap=c.lineJoin="round";c.strokeStyle=c.fillStyle=raw?o.c:dc(o.c);c.lineWidth=o.w;if(o.pt=="pencil")c.globalAlpha=.78;
   if(o.t=="img"){if(!raw&&CROP&&CROP.o===o){c.restore();return}const m=IM[o.id];if(m&&m.naturalWidth){const cr=o.cr;if(cr){const nw=m.naturalWidth,nh=m.naturalHeight;c.drawImage(m,cr[0]*nw,cr[1]*nh,nw*(1-cr[0]-cr[2]),nh*(1-cr[1]-cr[3]),o.x,o.y,o.w,o.h)}else c.drawImage(m,o.x,o.y,o.w,o.h)}
     if(tool=="sel"){const h=14/zoom;c.strokeStyle="#2563eb";c.lineWidth=1/zoom;c.strokeRect(o.x,o.y,o.w,o.h);c.fillStyle="#dc2626";c.beginPath();c.arc(o.x+o.w,o.y,h,0,7);c.fill();c.fillStyle="#fff";c.font=`${h*1.3}px sans-serif`;c.textAlign="center";c.textBaseline="middle";c.fillText("✕",o.x+o.w,o.y);c.fillStyle="#2563eb";c.fillRect(o.x+o.w-h,o.y+o.h-h,h*2,h*2);c.beginPath();c.arc(o.x,o.y,h,0,7);c.fill();c.fillStyle="#fff";c.fillText("✂",o.x,o.y)}
     c.restore();return}
   if(o.t=="hl"){c.globalAlpha=DK&&!raw?.5:.35;c.lineWidth=o.w*4;c.lineCap="butt"}
-  if(o.t=="pen"||o.t=="hl"){c.beginPath();smoothPath(c,o.p);if(o.p.length==1)c.lineTo(o.p[0][0]+.1,o.p[0][1]);c.stroke()}
+  if(o.t=="pen"&&o.p.length>2&&o.p[0].length>2){paintSeg(c,o,1,raw)}
+  else if(o.t=="pen"||o.t=="hl"){c.beginPath();smoothPath(c,o.p);if(o.p.length==1)c.lineTo(o.p[0][0]+.1,o.p[0][1]);c.stroke()}
   else if(o.t=="text"){if(o===TEDIT){c.restore();return}c.font=tFont(o);c.textBaseline="top";const B=tBox(o);if(o.bg){c.fillStyle=o.bg;c.fillRect(o.x,o.y,B.w,B.h);c.fillStyle="#1f2937"}B.L.forEach((l,j)=>c.fillText(l,o.x+(o.bg?2:0),o.y+j*o.s*1.25))}
   else{const[a,b]=o.p;c.beginPath();
     if(o.t=="rect")c.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
@@ -1004,11 +1014,19 @@ function hit(o,x,y,r){
 }
 function snap(i){hist.push([i,JSON.stringify(anns[i]||[])]);if(hist.length>40)hist.shift();redo=[]}
 function bind(ink,p,i){
-  let cur=null,down=false,mv=null,mt=null;ink.oncontextmenu=e=>e.preventDefault();
-  const pt=e=>{const r=ink.getBoundingClientRect();return[+((e.clientX-r.left)/zoom).toFixed(1),+((e.clientY-r.top)/zoom).toFixed(1)]};
+  let cur=null,down=false,mv=null,mt=null,pid=-1,dT=0,R=null,rq=0,lastRaw=null,lastMul=null,drawnTo=0;
+  const pmul=(x,P)=>{const pr=x.pressure>0?x.pressure:.5,pp=Math.max(0,Math.min(1,.5+(pr-.5)*(.4+P.s*1.6))),mu=P.m+(1.6-P.m)*pp,o=Math.min(.92,.35+P.w*.7);lastMul=lastMul==null?mu:lastMul*o+mu*(1-o);return+lastMul.toFixed(2)};
+  /* live stroke: only the new piece is painted each frame (no full-page redraw) → low latency; the full smooth redraw happens when the pen lifts */
+  const liveDraw=()=>{if(rq)return;rq=requestAnimationFrame(()=>{rq=0;if(!(down&&cur))return;
+    if(cur.t=="pen"&&cur.pt!="pencil"&&cur.p.length>1){const pg=$(`.pg[data-i="${i}"]`);if(pg&&pg.children[1]){const ik=pg.children[1],c=ik.getContext("2d"),k=ik.width/(sizes[i]||sizes[0]).w;c.save();c.scale(k,k);c.globalAlpha=1;c.lineWidth=cur.w;paintSeg(c,cur,Math.max(1,drawnTo),false);c.restore();drawnTo=cur.p.length-1;return}}
+    draw(i,cur)})};
+  ink.addEventListener("touchstart",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});   /* Pencil never scrolls, selects or opens menus */
+  ink.addEventListener("touchmove",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});ink.oncontextmenu=e=>e.preventDefault();
+  const pt=e=>{const r=R||ink.getBoundingClientRect();return[+((e.clientX-r.left)/zoom).toFixed(1),+((e.clientY-r.top)/zoom).toFixed(1)]};
   ink.onpointerdown=e=>{
-    if(e.pointerType=="touch"&&tp.size>1){down=false;cur=null;mv=null;draw(i);return}
-    if((penOnly&&e.pointerType=="touch")||palmBlock(e))return;if(e.pointerType=="mouse"&&e.button)return;e.preventDefault();const q=pt(e);ink.setPointerCapture(e.pointerId);
+    if(e.pointerType=="touch"&&down&&cur&&e.pointerId!==pid){if(cur.p.length<=8&&Date.now()-dT<300){down=false;cur=null;mv=null;draw(i)}return}   /* palm / extra finger landing while writing: keep the stroke */
+    if(e.pointerType=="touch"&&othersFresh(e.pointerId)){down=false;cur=null;mv=null;draw(i);return}
+    if((penOnly&&e.pointerType=="touch")||palmBlock(e))return;if(e.pointerType=="mouse"&&e.button)return;e.preventDefault();R=ink.getBoundingClientRect();pid=e.pointerId;dT=lastInk=Date.now();lastRaw=null;const q=pt(e);ink.setPointerCapture(e.pointerId);
     if(CROP){if(CROP.i==i&&cropDown(q))down=true;return}
     if(tool=="laser")return;
     if(tool=="text"||tool=="note"||tool=="sel"){
@@ -1030,12 +1048,15 @@ function bind(ink,p,i){
       const rs=Math.hypot(q[0]-(o.x+o.w),q[1]-(o.y+o.h))<hr;
       if(rs||(q[0]>o.x&&q[0]<o.x+o.w&&q[1]>o.y&&q[1]<o.y+o.h)){snap(i);mv={o,rs,dx:q[0]-o.x,dy:q[1]-o.y};down=true;return}}return}
     down=true;if(tool=="er"){snap(i);erase(i,q);return}
-    const w=e.pointerType=="pen"&&e.pressure?W*(.5+e.pressure):W;
+    const w=W;
     cur={t:tool,c:color,w:tool=="pen"?+w.toFixed(1):W,p:["pen","hl"].includes(tool)?[q]:[q,q]};
     if(tool=="hl")cur.w=HW;lastMv=Date.now();if(tool=="pen"){cur.pt=penType;cur.w=+(cur.w*({fine:.6,brush:1.5,pencil:.8}[penType]||1)).toFixed(1)}
+    if(tool=="pen"&&e.pointerType=="pen"&&penType!="pencil"){lastMul=null;q.push(pmul(e,penPar()))}drawnTo=0;
     down=true;
   };
-  ink.onpointermove=e=>{if(e.pointerType=="touch"&&tp.size>1){if(down){down=false;cur=null;mv=null;if(tool=="lasso")lassoUp(i);draw(i)}return}if(!down)return;const q=pt(e);
+  ink.onpointermove=e=>{if(down&&e.pointerId!==pid)return;lastInk=Date.now();
+    if(e.pointerType=="touch"&&down&&othersFresh(e.pointerId)&&(!cur||(cur.p.length<=8&&Date.now()-dT<300))){down=false;cur=null;mv=null;if(tool=="lasso")lassoUp(i);draw(i);return}
+    if(!down)return;const q=pt(e);
     if(CROP){cropMove(q);return}
     if(mt){const o=mt.o;
       if(mt.k=="m"){if(!mt.moved&&Math.hypot(q[0]-mt.dx-o.x,q[1]-mt.dy-o.y)<4/zoom)return;if(!mt.sn){snap(i);mt.sn=1}mt.moved=true;o.x=q[0]-mt.dx;o.y=q[1]-mt.dy}
@@ -1044,8 +1065,22 @@ function bind(ink,p,i){
     if(tool=="lasso"){lassoMove(i,q);return}
     if(mv){const o=mv.o;if(mv.rs){const r=o.h/o.w;o.w=Math.max(30,q[0]-o.x);o.h=o.w*r}else{o.x=q[0]-mv.dx;o.y=q[1]-mv.dy}draw(i);return}
     if(tool=="er"){erase(i,q);return}
-    if(["pen","hl"].includes(tool)){const l=cur.p[cur.p.length-1];if(Math.hypot(l[0]-q[0],l[1]-q[1])<.6)return;if(tool=="pen"){const a=1/(1+(+$("#ps-motionsmooth").value||2)*.3);q[0]=l[0]+(q[0]-l[0])*a;q[1]=l[1]+(q[1]-l[1])*a}cur.p.push(q);lastMv=Date.now()}else cur.p[1]=q;draw(i,cur)};
-  ink.onpointerup=ink.onpointercancel=()=>{if(!down)return;down=false;if(CROP){CROP.drag=null;return}
+    if(["pen","hl"].includes(tool)){let ev=[];try{if(typeof e.getCoalescedEvents==="function")ev=e.getCoalescedEvents()||[]}catch(_){}
+      const LS=ev.length?ev.slice():[e];
+      /* Some browsers omit the dispatched endpoint from coalesced samples.
+         Always include it so a fast final movement cannot disappear. */
+      const tail=LS[LS.length-1];
+      if(!tail||Math.hypot((tail.clientX||0)-(e.clientX||0),(tail.clientY||0)-(e.clientY||0))>.01)LS.push(e);
+      const PP=cur.p[0].length>2?penPar():null;
+      for(const x of LS){const q2=pt(x),l=cur.p[cur.p.length-1];if(Math.hypot(l[0]-q2[0],l[1]-q2[1])<.08)continue;
+        if(PP)q2.push(pmul(x,PP));
+        if(tool=="pen"&&e.pointerType!="pen"){const a=1/(1+(+$("#ps-motionsmooth").value||2)*.3);q2[0]=l[0]+(q2[0]-l[0])*a;q2[1]=l[1]+(q2[1]-l[1])*a}
+        cur.p.push(q2)}
+      lastRaw=cur.p[0].length>2?[q[0],q[1],lastMul||1]:q;lastMv=Date.now()}else cur.p[1]=q;
+    liveDraw()};
+  ink.onpointerup=ink.onpointercancel=e=>{if(!down)return;if(e&&cur&&e.pointerId!==pid)return;down=false;R=null;lastInk=Date.now();if(rq){cancelAnimationFrame(rq);rq=0}
+    if(cur&&lastRaw&&(cur.t=="pen"||cur.t=="hl")){const l=cur.p[cur.p.length-1];if(Math.hypot(l[0]-lastRaw[0],l[1]-lastRaw[1])>.35)cur.p.push(lastRaw)}   /* the last point of every stroke is always kept */
+    if(CROP){CROP.drag=null;return}
     if(mt){const m=mt;mt=null;if(m.k=="m"&&!m.moved&&m.was){openEdit();return}if(m.sn)change();draw(i);showTbar();return}
     if(tool=="lasso"){lassoUp(i);return}if(mv){mv=null;draw(i);change();return}
     if(cur){if(shapeOn&&cur.t=="pen"&&Date.now()-lastMv>450)cur=recog(cur)||cur;if((cur.t=="pen"||cur.t=="hl")&&cur.p.length>3)cur.p=rdp(cur.p,.3);snap(i);(anns[i]=anns[i]||[]).push(cur);cur=null;draw(i)}change();};
@@ -1093,9 +1128,12 @@ function setZoom(z){zoom=Math.max(.5,Math.min(3,z));$$(".pg").forEach(p=>{const 
 $("#zi").onclick=()=>setZoom(zoom+.2);$("#zo").onclick=()=>setZoom(zoom-.2);
 
 /* ===== 2-finger pinch zoom (works while scrolling AND while writing) ===== */
-const tp=new Set();let pz=null;const docEl=$("#doc");
-document.addEventListener("pointerdown",e=>{if(e.pointerType=="touch")tp.add(e.pointerId)},{capture:true,passive:true});
-["pointerup","pointercancel"].forEach(ev=>document.addEventListener(ev,e=>{if(e.pointerType=="touch")tp.delete(e.pointerId)},{capture:true,passive:true}));
+const tp=new Set(),tpT=new Map(),tpS=new Map();let pz=null;
+const tpPrune=()=>{const n=Date.now();for(const[id,t]of tpT)if(n-t>2500){tp.delete(id);tpT.delete(id);tpS.delete(id)}};   /* a lost pointerup must never block writing */
+const othersFresh=id=>{tpPrune();const n=Date.now();for(const k of tp)if(k!==id&&n-(tpS.get(k)||0)<700)return true;return false};   /* only a 2nd finger that landed just now is a pinch; a resting palm is ignored */const docEl=$("#doc");
+document.addEventListener("pointerdown",e=>{if(e.pointerType=="touch"){tpPrune();tp.add(e.pointerId);tpT.set(e.pointerId,Date.now());tpS.set(e.pointerId,Date.now())}},{capture:true,passive:true});
+document.addEventListener("pointermove",e=>{if(e.pointerType=="touch"&&tpT.has(e.pointerId))tpT.set(e.pointerId,Date.now())},{capture:true,passive:true});
+["pointerup","pointercancel"].forEach(ev=>document.addEventListener(ev,e=>{if(e.pointerType=="touch"){tp.delete(e.pointerId);tpT.delete(e.pointerId);tpS.delete(e.pointerId)}},{capture:true,passive:true}));
 const tdist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY),tmid=t=>[(t[0].clientX+t[1].clientX)/2,(t[0].clientY+t[1].clientY)/2];
 docEl.addEventListener("touchstart",e=>{
   if(!pdf||inPres())return;
@@ -1187,11 +1225,12 @@ function tgErr(j,status){const d=(j&&j.description)||"",c=(j&&j.error_code)||sta
   if(c==413)return"The backup file is too large for Telegram (50 MB limit).";
   if(c==429)return"Telegram is rate-limiting requests — wait "+((j&&j.parameters&&j.parameters.retry_after)||"a few")+" seconds and try again.";
   return"Telegram error"+(c?" ("+c+")":"")+(d?": "+d:"")}
-async function tgCall(token,method,body,ms){
+async function tgCall(token,method,body,ms,retried){
   const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),ms||20000);let r,j=null;
   try{r=await fetch(`https://api.telegram.org/bot${token}/${method}`,{method:"POST",body,signal:ac.signal})}
   catch(e){clearTimeout(tm);throw new Error(e&&e.name=="AbortError"?"Telegram didn't respond in time. Check your internet connection (or VPN) and try again.":navigator.onLine===false?"You're offline — connect to the internet and try again.":"Couldn't reach Telegram. Check your internet connection (or VPN / ad-blocker) and try again.")}
   try{j=await r.json()}catch(e){}finally{clearTimeout(tm)}
+  if(j&&!j.ok&&j.error_code==429&&!retried){const ra=+(j.parameters&&j.parameters.retry_after)||0;if(ra>0&&ra<=30){await new Promise(z=>setTimeout(z,(ra+1)*1e3));return tgCall(token,method,body,ms,1)}}
   if(!j||!j.ok){const e=new Error(tgErr(j,r.status));e.api=1;e.desc=(j&&j.description)||"";throw e}
   return j.result}
 $("#tg").onclick=()=>{const o=TG()||{},x=tgStat();$("#stk").value=o.t||"";$("#stc").value=o.c||"";$("#stk").type="password";$("#stv").textContent="👁 Show token";
@@ -1286,13 +1325,16 @@ const imgIds=A=>[...new Set(Object.values(A).flat().filter(o=>o.t=="img").map(o=
 async function syncOne(r){
   const b=(await bGet(r.id))||{id:r.id,name:r.name,last:{},imgs:[],parts:[{n:1,es:[],ids:[],bytes:0,dirty:0}]},A=r.anns||{},ch={};b.name=r.name;
   for(const i of new Set([...Object.keys(A),...Object.keys(b.last)])){const x=JSON.stringify(A[i]||[]);if(x!==(b.last[i]||"[]")){ch[i]=A[i]||[];b.last[i]=x}}
-  if(!Object.keys(ch).length)return;
+  const nk=Object.keys(ch).length,ms=JSON.stringify({n:r.name,np:r.np,o:r.ord,b:r.bm,t:r.tpl});
+  if(!nk){if(b.meta===undefined){b.meta=ms;await bPut(b);return}if(ms===b.meta)return;if(!cnt(A)&&!b.parts.some(x=>x.mid||x.es.length))return}
+  b.meta=ms;
   const nw=imgIds(ch).filter(id=>!b.imgs.includes(id)),ts=Date.now(),d=JSON.stringify({ts,doc:{id:r.id,name:r.name,np:r.np,page:r.page,fp:r.fp,pfp:r.pfp,ord:r.ord,bm:r.bm,tpl:r.tpl},pages:ch});
   let add=d.length;for(const id of nw){const x=await iGet(id);add+=x?x.byteLength:0}
   let p=b.parts[b.parts.length-1];
   if(p.bytes&&p.bytes+add>LIM){p.sealed=1;p.dirty=1;p=b.parts[b.parts.length]={n:p.n+1,es:[],ids:[],bytes:0,dirty:0}}
   if(p.es.length){let rm=0;p.es=p.es.filter(e=>{try{const o=JSON.parse(e.d);let hit=0;for(const k of Object.keys(ch))if(o.pages&&k in o.pages){delete o.pages[k];hit=1}
     if(!hit)return true;if(!Object.keys(o.pages).length){rm+=e.d.length;return false}const nd=JSON.stringify(o);rm+=e.d.length-nd.length;e.d=nd;return true}catch(x){return true}});p.bytes=Math.max(0,p.bytes-rm)}  /* newer snapshot replaces older ones of the same page → zip stays small */
+  p.es=p.es.filter(e=>{try{return Object.keys(JSON.parse(e.d).pages||{}).length>0}catch(x){return true}});   /* the newest entry already carries the latest page order / bookmarks → drop old structure-only entries */
   p.es.push({f:stamp(ts)+".json",d});p.ids.push(...nw);b.imgs.push(...nw);p.bytes+=add;p.dirty=1;await bPut(b);
 }
 async function autoSync(){await persist();flush(0)}
@@ -1300,19 +1342,35 @@ addEventListener("visibilitychange",()=>{if(document.hidden)clearTimeout(ina)});
 /* app settings (signature, pen presets, colors, theme) travel inside every backup zip — never the Telegram token */
 const SETK=k=>k=="pa_sig"||k=="pa_presets"||k=="pa_cust"||k=="pa_colrm"||k=="pa_toolorder"||k=="pa_theme"||k=="pa_pinv"||k.startsWith("pa_pen_");
 const appSettings=()=>{const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(SETK(k))o[k]=localStorage.getItem(k)}}catch(e){}return o};
-async function zipOf(b,p){const z=new JSZip();z.file("info.json",JSON.stringify({app:"pdf-annotator",appVersion:APP_VERSION,schema:SCHEMA,doc:{id:b.id,name:b.name},part:p.n,created:Date.now()}));z.file("app-settings.json",JSON.stringify(appSettings()));for(const e of p.es)z.file("entries/"+e.f,e.d,{compression:"DEFLATE",compressionOptions:{level:9}});
-  for(const id of p.ids){const x=await iGet(id);if(x)z.file("img/"+id+".jpg",x)}
-  return new File([await z.generateAsync({type:"blob",compression:"STORE"})],`${bn(b.name)}-${sid(b.id)}-part${p.n}.zip`,{type:"application/zip"})}
+const sha=async t=>{try{const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return[...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("")}catch(e){let h=5381;for(let i=0;i<t.length;i++)h=(h*33^t.charCodeAt(i))>>>0;return"d"+h.toString(16)}};
+const sumOf=es=>sha(es.map(e=>e.f+"\n"+e.d).join("\n\u0000"));
+async function zipOf(b,p){const z=new JSZip(),dr=(await dbGet(b.id))||{},sum=await sumOf(p.es);let ni=0;
+  for(const e of p.es)z.file("entries/"+e.f,e.d,{compression:"DEFLATE",compressionOptions:{level:6}});
+  for(const id of p.ids){const x=await iGet(id);if(x){z.file("img/"+id+".jpg",x);ni++}}
+  /* manifest: identifies the PDF (id + fingerprints), lists every file and carries a checksum → restore can detect damaged backups */
+  z.file("info.json",JSON.stringify({app:"pdf-annotator",format:2,appVersion:APP_VERSION,schema:SCHEMA,doc:{id:b.id,name:b.name,fp:dr.fp||"",pfp:dr.pfp||""},part:p.n,sealed:!!p.sealed,created:Date.now(),entries:p.es.length,files:p.es.map(e=>e.f),images:ni,annotations:dr.n||0,checksum:sum}));
+  z.file("app-settings.json",JSON.stringify(appSettings()));
+  const blob=await z.generateAsync({type:"blob",compression:"STORE"});
+  /* self-check BEFORE sending: re-open the zip and compare with what we meant to write */
+  const c=await JSZip.loadAsync(blob),back=[];
+  for(const e of p.es){const y=c.file("entries/"+e.f);if(!y)throw new Error("Backup self-check failed (file missing) — not sent, will retry.");back.push({f:e.f,d:await y.async("string")})}
+  if(!c.file("info.json")||await sumOf(back)!==sum)throw new Error("Backup self-check failed (checksum) — not sent, will retry.");
+  return new File([blob],`${bn(b.name)}-${sid(b.id)}-part${p.n}.zip`,{type:"application/zip"})}
 const capOf=(b,p,f)=>`#annotations_backup #${bn(b.name)} #id_${sid(b.id)} · ${b.name.replace(/\.pdf$/i,"").slice(0,60)} Part ${p.n} ${p.sealed?"(complete)":"(active)"} · ${p.es.length} entries · ${(f.size/1e6).toFixed(1)} MB · ${new Date().toLocaleString("en-GB")}`;
-const UPMS=3e5;
+const UPMS=3e5,CKMS=864e5;   /* a new "checkpoint" message at most once per 24 h; the 2 previous checkpoints are kept, older ones removed */
+const tgDel=(tg,m)=>tgCall(tg.t,"deleteMessage",new URLSearchParams({chat_id:tg.c,message_id:m}),20000).catch(()=>{});
 async function tgSend(tg,f,c,mid){
+  const ok=m=>{const d=m&&m.document;if(!d||(d.file_size&&d.file_size<f.size))throw new Error("Telegram did not store the complete file — will retry.");return m.message_id};
   if(mid){const fd=new FormData();fd.append("chat_id",tg.c);fd.append("message_id",mid);fd.append("media",JSON.stringify({type:"document",media:"attach://f",caption:c}));fd.append("f",f);
-    try{await tgCall(tg.t,"editMessageMedia",fd,UPMS);return mid}
-    catch(e){if(!e.api)throw e;if(/not modified/i.test(e.desc))return mid}}   /* message deleted / not editable → send a new one */
+    try{return ok(await tgCall(tg.t,"editMessageMedia",fd,UPMS))}
+    catch(e){if(!e.api)throw e;if(/not modified/i.test(e.desc))return mid;
+      if(!/message to edit not found|can't be edited|MESSAGE_ID_INVALID/i.test(e.desc))throw e}}   /* only when the old message is really gone do we create a new one — any other error = retry later, never a duplicate */
   const g=new FormData();g.append("chat_id",tg.c);g.append("caption",c);g.append("document",f);
-  return(await tgCall(tg.t,"sendDocument",g,UPMS)).message_id}
+  return ok(await tgCall(tg.t,"sendDocument",g,UPMS))}
 const done=(p)=>{p.dirty=0;p.sent=Date.now();if(p.sealed){p.es=[];p.ids=[]}};
-function flush(manual){return lock(async()=>{
+let flT=0;
+function flush(manual){if(!manual&&Date.now()-lastInk<8000){clearTimeout(flT);flT=setTimeout(()=>flush(0),8000);return Promise.resolve()}   /* background backup waits until you stop writing */
+  return lock(async()=>{
   try{
     if(pdf&&docId)await persist();
     for(const r of (await dbAll())||[])await syncOne(r);
@@ -1322,7 +1380,9 @@ function flush(manual){return lock(async()=>{
     if(tg&&!manual&&navigator.onLine===false)return;   /* offline: retried automatically later */
     for(const b of (await bAll())||[])for(const p of b.parts){if(!p.dirty)continue;if(manual)st(`⏳ Sending ${b.name} (part ${p.n}) to Telegram…`);
       const f=await zipOf(b,p);
-      if(tg){p.mid=await tgSend(tg,f,capOf(b,p,f),p.mid);done(p);await bPut(b);n++}else out.push([b,p,f])}
+      if(tg){const old=p.mid,ck=!!old&&!p.sealed&&Date.now()-(p.ck||p.sent||0)>CKMS,nm=await tgSend(tg,f,capOf(b,p,f),ck?0:p.mid);
+        if(ck){p.hist=[old,...(p.hist||[])];p.ck=Date.now();for(const m of p.hist.splice(2))tgDel(tg,m)}else if(!p.ck)p.ck=Date.now();   /* old copies are deleted only after the new one is stored and verified */
+        p.mid=nm;done(p);await bPut(b);n++}else out.push([b,p,f])}
     if(out.length){const fs=out.map(x=>x[2]);
       try{if(navigator.canShare&&navigator.canShare({files:fs}))await navigator.share({files:fs,title:"PDF annotation backup",text:"#annotations_backup"});else throw 0}
       catch(e){if(e&&e.name=="AbortError"){st("Backup cancelled");return}for(const f of fs){const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=f.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),6e4)}}
@@ -1337,20 +1397,37 @@ addEventListener("online",()=>flush(0));
 $("#bk").onclick=()=>flush(1);
 $("#rs").onclick=()=>$("#fj").click();
 const putDoc=async r=>{const x=await dbGet(r.id);if(!x||(x.t||0)<(r.t||0)){await dbPut(r);return 1}return 0};
-$("#fj").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(!fl.length)return;let n=0,mx=0,ns=0;const E=[],ds=new Set();
-  try{for(const f of fl){const m=/-part(\d+)/i.exec(f.name);if(m)mx=Math.max(mx,+m[1]);
-      if(/\.zip$/i.test(f.name)){const z=await JSZip.loadAsync(f);for(const p in z.files){const y=z.files[p];if(y.dir)continue;
-        if(p.startsWith("img/"))await iPut(p.slice(4).replace(/\.jpg$/,""),await y.async("arraybuffer"));
-        else if(p.startsWith("entries/"))E.push(JSON.parse(await y.async("string")));
-        else if(p=="app-settings.json"){try{const o=JSON.parse(await y.async("string"));for(const k in o)if(SETK(k)&&localStorage.getItem(k)==null){localStorage.setItem(k,o[k]);ns++}}catch(x){}}
-        else if(p=="meta.json")n+=await putDoc(JSON.parse(await y.async("string")))}}
-      else{const j=JSON.parse(await f.text());for(const r of j.docs||[])n+=await putDoc(r)}}
+$("#fj").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(!fl.length)return;let n=0,mx=0,ns=0;const E=[],ds=new Set(),bad=[],filled=new Set();
+  try{const loc=(await dbAll())||[],byFp=new Map();for(const r of loc){if(r.fp)byFp.set("f"+r.fp,r.id);if(r.pfp)byFp.set("p"+r.pfp,r.id)}
+    const mapId=d=>byFp.get("f"+d.fp)||byFp.get("p"+d.pfp)||d.id;   /* same PDF (by fingerprint) → same notebook, whatever the old ID or file name was */
+    for(const f of fl){const m=/-part(\d+)/i.exec(f.name);if(m)mx=Math.max(mx,+m[1]);
+      if(/\.zip$/i.test(f.name)){
+        let ent=[],imgs=[],info=null,set=null,meta=null;
+        try{const z=await JSZip.loadAsync(f);
+          for(const p in z.files){const y=z.files[p];if(y.dir)continue;
+            if(p.startsWith("img/"))imgs.push([p.slice(4).replace(/\.jpg$/,""),await y.async("arraybuffer")]);
+            else if(p.startsWith("entries/")){const d=await y.async("string");ent.push({f:p.slice(8),d,o:JSON.parse(d)})}
+            else if(p=="app-settings.json")set=await y.async("string");
+            else if(p=="info.json")info=JSON.parse(await y.async("string"));
+            else if(p=="meta.json")meta=JSON.parse(await y.async("string"))}
+          if(info&&info.checksum){const q=new Map(ent.map(x=>[x.f,x])),es=(info.files||[]).map(k=>q.get(k));if(es.some(x=>!x)||await sumOf(es)!==info.checksum)throw 0}}
+        catch(x){bad.push(f.name);continue}   /* damaged / incomplete zip → nothing from it is imported */
+        if(info&&info.part)mx=Math.max(mx,+info.part);
+        for(const[id,buf]of imgs)await iPut(id,buf);
+        for(const x of ent)E.push(x.o);
+        if(set){try{const o=JSON.parse(set);for(const k in o)if(SETK(k)&&localStorage.getItem(k)==null){localStorage.setItem(k,o[k]);ns++}}catch(x){}}
+        if(meta)n+=await putDoc(meta)}
+      else{try{const j=JSON.parse(await f.text());for(const r of j.docs||[])n+=await putDoc(r)}catch(x){bad.push(f.name)}}}
     E.sort((a,b)=>a.ts-b.ts);
-    for(const en of E){const x=(await dbGet(en.doc.id))||{id:en.doc.id,anns:{},t:0};if(en.ts<=(x.t||0))continue;
-      for(const i in en.pages)x.anns[i]=en.pages[i];Object.assign(x,{name:en.doc.name,np:en.doc.np,page:en.doc.page,t:en.ts,n:cnt(x.anns)},en.doc.fp?{fp:en.doc.fp,pfp:en.doc.pfp||""}:{},en.doc.ord&&en.doc.ord.length==en.doc.np?{ord:en.doc.ord,bm:en.doc.bm||[],tpl:en.doc.tpl||{}}:{});await dbPut(x);ds.add(x.id)}
+    for(const en of E){const id=mapId(en.doc),x=(await dbGet(id))||{id,sv:SCHEMA,anns:{},t:0},newer=en.ts>(x.t||0);
+      for(const i in en.pages){const k=id+"|"+i;   /* an older backup never overwrites newer local work, but fills every page that is empty here */
+        if(newer||filled.has(k)||!(x.anns[i]&&x.anns[i].length)){x.anns[i]=en.pages[i];if(!newer)filled.add(k)}}
+      if(newer)Object.assign(x,{name:en.doc.name,np:en.doc.np,page:en.doc.page,t:en.ts},en.doc.fp?{fp:en.doc.fp,pfp:en.doc.pfp||""}:{},en.doc.ord&&en.doc.ord.length==en.doc.np?{ord:en.doc.ord,bm:en.doc.bm||[],tpl:en.doc.tpl||{}}:{});
+      x.n=cnt(x.anns);await dbPutM(x);ds.add(id)}
     for(const id of ds){if(await bGet(id))continue;const x=await dbGet(id),last={};for(const i in x.anns)last[i]=JSON.stringify(x.anns[i]);
       await bPut({id,name:x.name,last,imgs:imgIds(x.anns),parts:[{n:mx+1,es:[],ids:[],bytes:0,dirty:0}]})}
-    await showLib();st(`♻️ ${ds.size+n} PDF(s) restored`+(ns?" · settings restored — reload the app to apply them":""))}
+    await showLib();st(`♻️ ${ds.size+n} PDF(s) restored`+(ns?" · settings restored — reload the app to apply them":""));
+    if(bad.length)alert("⚠️ "+bad.length+" file(s) were skipped because they are damaged or incomplete:\n\n"+bad.join("\n")+"\n\nDownload them again from Telegram and restore again.")}
   catch(err){st("❌ Invalid backup file — select the .zip files downloaded from Telegram")}};
 
 /* ===== KEYBOARD ===== */
@@ -1386,6 +1463,11 @@ function smoothPath(c,p){c.moveTo(p[0][0],p[0][1]);if(p.length<3){p.forEach(q=>c
 /* palm rejection */
 document.addEventListener("pointermove",e=>{if(e.pointerType=="pen")lastPen=Date.now()},{capture:true,passive:true});
 document.addEventListener("pointerdown",e=>{if(e.pointerType=="pen")lastPen=Date.now()},{capture:true,passive:true});
+/* iPadOS turns a Pencil stroke / long press into "select text" (Copy · Look Up · Translate menu) and cancels the stroke → block it completely, like GoodNotes */
+const inEd=t=>{t=t&&(t.nodeType==1?t:t.parentElement);return!!(t&&t.closest&&t.closest("input,textarea,[contenteditable=true]"))};
+document.addEventListener("selectstart",e=>{if(!inEd(e.target))e.preventDefault()},true);
+document.addEventListener("selectionchange",()=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName))return;const g=getSelection();if(g&&!g.isCollapsed)g.removeAllRanges()});
+document.addEventListener("contextmenu",e=>{if(!inEd(e.target))e.preventDefault()},true);
 const palmBlock=e=>palm&&e.pointerType=="touch"&&(Date.now()-lastPen<1200||Math.max(e.width||0,e.height||0)>35);
 $("#palm").onclick=e=>{palm=!palm;e.currentTarget.classList.toggle("on",palm);st(palm?"🖐 Palm rejection on":"🖐 Palm rejection off")};
 $("#shp").onclick=e=>{shapeOn=!shapeOn;e.currentTarget.classList.toggle("on",shapeOn);st(shapeOn?"◇ Pause at the end of a stroke → shape snaps straight":"◇ Shape recognition off")};
@@ -1419,7 +1501,7 @@ const objBox=o=>{if(o.t=="img")return[o.x,o.y,o.x+o.w,o.y+o.h];
   if(o.t=="text"){const B=tBox(o);return[o.x,o.y,o.x+B.w,o.y+B.h]}
   const xs=o.p.map(q=>q[0]),ys=o.p.map(q=>q[1]);return[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]};
 function selBox(){const B=selObjs.map(objBox);const x0=Math.min(...B.map(b=>b[0])),y0=Math.min(...B.map(b=>b[1]));return{x:x0,y:y0,w:Math.max(...B.map(b=>b[2]))-x0,h:Math.max(...B.map(b=>b[3]))-y0}}
-const mp=(o,f)=>{if(o.t=="img"||o.t=="text"){const[x,y]=f([o.x,o.y]);o.x=x;o.y=y}else o.p=o.p.map(f)};
+const mp=(o,f)=>{if(o.t=="img"||o.t=="text"){const[x,y]=f([o.x,o.y]);o.x=x;o.y=y}else o.p=o.p.map(q=>{const r=f(q);return q.length>2?[r[0],r[1],q[2]]:r})};
 const selMove=(dx,dy)=>selObjs.forEach(o=>mp(o,q=>[q[0]+dx,q[1]+dy]));
 const selScale=(s,ox,oy)=>selObjs.forEach(o=>{mp(o,q=>[ox+(q[0]-ox)*s,oy+(q[1]-oy)*s]);if(o.t=="img"){o.w*=s;o.h*=s}if(o.t=="text"){o.s*=s;if(o.bw)o.bw*=s}});
 function pip(pt,P){let r=false;for(let i=0,j=P.length-1;i<P.length;j=i++){if((P[i][1]>pt[1])!=(P[j][1]>pt[1])&&pt[0]<(P[j][0]-P[i][0])*(pt[1]-P[i][1])/(P[j][1]-P[i][1])+P[i][0])r=!r}return r}
@@ -1682,7 +1764,7 @@ setInterval(()=>{netUpd();svAuto()},30000);setTimeout(()=>{netUpd();svAuto()},30
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.13",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.17",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -1694,6 +1776,8 @@ async function resolveId(f,fp,wid){const all=(await dbAll())||[];
   const leg=f.name+"|"+f.size,l=all.find(x=>x.id==leg);if(l&&!l.fp){l.fp=fp;await dbPut(l);return leg}  /* adopt legacy data */
   if(all.some(x=>x.pfp)){let u;try{u=URL.createObjectURL(f);const t=await pdfjsLib.getDocument({url:u,disableAutoFetch:true,rangeChunkSize:131072}).promise,pf=t.fingerprints&&t.fingerprints[0];t.destroy();
     const m2=pf&&all.find(x=>x.pfp==pf);if(m2){m2.fp=fp;await dbPut(m2);return m2.id}}catch(e){}finally{if(u)URL.revokeObjectURL(u)}}
+  const sn=all.filter(x=>x.name==f.name&&x.n>0).sort((a,b)=>(b.t||0)-(a.t||0))[0];   /* re-saved / re-exported PDF: content differs, name is the same */
+  if(sn&&confirm(`Notes already exist for a PDF with this name:\n\n«${f.name.replace(/\.pdf$/i,"")}» · ${sn.n} annotations · edited ${agoT(sn.t||0)}\n\nOK = same PDF (keep using these notes)\nCancel = a different PDF (start a new notebook)`))return sn.id
   return"fp:"+fp}                                                       /* different PDF → different ID, never mixed */
 /* meta store + mirror DB (second copy) */
 const mx=async(m,f)=>{const d=await DB;return new Promise((res,rej)=>{const t=d.transaction("meta",m),o=f(t.objectStore("meta"));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)})};
