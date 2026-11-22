@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.52">
+<meta name="app-version" content="1.4.59">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -129,6 +129,17 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .tbc input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;border:0}
 body.pres #tbar,body.pres #cbar{display:none!important}
 /* v1.4.51: voice bar (shown while a text box is open) + move/size buttons for selected text */
+#lpm{position:fixed;z-index:245;display:flex;flex-wrap:wrap;gap:6px;align-items:center;max-width:min(92vw,300px);padding:8px;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:12px;box-shadow:var(--panel-shadow)}
+#lpm[hidden],#spk[hidden]{display:none}
+body.pres #spk,body.pres #lpm{display:none!important}
+#spk{position:fixed;inset:0;z-index:250;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:calc(var(--vvt,0px) + env(safe-area-inset-top,0px) + 8px) 8px 8px}
+#spk[hidden]{display:none}
+#spk>div{width:min(560px,100%);max-height:calc(100vh - 24px);background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:14px;box-shadow:var(--panel-shadow);padding:10px;display:flex;flex-direction:column;gap:7px;overflow:hidden}
+#spk textarea{flex:1 1 96px;min-height:84px;width:100%;box-sizing:border-box;resize:none;font:16px/1.35 system-ui,"Noto Sans Devanagari",sans-serif;padding:9px 10px;border-radius:10px;border:1px solid var(--panel-bd);background:var(--btn-bg);color:inherit;overflow:auto}
+#spk .sr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}#spk .sr .pb{padding:9px 11px;min-width:40px;font-size:15px}
+#spk .sr.f .pb{flex:1}#spk .sr.c{overflow-x:auto;flex-wrap:nowrap}
+#spk .pb.rec{background:#dc2626;border-color:#dc2626;color:#fff;animation:vbpulse 1.3s ease-in-out infinite}
+#spk #sp-sz{min-width:30px;text-align:center;font-weight:700}
 #vbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--vvt,0px) + env(safe-area-inset-top,0px) + 8px);z-index:230;display:flex;gap:6px;align-items:center;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:14px;padding:6px;box-shadow:var(--panel-shadow);max-width:96vw;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 #vbar .pb{padding:9px 12px;min-width:44px;font-size:15px;white-space:nowrap}
 #vbar .pb.rec{background:#dc2626;border-color:#dc2626;color:#fff;animation:vbpulse 1.3s ease-in-out infinite}
@@ -274,8 +285,8 @@ body.nobar #showbar{display:block}body.pres #showbar{display:none!important}
 .pg canvas{position:absolute;inset:0;width:100%;height:100%}
 .pg textarea{position:absolute;z-index:3;min-width:120px;min-height:2em;border:1px dashed var(--ac);background:#fff9;color:#000;font-family:inherit;resize:both}
 #empty{margin:8vh 8px;text-align:center;line-height:1.9;opacity:.7;font-size:15px}
-:root.dkp .pg{background:#000;box-shadow:0 0 0 1px #2a2a2a}
-:root.dkp .pg textarea{background:#000c}
+:root.dkp .pg{background:#141414;box-shadow:0 0 0 1px #2a2a2a}
+:root.dkp .pg textarea{background:#141414cc}
 .pg canvas{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 
 /* ===== HOME SCREEN ===== */
@@ -419,6 +430,71 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
 .add-page-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .add-page-options .pb{min-height:48px;text-align:center;white-space:normal}
 @media(max-width:420px){.add-page-options{grid-template-columns:1fr 1fr}}
+
+/* ===== v1.4.59: colourful + smooth toolbar, no instruction text ===== */
+#lasso-panel,#sel-panel,.bkh{display:none!important}
+:root{--c-pen:#3b82f6;--c-hl:#f59e0b;--c-er:#ec4899;--c-lasso:#8b5cf6;--c-text:#14b8a6;--c-spk:#ef4444;--c-shape:#f97316;--c-stamp:#eab308;--c-more:#6366f1;--c-laser:#f43f5e;--c-img:#06b6d4;--c-page:#22c55e;--c-undo:#64748b;--ease:cubic-bezier(.22,1,.36,1)}
+/* toolbar strip: each tool has its own colour (soft tinted tile + coloured icon) */
+#tstrip .ibtn{--c:var(--c-undo);color:var(--c);background:color-mix(in srgb,var(--c) 11%,transparent);border-radius:12px;width:40px;height:40px;
+  transition:transform .22s var(--ease),background .22s,box-shadow .22s,color .22s;will-change:transform;-webkit-tap-highlight-color:transparent}
+#tstrip .ibtn:hover{background:color-mix(in srgb,var(--c) 20%,transparent)}
+#tstrip .ibtn:active{transform:scale(.88)}
+#tstrip .ibtn.on,#tstrip .ibtn[data-t].on,#tstrip .ibtn[data-t].on:hover{background:var(--c);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--c) 55%,transparent);transform:translateY(-1px)}
+#tstrip #addpg{--c:var(--c-page)}#tstrip #imb{--c:var(--c-img)}#tstrip [data-t="text"]{--c:var(--c-text)}#tstrip [data-t="spk"]{--c:var(--c-spk)}
+#tstrip #shpb{--c:var(--c-shape)}#tstrip [data-t="stamp"]{--c:var(--c-stamp)}#tstrip #mor{--c:var(--c-more)}#tstrip [data-t="laser"]{--c:var(--c-laser)}
+#tstrip [data-t="lasso"]{--c:var(--c-lasso)}#tstrip [data-t="er"]{--c:var(--c-er)}#tstrip [data-t="hl"]{--c:var(--c-hl)}#tstrip [data-t="pen"]{--c:var(--c-pen)}
+#tstrip #un,#tstrip #re{--c:var(--c-undo)}
+#tstrip .sw{transition:transform .2s var(--ease),border-color .2s}#tstrip .sw:active{transform:scale(.85)}#tstrip .sw.on{transform:scale(1.12)}
+#bar{background:linear-gradient(180deg,color-mix(in srgb,var(--c-pen) 7%,var(--bar)),var(--bar))}
+/* popup panels: smooth spring-in (uses scale/translate so it never fights the panel's own centring) */
+.fpanel{transform-origin:top center;animation:panelIn2 .26s var(--ease) both;border-radius:20px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c-more) 6%,var(--panel-bg)),var(--panel-bg) 60%)}
+@keyframes panelIn2{from{opacity:0;scale:.92;translate:0 -10px}to{opacity:1;scale:1;translate:0 0}}
+.fpanel-title{border-bottom:0;padding-bottom:2px;background:linear-gradient(90deg,var(--c-more),var(--c-lasso),var(--c-er));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.fpanel-section-label{opacity:.7;color:var(--c-more)}
+/* tool grids inside Shapes / More tools: coloured tiles, staggered pop-in */
+.mcell .ibtn{--c:var(--c-more);color:var(--c);background:color-mix(in srgb,var(--c) 13%,var(--btn-bg));width:52px;height:52px;border-radius:16px;
+  transition:transform .2s var(--ease),background .2s,box-shadow .2s}
+.mcell .ibtn:active{transform:scale(.88)}
+.mcell .ibtn.on{background:var(--c);color:#fff;box-shadow:0 5px 14px color-mix(in srgb,var(--c) 50%,transparent)}
+.mcell{animation:cellIn .32s var(--ease) both}
+.mcell:nth-child(2){animation-delay:.025s}.mcell:nth-child(3){animation-delay:.05s}.mcell:nth-child(4){animation-delay:.075s}.mcell:nth-child(5){animation-delay:.1s}.mcell:nth-child(6){animation-delay:.125s}
+.mcell:nth-child(n+7){animation-delay:.15s}
+@keyframes cellIn{from{opacity:0;scale:.7}to{opacity:1;scale:1}}
+.mcell span{opacity:.85;font-weight:600}
+#shp-panel .mcell:nth-child(1) .ibtn{--c:#3b82f6}#shp-panel .mcell:nth-child(2) .ibtn{--c:#ef4444}#shp-panel .mcell:nth-child(3) .ibtn{--c:#22c55e}#shp-panel .mcell:nth-child(4) .ibtn{--c:#f59e0b}
+#more-panel .mcell:nth-child(1) .ibtn{--c:#3b82f6}#more-panel .mcell:nth-child(2) .ibtn{--c:#8b5cf6}#more-panel .mcell:nth-child(3) .ibtn{--c:#eab308}#more-panel .mcell:nth-child(4) .ibtn{--c:#06b6d4}
+#more-panel .mcell:nth-child(5) .ibtn{--c:#ec4899}#more-panel .mcell:nth-child(6) .ibtn{--c:#ef4444}#more-panel .mcell:nth-child(7) .ibtn{--c:#14b8a6}#more-panel .mcell:nth-child(8) .ibtn{--c:#f97316}
+#more-panel .mcell:nth-child(9) .ibtn{--c:#22c55e}#more-panel .mcell:nth-child(10) .ibtn{--c:#6366f1}#more-panel .mcell:nth-child(11) .ibtn{--c:#0ea5e9}#more-panel .mcell:nth-child(12) .ibtn{--c:#a855f7}
+#more-panel .mcell:nth-child(13) .ibtn{--c:#84cc16}#more-panel .mcell:nth-child(14) .ibtn{--c:#f43f5e}
+/* pen / size / buttons inside panels */
+.pen-type-btn{transition:transform .2s var(--ease),border-color .2s,background .2s}.pen-type-btn:active{transform:scale(.9)}
+.pen-type-btn.on{border-color:var(--c-pen);background:color-mix(in srgb,var(--c-pen) 16%,var(--btn-bg))}
+.fpanel .pb{transition:transform .18s var(--ease),background .18s,box-shadow .18s}.fpanel .pb:active{transform:scale(.94)}
+.fpanel .pb.on{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(99,102,241,.4)}
+.fpanel input[type=range]{accent-color:var(--c-more)}
+.cdot{transition:transform .18s var(--ease)}.cdot:hover{transform:scale(1.12)}.cdot:active{transform:scale(.9)}.cdot.on{transform:scale(1.15)}
+/* 🧰 PDF tools box (popup): colourful rows, smooth open/close */
+.mod{animation:modBg .22s ease both;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.mod>div{animation:modIn .3s var(--ease) both;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+@keyframes modBg{from{opacity:0}to{opacity:1}}
+@keyframes modIn{from{opacity:0;scale:.9;translate:0 18px}to{opacity:1;scale:1;translate:0 0}}
+#tm>div{gap:9px;min-width:min(300px,86vw)}
+#tm h3{font-size:18px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+#tm .pb{--c:#3b82f6;padding:13px 14px;font-size:15px;font-weight:600;border:0;border-radius:14px;background:color-mix(in srgb,var(--c) 14%,var(--btn-bg));
+  border-left:5px solid var(--c);animation:cellIn .3s var(--ease) both;transition:transform .18s var(--ease),background .18s}
+#tm .pb:active{transform:scale(.97)}#tm .pb:hover{background:color-mix(in srgb,var(--c) 24%,var(--btn-bg))}
+#tm [data-tl="merge"]{--c:#3b82f6}#tm [data-tl="ext"]{--c:#f97316}#tm [data-tl="blank"]{--c:#22c55e}#tm [data-tl="img"]{--c:#06b6d4}#tm [data-tl="cmp"]{--c:#a855f7}#tm [data-tl="sig"]{--c:#ec4899}
+#tm .pb:nth-of-type(2){animation-delay:.03s}#tm .pb:nth-of-type(3){animation-delay:.06s}#tm .pb:nth-of-type(4){animation-delay:.09s}#tm .pb:nth-of-type(5){animation-delay:.12s}#tm .pb:nth-of-type(6){animation-delay:.15s}
+#tm #tmx{--c:#64748b;text-align:center;background:var(--c);color:#fff;border-left:0;margin-top:2px}
+/* home → PDF tools cards (no description text now) */
+#hp-tools .tlc{--c:#3b82f6;border:0;border-left:6px solid var(--c);background:color-mix(in srgb,var(--c) 12%,var(--btn-bg));padding:20px 18px;
+  transition:transform .22s var(--ease),box-shadow .22s,background .22s;animation:cellIn .35s var(--ease) both}
+#hp-tools .tlc:hover{transform:translateY(-2px);box-shadow:0 8px 20px color-mix(in srgb,var(--c) 30%,transparent)}#hp-tools .tlc:active{transform:scale(.97)}
+#hp-tools .tlc b{font-size:17px}
+#hp-tools [data-tl="merge"]{--c:#3b82f6}#hp-tools [data-tl="img"]{--c:#06b6d4}#hp-tools [data-tl="sig"]{--c:#ec4899}#hp-tools [data-tl="ext"]{--c:#f97316}#hp-tools [data-tl="cmp"]{--c:#a855f7}#hp-tools [data-tl="blank"]{--c:#22c55e}
+#hp-tools .tlc.need{opacity:.85}
+@media(prefers-reduced-motion:reduce){.fpanel,.mod,.mod>div,.mcell,#tm .pb,#hp-tools .tlc{animation:none!important}#tstrip .ibtn,.mcell .ibtn{transition:none}}
 </style></head><body>
 
 <!-- ===== TOP BAR ===== -->
@@ -439,6 +515,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
     <button class="ibtn" id="addpg" title="Add a page after the current page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h8l4.5 4.5v12.5H6z"/><path d="M14 3.5V8h4.5M12 11v6M9 14h6"/></svg></button>
     <button class="ibtn" id="imb" title="Add image"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></svg></button>
     <button class="ibtn" data-t="text" title="Text"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3" stroke-dasharray="3 3"/><path d="M8.5 16.5l3.5-9 3.5 9M9.8 13.5h4.4"/></svg></button>
+    <button class="ibtn" data-t="spk" title="Speak to type"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v3M9 21h6"/></svg></button>
     <button class="ibtn" id="shpb" title="Shapes"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="9.5" width="11" height="11" rx="2.5"/><rect x="9.5" y="3.5" width="11" height="11" rx="2.5"/></svg></button>
     <button class="ibtn" data-t="stamp" title="Stamp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8z"/></svg></button>
     <button class="ibtn" id="mor" title="More tools"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></button>
@@ -485,9 +562,9 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
   <div>
     <div class="fpanel-section-label" style="margin-bottom:8px">Pen</div>
     <div class="pen-types">
-      <button class="pen-type-btn on" data-pt="ball" title="Ballpoint">🖊</button>
-      <button class="pen-type-btn" data-pt="fine" title="Fineliner">✒️</button>
-      <button class="pen-type-btn" data-pt="brush" title="Brush pen">🖌️</button><button class="pen-type-btn" data-pt="pencil" title="Pencil">✏️</button>
+      <button class="pen-type-btn on" data-pt="ball" title="Ball pen — smooth, even">🖊</button>
+      <button class="pen-type-btn" data-pt="fine" title="Fineliner — thin, crisp">✒️</button>
+      <button class="pen-type-btn" data-pt="brush" title="Brush — thick/thin with pressure">🖌️</button><button class="pen-type-btn" data-pt="pencil" title="Pencil — soft grainy">✏️</button>
       <button class="pen-settings-gear" id="pen-gear-btn" title="Settings">⚙️</button>
     </div>
   </div>
@@ -582,7 +659,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
     <section id="hp-nb">
       <h1 class="hti">📓 Notebooks</h1>
       <div id="nbs"></div>
-      <div id="empty" hidden>📄 No notebooks yet.<br>Tap "＋ Add PDF" below.<br><span style="font-size:13px">Your PDF stays on your device; only annotations are saved.</span></div>
+      <div id="empty" hidden>📄 No notebooks yet.<br>Tap "＋ Add PDF" below.</div>
     </section>
     <section id="hp-bk" hidden>
       <h1 class="hti">✈️ Back up to Telegram</h1>
@@ -605,12 +682,12 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
       <h1 class="hti">🧰 PDF tools</h1>
       <div id="htm" role="status"></div>
       <div class="tlg">
-        <button class="tlc" data-tl="merge"><b>🧩 Merge multiple PDFs</b><span>Combine several PDFs into one file.</span></button>
-        <button class="tlc" data-tl="img"><b>🖼 Images → PDF</b><span>Turn photos or images into a PDF.</span></button>
-        <button class="tlc" data-tl="sig"><b>🖋 Create new signature</b><span>Draw a signature you can place on pages.</span></button>
-        <button class="tlc need" data-tl="ext"><b>✂️ Extract pages / Split</b><span>Open a notebook first, then use ⊕ More tools → PDF tools.</span></button>
-        <button class="tlc need" data-tl="cmp"><b>🗜 PDF Compress</b><span>Open a notebook first, then use ⊕ More tools → PDF tools.</span></button>
-        <button class="tlc need" data-tl="blank"><b>📄 Blank page after current page</b><span>Open a notebook first, then use ⊕ More tools → PDF tools.</span></button>
+        <button class="tlc" data-tl="merge"><b>🧩 Merge multiple PDFs</b></button>
+        <button class="tlc" data-tl="img"><b>🖼 Images → PDF</b></button>
+        <button class="tlc" data-tl="sig"><b>🖋 Create new signature</b></button>
+        <button class="tlc need" data-tl="ext"><b>✂️ Extract pages / Split</b></button>
+        <button class="tlc need" data-tl="cmp"><b>🗜 PDF Compress</b></button>
+        <button class="tlc need" data-tl="blank"><b>📄 Blank page after current page</b></button>
       </div>
     </section>
     <button class="cta" id="mkpdf">📄 Create PDF</button>
@@ -619,13 +696,23 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
   <div id="htoast" role="status" aria-live="polite" hidden></div>
 </div>
 
+<div id="spk" hidden><div>
+  <div style="display:flex;align-items:center;gap:8px"><b id="spk-title" style="flex:1"></b><button class="pb" id="spk-x" title="Cancel">✕</button></div>
+  <textarea id="spk-t" autocomplete="off" autocapitalize="sentences" data-1p-ignore data-lpignore="true" placeholder="Yaha likho… (Enter = nayi line)"></textarea>
+  <div class="sr" id="spk-voice"><button class="pb" id="spk-mic" style="flex:1">🎤</button><button class="pb" id="spk-lang"></button><button class="pb" id="spk-kb">⌨️</button></div>
+  <div class="sr f"><button class="pb" id="sp-b" title="Bold"><b>B</b></button><button class="pb" data-spa="l" title="Left">⇤</button><button class="pb" data-spa="c" title="Center">↔</button><button class="pb" data-spa="r" title="Right">⇥</button><button class="pb" id="sp-sm" title="Smaller">A−</button><span id="sp-sz" class="pb" style="flex:0 0 auto;border:0;background:none"></span><button class="pb" id="sp-bg" title="Bigger">A+</button></div>
+  <div class="sr c" id="spk-cols"></div>
+  <div id="spk-st" style="font-size:12px;opacity:.75;min-height:15px"></div>
+  <div class="sr f"><button class="pb" id="spk-del" title="Delete this text">🗑</button><button class="pb on" id="spk-ok" style="flex:3">💾 Save</button></div>
+</div></div>
 <!-- ===== SETTINGS MODAL ===== -->
 <div id="sm" hidden><div>
  <!-- main view -->
  <div id="sm-main" class="smv">
    <h2>⚙️ Settings</h2>
-   <button class="smb" id="sm-ins">📖 Instructions</button>
+   <button class="smb" id="sm-ins" hidden>📖 Instructions</button>
    <button class="smb" id="sm-tgb">✈️ Connect Telegram</button>
+    <button class="smb" id="sm-sttb">🎤 Voice API keys (speech-to-text)</button>
    <button class="smb" id="stb">💾 Full backup now</button>
    <button class="smb" id="sm-bkf">📤 Save backup file to this device</button>
    <button class="smb" id="sm-imp">📥 Import backup file</button>
@@ -662,7 +749,21 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
      <button id="strm">🗑 Remove</button>
    </div>
  </div>
- <!-- Instructions view -->
+   <!-- Voice API keys view -->
+  <div id="sm-stt" class="smv" hidden>
+    <div class="row"><button data-smv="main">← Back</button></div>
+    <h2>🎤 Voice API keys</h2>
+    <small>Add free speech-to-text keys from any company. Every voice request uses the next key in turn (round-robin), so all keys get equal use. If a key hits its limit or is invalid, it rests for a while and the next key is used automatically. Keys stay only in this browser (not in Telegram backup / backup file).</small>
+    <label for="sk-p">Company</label>
+    <select id="sk-p"></select>
+    <label for="sk-k">API key(s) — one per line</label>
+    <textarea id="sk-k" rows="3" class="sec" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true" placeholder="paste key(s) here"></textarea>
+    <div class="row"><button id="sk-add" class="on">➕ Add key(s)</button><button id="sk-test">🧪 Test all</button></div>
+    <div id="sk-list"></div>
+    <div class="row"><button id="sk-use"></button></div>
+    <div id="sk-msg" role="status" aria-live="polite"></div>
+  </div>
+<!-- Instructions view -->
  <div id="sm-help" class="smv" hidden>
    <div class="row"><button data-smv="main">← Back</button></div>
    <h2>📖 Instructions</h2>
@@ -719,6 +820,8 @@ if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudfl
 let theme=(()=>{try{return localStorage.getItem("pa_theme")||"auto"}catch(e){return"auto"}})();
 let pinv=(()=>{try{return localStorage.getItem("pa_pinv")!="0"}catch(e){return true}})();
 let DK=false;
+/* v1.4.53 dark-PDF look: soft charcoal page (not pure black) + soft white text, mid-tones lifted a little so thin text keeps its weight */
+const DKBG="#141414",DK_LO=20,DK_HI=238,DK_G=.82;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],PL=window.PDFLib;
 const LOW=(navigator.deviceMemory||4)<=2,MAXPX=LOW?1.2e6:5e6,DPR=Math.min(devicePixelRatio||1,LOW?1:3);   /* v1.4.46: sharper canvas — the page and the ink are drawn at up to 5 Mpx (was 3 Mpx), so they are no longer stretched on iPad */
 let pdf,file,url,name="",docId=null,zoom=LOW?1:1.2,tool="pen",previousTool="lasso",color="#e11d48",W=3,HW=12,penOnly=(()=>{try{return localStorage.getItem("pa_penonly")!=="0"}catch(e){return true}})(),curPage=0;
@@ -738,7 +841,7 @@ const st=t=>{$("#st").textContent=t;const h=$("#hst");if(h)h.textContent=t;const
 let selT=null,CROP=null,TEDIT=null;
 const MC=document.createElement("canvas").getContext("2d");
 const TXK={m:"pa_txmode",b:"pa_txbold",a:"pa_txalign",s:"pa_txsize"},lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
-let TXS=(()=>{const v=+lsGet(TXK.s);return v>=6&&v<=120?v:18})(),TXM=lsGet(TXK.m)=="speak"?"speak":"type",TXL=["hing","hi","en"].includes(lsGet("pa_txlang"))?lsGet("pa_txlang"):"hing",TXB=lsGet(TXK.b)=="1",TXA=["l","c","r"].includes(lsGet(TXK.a))?lsGet(TXK.a):"l";
+let TXS=(()=>{const v=+lsGet(TXK.s);return v>=6&&v<=120?v:18})(),TXM="type",TXL=["hing","hi","en"].includes(lsGet("pa_txlang"))?lsGet("pa_txlang"):"hing",TXB=lsGet(TXK.b)=="1",TXA=["l","c","r"].includes(lsGet(TXK.a))?lsGet(TXK.a):"l";
 const tFont=o=>`${o.b?"700 ":""}${o.s}px system-ui,"Noto Sans Devanagari",sans-serif`;
 function tLines(o){const c=MC;c.font=tFont(o);const out=[];
   String(o.v).split("\n").forEach(par=>{
@@ -787,7 +890,7 @@ $$("#tb-mv [data-mv]").forEach(b=>{let to=0,iv=0,n=0,act=false;const k=b.dataset
   b.addEventListener("pointerdown",e=>{if(!selT||act)return;e.preventDefault();act=true;n=0;snap(selT.i);tNudge(k,0);try{b.setPointerCapture(e.pointerId)}catch(x){}to=setTimeout(()=>{iv=setInterval(()=>tNudge(k,++n),70)},350)});
   ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>b.addEventListener(ev,stop));
   b.addEventListener("contextmenu",e=>e.preventDefault())});
-function openEdit(){if(!selT)return;const p=$(`.pg[data-i="${selT.i}"]`);if(p)textBox(p,selT.i,null,!!selT.o.bg,selT.o)}
+function openEdit(){if(!selT)return;textSheet(selT.i,null,!!selT.o.bg,selT.o,tool=="spk")}
 /* image crop */
 const CMIN=24;
 function startCrop(i,o){const cr=o.cr||[0,0,0,0],FW=o.w/(1-cr[0]-cr[2]),FH=o.h/(1-cr[1]-cr[3]);
@@ -819,6 +922,7 @@ function drawTextSel(c,i,k){if(!selT||selT.i!=i||TEDIT)return;const o=selT.o,B=t
   c.save();c.scale(k,k);c.setLineDash([5/zoom,4/zoom]);c.strokeStyle="#2563eb";c.lineWidth=1.5/zoom;c.strokeRect(o.x-2/zoom,o.y-2/zoom,B.w+4/zoom,B.h+4/zoom);c.setLineDash([]);
   /* Direct-manipulation handles: bottom-right scales text; right-middle changes wrapping width. */
   c.fillStyle="#2563eb";c.beginPath();c.arc(o.x+B.w,o.y+B.h,h,0,Math.PI*2);c.fill();c.strokeStyle="#fff";c.lineWidth=1.5/zoom;c.beginPath();c.moveTo(o.x+B.w-h*.45,o.y+B.h+h*.45);c.lineTo(o.x+B.w+h*.45,o.y+B.h-h*.45);c.moveTo(o.x+B.w-h*.1,o.y+B.h-h*.45);c.lineTo(o.x+B.w+h*.45,o.y+B.h-h*.45);c.lineTo(o.x+B.w+h*.45,o.y+B.h+h*.1);c.stroke();
+  c.fillStyle="#16a34a";c.beginPath();c.arc(o.x-2/zoom,o.y-2/zoom,h*1.15,0,Math.PI*2);c.fill();c.fillStyle="#fff";c.font=`${h*1.5}px sans-serif`;c.textAlign="center";c.textBaseline="middle";c.fillText("✥",o.x-2/zoom,o.y-2/zoom);
   c.fillStyle="#f59e0b";c.beginPath();c.arc(wx,o.y+B.h/2,h*1.1,0,Math.PI*2);c.fill();c.fillStyle="#fff";c.font=`${h*1.4}px sans-serif`;c.textAlign="center";c.textBaseline="middle";c.fillText("↕",wx,o.y+B.h/2);c.restore()}
 /* ===== END TEXT + IMAGE EDITING ===== */
 
@@ -914,8 +1018,12 @@ document.getElementById("ps-reset").onclick=()=>{
 function drawPenPreview(){
   const cv=document.getElementById("pen-prev-canvas");if(!cv)return;
   const ctx=cv.getContext("2d");ctx.clearRect(0,0,cv.width,cv.height);
-  ctx.strokeStyle=color||"#e11d48";ctx.lineWidth=Math.min(W,16);ctx.lineCap=ctx.lineJoin="round";
-  ctx.beginPath();ctx.moveTo(20,32);ctx.bezierCurveTo(70,8,100,40,140,20);ctx.bezierCurveTo(180,2,210,30,220,22);ctx.stroke();
+  let ty="ball";try{ty=penType}catch(e){}
+  try{const P=[],bz=(a,b,c1,d,t)=>{const u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c1+t*t*t*d};let m0=0;
+    [[20,32,70,8,100,40,140,20],[140,20,180,2,210,30,220,22]].forEach((g,si)=>{for(let i=si?1:0;i<=30;i++){const t=i/30,gt=(si*30+i)/60;P.push([bz(g[0],g[2],g[4],g[6],t),bz(g[1],g[3],g[5],g[7],t),.55+.95*Math.sin(Math.PI*gt)])}});
+    const o={t:"pen",pt:ty,c:color||"#e11d48",w:Math.min(W,16)*({fine:.6,brush:1.5,pencil:.8}[ty]||1),p:P};
+    ctx.save();penDraw(ctx,o,true);ctx.restore()}
+  catch(e){ctx.strokeStyle=color||"#e11d48";ctx.lineWidth=Math.min(W,16);ctx.lineCap=ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(20,32);ctx.bezierCurveTo(70,8,100,40,140,20);ctx.bezierCurveTo(180,2,210,30,220,22);ctx.stroke()}
 }
 function drawHlPreview(){
   const cv=document.getElementById("hl-prev-canvas");if(!cv)return;
@@ -926,7 +1034,7 @@ function drawHlPreview(){
 drawPenPreview();drawHlPreview();
 
 /* ===== PANEL OPEN/CLOSE LOGIC ===== */
-const PANELS=["pen-panel","pen-settings-panel","er-panel","hl-panel","shape-panel","text-panel","lasso-panel","sel-panel","shp-panel","more-panel","lz-panel"];
+const PANELS=["pen-panel","pen-settings-panel","er-panel","hl-panel","shape-panel","text-panel","lasso-panel","sel-panel","shp-panel","more-panel","lz-panel","spk-panel"];
 let panelAnchor=null,panelOpen=null,panelFor=null;
 function closeAllPanels(){PANELS.forEach(id=>{const p=document.getElementById(id);if(p)p.hidden=true});panelOpen=null;panelFor=null}
 function placePanel(){
@@ -941,14 +1049,14 @@ function placePanel(){
 function openPanel(id,anchor){if(anchor)panelAnchor=anchor;panelOpen=id;
   PANELS.forEach(pid=>{const p=document.getElementById(pid);if(p)p.hidden=(pid!==id)});placePanel()}
 
-const TOOL_PANEL={pen:"pen-panel",hl:"hl-panel",er:"er-panel",stamp:"st-panel",line:"shape-panel",arrow:"shape-panel",rect:"shape-panel",oval:"shape-panel",text:"text-panel",note:"text-panel",sel:"sel-panel",laser:"lz-panel"};
+const TOOL_PANEL={pen:"pen-panel",hl:"hl-panel",er:"er-panel",stamp:"st-panel",line:"shape-panel",arrow:"shape-panel",rect:"shape-panel",oval:"shape-panel",text:"text-panel",note:"text-panel",sel:"sel-panel",laser:"lz-panel",spk:"spk-panel"};
 // Tool button click → open relevant panel OR toggle off
 $$("[data-t]").forEach(b=>b.onclick=function(){
   const t=this.dataset.t;
   const wasOn=tool===t&&!this.classList.contains("panel-just-closed");
   if(tool!==t)previousTool=tool;tool=t;
   $$("[data-t]").forEach(x=>x.classList.toggle("on",x===this));
-  if(t!="lasso"&&selObjs.length)clearSel();if(CROP)cropCancel();if(selT&&t!="text"&&t!="note"&&t!="sel")selTSet(null,selT.i);$$(".pg").forEach(p=>draw(+p.dataset.i));
+  if(t!="lasso"&&selObjs.length)clearSel();if(CROP)cropCancel();if(selT&&t!="text"&&t!="note"&&t!="sel"&&t!="spk")selTSet(null,selT.i);$$(".pg").forEach(p=>draw(+p.dataset.i));
   // Panel logic: every tool that has settings opens its own popover under the tool; tap again to close
   const pid=TOOL_PANEL[t];
   if(pid){if(panelFor===t&&panelOpen===pid)closeAllPanels();else{openPanel(pid,this);panelFor=t;if(window.onPanelOpen)onPanelOpen(t)}}
@@ -989,10 +1097,10 @@ document.getElementById("doctab-close").onclick=()=>{if(location.hash=="#read")h
 const hx=(r,g,b)=>"#"+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")).join("");
 function dc(c){if(!DK||!/^#[0-9a-f]{6}$/i.test(c))return c;
   const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16),mx=Math.max(r,g,b),mn=Math.min(r,g,b);
-  if(mx-mn<40){const f=255-mx-mn;return hx(r+f,g+f,b+f)}
+  if(mx-mn<40){const f=255-mx-mn,k=(240-DK_LO)/255;return hx(DK_LO+(r+f)*k,DK_LO+(g+f)*k,DK_LO+(b+f)*k)}   /* black ink -> soft white that stays readable on the charcoal page */
   const l=(mx+mn)/510;if(l>=.62)return c;
   const dl=Math.min((.62-l)*255,255-mx);let R=r+dl,G=g+dl,B=b+dl;
-  if(.2126*R+.7152*G+.0722*B<95){const t=.3;R+=(255-R)*t;G+=(255-G)*t;B+=(255-B)*t}
+  if(.2126*R+.7152*G+.0722*B<115){const t=.34;R+=(255-R)*t;G+=(255-G)*t;B+=(255-B)*t}   /* dark colours (navy, brown, dark red…) are lifted so they still glow on dark */
   return hx(R,G,B)}
 const mq=matchMedia("(prefers-color-scheme: dark)"),eff=()=>theme=="dark"||(theme=="auto"&&mq.matches);
 const TH_SUN='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></svg>',TH_MOON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>';
@@ -1023,16 +1131,28 @@ async function imgRects(page,vp,W,H){
     else if(f==O.paintImageXObject||f==O.paintInlineImageXObject){
       const xs=[],ys=[];for(const[x,y]of[[0,0],[1,0],[0,1],[1,1]]){xs.push(m[0]*x+m[2]*y+m[4]);ys.push(m[1]*x+m[3]*y+m[5])}
       const x0=Math.max(0,Math.floor(Math.min(...xs))),y0=Math.max(0,Math.floor(Math.min(...ys))),x1=Math.min(W,Math.ceil(Math.max(...xs))),y1=Math.min(H,Math.ceil(Math.max(...ys))),ar=(x1-x0)*(y1-y0)/(W*H);
-      if(x1>x0&&y1>y0&&ar>.02&&ar<.8)R.push([x0,y0,x1-x0,y1-y0])}}
+      if(x1>x0&&y1>y0&&ar>.003&&ar<.98)R.push([x0,y0,x1-x0,y1-y0])}}
   return R}
+/* v1.4.53 — realistic dark PDF
+   1) pictures: photos keep their real colours (only dimmed a little so they don't glare); diagrams / screenshots / scans / logos on a white
+      background are converted like the text. Decided per picture from how much is white and how many distinct colours it has.
+   2) everything else: lightness is inverted but the HUE is kept (invert + hue-rotate 180°, the method good dark readers use), so
+      black text -> soft white, yellow highlight -> dark olive (text stays readable), blue link -> light blue, red -> salmon.
+   3) a soft charcoal page and soft white text; mid-tones lifted slightly so the thin anti-aliased edges of text keep their weight. */
+const DK_LUT=(()=>{const L=new Uint8ClampedArray(256);for(let v=0;v<256;v++)L[v]=DK_LO+(DK_HI-DK_LO)*Math.pow(v/255,DK_G);return L})();
+function dkConvert(d){for(let i=0;i<d.length;i+=4){const r=255-d[i],g=255-d[i+1],b=255-d[i+2];
+  d[i]=DK_LUT[Math.max(0,Math.min(255,-.574*r+1.43*g+.144*b+.5|0))];d[i+1]=DK_LUT[Math.max(0,Math.min(255,.426*r+.43*g+.144*b+.5|0))];d[i+2]=DK_LUT[Math.max(0,Math.min(255,.426*r+1.43*g-.856*b+.5|0))]}}
+function dkIsPhoto(t){const n=t.length/4,sp=Math.max(1,Math.floor(n/3000)),bins=new Uint16Array(512);let q=0,w=0,dk=0;
+  for(let i=0;i<n;i+=sp){const r=t[i*4],g=t[i*4+1],b=t[i*4+2];q++;if(r>235&&g>235&&b>235)w++;else if(r<45&&g<45&&b<45)dk++;bins[(r>>5)<<6|(g>>5)<<3|(b>>5)]++}
+  let nb=0;for(let i=0;i<512;i++)if(bins[i]>=q*.012)nb++;
+  if(w/q>=.35)return false;                 /* mostly white paper -> diagram / scan / screenshot: convert */
+  if(w/q>=.2&&nb<=7)return false;           /* flat-colour graphic on white (logo, chart): convert */
+  return true}                              /* photo / artwork / already-dark picture: keep its real colours */
 async function darken(page,vp,c){
   const W=c.width,H=c.height,x=c.getContext("2d"),keep=[];
-  for(const r of await imgRects(page,vp,W,H)){const t=x.getImageData(r[0],r[1],r[2],r[3]).data,n=t.length/4,sp=Math.max(1,Math.floor(n/2500));let w=0,qq=0;
-    for(let i=0;i<n;i+=sp){qq++;if(t[i*4]>235&&t[i*4+1]>235&&t[i*4+2]>235)w++}
-    if(w/qq<.35)keep.push([r,x.getImageData(r[0],r[1],r[2],r[3])])}
-  const im=x.getImageData(0,0,W,H),d=im.data;
-  for(let i=0;i<d.length;i+=4){const r=d[i],g=d[i+1],b=d[i+2],f=255-(r>g?(r>b?r:b):(g>b?g:b))-(r<g?(r<b?r:b):(g<b?g:b));d[i]=r+f;d[i+1]=g+f;d[i+2]=b+f}
-  x.putImageData(im,0,0);for(const[r,s]of keep)x.putImageData(s,r[0],r[1])}
+  for(const r of(await imgRects(page,vp,W,H)).slice(0,60)){const im=x.getImageData(r[0],r[1],r[2],r[3]);if(dkIsPhoto(im.data))keep.push([r,im])}
+  const im=x.getImageData(0,0,W,H);dkConvert(im.data);x.putImageData(im,0,0);
+  for(const[r,s]of keep){const d=s.data;for(let i=0;i<d.length;i+=4){d[i]=d[i]*.92;d[i+1]=d[i+1]*.92;d[i+2]=d[i+2]*.92}x.putImageData(s,r[0],r[1])}}
 
 /* ===== INDEXEDDB ===== */
 const DB_VER=6;
@@ -1175,13 +1295,51 @@ async function draw1(i){
      the two are swapped in one step, so the page never goes blank/white/black between zoom levels. */
   const c=document.createElement("canvas"),ink=document.createElement("canvas");c.width=ink.width=vp.width;c.height=ink.height=vp.height;
   ink.style.touchAction=penOnly?"pan-x pan-y":"none";bind(ink,p,i);
-  if(virt){const x=c.getContext("2d");x.fillStyle=DK?"#000":"#fff";x.fillRect(0,0,c.width,c.height)}
+  if(virt){const x=c.getContext("2d");x.fillStyle=DK?DKBG:"#fff";x.fillRect(0,0,c.width,c.height)}
   else{try{await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}}
     finally{page.cleanup()}}
   if(!vis.has(i)||p.dataset.z!=zoom){c.width=c.height=ink.width=ink.height=0;return}   /* page left the screen or zoom changed meanwhile: drop it */
   p.querySelectorAll("canvas").forEach(o=>{o.width=o.height=0});p.replaceChildren(c,ink);
   draw(i);
 }
+/* ===== v1.4.59 — four real pen types: Ball (smooth, pressure), Fine (thin, even), Brush (tapered, big pressure/speed swing), Pencil (grainy, soft) ===== */
+var PC=new WeakMap(),LIVEO=null;
+function penPts(o){const P=o.p,n=P.length,k0=P[0],k1=P[n-1],ch=PC.get(o);
+  if(ch&&ch.n==n&&ch.a==k0[0]+","+k0[1]&&ch.b==k1[0]+","+k1[1])return ch.s;
+  const hasP=k0.length>2,out=new Array(n);let sp=1;
+  for(let j=0;j<n;j++){let m;
+    if(hasP)m=P[j][2]||1;
+    else{const a=P[Math.max(0,j-1)],b=P[Math.min(n-1,j+1)],d=Math.hypot(b[0]-a[0],b[1]-a[1])/(j==0||j==n-1?1:2);sp=sp*.8+Math.max(.45,Math.min(1.35,1.4-d*.16))*.2;m=sp}
+    out[j]=[P[j][0],P[j][1],m]}
+  let s2=out;for(let r=0;r<2;r++){const src=s2;s2=src.map((q,j)=>j==0||j==n-1?q:[(src[j-1][0]+2*q[0]+src[j+1][0])/4,(src[j-1][1]+2*q[1]+src[j+1][1])/4,(src[j-1][2]+2*q[2]+src[j+1][2])/4])}   /* 2 light smoothing passes: calmer, rounder lines */
+  PC.set(o,{n,a:k0[0]+","+k0[1],b:k1[0]+","+k1[1],s:s2});return s2}
+function penBuckets(c,S,wf){const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2],n=S.length;let bk=-1,open=false;
+  for(let j=1;j<n;j++){const a=j==1?S[0]:mid(S[j-1],S[j]),e=j<n-1?mid(S[j],S[j+1]):S[j],w=wf(S[j][2],j),b=Math.round(w*12);
+    if(b!==bk){if(open)c.stroke();c.beginPath();c.moveTo(a[0],a[1]);c.lineWidth=w;bk=b;open=true}
+    c.quadraticCurveTo(S[j][0],S[j][1],e[0],e[1])}
+  if(open)c.stroke()}
+function penDraw(c,o,raw){
+  const pt=o.pt||"ball",S=penPts(o),n=S.length,col=raw?o.c:dc(o.c),live=o===LIVEO,W0=o.w;
+  c.lineCap=c.lineJoin="round";c.strokeStyle=c.fillStyle=col;c.globalAlpha=1;
+  if(pt=="brush"){
+    const L=Math.max(2,Math.min(9,Math.floor(n/3))),wd=S.map((q,j)=>{let t=1;if(j<L)t=.22+.78*(j/L);if(!live&&j>n-1-L)t=Math.min(t,.1+.9*((n-1-j)/L));
+      return Math.max(.12*W0,W0*Math.max(.2,.3+(q[2]-.5)*1.5)*t)});
+    const nx=[],ny=[];for(let j=0;j<n;j++){const a=S[Math.max(0,j-1)],b=S[Math.min(n-1,j+1)];let dx=b[0]-a[0],dy=b[1]-a[1];const d=Math.hypot(dx,dy);
+      if(d<1e-6){dx=nx.length?-ny[j-1]:1;dy=nx.length?nx[j-1]:0}else{dx/=d;dy/=d}nx.push(-dy);ny.push(dx)}
+    const Lp=S.map((q,j)=>[q[0]+nx[j]*wd[j]/2,q[1]+ny[j]*wd[j]/2]),Rp=S.map((q,j)=>[q[0]-nx[j]*wd[j]/2,q[1]-ny[j]*wd[j]/2]);
+    const edge=(E,rev)=>{const A=rev?E.slice().reverse():E,m=A.length;for(let j=1;j<m-1;j++)c.quadraticCurveTo(A[j][0],A[j][1],(A[j][0]+A[j+1][0])/2,(A[j][1]+A[j+1][1])/2);c.lineTo(A[m-1][0],A[m-1][1])};
+    c.beginPath();c.moveTo(Lp[0][0],Lp[0][1]);edge(Lp,false);c.lineTo(Rp[n-1][0],Rp[n-1][1]);edge(Rp,true);c.closePath();c.fill();
+    c.beginPath();c.arc(S[0][0],S[0][1],wd[0]/2,0,7);c.arc(S[n-1][0]+0,S[n-1][1],wd[n-1]/2,0,7);c.fill()}
+  else if(pt=="pencil"){
+    const wf=m=>W0*Math.max(.55,Math.min(1.5,.7+(m-.5)*.7));
+    c.globalAlpha=.42;penBuckets(c,S,(m)=>wf(m)*.85);          /* soft body */
+    c.globalAlpha=.6;c.beginPath();                              /* paper grain: tiny specks scattered along the line, same specks every redraw */
+    for(let j=0;j<n;j++){const a=S[Math.max(0,j-1)],b=S[Math.min(n-1,j+1)];let dx=b[0]-a[0],dy=b[1]-a[1];const d=Math.hypot(dx,dy)||1;dx/=d;dy/=d;const w=wf(S[j][2]);
+      for(let q=0;q<3;q++){const h=Math.imul(j*3+q+1,2654435761)>>>0,r1=(h&1023)/1023-.5,r2=((h>>>10)&1023)/1023,z=Math.max(.22,w*.16*(.4+r2));
+        c.rect(S[j][0]-dy*r1*w*1.25-z/2,S[j][1]+dx*r1*w*1.25-z/2,z,z)}}
+    c.fill()}
+  else{const k=pt=="fine"?.2:1,wk=m=>W0*Math.max(.35,1+(m-1)*k);penBuckets(c,S,wk)}
+  c.globalAlpha=1}
 function paintSeg(c,o,from,raw){const P=o.p,n=P.length;c.lineCap=c.lineJoin="round";c.strokeStyle=raw?o.c:dc(o.c);   /* variable-width stroke; segments of equal width share one path */
   const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];let bk=-1,open=false;
   for(let j=Math.max(1,from);j<n;j++){const a=j==1?P[0]:mid(P[j-1],P[j]),e=j<n-1?mid(P[j],P[j+1]):P[j],w=o.w*(P[j][2]||1),b=Math.round(w*12);
@@ -1195,7 +1353,7 @@ function paint(c,o,k,raw){
     if(tool=="sel"){const h=14/zoom;c.strokeStyle="#2563eb";c.lineWidth=1/zoom;c.strokeRect(o.x,o.y,o.w,o.h);c.fillStyle="#dc2626";c.beginPath();c.arc(o.x+o.w,o.y,h,0,7);c.fill();c.fillStyle="#fff";c.font=`${h*1.3}px sans-serif`;c.textAlign="center";c.textBaseline="middle";c.fillText("✕",o.x+o.w,o.y);c.fillStyle="#2563eb";c.fillRect(o.x+o.w-h,o.y+o.h-h,h*2,h*2);c.beginPath();c.arc(o.x,o.y,h,0,7);c.fill();c.fillStyle="#fff";c.fillText("✂",o.x,o.y)}
     c.restore();return}
   if(o.t=="hl"){c.globalAlpha=DK&&!raw?.5:.35;c.lineWidth=o.w*4;c.lineCap="butt"}
-  if(o.t=="pen"&&o.p.length>2&&o.p[0].length>2){paintSeg(c,o,1,raw)}
+  if(o.t=="pen"&&o.p.length>2){penDraw(c,o,raw)}
   else if(o.t=="pen"||o.t=="hl"){c.beginPath();smoothPath(c,o.p);if(o.p.length==1)c.lineTo(o.p[0][0]+.1,o.p[0][1]);c.stroke()}
   else if(o.t=="text"){if(o===TEDIT){c.restore();return}c.font=tFont(o);c.textBaseline="top";const B=tBox(o);if(o.bg){c.fillStyle=o.bg;c.fillRect(o.x,o.y,B.w,B.h);c.fillStyle="#1f2937"}B.L.forEach((l,j)=>{const pw=B.w-(o.bg?4:0),ax=o.al=="c"?(pw-c.measureText(l).width)/2:o.al=="r"?pw-c.measureText(l).width:0;c.fillText(l,o.x+(o.bg?2:0)+Math.max(0,ax),o.y+j*o.s*1.25)})}
   else{const[a,b]=o.p;c.beginPath();
@@ -1207,7 +1365,7 @@ function paint(c,o,k,raw){
 function draw(i,live){
   const p=$(`.pg[data-i="${i}"]`);if(!p||!p.children[1])return;const ink=p.children[1],c=ink.getContext("2d"),k=ink.width/(sizes[i]||sizes[0]).w;
   (anns[i]||[]).forEach(o=>{if(o.t=="img"&&!IM[o.id])ldImg(o.id,()=>draw(i))});
-  c.clearRect(0,0,ink.width,ink.height);extras(c,i,k);(anns[i]||[]).forEach(o=>paint(c,o,k));if(live)paint(c,live,k);overlay(c,i,k);if(zwOn)zwDraw();
+  c.clearRect(0,0,ink.width,ink.height);extras(c,i,k);(anns[i]||[]).forEach(o=>paint(c,o,k));if(live){LIVEO=live;try{paint(c,live,k)}finally{LIVEO=null}}overlay(c,i,k);if(zwOn)zwDraw();
 }
 function hit(o,x,y,r){
   if(o.t=="pen"||o.t=="hl")return o.p.some(q=>Math.hypot(q[0]-x,q[1]-y)<r);
@@ -1225,29 +1383,33 @@ function bind(ink,p,i){
   ink.addEventListener("touchstart",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});   /* Pencil never scrolls, selects or opens menus */
   ink.addEventListener("touchmove",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});ink.oncontextmenu=e=>e.preventDefault();
   const pt=e=>{const r=R||ink.getBoundingClientRect();return[+((e.clientX-r.left)/zoom).toFixed(2),+((e.clientY-r.top)/zoom).toFixed(2)]};
+  let lpT=0;const tAt=(qx,qy,rr)=>{const TL=anns[i]||[];for(let j=TL.length-1;j>=0;j--){const o=TL[j];if(o.t!="text")continue;const B=tBox(o);if(qx>o.x-rr&&qx<o.x+B.w+rr&&qy>o.y-rr&&qy<o.y+B.h+rr)return o}return null};
   let ftap=null;   /* v1.4.51: with "Pencil only", a finger TAP still selects / edits text (a drag still scrolls the page) */
-  ink.addEventListener("pointerup",e=>{const f=ftap;ftap=null;if(!f||f.id!==e.pointerId)return;
+  ink.addEventListener("pointercancel",()=>{clearTimeout(lpT);ftap=null});
+  ink.addEventListener("pointerup",e=>{clearTimeout(lpT);const f=ftap;ftap=null;if(!f||f.id!==e.pointerId||f.lp)return;
     if(Date.now()-f.t>450||Math.hypot(e.clientX-f.x,e.clientY-f.y)>10||othersFresh(e.pointerId)||pz)return;
     const ae=document.activeElement;if(ae&&ae.tagName=="TEXTAREA")ae.blur();
     const r=ink.getBoundingClientRect(),qx=(e.clientX-r.left)/zoom,qy=(e.clientY-r.top)/zoom,TL=anns[i]||[];let ft=null;
     for(let j=TL.length-1;j>=0;j--){const o=TL[j];if(o.t!="text")continue;const B=tBox(o),rr=8/zoom;if(qx>o.x-rr&&qx<o.x+B.w+rr&&qy>o.y-rr&&qy<o.y+B.h+rr){ft=o;break}}
-    if(ft){if(selT&&selT.o===ft)openEdit();else selTSet(ft,i)}else if(selT)selTSet(null,selT.i)});
+    if(ft){if(selT&&selT.o===ft||tool!="sel"){selTSet(ft,i);openEdit()}else selTSet(ft,i)}else{if(selT)selTSet(null,selT.i);if(tool=="text"||tool=="note")textBox(p,i,[qx,qy],tool=="note");else if(tool=="spk")speakBox(p,i,[qx,qy])}});
   ink.onpointerdown=e=>{
     if(e.pointerType=="touch"&&down&&cur&&e.pointerId!==pid){if(cur.p.length<=8&&Date.now()-dT<300){down=false;cur=null;mv=null;draw(i)}return}   /* palm / extra finger landing while writing: keep the stroke */
     if(e.pointerType=="touch"&&othersFresh(e.pointerId)){down=false;cur=null;mv=null;draw(i);return}
-    if(penOnly&&e.pointerType=="touch"&&(tool=="text"||tool=="note"||tool=="sel")&&!palmBlock(e)&&!CROP){ftap={id:e.pointerId,x:e.clientX,y:e.clientY,t:Date.now()};return}
+    if(penOnly&&e.pointerType=="touch"&&(tool=="text"||tool=="note"||tool=="sel"||tool=="spk")&&!palmBlock(e)&&!CROP){ftap={id:e.pointerId,x:e.clientX,y:e.clientY,t:Date.now()};clearTimeout(lpT);lpT=setTimeout(()=>{const f=ftap;if(!f||f.id!==e.pointerId)return;const r=ink.getBoundingClientRect(),ft=tAt((f.x-r.left)/zoom,(f.y-r.top)/zoom,8/zoom);if(ft){f.lp=1;selTSet(ft,i);LPM.show(f.x,f.y)}},500);return}
     if((penOnly&&e.pointerType=="touch")||palmBlock(e))return;if(e.pointerType=="mouse"&&e.button)return;e.preventDefault();R=ink.getBoundingClientRect();pid=e.pointerId;dT=lastInk=Date.now();lastRaw=null;const q=pt(e);ink.setPointerCapture(e.pointerId);
     if(CROP){if(CROP.i==i&&cropDown(q))down=true;return}
     if(tool=="laser")return;
-    if(tool=="text"||tool=="note"||tool=="sel"){
+    if(tool=="text"||tool=="note"||tool=="sel"||tool=="spk"){
       const ae=document.activeElement;if(ae&&ae.tagName=="TEXTAREA")ae.blur();
+      if(selT&&selT.i==i&&Math.hypot(q[0]-selT.o.x,q[1]-selT.o.y)<20/zoom){const o=selT.o;mt={o,k:"m",dx:q[0]-o.x,dy:q[1]-o.y,moved:true,was:false,sn:0};down=true;return}   /* top-left grip: drag = move the whole box */
       if(selT&&selT.i==i){const o=selT.o,B=tBox(o),sw_=(sizes[i]||sizes[0]).w,wx=Math.min(o.x+B.w+14/zoom,sw_-8/zoom),
         dS=Math.hypot(q[0]-(o.x+B.w),q[1]-(o.y+B.h)),dW=Math.hypot(q[0]-wx,q[1]-(o.y+B.h/2));
         if(Math.min(dS,dW)<22/zoom){mt={o,k:dS<=dW?"s":"w",L0:B.L.length,qy:q[1],s0:o.s,bw0:o.bw,w0:Math.max(8,B.w),h0:Math.max(8,B.h),x0:o.x+B.w,y0:o.y+B.h,sn:0};down=true;return}}
       const TL=anns[i]||[];let ft=null;
       for(let j=TL.length-1;j>=0;j--){const o=TL[j];if(o.t!="text")continue;const B=tBox(o),r=6/zoom;if(q[0]>o.x-r&&q[0]<o.x+B.w+r&&q[1]>o.y-r&&q[1]<o.y+B.h+r){ft=o;break}}
-      if(ft){const was=!!(selT&&selT.o===ft);if(!was)selTSet(ft,i);mt={o:ft,k:"m",dx:q[0]-ft.x,dy:q[1]-ft.y,moved:false,was,sn:0};down=true;return}
+      if(ft){const was=!!(selT&&selT.o===ft);if(!was)selTSet(ft,i);mt={o:ft,k:"m",dx:q[0]-ft.x,dy:q[1]-ft.y,moved:false,was,sn:0,cx:e.clientX,cy:e.clientY};clearTimeout(lpT);lpT=setTimeout(()=>{if(mt&&mt.o===ft&&!mt.moved){mt.lp=1;LPM.show(mt.cx,mt.cy)}},500);down=true;return}
       if(selT)selTSet(null,i);
+      if(tool=="spk"){speakBox(p,i,q);return}
       if(tool!="sel"){textBox(p,i,q,tool=="note");return}
     }
     if(tool=="lasso"){lassoDown(i,q);down=true;return}
@@ -1261,7 +1423,7 @@ function bind(ink,p,i){
     const w=W;
     cur={t:tool,c:color,w:tool=="pen"?+w.toFixed(1):W,p:["pen","hl"].includes(tool)?[q]:[q,q]};
     if(tool=="hl")cur.w=HW;lastMv=Date.now();if(tool=="pen"){cur.pt=penType;cur.w=+(cur.w*({fine:.6,brush:1.5,pencil:.8}[penType]||1)).toFixed(1)}
-    if(tool=="pen"&&e.pointerType=="pen"&&penType!="pencil"){lastMul=null;q.push(pmul(e,penPar()))}drawnTo=0;
+    if(tool=="pen"&&e.pointerType=="pen"){lastMul=null;q.push(pmul(e,penPar()))}drawnTo=0;
     down=true;
   };
   ink.onpointermove=e=>{if(down&&e.pointerId!==pid)return;lastInk=Date.now();
@@ -1269,7 +1431,7 @@ function bind(ink,p,i){
     if(!down)return;const q=pt(e);
     if(CROP){cropMove(q);return}
     if(mt){const o=mt.o;
-      if(mt.k=="m"){if(!mt.moved&&Math.hypot(q[0]-mt.dx-o.x,q[1]-mt.dy-o.y)<4/zoom)return;if(!mt.sn){snap(i);mt.sn=1}mt.moved=true;o.x=q[0]-mt.dx;o.y=q[1]-mt.dy}
+      if(mt.k=="m"){if(!mt.moved&&Math.hypot(q[0]-mt.dx-o.x,q[1]-mt.dy-o.y)<4/zoom)return;if(!mt.sn){snap(i);mt.sn=1}mt.moved=true;clearTimeout(lpT);LPM.hide();o.x=q[0]-mt.dx;o.y=q[1]-mt.dy}
       else{if(!mt.sn){snap(i);mt.sn=1}if(mt.k=="s"){const f=Math.max(.15,Math.hypot(q[0]-o.x,q[1]-o.y)/Math.max(8,Math.hypot(mt.x0-o.x,mt.y0-o.y)));o.s=Math.max(6,+(mt.s0*f).toFixed(2));if(mt.bw0)o.bw=mt.bw0*f}else setLines(o,Math.max(1,Math.min(12,mt.L0+Math.round((q[1]-mt.qy)/(o.s*1.25)))))}
       draw(i);return}
     if(tool=="lasso"){lassoMove(i,q);return}
@@ -1291,7 +1453,7 @@ function bind(ink,p,i){
   ink.onpointerup=ink.onpointercancel=e=>{if(!down)return;if(e&&cur&&e.pointerId!==pid)return;down=false;R=null;lastInk=Date.now();if(rq){cancelAnimationFrame(rq);rq=0}
     if(cur&&lastRaw&&(cur.t=="pen"||cur.t=="hl")){const l=cur.p[cur.p.length-1];if(Math.hypot(l[0]-lastRaw[0],l[1]-lastRaw[1])>.35)cur.p.push(lastRaw)}   /* the last point of every stroke is always kept */
     if(CROP){CROP.drag=null;return}
-    if(mt){const m=mt;mt=null;if(m.k=="m"&&!m.moved&&m.was){openEdit();return}if(m.sn)change();if(m.k=="s"&&m.o.s){TXS=Math.round(m.o.s);lsSet(TXK.s,TXS)}draw(i);showTbar();return}
+    if(mt){const m=mt;mt=null;clearTimeout(lpT);if(m.lp){draw(i);showTbar();return}if(m.k=="m"&&!m.moved&&(m.was||tool!="sel")){openEdit();return}if(m.sn)change();if(m.k=="s"&&m.o.s){TXS=Math.round(m.o.s);lsSet(TXK.s,TXS)}draw(i);showTbar();return}
     if(tool=="lasso"){lassoUp(i);return}if(mv){mv=null;draw(i);change();return}
     if(cur){if(shapeOn&&cur.t=="pen"&&Date.now()-lastMv>450)cur=recog(cur)||cur;if((cur.t=="pen"||cur.t=="hl")&&cur.p.length>3)cur.p=rdp(cur.p,.08);snap(i);(anns[i]=anns[i]||[]).push(cur);cur=null;draw(i)}change();};
 }
@@ -1344,7 +1506,7 @@ const D2R=(()=>{const C={"क":"k","ख":"kh","ग":"g","घ":"gh","ङ":"n","�
     let out="";S.forEach((x,k)=>{let v=del[k]?"":x.v;if(v=="aa"&&k==n-1&&x.c)v="a";out+=x.c+v});return out}
   return txt=>txt.replace(/[।॥]/g,".").replace(/[०-९]/g,c=>"०१२३४५६७८९".indexOf(c)).replace(/[\u0900-\u097F]+/g,word)})();
 /* ===== v1.4.51 — microphone: ask once, remember, keep listening through pauses, reuse one recognizer ===== */
-const VR=(()=>{const SRC=window.SpeechRecognition||window.webkitSpeechRecognition;
+const VRB=(()=>{const SRC=window.SpeechRecognition||window.webkitSpeechRecognition;
   let rec=null,lang="",on=false,want=false,cb=null,base=0,lastLen=0,warmT=0,rsT=0,idleG=0,fails=0,heard=false,net=0;
   const IDLE_MS=180000;   /* nobody spoke for 3 min → pause the mic (battery + privacy); the text box stays open */
   const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
@@ -1384,71 +1546,139 @@ const VR=(()=>{const SRC=window.SpeechRecognition||window.webkitSpeechRecognitio
     /* the text box is finished: keep the recognizer alive 12 s so the next tap needs no restart, then release the microphone */
     release(){cb=null;clearTimeout(idleG);clearTimeout(warmT);warmT=setTimeout(()=>{want=false;clearTimeout(rsT);try{rec&&rec.stop()}catch(e){}},12000)},
     stopNow(){cb=null;clearTimeout(warmT);clearTimeout(idleG);clearTimeout(rsT);want=false;try{rec&&rec.stop()}catch(e){}}}})();
-/* v1.4.51 — one floating control while a text box is open: 🎤 speak / pause · language · ⌨ keyboard · ✓ Done.
-   The box stays open as long as you like: speak, pause, think, speak again, or type — everything lands in the same box. */
-const VB=(()=>{document.body.insertAdjacentHTML("beforeend",`<div id="vbar" hidden><button class="pb" id="vb-mic" title="Speak / pause">🎤</button><button class="pb" id="vb-lang" title="Voice language"></button><button class="pb" id="vb-kb" title="Keyboard">⌨️</button><button class="pb on" id="vb-ok">✓ Done</button></div>`);
-  const bar=$("#vbar");let cur=null;
-  bar.addEventListener("pointerdown",()=>{if(cur)cur.hold()},true);
-  bar.addEventListener("mousedown",e=>e.preventDefault());   /* tapping the bar must not take focus away from the text box */
-  bar.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("button");if(!b||!cur)return;
-    ({"vb-mic":()=>cur.mic(),"vb-kb":()=>cur.kb(),"vb-lang":()=>cur.lang(),"vb-ok":()=>cur.done()})[b.id]()});
-  return{show(a){cur=a;bar.hidden=false},hide(a){if(cur===a){cur=null;bar.hidden=true}}}})();
-function textBox(p,i,q,note,ex){
-  const SRC=VR.ok;
-  /* voice is offered for every box (new or an existing one being edited); the Text panel only decides which way a box starts */
-  let speak=TXM=="speak";if(speak&&!SRC){speak=false;st("🎤 Voice typing isn't available here — use the 🎙 on the keyboard")}
-  const t=document.createElement("textarea");t.setAttribute("autocomplete","off");t.setAttribute("data-1p-ignore","");t.setAttribute("data-lpignore","true");t.name="ann-text";
-  const s=ex?ex.s:TXS,bold=ex?!!ex.b:TXB,al=ex?(ex.al||"l"):TXA,x0=ex?ex.x:q[0],y0=ex?ex.y:q[1],pw=(sizes[i]||sizes[0]).w;
-  const st_=t.style;st_.left=x0*zoom-4+"px";st_.top=y0*zoom-1+"px";st_.fontSize=s*zoom+"px";st_.color=dc(ex?ex.c:color);st_.fontWeight=bold?"700":"400";st_.textAlign=al==="c"?"center":al==="r"?"right":"left";
-  st_.fontFamily='system-ui,"Noto Sans Devanagari",sans-serif';st_.lineHeight="1.25";st_.padding="0 3px";st_.minWidth="0";st_.minHeight="0";st_.resize="none";st_.overflow="hidden";st_.boxSizing="content-box";st_.whiteSpace="pre";
-  if(note)st_.background="#fde68a";
-  const maxW=Math.max(40,(pw-x0)*zoom-14);
-  /* small box that grows with the text (like a phone editor); long text wraps at the page edge */
-  const fit=()=>{if(ex&&ex.bw){st_.whiteSpace="pre-wrap";st_.width=ex.bw*zoom+"px"}else{st_.whiteSpace="pre";st_.width="1px";const w=t.scrollWidth;if(w>maxW){st_.whiteSpace="pre-wrap";st_.width=maxW+"px"}else st_.width=Math.max(s*zoom*1.6,w+2)+"px"}
-    st_.height="1px";st_.height=Math.max(s*zoom*1.25,t.scrollHeight)+"px"};
-  if(ex){t.value=ex.v;TEDIT=ex;$("#tbar").hidden=true;draw(i)}
-  p.append(t);fit();
-  let done=false,listening=false,used=false,frozen=false,swapping=false,committed="",sess=[],pre="",post="",holdUntil=0;
-  const swap=fn=>{swapping=true;try{fn()}finally{swapping=false}};   /* our own blur→focus swaps (to show / hide the keyboard) must never finish the box */
-  const commit=v=>{v=(v||"").trim();t.remove();
-    if(ex){TEDIT=null;if(v!==ex.v){snap(i);if(v)ex.v=v;else{anns[i]=(anns[i]||[]).filter(x=>x!==ex);if(selT&&selT.o===ex)selT=null}change()}draw(i);showTbar();return}
-    if(v){snap(i);const o={t:"text",x:q[0],y:q[1],s,c:color,w:1,v,...(bold?{b:1}:{}),...(al!="l"?{al}:{}),...(note?{bg:"#fde68a"}:{})};(anns[i]=anns[i]||[]).push(o);selTSet(o,i);change()}};
-  const LN={hing:"Hinglish",hi:"हिंदी",en:"English"},vb=id=>$("#"+id);
-  const ui=()=>{vb("vb-mic").classList.toggle("rec",listening);vb("vb-mic").classList.toggle("on",listening);vb("vb-mic").hidden=!SRC;vb("vb-lang").hidden=!SRC;vb("vb-lang").textContent=LN[TXL]||"";vb("vb-kb").classList.toggle("on",!listening&&!t.readOnly)};
-  /* the box shows:  text before the cursor + what you said + text after the cursor  — so every new dictation lands exactly where the cursor is, also in an existing box */
-  const paint=()=>{const d=[committed,sess.filter(Boolean).join(" ")].filter(Boolean).join(" ").trim(),c=TXL=="hing"?D2R(d):d,
-      g1=pre&&c&&!/\s$/.test(pre)?" ":"",g2=post&&c&&!/^\s/.test(post)?" ":"";
-    t.value=pre+g1+c+g2+post;const pos=(pre+g1+c).length;try{t.setSelectionRange(pos,pos)}catch(e){}fit()};
-  const anchor=()=>{const a=t.selectionStart==null?t.value.length:t.selectionStart,b=t.selectionEnd==null?a:t.selectionEnd;pre=t.value.slice(0,a);post=t.value.slice(b);committed="";sess=[]};
-  const H={
-    result:(e,b)=>{if(done||frozen)return;b=b||0;for(let k=b;k<e.results.length;k++)sess[k-b]=(e.results[k][0].transcript||"").trim();sess.length=Math.max(0,e.results.length-b);paint()},
-    /* a listening session ended (normal after a pause): keep what was heard so the next session continues after it */
+/* ===== v1.4.54 — cloud speech-to-text: many keys, many companies, round-robin rotation ===== */
+async function oaiSTT(u,m,k,b,l,x){const f=new FormData();f.append("model",m);f.append("language",l);f.append("response_format","json");f.append("file",b,"a."+x);const r=await fetch(u,{method:"POST",headers:{Authorization:"Bearer "+k},body:f});if(!r.ok)throw{s:r.status};return(await r.json()).text||""}
+/* ADD A NEW COMPANY HERE: one entry, run(key, audioBlob, "hi"|"en", fileExt) must return the text or throw {s:httpStatus} */
+const STTP={
+  deepgram:{n:"Deepgram",run:async(k,b,l)=>{const r=await fetch("https://api.deepgram.com/v1/listen?model=nova-3&smart_format=true&language="+l,{method:"POST",headers:{Authorization:"Token "+k,"Content-Type":b.type||"audio/webm"},body:b});if(!r.ok)throw{s:r.status};const j=await r.json();return(((j.results||{}).channels||[{}])[0].alternatives||[{}])[0].transcript||""}},
+  groq:{n:"Groq (Whisper)",run:(k,b,l,x)=>oaiSTT("https://api.groq.com/openai/v1/audio/transcriptions","whisper-large-v3-turbo",k,b,l,x)},
+  openai:{n:"OpenAI (Whisper)",run:(k,b,l,x)=>oaiSTT("https://api.openai.com/v1/audio/transcriptions","whisper-1",k,b,l,x)},
+  eleven:{n:"ElevenLabs (Scribe)",run:async(k,b,l,x)=>{const f=new FormData();f.append("model_id","scribe_v1");f.append("language_code",l);f.append("file",b,"a."+x);const r=await fetch("https://api.elevenlabs.io/v1/speech-to-text",{method:"POST",headers:{"xi-api-key":k},body:f});if(!r.ok)throw{s:r.status};return(await r.json()).text||""}}
+};
+const KS=(()=>{const K="pa_stt";
+  let d=(()=>{try{const o=JSON.parse(localStorage.getItem(K));if(o&&Array.isArray(o.keys))return o}catch(e){}return{keys:[],on:1,rr:0}})();
+  const save=()=>{try{localStorage.setItem(K,JSON.stringify(d))}catch(e){}};
+  const usable=k=>!k.off&&(k.cd||0)<Date.now()&&STTP[k.p];
+  return{d,save,all:()=>d.keys,
+    active:()=>!!d.on&&d.keys.some(k=>!k.off&&STTP[k.p]),
+    add(p,raw){let n=0;for(const k of raw.split(/[\s,;]+/).filter(x=>x.length>8)){if(d.keys.some(o=>o.k===k))continue;d.keys.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),p,k,off:0,cd:0,ok:0,er:0,last:""});n++}save();return n},
+    del(id){d.keys=d.keys.filter(k=>k.id!==id);save()},
+    /* next usable key, in rotation order, skipping the ones already tried for this request */
+    next(tried){const n=d.keys.length;for(let i=0;i<n;i++){const j=(d.rr+i)%n,k=d.keys[j];if(!tried.has(k.id)&&usable(k)){d.rr=(j+1)%n;save();return k}}return null}}})();
+async function sttTranscribe(blob,l){
+  const x=/mp4/.test(blob.type)?"m4a":/ogg/.test(blob.type)?"ogg":/wav/.test(blob.type)?"wav":"webm",tried=new Set();
+  for(;;){const k=KS.next(tried);if(!k)break;tried.add(k.id);
+    try{const t=await STTP[k.p].run(k.k,blob,l,x);k.ok++;k.last="";KS.save();return t}
+    catch(e){const s=e&&e.s;k.er++;k.last=s?"HTTP "+s:"network";
+      k.cd=Date.now()+(s==401||s==402||s==403?216e5:s==429?6e4:3e4);KS.save()}}
+  throw new Error(tried.size?"All voice keys failed or are resting (limit / invalid)":"No usable voice key (all resting or off)")}
+/* recorder with the same interface as the browser recognizer: cuts a segment after ~0.8 s of silence, sends it, and hands the text to the text box */
+const CR=(()=>{const OK=!!(window.MediaRecorder&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+  let stream=null,ac=null,an=null,buf=null,mr=null,tm=0,want=false,cb=null,lang="hi",heard=0,quiet=0,segT=0,idleG=0,q=Promise.resolve(),infl=0;
+  const MT=["audio/webm;codecs=opus","audio/mp4","audio/webm","audio/ogg;codecs=opus"],mime=()=>{for(const m of MT)if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m))return m;return""};
+  const TH=8,SIL=800,MAXSEG=40000,IDLE=180000;
+  const kill=()=>{clearInterval(tm);tm=0;try{stream&&stream.getTracks().forEach(t=>t.stop())}catch(e){}try{ac&&ac.close()}catch(e){}stream=ac=an=buf=null};
+  const armIdle=()=>{clearTimeout(idleG);idleG=setTimeout(()=>{if(!want)return;const h=cb;stopAll(true);if(h)h.error({error:"idle"})},IDLE)};
+  const begin=()=>{const ch=[],m=mime(),r=new MediaRecorder(stream,m?{mimeType:m}:undefined);r._c=ch;r.ondataavailable=e=>{if(e.data&&e.data.size)ch.push(e.data)};mr=r;heard=0;quiet=0;segT=Date.now();r.start()};
+  const send=(b,h)=>{infl++;q=q.then(async()=>{try{const s=(await sttTranscribe(b,lang)).trim();if(s&&h){h.result({results:[[{transcript:s}]]},0);if(h.end)h.end()}}
+    catch(e){stopAll(true);if(h)h.error({error:"cloud",msg:e.message})}finally{infl--}})};
+  /* final=true: this is the last segment — send it, then release the microphone */
+  const cut=final=>{const r=mr;if(!r||r.state=="inactive")return;mr=null;const sp=heard,h=cb;
+    r.onstop=()=>{if(want&&!final)begin();else kill();if(sp){const b=new Blob(r._c,{type:r.mimeType||"audio/webm"});if(b.size>2000)send(b,h)}};try{r.stop()}catch(e){kill()}};
+  const stopAll=quiet_=>{want=false;clearTimeout(idleG);if(mr){const r=mr;mr=null;r.onstop=kill;try{r.stop()}catch(e){kill()}}else kill()};
+  const tick=()=>{if(!want||!an||!mr)return;an.getByteTimeDomainData(buf);let m=0;for(let i=0;i<buf.length;i++){const v=Math.abs(buf[i]-128);if(v>m)m=v}
+    if(m>TH){heard=1;quiet=0;armIdle()}else quiet+=100;
+    const age=Date.now()-segT;
+    if(heard&&quiet>=SIL||age>MAXSEG||(!heard&&age>15000))cut()};
+  const lc=l=>(l||"hi").slice(0,2);
+  return{ok:OK,busy:()=>infl>0||!!(mr&&heard),
+    async start(l,h){cb=h;lang=lc(l);want=true;armIdle();
+      if(mr||stream){return}   /* already recording */
+      try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}
+      catch(e){want=false;if(cb===h)h.error({error:e&&e.name=="NotFoundError"?"audio-capture":"not-allowed"});return}
+      if(!want||cb!==h){kill();return}
+      try{const AC=window.AudioContext||window.webkitAudioContext;ac=new AC();const s=ac.createMediaStreamSource(stream);an=ac.createAnalyser();an.fftSize=1024;s.connect(an);buf=new Uint8Array(an.fftSize);begin();tm=setInterval(tick,100)}
+      catch(e){want=false;kill();h.error({error:"start"})}},
+    setLang(l){lang=lc(l)},
+    pause(){want=false;clearTimeout(idleG);cut(true)},      /* last words are still sent and arrive in the box */
+    release(){cb=null;want=false;clearTimeout(idleG);if(mr){const r=mr;mr=null;r.onstop=kill;try{r.stop()}catch(e){kill()}}else kill()},
+    stopNow(){cb=null;stopAll()}}})();
+/* the rest of the app talks to VR: use cloud keys when at least one key is on, else the browser's own recognizer */
+const VR=(()=>{let cur=VRB;
+  return{get ok(){return VRB.ok||CR.ok},busy:()=>cur===CR&&CR.busy(),
+    start(l,h){const c=KS.active()&&CR.ok?CR:VRB;if(c!==cur){try{cur.stopNow()}catch(e){}cur=c}return cur.start(l,h)},
+    setLang(l){return cur.setLang(l)},pause(){return cur.pause()},release(){return cur.release()},stopNow(){return cur.stopNow()}}})();
+
+/* ===== v1.4.55 — long-press format menu + 🎤 Speak-to-type popup ===== */
+const LPM=(()=>{document.body.insertAdjacentHTML("beforeend",'<div id="lpm" hidden></div>');const m=$("#lpm");
+  const hide=()=>{m.hidden=true};
+  function show(x,y){if(!selT)return;const o=selT.o;m.textContent="";
+    const B=document.createElement("button");B.className="pb"+(o.b?" on":"");B.innerHTML="<b>B</b>";B.onclick=()=>{tChange(q=>{q.b=q.b?0:1;if(!q.b)delete q.b});show(x,y)};m.append(B);
+    const seen=new Set();$$(".sw").forEach(sw=>{const c=sw.dataset.c;if(!c||seen.has(c))return;seen.add(c);const d=document.createElement("button");d.className="tbc"+(c.toLowerCase()==String(o.c).toLowerCase()?" on":"");d.style.background=c;d.onclick=()=>{tChange(q=>{q.c=c});show(x,y)};m.append(d)});
+    const lb=document.createElement("label");lb.className="tbc";lb.innerHTML='+<input type="color">';const ci=lb.querySelector("input");ci.value=/^#[0-9a-f]{6}$/i.test(o.c)?o.c:"#000000";ci.onchange=()=>{tChange(q=>{q.c=ci.value});show(x,y)};m.append(lb);
+    const E=document.createElement("button");E.className="pb";E.textContent="✎";E.title="Edit text";E.onclick=()=>{hide();openEdit()};m.append(E);
+    const D=document.createElement("button");D.className="pb";D.textContent="🗑";D.onclick=()=>{hide();$("#tb-dl").click()};m.append(D);
+    m.hidden=false;const w=m.offsetWidth,h=m.offsetHeight;m.style.left=Math.max(8,Math.min(innerWidth-w-8,x-w/2))+"px";m.style.top=Math.max(8,Math.min(innerHeight-h-8,y-h-24))+"px"}
+  document.addEventListener("pointerdown",e=>{if(!m.hidden&&!m.contains(e.target))hide()},true);
+  return{show,hide}})();
+/* ===== v1.4.59 — ONE text interface for the A tool and the 🎤 tool: tap → sheet (type or speak, format, Save) → editable box on the page ===== */
+function textBox(p,i,q,note,ex){textSheet(i,q,note,ex,false)}
+function speakBox(p,i,q){textSheet(i,q,false,null,true)}
+function textSheet(i,q,note,ex,voice){
+  const m=$("#spk");if(!m.hidden)return;
+  const t=$("#spk-t"),SRC=!!voice&&VR.ok,LN={hing:"Hinglish",hi:"हिंदी",en:"English"},msg=s=>{$("#spk-st").textContent=s||""},pw=(sizes[i]||sizes[0]).w,card=m.firstElementChild;
+  let s=ex?ex.s:TXS,c=ex?ex.c:color,b=ex?!!ex.b:TXB,al=ex?(ex.al||"l"):TXA,committed="",sess=[],pre="",post="",listening=false,got=0,closed=false;
+  $("#spk-title").textContent=voice?"🎤 Speak to type":(note||(ex&&ex.bg))?"📝 Sticky note":"✍️ Text";
+  t.value=ex?ex.v:"";t.readOnly=false;m.hidden=false;msg("");
+  const isNote=!!note||!!(ex&&ex.bg);
+  const sty=()=>{const st=t.style;st.color=isNote?"#1f2937":dc(c);st.background=isNote?"#fde68a":"";st.fontWeight=b?"700":"400";st.textAlign=al=="c"?"center":al=="r"?"right":"left";st.fontSize=Math.max(15,Math.min(30,s))+"px";
+    $("#sp-sz").textContent=Math.round(s);$("#sp-b").classList.toggle("on",b);$$("[data-spa]").forEach(x=>x.classList.toggle("on",x.dataset.spa==al));
+    $$("#spk-cols .tbc").forEach(x=>x.classList.toggle("on",!!x.dataset.c&&x.dataset.c.toLowerCase()==String(c).toLowerCase()))};
+  const cols=$("#spk-cols");cols.textContent="";cols.hidden=isNote;const seen=new Set();
+  $$(".sw").forEach(sw=>{const cc=sw.dataset.c;if(!cc||seen.has(cc))return;seen.add(cc);const d=document.createElement("button");d.className="tbc";d.dataset.c=cc;d.style.background=cc;d.onclick=()=>{c=cc;sty()};cols.append(d)});
+  {const lb=document.createElement("label");lb.className="tbc";lb.title="Custom color";lb.innerHTML='+<input type="color">';const ci=lb.querySelector("input");ci.value=/^#[0-9a-f]{6}$/i.test(c)?c:"#000000";ci.onchange=()=>{c=ci.value;sty()};cols.append(lb)}
+  $("#sp-b").onclick=()=>{b=!b;sty()};
+  $$("[data-spa]").forEach(x=>x.onclick=()=>{al=x.dataset.spa;sty()});
+  const hold=(el,f)=>{let to=0,iv=0;const stop=()=>{clearTimeout(to);clearInterval(iv)};el.onpointerdown=e=>{e.preventDefault();f();to=setTimeout(()=>{iv=setInterval(f,70)},350)};el.onpointerup=el.onpointercancel=el.onpointerleave=stop};
+  hold($("#sp-sm"),()=>{s=Math.max(6,+(s/1.06).toFixed(1));sty()});hold($("#sp-bg"),()=>{s=Math.min(200,+(s*1.06).toFixed(1));sty()});
+  $("#spk-del").hidden=!ex;$("#spk-voice").hidden=!SRC;
+  const ui=()=>{$("#spk-mic").classList.toggle("rec",listening);$("#spk-mic").textContent=listening?"⏸ Pause":"🎤 Speak";$("#spk-lang").textContent=LN[TXL]||"";$("#spk-kb").classList.toggle("on",!listening)};
+  const paint=()=>{const d=[committed,sess.filter(Boolean).join(" ")].filter(Boolean).join(" ").trim(),cv=TXL=="hing"?D2R(d):d,g1=pre&&cv&&!/\s$/.test(pre)?" ":"",g2=post&&cv&&!/^\s/.test(post)?" ":"";t.value=pre+g1+cv+g2+post;const pos=(pre+g1+cv).length;try{t.setSelectionRange(pos,pos)}catch(e){}t.scrollTop=t.scrollHeight};
+  const anchor=()=>{const a=t.selectionStart==null?t.value.length:t.selectionStart,e=t.selectionEnd==null?a:t.selectionEnd;pre=t.value.slice(0,a);post=t.value.slice(e);committed="";sess=[]};
+  const H={result:(e,bs)=>{if(closed)return;bs=bs||0;got++;for(let k=bs;k<e.results.length;k++)sess[k-bs]=(e.results[k][0].transcript||"").trim();sess.length=Math.max(0,e.results.length-bs);paint()},
     end:()=>{if(sess.length){const x=sess.filter(Boolean).join(" ");if(x)committed=committed?committed+" "+x:x;sess=[]}},
-    error:e=>{const er=e&&e.error;listening=false;ui();
-      if(er=="not-allowed"||er=="service-not-allowed")st("🎤 Microphone is blocked for this app. Tap the 🔒/ⓘ icon next to the address (or Site settings) → Microphone → Allow. You only need to do this once.");
-      else if(er=="idle")st("🎤 Mic paused — it was quiet for a while. Tap 🎤 to continue");
-      else if(er=="network")st("🎤 Voice typing needs internet — check the connection, then tap 🎤");
-      else if(er=="audio-capture")st("🎤 No microphone found");
-      else st(er=="loop"?"🎤 Voice typing keeps stopping — tap 🎤 and speak again":"🎤 Couldn't start voice typing — tap 🎤 to try again")}};
-  const micOn=()=>{if(done||listening||!SRC)return;frozen=false;anchor();
-    if(!t.readOnly||document.activeElement!==t)swap(()=>{t.readOnly=true;try{t.blur()}catch(x){}try{t.focus({preventScroll:true})}catch(x){}});   /* read-only = the keyboard goes away, the box stays active */
-    listening=true;used=true;ui();st("🎤 Listening… pause as long as you like · tap ✓ Done when finished");
-    VR.start(TXL=="en"?"en-IN":"hi-IN",H)};
-  const micOff=quiet=>{if(!listening)return;listening=false;VR.pause();ui();if(!quiet)st("🎤 Mic paused — tap 🎤 to speak again")};
-  const kbOn=()=>{if(done)return;micOff(true);frozen=true;committed="";sess=[];swap(()=>{t.readOnly=false;try{t.blur()}catch(x){}});kbFocus(t);ui();st("⌨️ Type with the keyboard · tap 🎤 to speak again")};
-  const langNext=()=>{if(done)return;TXL=TXL=="hing"?"hi":TXL=="hi"?"en":"hing";lsSet("pa_txlang",TXL);txSync();
-    if(listening){const v=t.value,c=t.selectionStart==null?v.length:t.selectionStart;pre=v.slice(0,c);post=v.slice(c);committed="";sess=[];VR.setLang(TXL=="en"?"en-IN":"hi-IN")}   /* what is already written stays exactly as it is */
-    ui();st("🎤 "+LN[TXL])};
-  const finish=()=>{if(done)return;done=true;listening=false;if(used)VR.release();VB.hide(api);commit(t.value)};
-  const api={hold:()=>{holdUntil=Date.now()+700},mic:()=>listening?micOff():micOn(),kb:kbOn,lang:langNext,done:finish};
-  t.oninput=()=>{frozen=true;committed="";sess=[];if(listening)micOff(true);fit()};   /* typing and dictating never overwrite each other */
-  t.readOnly=speak;if(speak)t.placeholder="🎤";
-  if(ex){try{t.setSelectionRange(t.value.length,t.value.length)}catch(x){}}
-  kbFocus(t);VB.show(api);ui();
-  if(speak)micOn();
-  /* leaving the box (tap outside) finishes it; taps on the voice bar only hold the focus for a moment */
-  t.onblur=()=>{if(done||swapping)return;if(Date.now()<holdUntil){setTimeout(()=>{if(!done)try{t.focus({preventScroll:true})}catch(x){}},0);return}finish()};
-}
+    error:e=>{const er=e&&e.error;listening=false;t.readOnly=false;ui();msg(er=="not-allowed"||er=="service-not-allowed"?"🎤 Microphone blocked — site settings me Microphone → Allow":er=="idle"?"🎤 Quiet raha — 🎤 dabao":er=="network"?"🎤 Internet check karo":er=="cloud"?"☁️ "+(e.msg||"Voice failed"):er=="audio-capture"?"🎤 Microphone nahi mila":"🎤 Voice start nahi hua — 🎤 dabao")}};
+  const micOn=()=>{if(listening||!SRC)return;anchor();t.readOnly=true;try{t.blur()}catch(x){}listening=true;ui();msg("🎤 Bolo… ruk ke bhi bol sakte ho");VR.start(TXL=="en"?"en-IN":"hi-IN",H)};
+  const micOff=()=>{if(!listening)return;listening=false;t.readOnly=false;VR.pause();ui();msg("")};
+  const kbOn=()=>{micOff();t.readOnly=false;kbFocus(t);ui()};
+  t.oninput=()=>{if(listening)micOff();committed="";sess=[]};
+  $("#spk-mic").onclick=()=>listening?micOff():micOn();$("#spk-kb").onclick=kbOn;
+  $("#spk-lang").onclick=()=>{TXL=TXL=="hing"?"hi":TXL=="hi"?"en":"hing";lsSet("pa_txlang",TXL);txSync();if(listening){const v=t.value,cp=t.selectionStart==null?v.length:t.selectionStart;pre=v.slice(0,cp);post=v.slice(cp);committed="";sess=[];VR.setLang(TXL=="en"?"en-IN":"hi-IN")}ui()};
+  const fit=()=>{const h=(window.visualViewport?visualViewport.height:innerHeight)-20;card.style.maxHeight=Math.max(200,h)+"px"};
+  if(window.visualViewport)visualViewport.addEventListener("resize",fit);fit();
+  const close=()=>{closed=true;listening=false;try{VR.release()}catch(e){}m.hidden=true;try{t.blur()}catch(e){}t.value="";document.removeEventListener("keydown",kd,true);if(window.visualViewport)visualViewport.removeEventListener("resize",fit);
+    ["spk-mic","spk-lang","spk-kb","spk-x","spk-ok","spk-del"].forEach(id=>$("#"+id).onclick=null);t.oninput=null;m.onclick=null};
+  const remember=()=>{TXS=Math.round(s);lsSet(TXK.s,TXS);TXB=b;lsSet(TXK.b,b?"1":"0");TXA=al;lsSet(TXK.a,al);txSync()};
+  const commit=v=>{close();remember();
+    if(ex){if(!v){snap(i);anns[i]=(anns[i]||[]).filter(x=>x!==ex);if(selT&&selT.o===ex)selT=null;change();draw(i);showTbar();return}
+      if(v!==ex.v||s!==ex.s||c!==ex.c||b!==!!ex.b||al!==(ex.al||"l")){snap(i);if(ex.bw&&s!==ex.s)ex.bw=ex.bw*s/ex.s;ex.v=v;ex.s=s;if(!isNote)ex.c=c;if(b)ex.b=1;else delete ex.b;if(al=="l")delete ex.al;else ex.al=al;change()}
+      draw(i);showTbar();return}
+    if(!v)return;
+    const x=Math.max(4,Math.min(q[0],pw-60)),o={t:"text",x,y:q[1],s,c,w:1,v,...(b?{b:1}:{}),...(al!="l"?{al}:{}),...(isNote?{bg:"#fde68a"}:{})};
+    const av=Math.max(80,Math.min(pw-x-10,420));if(tBox(o).nw>av)o.bw=av;   /* wrap only when it would run off the page */
+    snap(i);(anns[i]=anns[i]||[]).push(o);selTSet(o,i);change();st("✅ Saved — tap = edit · ✥ move · ↘ zoom · dabaye rakho = bold / colour")};
+  const save=async()=>{if(closed)return;const btn=$("#spk-ok");btn.disabled=true;
+    if(listening){const busy=VR.busy&&VR.busy(),g=got;micOff();msg("⏳ Last words finalize ho rahe hain…");
+      if(busy){const t0=Date.now();while(Date.now()-t0<5000&&got===g&&VR.busy&&VR.busy())await new Promise(r=>setTimeout(r,120));await new Promise(r=>setTimeout(r,150))}else await new Promise(r=>setTimeout(r,450))}
+    btn.disabled=false;commit(t.value.trim())};
+  $("#spk-ok").onclick=save;
+  $("#spk-x").onclick=()=>{close()};
+  $("#spk-del").onclick=()=>commit("");
+  m.onclick=e=>{if(e.target===m)save()};   /* tap outside = save (nothing is ever lost) */
+  function kd(e){if(e.key=="Escape"){e.preventDefault();close()}else if(e.key=="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();save()}}
+  document.addEventListener("keydown",kd,true);
+  sty();ui();
+  if(SRC&&!ex)micOn();else{const n=t.value.length;kbFocus(t);try{t.setSelectionRange(n,n)}catch(e){}if(!VR.ok&&voice)msg("🎤 Is browser me voice nahi hai — keyboard ka 🎙 use karo")}}
 function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;if(CROP)cropCancel();if(selT){selT=null;$("#tbar").hidden=true}
   const top=a[a.length-1];if(top&&top[0]==="__page__"){a.pop();b.push(top);restorePageState(r?top[1].after:top[1].before).then(()=>st(r?"↪ Page action restored":"↶ Page action undone")).catch(()=>st("❌ Couldn't restore page history"));return}
   const[i,s]=a.pop();b.push([i,JSON.stringify(anns[i]||[])]);anns[i]=JSON.parse(s);draw(i);change()}
@@ -1588,6 +1818,28 @@ $("#tg").onclick=()=>{const o=TG()||{},x=tgStat();$("#stk").value=o.t||"";$("#st
 const smView=v=>{$$("#sm .smv").forEach(x=>x.hidden=x.id!=="sm-"+v);const b=$("#sm>div");if(b)b.scrollTop=0};
 const smTgLabel=()=>{$("#sm-tgb").textContent=(TG()||{}).t?"✈️ Telegram connected ✓ (edit)":"✈️ Connect Telegram"};
 $("#sm-ins").onclick=()=>smView("help");$("#sm-tgb").onclick=()=>smView("tg");$$("[data-smv]").forEach(b=>b.onclick=()=>smView(b.dataset.smv));
+
+/* ===== v1.4.54 — Settings → Voice API keys ===== */
+(()=>{const sel=$("#sk-p"),msg=$("#sk-msg"),say=(m,c)=>{msg.textContent=m||"";msg.style.color=c||""};
+  Object.keys(STTP).forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=STTP[k].n;sel.append(o)});
+  const mask=k=>k.length>12?k.slice(0,4)+"…"+k.slice(-4):"••••";
+  const wav=()=>{const n=16000,b=new ArrayBuffer(44+n*2),v=new DataView(b),w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};w(0,"RIFF");v.setUint32(4,36+n*2,true);w(8,"WAVEfmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,16000,true);v.setUint32(28,32000,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,n*2,true);return new Blob([b],{type:"audio/wav"})};
+  function render(){const L=$("#sk-list");L.textContent="";
+    KS.all().forEach(k=>{const r=document.createElement("div");r.className="row";const s=document.createElement("span");s.style.cssText="flex:1;font-size:13px;word-break:break-all";
+      const cd=(k.cd||0)>Date.now()?" · ⏳ rest "+Math.ceil((k.cd-Date.now())/6e4)+"m":"";
+      s.textContent=(k.off?"⏸ ":"🔑 ")+(STTP[k.p]?STTP[k.p].n:k.p)+" · "+mask(k.k)+" · ✅"+k.ok+" ❌"+k.er+cd+(k.last?" · "+k.last:"");
+      const a=document.createElement("button");a.textContent=k.off?"▶":"⏸";a.onclick=()=>{k.off=k.off?0:1;k.cd=0;KS.save();render()};
+      const d=document.createElement("button");d.textContent="🗑";d.onclick=()=>{KS.del(k.id);render()};
+      r.append(s,a,d);L.append(r)});
+    $("#sk-use").textContent=KS.d.on?"☁️ Cloud voice: ON (tap to switch off)":"☁️ Cloud voice: OFF — browser voice is used (tap to switch on)"}
+  $("#sk-add").onclick=()=>{const n=KS.add(sel.value,$("#sk-k").value);$("#sk-k").value="";say(n?"✅ "+n+" key(s) added":"No new key added (empty or already saved)",n?"":"#b45309");render()};
+  $("#sk-use").onclick=()=>{KS.d.on=KS.d.on?0:1;KS.save();render()};
+  $("#sk-test").onclick=async()=>{const ks=KS.all().filter(k=>!k.off&&STTP[k.p]);if(!ks.length){say("Add a key first","#b45309");return}
+    say("🧪 Testing "+ks.length+" key(s)…");const b=wav();
+    for(const k of ks){try{await STTP[k.p].run(k.k,b,"en","wav");k.last="";k.cd=0}catch(e){const s=e&&e.s;if(s==400||s==422){k.last="";k.cd=0}else{k.last=s?"HTTP "+s:"network";if(s==401||s==403)k.cd=Date.now()+216e5}}}
+    KS.save();render();say("Test done — keys with ❌/HTTP code need a look (401/403 = wrong key, 429 = limit)")};
+  $("#sm-sttb").onclick=()=>{say("");render();smView("stt")};
+  render()})();
 $("#smx").onclick=()=>sm.hidden=true;sm.onclick=e=>{if(e.target===sm)sm.hidden=true};
 $("#stv").onclick=()=>{const h=$("#stk").classList.contains("sec");$("#stk").classList.toggle("sec",!h);$("#stv").textContent=h?"🙈 Hide token":"👁 Show token"};
 $("#stt").onclick=async()=>{
@@ -1612,10 +1864,13 @@ $("#strm").onclick=()=>{try{localStorage.removeItem("pa_tg");localStorage.remove
 /* ===== PRESENTATION (LASER) TOOL ===== */
 const LZ={col:"#ff2d55",draw:true,strokes:[],cur:null,pos:null,down:false,raf:0},LZCOLS=["#ff2d55","#3b4cff","#34d34a","#e040fb"];
 document.body.insertAdjacentHTML("beforeend",`<canvas id="lzc"></canvas><button class="pb on" id="showbar">☰ Show toolbar</button>
+<div id="spk-panel" class="fpanel" hidden style="min-width:250px"><div class="fpanel-title">🎤 Kis language me bolna hai?</div>
+  <div style="display:flex;gap:8px"><button class="pb" data-txl="hing" style="flex:1;padding:12px 6px;font-size:15px">Hinglish</button><button class="pb" data-txl="hi" style="flex:1;padding:12px 6px;font-size:15px">हिंदी</button><button class="pb" data-txl="en" style="flex:1;padding:12px 6px;font-size:15px">English</button></div>
+  </div>
 <div id="lz-panel" class="fpanel" hidden style="min-width:270px"><div class="fpanel-title">Presentation Tool</div>
 <div class="fpanel-section-label">Pointer Style</div><div id="lz-cols" style="display:flex;gap:12px;margin:8px 0 6px"></div>
 <div id="lz-mode" style="display:flex;gap:8px;margin-top:6px"><button class="pb on" data-lzm="line" style="flex:1;padding:12px 8px;font-size:15px">／ Line</button><button class="pb" data-lzm="point" style="flex:1;padding:12px 8px;font-size:15px">● Point only</button></div>
-<div class="hintp" style="margin-top:8px">Touch or hover with the pen/mouse to show the pointer. For screen mirroring, use your iPad/phone’s own Screen Mirroring (AirPlay / Cast).</div></div>`);
+</div>`);
 LZCOLS.forEach(c=>{const b=document.createElement("button");b.className="lzd"+(c==LZ.col?" on":"");b.style.background=c;b.dataset.c=c;
   b.onclick=()=>{LZ.col=c;$$(".lzd").forEach(x=>x.classList.toggle("on",x===b))};$("#lz-cols").append(b)});
 $$("[data-lzm]").forEach(b=>b.onclick=()=>{LZ.draw=b.dataset.lzm=="line";$$("[data-lzm]").forEach(x=>x.classList.toggle("on",x===b));LZ.strokes=[];LZ.cur=null;lzGo()});
@@ -2083,7 +2338,7 @@ function recog(o){const P=o.p;if(P.length<8)return;
 
 /* template + search highlight + selection overlay */
 function extras(c,i,k){const s=sizes[i]||sizes[0],t=tpl[i];c.save();c.scale(k,k);
-  if(t){c.fillStyle=DK?"#000":"#fff";c.fillRect(0,0,s.w,s.h);const g=DK?"#3a3f4a":"#c3cfe2";c.strokeStyle=c.fillStyle=g;c.lineWidth=.6;
+  if(t){c.fillStyle=DK?DKBG:"#fff";c.fillRect(0,0,s.w,s.h);const g=DK?"#3a3f4a":"#c3cfe2";c.strokeStyle=c.fillStyle=g;c.lineWidth=.6;
     if(t=="lined"){c.beginPath();for(let y=70;y<s.h-20;y+=26){c.moveTo(0,y);c.lineTo(s.w,y)}c.stroke();c.strokeStyle=DK?"#7a3b3b":"#f1a3a3";c.beginPath();c.moveTo(56,0);c.lineTo(56,s.h);c.stroke()}
     else if(t=="graph"){c.beginPath();for(let x=0;x<s.w;x+=18){c.moveTo(x,0);c.lineTo(x,s.h)}for(let y=0;y<s.h;y+=18){c.moveTo(0,y);c.lineTo(s.w,y)}c.stroke()}
     else if(t=="dotted"){for(let x=18;x<s.w;x+=18)for(let y=18;y<s.h;y+=18){c.beginPath();c.arc(x,y,1.1,0,7);c.fill()}}}
@@ -2224,7 +2479,8 @@ function onHome(){selT=null;CROP=null;TEDIT=null;$("#tbar").hidden=true;$("#cbar
 
 /* ===== PRO FEATURES 2 ===== */
 let penType="ball",fitMode=0;
-$$(".pen-type-btn").forEach(b=>b.onclick=()=>{penType=b.dataset.pt;$$(".pen-type-btn").forEach(x=>x.classList.toggle("on",x===b))});
+$$(".pen-type-btn").forEach(b=>b.onclick=()=>{penType=b.dataset.pt;$$(".pen-type-btn").forEach(x=>x.classList.toggle("on",x===b));drawPenPreview()});
+try{drawPenPreview()}catch(e){}
 
 /* page indicator + fit */
 document.body.insertAdjacentHTML("beforeend",`<div id="pgi" aria-label="PDF page navigation"><input id="pgn" type="text" inputmode="none" readonly autocomplete="off" aria-label="Current page number — tap to go to a page"><span id="pgt" aria-label="Total pages"></span></div>`);
@@ -2369,7 +2625,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.52",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.59",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -2425,7 +2681,7 @@ async function askPersist(){try{if(!navigator.storage)return false;let p=navigat
 askPersist();addEventListener("pageshow",()=>askPersist());document.addEventListener("visibilitychange",()=>{if(!document.hidden)askPersist()});
 /* settings (Telegram link, signature, colours, toolbar order …) get a second copy too; restored only after the browser wiped localStorage */
 const VOLK=["pa_tgstat","pa_emerg","pa_lastbackup","pa_schema","pa_ok","pa_lib"];
-const allSettings=(noTok)=>{const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("pa_")&&!VOLK.includes(k)&&!(noTok&&k=="pa_tg"))o[k]=localStorage.getItem(k)}}catch(e){}return o};
+const allSettings=(noTok)=>{const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("pa_")&&!VOLK.includes(k)&&!(noTok&&(k=="pa_tg"||k=="pa_stt")))o[k]=localStorage.getItem(k)}}catch(e){}return o};
 let _lastSet="";
 async function saveSettings(){try{const o=allSettings(),j=JSON.stringify(o);if(j===_lastSet)return;_lastSet=j;const v={t:Date.now(),o};await metaPut("settings",v);mtx("meta","readwrite",x=>x.put(v,"settings")).catch(()=>{});opWrite("meta","settings.json",j).catch(()=>{});localStorage.setItem("pa_ok","1")}catch(e){}}
 async function restoreSettings(){try{if(localStorage.getItem("pa_ok")!=null)return 0;let v=await metaGet("settings").catch(()=>null);if(!v)v=await mtx("meta","readonly",x=>x.get("settings")).catch(()=>null);if(!v||!v.o)return 0;let n=0;for(const k in v.o)if(k.startsWith("pa_")&&localStorage.getItem(k)==null){localStorage.setItem(k,v.o[k]);n++}return n}catch(e){return 0}}
@@ -2485,14 +2741,13 @@ document.body.insertAdjacentHTML("beforeend",`
   <div class="slider-row" style="margin-top:10px"><input type="range" id="sh-slider" min="1" max="12" step="0.5" value="3"><span class="slider-val" id="sh-slider-val">3</span></div></div>
   <div><div class="fpanel-section-label" style="margin-bottom:8px">Color</div><div class="crow"></div></div></div>
 <div id="text-panel" class="fpanel" hidden><div class="fpanel-title" id="tx-title">Text</div>
-  <div style="display:flex;gap:8px"><button class="pb" data-txm="type" style="flex:1;padding:12px 8px;font-size:15px">⌨️ Type</button><button class="pb" data-txm="speak" style="flex:1;padding:12px 8px;font-size:15px">🎤 Speak to type</button></div>
   <div style="display:flex;gap:8px;margin-top:8px"><button class="pb" id="tx-bold" style="padding:12px 16px;font-size:15px"><b>B</b></button><button class="pb" data-txa="l" style="flex:1;font-size:14px">Left</button><button class="pb" data-txa="c" style="flex:1;font-size:14px">Middle</button><button class="pb" data-txa="r" style="flex:1;font-size:14px">Right</button></div>
   <div id="tx-voice" hidden style="margin-top:8px"><div style="display:flex;gap:8px"><button class="pb" data-txl="hing" style="flex:1;font-size:14px">Hinglish</button><button class="pb" data-txl="hi" style="flex:1;font-size:14px">हिंदी</button><button class="pb" data-txl="en" style="flex:1;font-size:14px">English</button></div>
-  <div class="hintp" id="tx-vh" style="margin-top:6px"></div></div></div>
+  </div></div>
 <div id="lasso-panel" class="fpanel" hidden><div class="fpanel-title">Lasso Select</div>
-  <div class="hintp">Loop around handwriting, text, images, or shapes to select. Drag to move, corner handle to resize, and the selection bar to copy or delete. Writing tools stay active; one-use tools return here.</div></div>
+  </div>
 <div id="sel-panel" class="fpanel" hidden><div class="fpanel-title">Select</div>
-  <div class="hintp"><b>Image:</b> drag to move · bottom-right corner to resize · ✂ (top-left) to crop · red ✕ to remove.<br><b>Text:</b> tap to select, then drag to move, blue corner = font size, orange ↔ = wrap into more/fewer lines. Drag the text to move it. Drag the blue bottom-right handle diagonally to resize text; drag the orange ↔ handle to change text width and wrapping. Tap it again (or ✎ Edit) to change the words. The bar has bold, color, copy and delete, plus A− / A+ (size) and ← ↑ ↓ → (move; hold to repeat) that work with a finger too. Tap an empty spot to deselect.</div></div>`);
+  </div>`);
 const SH_SIZES=[1,2,3,5,8,12].map(n=>({px:n,label:n+"pt"}));
 buildSizeRow("sh-sizes",SH_SIZES,(i,x)=>{W=x.px;syncW()},2,false);
 function drawShPrev(){const cv=$("#sh-prev");if(!cv)return;const c=cv.getContext("2d"),w=cv.width,h=cv.height;c.clearRect(0,0,w,h);
@@ -2510,10 +2765,10 @@ $$(".crow").forEach(r=>{COL.forEach(c=>{const b=document.createElement("button")
   const m=document.createElement("button");m.className="cdot";m.dataset.c="custom";m.textContent="🎨";m.style.cssText="background:var(--btn-bg);font-size:14px";m.onclick=()=>$("#cc").click();r.append(m)});
 $("#cc").addEventListener("input",()=>syncW());
 const VH="Free · no download · uses your phone's own speech recognition (internet needed). It keeps listening while you pause; tap 🎤 in the bar to speak again in the same box.";
-function txSync(){$("#tx-voice").hidden=TXM!="speak";$$("[data-txl]").forEach(x=>x.classList.toggle("on",x.dataset.txl==TXL));$("#tx-vh").textContent=VH;$$("[data-txm]").forEach(x=>x.classList.toggle("on",x.dataset.txm==TXM));$("#tx-bold").classList.toggle("on",TXB);$$("[data-txa]").forEach(x=>x.classList.toggle("on",x.dataset.txa==TXA))}
+function txSync(){$("#tx-voice").hidden=TXM!="speak";$$("[data-txl]").forEach(x=>x.classList.toggle("on",x.dataset.txl==TXL));$$("[data-txm]").forEach(x=>x.classList.toggle("on",x.dataset.txm==TXM));$("#tx-bold").classList.toggle("on",TXB);$$("[data-txa]").forEach(x=>x.classList.toggle("on",x.dataset.txa==TXA))}
 const txSel=()=>selT&&(tool=="text"||tool=="note");
 $$("[data-txm]").forEach(b=>b.onclick=()=>{TXM=b.dataset.txm;lsSet(TXK.m,TXM);txSync()});
-$$("[data-txl]").forEach(b=>b.onclick=()=>{TXL=b.dataset.txl;lsSet("pa_txlang",TXL);txSync()});
+$$("[data-txl]").forEach(b=>b.onclick=()=>{TXL=b.dataset.txl;lsSet("pa_txlang",TXL);txSync();if(b.closest("#spk-panel"))setTimeout(closeAllPanels,180)});
 $("#tx-bold").onclick=()=>{TXB=!TXB;lsSet(TXK.b,TXB?"1":"0");if(txSel())tChange(o=>{if(TXB)o.b=1;else delete o.b});txSync()};
 $$("[data-txa]").forEach(b=>b.onclick=()=>{TXA=b.dataset.txa;lsSet(TXK.a,TXA);if(txSel())tChange(o=>{if(TXA=="l")delete o.al;else o.al=TXA});txSync()});
 txSync();
