@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.17">
+<meta name="app-version" content="1.4.21">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -40,8 +40,16 @@ input,textarea,select,[contenteditable]{-webkit-user-select:text;user-select:tex
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:100}
 [hidden]{display:none!important}
 
+/* Compact status area: keep save/export/theme and a tiny connectivity indicator */
+#bar #st{display:none!important}
+#bar .bar-top{gap:8px}
+#net{width:10px;height:10px;flex:0 0 10px;border-radius:50%;background:#9ca3af;margin:0 4px 0 2px;box-shadow:0 0 0 2px color-mix(in srgb,var(--tx) 10%,transparent)}
+#net[data-online="1"]{background:#16a34a}
+#net[data-online="0"]{background:#ef4444}
+#manualsave{font-size:18px}
+#manualsave.saving{opacity:.65}
 /* ===== TOP TOOLBAR — GoodNotes style ===== */
-#bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--bar);border-bottom:1px solid var(--bd)}
+#bar{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);z-index:250;background:var(--bar);border-bottom:1px solid var(--bd)}
 #bar .bar-top{display:flex;align-items:center;gap:6px;padding:6px 10px;min-height:48px}
 #bar .tabs{flex:1;display:flex;justify-content:center;min-width:0}
 #bar .bar-top #st{max-width:32vw;overflow:hidden;text-overflow:ellipsis}
@@ -235,7 +243,7 @@ body.nobar #showbar{display:block}body.pres #showbar{display:none!important}
 .panel-header .reset-btn{margin-left:0;color:var(--ac);font-size:14px;font-weight:600;cursor:pointer;border:none;background:none}
 
 /* ===== DOCUMENT AREA ===== */
-#doc{padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px;overflow-x:auto;touch-action:pan-x pan-y}
+#doc{position:fixed;left:0;right:0;top:var(--viewer-top,104px);bottom:0;padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px;overflow:auto;overscroll-behavior:contain;touch-action:pan-x pan-y}
 .pg{scroll-margin-top:64px;position:relative;background:#fff;box-shadow:0 2px 16px rgba(0,0,0,0.15);flex:none;border-radius:3px;overflow:hidden}
 .pg canvas{position:absolute;inset:0;width:100%;height:100%}
 .pg textarea{position:absolute;z-index:3;min-width:120px;min-height:2em;border:1px dashed var(--ac);background:#fff9;color:#000;font-family:inherit;resize:both}
@@ -329,7 +337,7 @@ body.pres #bar{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);z-
 body.pres #bar .bar-top{display:none!important}
 body.pres #tools-wrap{border-top:0;padding-right:58px}
 body.pres #bar #tstrip{padding-right:64px}
-body.pres #doc{padding-top:calc(58px + env(safe-area-inset-top,0px))}
+body.pres #doc{top:var(--viewer-top,58px);padding-top:16px}
 body.pres #sb,body.pres #lbar,body.pres #zwb{display:none!important}
 body.pres .pg canvas:last-child{pointer-events:none}
 body.pres{cursor:none}body.pres .pg{scroll-snap-align:center}
@@ -343,6 +351,10 @@ html:has(body.pres){scroll-snap-type:y proximity}
 #pgn{width:48px;padding:4px 5px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);text-align:center;font-weight:600}
 #pgt{white-space:nowrap;opacity:.72;font-size:12px;padding-right:3px}
 #pgi{gap:5px;padding:5px 8px}
+
+.add-page-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.add-page-options .pb{min-height:48px;text-align:center;white-space:normal}
+@media(max-width:420px){.add-page-options{grid-template-columns:1fr 1fr}}
 </style></head><body>
 
 <!-- ===== TOP BAR ===== -->
@@ -353,10 +365,11 @@ html:has(body.pres){scroll-snap-type:y proximity}
       <span id="doctab-name">PDF</span>
       <button class="doc-tab-close" id="doctab-close">✕</button>
     </div></div>
-    <span id="st"></span>
-    <button class="ibtn" id="pres" title="Presentation">⛶</button>
-    <button class="ibtn" id="saveb" title="Export">⬇️</button>
+    <span id="st" aria-hidden="true"></span>
+    <button class="ibtn" id="manualsave" title="Save locally and back up to Telegram" aria-label="Manual save">💾</button>
+    <button class="ibtn" id="saveb" title="Export annotated PDF">⬇️</button>
     <button class="ibtn thb" title="Theme">🌓</button>
+    <span id="net" role="status" aria-label="Internet connection status" title="Internet connection status"></span>
   </div>
   <div id="tools-wrap"><div id="tstrip">
     <button class="ibtn" id="addpg" title="Add a page after the current page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h8l4.5 4.5v12.5H6z"/><path d="M14 3.5V8h4.5M12 11v6M9 14h6"/></svg></button>
@@ -926,7 +939,9 @@ function change(){
 }
 
 let want=null,THU=[];const FILES={};
-const go=v=>{const h=v=="home";if(h)try{onHome()}catch(e){}$("#home").hidden=!h;$("#bar").hidden=h;$("#doc").hidden=h;scrollTo(0,0)};
+function syncViewerTop(){const b=$("#bar");if(b&&!b.hidden)document.documentElement.style.setProperty("--viewer-top",Math.ceil(b.getBoundingClientRect().bottom)+"px")}
+addEventListener("resize",syncViewerTop,{passive:true});
+const go=v=>{const h=v=="home";if(h)try{onHome()}catch(e){}$("#home").hidden=!h;$("#bar").hidden=h;$("#doc").hidden=h;if(!h)requestAnimationFrame(syncViewerTop);scrollTo(0,0)};
 const age=t=>{const x=(Date.now()-t)/1e3;return x<3600?Math.max(1,Math.floor(x/60))+"m":x<86400?Math.floor(x/3600)+"h":x<604800?Math.floor(x/86400)+"d":x<2592e3?Math.floor(x/604800)+"w":Math.floor(x/2592e3)+"M"};
 async function showLib(){
   await persist();pdf=null;docId=null;vis.clear();if(url){URL.revokeObjectURL(url);url=null}
@@ -1016,10 +1031,10 @@ function snap(i){hist.push([i,JSON.stringify(anns[i]||[])]);if(hist.length>40)hi
 function bind(ink,p,i){
   let cur=null,down=false,mv=null,mt=null,pid=-1,dT=0,R=null,rq=0,lastRaw=null,lastMul=null,drawnTo=0;
   const pmul=(x,P)=>{const pr=x.pressure>0?x.pressure:.5,pp=Math.max(0,Math.min(1,.5+(pr-.5)*(.4+P.s*1.6))),mu=P.m+(1.6-P.m)*pp,o=Math.min(.92,.35+P.w*.7);lastMul=lastMul==null?mu:lastMul*o+mu*(1-o);return+lastMul.toFixed(2)};
-  /* live stroke: only the new piece is painted each frame (no full-page redraw) → low latency; the full smooth redraw happens when the pen lifts */
-  const liveDraw=()=>{if(rq)return;rq=requestAnimationFrame(()=>{rq=0;if(!(down&&cur))return;
-    if(cur.t=="pen"&&cur.pt!="pencil"&&cur.p.length>1){const pg=$(`.pg[data-i="${i}"]`);if(pg&&pg.children[1]){const ik=pg.children[1],c=ik.getContext("2d"),k=ik.width/(sizes[i]||sizes[0]).w;c.save();c.scale(k,k);c.globalAlpha=1;c.lineWidth=cur.w;paintSeg(c,cur,Math.max(1,drawnTo),false);c.restore();drawnTo=cur.p.length-1;return}}
-    draw(i,cur)})};
+  /* Live ink uses the same complete smoothed path as the committed stroke.
+     Incremental segment painting caused tiny joins/gaps as the Pencil moved;
+     redraw only the active page's ink layer once per animation frame instead. */
+  const liveDraw=()=>{if(rq)return;rq=requestAnimationFrame(()=>{rq=0;if(!(down&&cur))return;draw(i,cur)})};
   ink.addEventListener("touchstart",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});   /* Pencil never scrolls, selects or opens menus */
   ink.addEventListener("touchmove",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});ink.oncontextmenu=e=>e.preventDefault();
   const pt=e=>{const r=R||ink.getBoundingClientRect();return[+((e.clientX-r.left)/zoom).toFixed(1),+((e.clientY-r.top)/zoom).toFixed(1)]};
@@ -1126,11 +1141,10 @@ function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;if(CROP)c
 $("#un").onclick=()=>undo(0);$("#re").onclick=()=>undo(1);
 function setZoom(z){zoom=Math.max(.5,Math.min(3,z));$$(".pg").forEach(p=>{const i=+p.dataset.i;sz(p,i);free(i);if(vis.has(i))render(i)})}
 $("#zi").onclick=()=>setZoom(zoom+.2);$("#zo").onclick=()=>setZoom(zoom-.2);
+$("#doc").addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setZoom(zoom*(e.deltaY<0?1.12:1/1.12))}},{passive:false});
 
 /* ===== 2-finger pinch zoom (works while scrolling AND while writing) ===== */
-const tp=new Set(),tpT=new Map(),tpS=new Map();let pz=null;
-const tpPrune=()=>{const n=Date.now();for(const[id,t]of tpT)if(n-t>2500){tp.delete(id);tpT.delete(id);tpS.delete(id)}};   /* a lost pointerup must never block writing */
-const othersFresh=id=>{tpPrune();const n=Date.now();for(const k of tp)if(k!==id&&n-(tpS.get(k)||0)<700)return true;return false};   /* only a 2nd finger that landed just now is a pinch; a resting palm is ignored */const docEl=$("#doc");
+let pz=null;const docEl=$("#doc");
 document.addEventListener("pointerdown",e=>{if(e.pointerType=="touch"){tpPrune();tp.add(e.pointerId);tpT.set(e.pointerId,Date.now());tpS.set(e.pointerId,Date.now())}},{capture:true,passive:true});
 document.addEventListener("pointermove",e=>{if(e.pointerType=="touch"&&tpT.has(e.pointerId))tpT.set(e.pointerId,Date.now())},{capture:true,passive:true});
 ["pointerup","pointercancel"].forEach(ev=>document.addEventListener(ev,e=>{if(e.pointerType=="touch"){tp.delete(e.pointerId);tpT.delete(e.pointerId);tpS.delete(e.pointerId)}},{capture:true,passive:true}));
@@ -1152,7 +1166,7 @@ function pzEnd(e){
   p.pg.style.transform="";p.pg.style.transformOrigin="";p.pg.style.willChange="";
   if(Math.abs(p.z-p.z0)<.01)return;
   setZoom(p.z);const pg=$(`.pg[data-i="${p.i}"]`);
-  if(pg){const r=pg.getBoundingClientRect();docEl.scrollLeft+=r.left+p.fx*r.width-p.mx;window.scrollBy(0,r.top+p.fy*r.height-p.my)}}
+  if(pg){const r=pg.getBoundingClientRect();docEl.scrollLeft+=r.left+p.fx*r.width-p.mx;docEl.scrollTop+=r.top+p.fy*r.height-p.my}}
 docEl.addEventListener("touchend",pzEnd,{passive:true});docEl.addEventListener("touchcancel",pzEnd,{passive:true});
 $("#po").onclick=e=>{penOnly=!penOnly;e.target.classList.toggle("on",penOnly);$$(".pg canvas:last-child").forEach(c=>c.style.touchAction=penOnly?"pan-x pan-y":"none")};
 let sct;addEventListener("scroll",()=>{clearTimeout(sct);sct=setTimeout(()=>{if(!pdf)return;for(const p of $$(".pg"))if(p.getBoundingClientRect().bottom>80){const next=+p.dataset.i;if(next!==curPage){curPage=next;change()}break}},500)},{passive:true});
@@ -1294,9 +1308,9 @@ function lzLoop(){LZ.raf=0;const cv=$("#lzc"),dpr=Math.min(2,devicePixelRatio||1
   if(show){const{x,y}=LZ.pos,g=c.createRadialGradient(x,y,0,x,y,18);g.addColorStop(0,"#ffffff");g.addColorStop(.22,LZ.col);g.addColorStop(1,LZ.col+"00");c.fillStyle=g;c.beginPath();c.arc(x,y,18,0,7);c.fill()}
   if(LZ.strokes.length||show)LZ.raf=requestAnimationFrame(lzLoop)}
 $$("[data-t]").forEach(b=>b.addEventListener("click",()=>{if(tool!="laser"){LZ.strokes=[];LZ.cur=null;LZ.pos=null;LZ.down=false;lzGo()}}));
-/* add page buttons */
-const addPageAfter=()=>{if(!pdf){st("Open a PDF first");return}closeAllPanels();blankP()};
-$("#addpg").onclick=addPageAfter;
+/* Add page: choose a template, then insert immediately after the active page. */
+const addPageAfter=()=>{if(!pdf){st("Open a PDF first");return}closeAllPanels();showAddPageDialog()};
+$("#addpg").addEventListener("click",addPageAfter);
 /* ===== END PRESENTATION TOOL ===== */
 
 /* ===== IMAGE INSERT ===== */
@@ -1393,8 +1407,33 @@ function flush(manual){if(!manual&&Date.now()-lastInk<8000){clearTimeout(flT);fl
     if(TG()){tgNote(0,msg);if(!pdf){showLib();checkBackup()}st("❌ Telegram backup failed: "+msg)}else if(manual)st("❌ Backup failed: "+msg);
     if(manual)alert("❌ Backup failed\n\n"+msg+"\n\nYour notes are still safe on this device, and the app will retry automatically.")}
 })}
-addEventListener("online",()=>flush(0));
+const netDot=$("#net");
+function updateNet(){
+  const online=navigator.onLine!==false;
+  netDot.dataset.online=online?"1":"0";
+  netDot.title=online?"Internet connection available (browser status)":"No network connection";
+  netDot.setAttribute("aria-label",netDot.title);
+}
+addEventListener("online",()=>{updateNet();flush(0)});
+addEventListener("offline",updateNet);
+updateNet();
 $("#bk").onclick=()=>flush(1);
+/* One-tap manual checkpoint: persist to local IndexedDB, then immediately flush Telegram backup. */
+$("#manualsave").onclick=async()=>{
+  const b=$("#manualsave");
+  if(b.disabled)return;
+  b.disabled=true;b.classList.add("saving");b.textContent="…";
+  try{
+    if(pdf&&docId)await persist(true);
+    await flush(1);
+    b.textContent="✓";
+  }catch(e){
+    b.textContent="⚠️";
+    alert("Manual save could not finish. Your local draft remains available; please retry the Telegram backup.");
+  }finally{
+    setTimeout(()=>{b.textContent="💾";b.disabled=false;b.classList.remove("saving")},1800);
+  }
+};
 $("#rs").onclick=()=>$("#fj").click();
 const putDoc=async r=>{const x=await dbGet(r.id);if(!x||(x.t||0)<(r.t||0)){await dbPut(r);return 1}return 0};
 $("#fj").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(!fl.length)return;let n=0,mx=0,ns=0;const E=[],ds=new Set(),bad=[],filled=new Set();
@@ -1608,11 +1647,11 @@ $$("[data-z]").forEach(b=>b.onclick=()=>{const s=sizes[zr.i]||sizes[0],k=b.datas
 
 /* presentation mode + laser */
 let preS=null,lt;
-function presOn(){if(!pdf||preS)return;preS={z:zoom};document.body.classList.add("pres");closeAllPanels();SB.hidden=true;zwClose();
+function presOn(){if(!pdf||preS)return;preS={z:zoom};document.body.classList.add("pres");requestAnimationFrame(syncViewerTop);closeAllPanels();SB.hidden=true;zwClose();
   /* Fullscreen API is optional; immersive layout still works if browser denies it. */
   const el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen().catch(()=>{});
   const s=sizes[curPage]||sizes[0];setZoom(Math.min((innerWidth-8)/s.w,(innerHeight-72)/s.h));setTimeout(()=>goPage(curPage),250)}
-function presOff(){if(!preS)return;document.body.classList.remove("pres");if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});const z=preS.z;preS=null;$("#laser").style.display="none";setZoom(z)}
+function presOff(){if(!preS)return;document.body.classList.remove("pres");requestAnimationFrame(syncViewerTop);if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});const z=preS.z;preS=null;$("#laser").style.display="none";setZoom(z)}
 $("#pres").onclick=presOn;$("#pex").onclick=presOff;
 document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement&&preS)presOff()});
 ["pointermove","pointerdown"].forEach(ev=>document.addEventListener(ev,e=>{if(!inPres())return;const l=$("#laser");l.style.display="block";l.style.left=e.clientX+"px";l.style.top=e.clientY+"px";clearTimeout(lt);lt=setTimeout(()=>l.style.display="none",1800)},{passive:true}));
@@ -1671,19 +1710,52 @@ async function extractP(){const s=prompt("Page range (e.g. 1-3,5).\nFor separate
     for(const[k,ix]of parts.entries()){const o=await PL.PDFDocument.create();(await o.copyPages(b,ix)).forEach(p=>o.addPage(p));files.push([`${bn(name)}-${parts.length>1?"part"+(k+1):"extract"}.pdf`,await o.save()])}
     if(files.length==1)dl(new Blob([files[0][1]],{type:"application/pdf"}),files[0][0]);else{const z=new JSZip();files.forEach(([n,d])=>z.file(n,d));dl(await z.generateAsync({type:"blob"}),bn(name)+"-split.zip")}st("✅ Done")}catch(x){st("❌ Couldn't complete")}}
 let addingPg=false;
-const pgNow=()=>{for(const p of $$(".pg"))if(p.getBoundingClientRect().bottom>80)return+p.dataset.i;return curPage};
+const pgNow=()=>Math.max(0,Math.min(curPage,ord.length-1));
 function pageState(){return{file,name,anns:structuredClone(anns),ord:[...ord],bm:[...bm],tpl:structuredClone(tpl),page:curPage}}
 async function restorePageState(S){
   if(!S||!S.file)throw new Error("Missing page-history snapshot");
   const H=hist,R=redo;clearSaveTimers();await openFile(S.file);anns=structuredClone(S.anns||{});ord=[...(S.ord||ord)];bm=new Set(S.bm||[]);tpl=structuredClone(S.tpl||{});curPage=Math.max(0,Math.min(S.page||0,pdf.numPages-1));
   hist=H;redo=R;await persist(true);redrawAll();goPage(curPage)
 }
-async function blankP(){if(addingPg)return;addingPg=true;const at=Math.min(pgNow(),ord.length-1),old=docId;try{await persist(true);const before=pageState();const d=await bake(false),s=sizes[at]||sizes[0];d.insertPage(at+1,[s.w,s.h]);
-    const nf=new File([await d.save()],name,{type:"application/pdf"}),sh=i=>i>at?i+1:i,A={},T={};
-    Object.keys(anns).forEach(i=>A[sh(+i)]=structuredClone(anns[i]));Object.keys(tpl).forEach(i=>T[sh(+i)]=tpl[i]);if(tpl[at])T[at+1]=structuredClone(tpl[at]);const B=[...bm].map(sh);
-    await dbDel(old);await thDel(old);await openFile(nf);anns=A;tpl=T;bm=new Set(B);curPage=at+1;await persist(true);redrawAll();goPage(at+1);
-    const after=pageState(),rec={before,after};hist.push(["__page__",rec]);if(hist.length>40)hist.shift();redo=[];st("📄 Blank page added · Undo can remove it")
-  }catch(x){st("❌ Couldn't add a blank page")}finally{addingPg=false}}
+function showAddPageDialog(){
+  let dlg=$("#add-page-dialog");
+  if(!dlg){
+    dlg=document.createElement("div");dlg.id="add-page-dialog";dlg.className="mod";
+    dlg.innerHTML='<div role="dialog" aria-modal="true" aria-labelledby="add-page-title"><h3 id="add-page-title">Add page after page '+(curPage+1)+'</h3><p style="margin:0 0 6px;opacity:.72;font-size:13px">Choose the page style</p><div class="add-page-options"><button class="pb" data-page-template="blank">＋ Blank page</button><button class="pb" data-page-template="lined">☰ Ruled / lined</button><button class="pb" data-page-template="graph">▦ Grid</button><button class="pb" data-page-template="dotted">⠿ Dotted</button></div><button class="pb" id="add-page-cancel" style="margin-top:6px">Cancel</button></div>';
+    document.body.appendChild(dlg);
+    dlg.addEventListener("click",e=>{
+      if(e.target===dlg||e.target.id==="add-page-cancel"){dlg.remove();return}
+      const b=e.target.closest("[data-page-template]");if(!b)return;
+      const kind=b.dataset.pageTemplate;dlg.remove();blankP(kind==="blank"?null:kind);
+    });
+  }else{
+    const h=dlg.querySelector("#add-page-title");if(h)h.textContent="Add page after page "+(curPage+1);
+    dlg.hidden=false;
+  }
+}
+async function blankP(template=null){
+  if(addingPg)return;addingPg=true;
+  const at=pgNow(),old=docId;
+  try{
+    st("⏳ Adding page…");
+    await persist(true);
+    const before=pageState(),d=await bake(false),s=sizes[at]||sizes[0];
+    d.insertPage(at+1,[s.w,s.h]);
+    const nf=new File([await d.save()],name,{type:"application/pdf"});
+    const shift=i=>i>at?i+1:i,A={},T={};
+    Object.keys(anns).forEach(i=>A[shift(+i)]=structuredClone(anns[i]));
+    Object.keys(tpl).forEach(i=>T[shift(+i)]=tpl[i]);
+    if(template)T[at+1]=template;
+    const B=[...bm].map(shift);
+    await dbDel(old);await thDel(old);await openFile(nf);
+    anns=A;tpl=T;bm=new Set(B);curPage=at+1;
+    await persist(true);redrawAll();goPage(at+1);
+    const after=pageState(),rec={before,after};
+    hist.push(["__page__",rec]);if(hist.length>40)hist.shift();redo=[];
+    st("📄 Page added after page "+(at+1)+" · Undo removes it");
+  }catch(x){console.error("Add page failed:",x);st("❌ Couldn't add page: "+(x&&x.message?x.message:"Please try again"))}
+  finally{addingPg=false}
+}
 $("#fip").onchange=async e=>{const fl=[...e.target.files];e.target.value="";if(!fl.length)return;st("⏳ Creating PDF…");
   try{const o=await PL.PDFDocument.create();for(const f of fl){const b=await createImageBitmap(f),sc=Math.min(1,2000/Math.max(b.width,b.height)),w=Math.round(b.width*sc),h=Math.round(b.height*sc),cv=document.createElement("canvas");cv.width=w;cv.height=h;
       const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(b,0,0,w,h);const j=await new Promise(r=>cv.toBlob(r,"image/jpeg",.85)),im=await o.embedJpg(new Uint8Array(await j.arrayBuffer())),ph=Math.round(595*h/w);
@@ -1764,7 +1836,7 @@ setInterval(()=>{netUpd();svAuto()},30000);setTimeout(()=>{netUpd();svAuto()},30
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.17",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.21",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
