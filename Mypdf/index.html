@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.87">
+<meta name="app-version" content="1.4.88">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -654,6 +654,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
     </div>
   </div>
   <div><button class="pb shp-tg" style="width:100%;padding:11px;font-size:14px" title="Draw a line / circle / rectangle and hold the Pencil still for a moment: it becomes perfectly straight / round">◇ Hold to snap shape</button></div>
+  <div><button class="pb auto-tg" style="width:100%;padding:11px;font-size:14px" title="A long, roughly horizontal stroke (underline) becomes perfectly straight from its start to its end as soon as you lift the Pencil">↔ Auto-straight underlines</button></div>
 </div>
 
 <!-- ===== PEN SETTINGS SUB-PANEL ===== -->
@@ -717,6 +718,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
     </div>
   </div>
   <div><button class="pb shp-tg" style="width:100%;padding:11px;font-size:14px" title="Draw a line / circle / rectangle and hold the Pencil still for a moment: it becomes perfectly straight / round">◇ Hold to snap shape</button></div>
+  <div><button class="pb auto-tg" style="width:100%;padding:11px;font-size:14px" title="A long, roughly horizontal stroke (underline) becomes perfectly straight from its start to its end as soon as you lift the Pencil">↔ Auto-straight underlines</button></div>
 </div>
 
 <!-- ===== HOME ===== -->
@@ -885,6 +887,7 @@ let pdf,file,url,name="",docId=null,zoom=LOW?1:1.2,tool="pen",previousTool="lass
 let ina,anns={},sizes=[],hist=[],redo=[],timer,vis=new Set(),q=Promise.resolve();
 const COL=["#e11d48","#2563eb","#16a34a","#f59e0b","#111111","#ffffff"];
 let ord=[],bm=new Set(),tpl={},SR={},TXT={},selObjs=[],selPage=-1,lz=null,lm=null,lastMv=0,lastPen=0,lastInk=0,shapeOn=(()=>{try{return localStorage.getItem("pa_pen_shape")!=="0"}catch(e){return true}})(),palm=true,curStamp="✅",stampS=40;
+let autoLn=(()=>{try{return localStorage.getItem("pa_pen_autoline")!=="0"}catch(e){return true}})();
 /* ===== virtual (inserted) pages =====
    Added pages are NOT written into the PDF. The PDF file never changes, so its fingerprint stays the same and every backup/restore
    finds the right notebook. An inserted page is just an entry in the page order (ord): a string "b<width>x<height>" instead of a PDF page number. */
@@ -1612,7 +1615,7 @@ function bind(ink,p,i){
     if(CROP){CROP.drag=null;return}
     if(mt){const m=mt;mt=null;clearTimeout(lpT);if(m.lp){draw(i);showTbar();return}if(m.k=="m"&&!m.moved&&(m.was||tool!="sel")){openEdit();return}if(m.sn)change();if(m.k=="s"&&m.o.s){TXS=Math.round(m.o.s);lsSet(TXK.s,TXS)}draw(i);showTbar();return}
     if(tool=="lasso"){lassoUp(i);return}if(mv){mv=null;draw(i);change();return}
-    if(cur){if(sn){const L=cur.p;if((cur.t==="line"||cur.t==="hl")&&L.length===2&&Math.hypot(L[0][0]-L[1][0],L[0][1]-L[1][1])<4)cur=sn.orig;sn=null}if((cur.t=="pen"||cur.t=="hl")&&cur.p.length>3)cur.p=rdp(cur.p,.05,true);snap(i);(anns[i]=anns[i]||[]).push(cur);cur=null;draw(i)}change();};
+    if(cur){if(sn){const L=cur.p;if((cur.t==="line"||cur.t==="hl")&&L.length===2&&Math.hypot(L[0][0]-L[1][0],L[0][1]-L[1][1])<4)cur=sn.orig;sn=null}else if(autoLn&&(cur.t==="pen"||cur.t==="hl")){const r=autoStraight(cur);if(r)cur=r}if((cur.t=="pen"||cur.t=="hl")&&cur.p.length>3)cur.p=rdp(cur.p,.05,true);snap(i);(anns[i]=anns[i]||[]).push(cur);cur=null;draw(i)}change();};
 }
 /* handwriting compaction: Douglas-Peucker, tolerance 0.08 pt (≈0.03 mm) — small enough that the stroke does not change shape when the Pencil lifts */
 function rdp(P,e,pr){const n=P.length;if(n<4)return P;const keep=new Uint8Array(n);keep[0]=keep[n-1]=1;const st=[[0,n-1]],e2=e*e;
@@ -2541,6 +2544,9 @@ const palmBlock=e=>palm&&e.pointerType=="touch"&&(Date.now()-lastPen<1200||Math.
 $("#palm").onclick=e=>{palm=!palm;e.currentTarget.classList.toggle("on",palm);st(palm?"🖐 Palm rejection on":"🖐 Palm rejection off")};
 /* v1.4.85 — Draw & hold (GoodNotes style): ON by default, remembered, one switch shared by the More menu and the pen / highlighter popovers */
 function shapeSync(){const b=$("#shp");if(b)b.classList.toggle("on",shapeOn);$$(".shp-tg").forEach(x=>{x.classList.toggle("on",shapeOn);x.textContent="◇ Hold to snap shape: "+(shapeOn?"ON":"OFF")})}
+function autoSync(){$$(".auto-tg").forEach(x=>{x.classList.toggle("on",autoLn);x.textContent="↔ Auto-straight underlines: "+(autoLn?"ON":"OFF")})}
+function autoSet(v){autoLn=!!v;try{localStorage.setItem("pa_pen_autoline",autoLn?"1":"0")}catch(e){}autoSync();st(autoLn?"↔ Underlines become straight when you lift the Pencil":"↔ Auto-straight underlines: off")}
+$$(".auto-tg").forEach(b=>b.onclick=()=>autoSet(!autoLn));autoSync();
 function shapeSet(v,toast){shapeOn=!!v;try{localStorage.setItem("pa_pen_shape",shapeOn?"1":"0")}catch(e){}shapeSync();if(toast)st(shapeOn?"◇ Draw & hold: line, circle, rectangle snap perfect":"◇ Hold to snap shape: off")}
 $("#shp").onclick=()=>shapeSet(!shapeOn,1);$$(".shp-tg").forEach(b=>b.onclick=()=>shapeSet(!shapeOn,1));shapeSync();
 
@@ -2550,6 +2556,15 @@ $("#shp").onclick=()=>shapeSet(!shapeOn,1);$$(".shp-tg").forEach(b=>b.onclick=()
 function lineFix(a,b){const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy);if(!(L>1e-6))return[b[0],b[1]];
   const deg=Math.atan2(dy,dx)*180/Math.PI;let best=null;for(const t of[-180,-135,-90,-45,0,45,90,135,180])if(Math.abs(deg-t)<=(t%90===0?4:2.5)){best=t;break}
   if(best==null)return[b[0],b[1]];const r=best*Math.PI/180;return[+(a[0]+L*Math.cos(r)).toFixed(2),+(a[1]+L*Math.sin(r)).toFixed(2)]}
+/* v1.4.87 — auto-straight underlines (no hold needed): a long stroke that runs roughly HORIZONTALLY (within ~12 deg), mostly straight from its start to its end,
+   becomes a perfect line from the start point to the end point the moment the Pencil lifts. Handwriting / curves / short strokes / vertical or diagonal drawing are untouched. */
+function autoStraight(o){const P=o.p,n=P?P.length:0;if(n<6)return null;
+  const a=P[0],b=P[n-1],dx=b[0]-a[0],dy=b[1]-a[1],cl=Math.hypot(dx,dy);if(!(cl>=50)||Math.abs(dy)>.21*Math.abs(dx))return null;
+  let Lp=0,md=0,back=0;const sg=Math.sign(dx);
+  for(let j=0;j<n;j++){if(!isFinite(P[j][0])||!isFinite(P[j][1]))return null;if(j){Lp+=Math.hypot(P[j][0]-P[j-1][0],P[j][1]-P[j-1][1]);if((P[j][0]-P[j-1][0])*sg<-1.5)back++}
+    md=Math.max(md,Math.abs(dy*(P[j][0]-a[0])-dx*(P[j][1]-a[1]))/cl)}
+  if(cl<.93*Lp||md>Math.max(3,.07*cl)||back>.08*n)return null;
+  return{t:o.t==="hl"?"hl":"line",c:o.c,w:o.w,p:[[a[0],a[1]],lineFix(a,[b[0],b[1]])]}}
 function recog(o){const P=o.p;if(!P||P.length<5)return null;
   for(const q of P)if(!isFinite(q[0])||!isFinite(q[1]))return null;
   let Lp=0;const cum=[0];for(let j=1;j<P.length;j++){Lp+=Math.hypot(P[j][0]-P[j-1][0],P[j][1]-P[j-1][1]);cum.push(Lp)}
@@ -2557,16 +2572,11 @@ function recog(o){const P=o.p;if(!P||P.length<5)return null;
   const N=64,R=[];{let k=0;for(let m=0;m<N;m++){const d=Lp*m/(N-1);while(k<P.length-2&&cum[k+1]<d)k++;const sg=cum[k+1]-cum[k]||1,t=Math.max(0,Math.min(1,(d-cum[k])/sg));R.push([P[k][0]+(P[k+1][0]-P[k][0])*t,P[k][1]+(P[k+1][1]-P[k][1])*t])}}
   const xs=R.map(q=>q[0]),ys=R.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),bw=x1-x0,bh=y1-y0,dg=Math.hypot(bw,bh);
   const a=P[0],b=P[P.length-1],cl=Math.hypot(a[0]-b[0],a[1]-b[1]),hl=o.t==="hl",mk=(t,p)=>({t:hl?"hl":t,c:o.c,w:o.w,p});
-  /* ---- straight line: fit ONE best line through the stroke (ignoring the first/last ~5 %: start hook / lift hook), accept wobble up to ~6 % of the length,
-         then put both ends ON that line, so a wavy underline becomes perfectly straight end to end ---- */
-  {const n=R.length,t0=3,t1=n-3,m=t1-t0;let mx=0,my=0;for(let j=t0;j<t1;j++){mx+=R[j][0];my+=R[j][1]}mx/=m;my/=m;
-    let sxx=0,syy=0,sxy=0;for(let j=t0;j<t1;j++){const dx=R[j][0]-mx,dy=R[j][1]-my;sxx+=dx*dx;syy+=dy*dy;sxy+=dx*dy}
-    const th=.5*Math.atan2(2*sxy,sxx-syy);let ux=Math.cos(th),uy=Math.sin(th);
-    if((b[0]-a[0])*ux+(b[1]-a[1])*uy<0){ux=-ux;uy=-uy}
-    const pr=q=>(q[0]-mx)*ux+(q[1]-my)*uy,pe=q=>-(q[0]-mx)*uy+(q[1]-my)*ux,Lc=pr(R[n-1])-pr(R[0]);
-    if(Lc>=24){let md=0,ss=0,back=0;for(let j=t0;j<t1;j++){const d=Math.abs(pe(R[j]));md=Math.max(md,d);ss+=d*d;if(j>t0&&pr(R[j])<pr(R[j-1])-1e-9)back++}
-      if(Lp<=1.25*Lc&&md<=Math.max(3,Lc*.06)&&Math.sqrt(ss/m)<=Math.max(1.5,Lc*.035)&&back<=.1*m){
-        const pa=pr(a),pb=pr(b),A=[+(mx+ux*pa).toFixed(2),+(my+uy*pa).toFixed(2)],B=[mx+ux*pb,my+uy*pb];return mk("line",[A,lineFix(A,B)])}}}
+  /* ---- straight line: the line runs from the START point to the END point of the stroke; whatever the hand did in between (waves, dips, bumps) is ignored.
+         Accepted when the path is mostly "on its way" from start to end (chord >= 85 % of the path) and never strays more than 10 % of the chord. ---- */
+  if(cl>=24&&cl>=.85*Lp){let md=0,back=0;const dx=b[0]-a[0],dy=b[1]-a[1];
+    for(let j=0;j<R.length;j++){md=Math.max(md,Math.abs(dy*(R[j][0]-a[0])-dx*(R[j][1]-a[1]))/cl);if(j&&((R[j][0]-R[j-1][0])*dx+(R[j][1]-R[j-1][1])*dy)<-.5*cl/R.length)back++}
+    if(md<=Math.max(3,cl*.10)&&back<=.12*R.length)return mk("line",[[a[0],a[1]],lineFix(a,b)]);return null}
   if(hl)return null;
   /* ---- closed shapes: ends meet (or overlap), big enough, not a flat sliver ---- */
   if(dg<28||cl>.28*dg||Math.min(bw,bh)<10||Math.min(bw,bh)<.12*Math.max(bw,bh))return null;
@@ -2870,7 +2880,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.87",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.88",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
