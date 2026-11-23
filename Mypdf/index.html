@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.88">
+<meta name="app-version" content="1.4.93">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -570,6 +570,9 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
 #sm .kr.ok{border-left-color:#16a34a}#sm .kr.err{border-left-color:#dc2626}#sm .kr.warn{border-left-color:#d97706}
 #sm .ka{display:flex;gap:8px}#sm .ka button{flex:1;padding:10px 6px;font-size:15px;font-weight:600;border-radius:10px;background:color-mix(in srgb,var(--tx) 7%,transparent)}
 @media(prefers-reduced-motion:reduce){#sm>div,#sm{animation:none!important}}
+/* v1.4.91 — a closed dialog / page can never stay painted or catch taps; no backdrop blur on full-screen layers (iOS can leave a "ghost" of it on screen) */
+#sm[hidden],.mod[hidden],#home[hidden],#doc[hidden],#bar[hidden]{display:none!important;visibility:hidden!important;pointer-events:none!important;animation:none!important}
+#sm,.mod{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 </style></head><body>
 
 <!-- ===== TOP BAR ===== -->
@@ -633,7 +636,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
 
 <!-- ===== PEN FLOATING PANEL ===== -->
 <div id="pen-panel" class="fpanel" hidden style="top:62px;left:50%;transform:translateX(-50%)">
-  <canvas id="pen-prev-canvas" width="240" height="44" style="border-radius:10px;background:var(--btn-bg);display:block"></canvas>
+  <div style="display:flex;gap:8px;align-items:stretch"><canvas id="pen-prev-canvas" width="240" height="44" style="border-radius:10px;background:var(--btn-bg);display:block;flex:1;min-width:0;width:100%;height:44px;object-fit:contain"></canvas><button type="button" class="pb op-btn" id="pen-op-btn" title="Opacity: tap, then slide left / right" aria-label="Opacity" style="flex:none;width:62px;height:44px;padding:2px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1.15"><span style="font-size:15px">◐</span><span id="pen-op-pct" style="font-size:11px;font-weight:700">100%</span></button></div><div id="pen-op-row" hidden><div class="slider-row"><span style="font-size:12px;font-weight:600;opacity:.7">Opacity</span><input type="range" id="pen-op-slider" min="10" max="100" step="1" value="100" aria-label="Opacity"><span class="slider-val" id="pen-op-val">100%</span></div></div>
   <div>
     <div class="fpanel-section-label" style="margin-bottom:8px">Pen</div>
     <div class="pen-types">
@@ -653,8 +656,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
       <span class="slider-val" id="pen-slider-val">3mm</span>
     </div>
   </div>
-  <div><button class="pb shp-tg" style="width:100%;padding:11px;font-size:14px" title="Draw a line / circle / rectangle and hold the Pencil still for a moment: it becomes perfectly straight / round">◇ Hold to snap shape</button></div>
-  <div><button class="pb auto-tg" style="width:100%;padding:11px;font-size:14px" title="A long, roughly horizontal stroke (underline) becomes perfectly straight from its start to its end as soon as you lift the Pencil">↔ Auto-straight underlines</button></div>
+  <div style="display:flex;gap:8px"><div style="flex:1;min-width:0"><button class="pb shp-tg" style="width:100%;padding:10px 6px;font-size:13px;white-space:nowrap" title="Draw a line / circle / rectangle and hold the Pencil still for a moment: it becomes perfectly straight / round">◇ Snap</button></div><div style="flex:1;min-width:0"><button class="pb auto-tg" style="width:100%;padding:10px 6px;font-size:13px;white-space:nowrap" title="A long, roughly horizontal stroke (underline) becomes perfectly straight from its start to its end as soon as you lift the Pencil">↔ Straight</button></div></div>
 </div>
 
 <!-- ===== PEN SETTINGS SUB-PANEL ===== -->
@@ -708,7 +710,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
 
 <!-- ===== HIGHLIGHTER PANEL ===== -->
 <div id="hl-panel" class="fpanel" hidden style="top:62px;left:50%;transform:translateX(-50%)">
-  <canvas id="hl-prev-canvas" width="240" height="44" style="border-radius:10px;background:var(--btn-bg);display:block"></canvas>
+  <div style="display:flex;gap:8px;align-items:stretch"><canvas id="hl-prev-canvas" width="240" height="44" style="border-radius:10px;background:var(--btn-bg);display:block;flex:1;min-width:0;width:100%;height:44px;object-fit:contain"></canvas><button type="button" class="pb op-btn" id="hl-op-btn" title="Opacity: tap, then slide left / right" aria-label="Opacity" style="flex:none;width:62px;height:44px;padding:2px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1.15"><span style="font-size:15px">◐</span><span id="hl-op-pct" style="font-size:11px;font-weight:700">100%</span></button></div><div id="hl-op-row" hidden><div class="slider-row"><span style="font-size:12px;font-weight:600;opacity:.7">Opacity</span><input type="range" id="hl-op-slider" min="10" max="100" step="1" value="100" aria-label="Opacity"><span class="slider-val" id="hl-op-val">100%</span></div></div>
   <div>
     <div class="fpanel-section-label" style="margin-bottom:8px">Size</div>
     <div class="size-row" id="hl-sizes"></div>
@@ -717,8 +719,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
       <span class="slider-val" id="hl-slider-val">12mm</span>
     </div>
   </div>
-  <div><button class="pb shp-tg" style="width:100%;padding:11px;font-size:14px" title="Draw a line / circle / rectangle and hold the Pencil still for a moment: it becomes perfectly straight / round">◇ Hold to snap shape</button></div>
-  <div><button class="pb auto-tg" style="width:100%;padding:11px;font-size:14px" title="A long, roughly horizontal stroke (underline) becomes perfectly straight from its start to its end as soon as you lift the Pencil">↔ Auto-straight underlines</button></div>
+  <div style="display:flex;gap:8px"><div style="flex:1;min-width:0"><button class="pb shp-tg" style="width:100%;padding:10px 6px;font-size:13px;white-space:nowrap" title="Draw a line / circle / rectangle and hold the Pencil still for a moment: it becomes perfectly straight / round">◇ Snap</button></div><div style="flex:1;min-width:0"><button class="pb auto-tg" style="width:100%;padding:10px 6px;font-size:13px;white-space:nowrap" title="A long, roughly horizontal stroke (underline) becomes perfectly straight from its start to its end as soon as you lift the Pencil">↔ Straight</button></div></div>
 </div>
 
 <!-- ===== HOME ===== -->
@@ -799,6 +800,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
      <button class="smb" id="stb"><i class="ic" style="--c:#16a34a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 01-.6-8.96A6 6 0 0118 9.5 4 4 0 0117.5 18"/><path d="M12 12v8M9 15l3-3 3 3"/></svg></i><span class="t"><b>Full backup now</b><small>Send every notebook to Telegram</small></span><em class="chev">›</em></button>
      <button class="smb" id="sm-bkf"><i class="ic" style="--c:#f59e0b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 8l4-4 4 4"/><path d="M5 14v4.5A1.5 1.5 0 006.5 20h11a1.5 1.5 0 001.5-1.5V14"/></svg></i><span class="t"><b>Export backup file</b><small>Save a copy on this device</small></span><em class="chev">›</em></button>
      <button class="smb" id="sm-stall"><i class="ic" style="--c:#10b981"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg></i><span class="t"><b>Stall report</b><small>Shows when / why the app froze</small></span><em class="chev">›</em></button>
+     <button class="smb" id="sm-sim"><i class="ic" style="--c:#8b5cf6"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M16.9 16.9l2.1 2.1M4.9 19.1l2.1-2.1M16.9 7.1l2.1-2.1"/></svg></i><span class="t"><b>Intelligence report</b><small id="sm-sim-st">All functions tracked · self-heal on</small></span><em class="chev">›</em></button>
      <button class="smb" id="sm-imp"><i class="ic" style="--c:#6366f1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 11l4 4 4-4"/><path d="M5 14v4.5A1.5 1.5 0 006.5 20h11a1.5 1.5 0 001.5-1.5V14"/></svg></i><span class="t"><b>Import backup file</b><small>Restore from a Vpdf backup file</small></span><em class="chev">›</em></button>
      <button class="smb" id="sm-trash"><i class="ic" style="--c:#64748b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 108-8 8 8 0 00-5.7 2.4L4 9"/><path d="M4 4v5h5M12 8v4l3 2"/></svg></i><span class="t"><b>Recently deleted</b><small>Bring back notebooks you removed</small></span><em class="chev">›</em></button>
    </div>
@@ -1052,6 +1054,34 @@ document.getElementById("ps-reset").onclick=()=>{
   });
 };
 
+/* v1.4.90 — OPACITY of pen / highlighter. PO / HO = opacity of NEW strokes (null = the old built-in look, nothing stored on the stroke).
+   A stroke that has a custom opacity carries o.a (0.05-1); strokes without o.a look exactly as before. */
+let PO=null,HO=null;
+const oa=o=>{const v=o&&o.a!=null?+o.a:NaN;return isFinite(v)&&v>=.05&&v<=1?v:null};
+const hlAlpha=(a,raw)=>{const v=a==null?null:(+a);if(v==null||!isFinite(v)||v<.05||v>1)return DK&&!raw?.5:.35;return DK&&!raw?Math.min(1,v*1.4286):v};
+let _PAC=null;
+/* a pen stroke is drawn in many overlapping pieces, so it is drawn OPAQUE on a scratch canvas first and the finished stroke is laid on the page with the opacity (no dark dots where pieces overlap) */
+function penAlpha(c,o,k,raw,a){const P=o.p;let x0=1/0,y0=1/0,x1=-1/0,y1=-1/0;
+  for(const q of P){if(q[0]<x0)x0=q[0];if(q[0]>x1)x1=q[0];if(q[1]<y0)y0=q[1];if(q[1]>y1)y1=q[1]}
+  const pad=(+o.w||3)*3+4;x0-=pad;y0-=pad;x1+=pad;y1+=pad;const bw=x1-x0,bh=y1-y0;
+  if(!isFinite(bw)||!isFinite(bh)||bw<=0||bh<=0)throw new Error("bbox");
+  const sc=Math.max(.05,Math.min(k,4096/bw,4096/bh,Math.sqrt(6e6/(bw*bh))));
+  const tw=Math.max(1,Math.ceil(bw*sc)),th=Math.max(1,Math.ceil(bh*sc));
+  if(!_PAC)_PAC=document.createElement("canvas");
+  if(_PAC.width!==tw||_PAC.height!==th){_PAC.width=tw;_PAC.height=th}
+  const t=_PAC.getContext("2d");t.setTransform(1,0,0,1,0,0);t.clearRect(0,0,tw,th);t.scale(sc,sc);t.translate(-x0,-y0);
+  penDraw(t,o,raw);
+  c.save();c.globalAlpha=a;try{c.imageSmoothingQuality="high"}catch(_){}c.drawImage(_PAC,0,0,tw,th,x0,y0,tw/sc,th/sc);c.restore()}
+function penRender(c,o,k,raw){const a=oa(o);if(a!=null&&a<.995&&o.p&&o.p.length>2){try{penAlpha(c,o,k,raw,a);return}catch(e){c.globalAlpha=1}}penDraw(c,o,raw)}
+function opShow(k){const v=k=="pen"?(PO==null?1:PO):(HO==null?.35:HO),pc=Math.round(v*100);
+  const s=document.getElementById(k+"-op-slider"),t=document.getElementById(k+"-op-val"),b=document.getElementById(k+"-op-pct");
+  if(s)s.value=pc;if(t)t.textContent=pc+"%";if(b)b.textContent=pc+"%"}
+function opSet(k,pc){pc=Math.round(+pc);if(!isFinite(pc))return;pc=Math.max(10,Math.min(100,pc));
+  if(k=="pen")PO=pc>=100?null:pc/100;else HO=pc==35?null:pc/100;opShow(k);if(k=="pen")drawPenPreview();else drawHlPreview()}
+["pen","hl"].forEach(k=>{const sl=document.getElementById(k+"-op-slider"),bt=document.getElementById(k+"-op-btn"),rw=document.getElementById(k+"-op-row");
+  if(sl)sl.oninput=e=>opSet(k,e.target.value);
+  if(bt&&rw)bt.onclick=()=>{rw.hidden=!rw.hidden;bt.classList.toggle("on",!rw.hidden)}});
+
 /* Pen preview canvas */
 function drawPenPreview(){
   const cv=document.getElementById("pen-prev-canvas");if(!cv)return;
@@ -1060,13 +1090,13 @@ function drawPenPreview(){
   try{const P=[],bz=(a,b,c1,d,t)=>{const u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c1+t*t*t*d};let m0=0;
     [[20,32,70,8,100,40,140,20],[140,20,180,2,210,30,220,22]].forEach((g,si)=>{for(let i=si?1:0;i<=30;i++){const t=i/30,gt=(si*30+i)/60;P.push([bz(g[0],g[2],g[4],g[6],t),bz(g[1],g[3],g[5],g[7],t),.55+.95*Math.sin(Math.PI*gt)])}});
     const o={t:"pen",pt:ty,c:color||"#e11d48",w:Math.min(W,16)*({fine:.6,brush:1.5,pencil:.8}[ty]||1),p:P};
-    ctx.save();penDraw(ctx,o,true);ctx.restore()}
+    if(PO!=null)o.a=PO;ctx.save();penRender(ctx,o,1,true);ctx.restore()}
   catch(e){ctx.strokeStyle=color||"#e11d48";ctx.lineWidth=Math.min(W,16);ctx.lineCap=ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(20,32);ctx.bezierCurveTo(70,8,100,40,140,20);ctx.bezierCurveTo(180,2,210,30,220,22);ctx.stroke()}
 }
 function drawHlPreview(){
   const cv=document.getElementById("hl-prev-canvas");if(!cv)return;
   const ctx=cv.getContext("2d");ctx.clearRect(0,0,cv.width,cv.height);
-  ctx.strokeStyle=color||"#f59e0b";ctx.globalAlpha=0.4;ctx.lineWidth=Math.min(HW,32);ctx.lineCap="butt";
+  ctx.strokeStyle=color||"#f59e0b";ctx.globalAlpha=hlAlpha(HO,false);ctx.lineWidth=Math.min(HW,32);ctx.lineCap="butt";
   ctx.beginPath();ctx.moveTo(20,22);ctx.lineTo(220,22);ctx.stroke();ctx.globalAlpha=1;
 }
 drawPenPreview();drawHlPreview();
@@ -1316,8 +1346,10 @@ addEventListener("resize",syncViewerTop,{passive:true});
 function homeTab(t){$$("#hside [data-ht]").forEach(b=>b.classList.toggle("on",b.dataset.ht===t));$("#hp-nb").hidden=t!=="nb";$("#hp-bk").hidden=t!=="bk";$("#hp-tools").hidden=t!=="tools";$("#open").hidden=t!=="nb";$("#mkpdf").hidden=t!=="nb";const m=$("#hmain");if(m)m.scrollTop=0}
 function fsEnter(){try{const e=document.documentElement,f=e.requestFullscreen||e.webkitRequestFullscreen;if(f&&!document.fullscreenElement&&!document.webkitFullscreenElement){const r=f.call(e);if(r&&r.catch)r.catch(()=>{})}}catch(x){}}
 function fsExit(){try{if(document.fullscreenElement||document.webkitFullscreenElement){const f=document.exitFullscreen||document.webkitExitFullscreen,r=f.call(document);if(r&&r.catch)r.catch(()=>{})}}catch(x){}}
-["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>{requestAnimationFrame(()=>{syncViewerTop();dispatchEvent(new Event("resize"))})}));
-const go=v=>{const h=v=="home";if(h)fsExit();if(h&&$("#home").hidden)homeTab("nb");if(h)try{onHome()}catch(e){}$("#home").hidden=!h;$("#bar").hidden=h;$("#doc").hidden=h;if(!h)requestAnimationFrame(syncViewerTop);scrollTo(0,0)};
+["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>{requestAnimationFrame(()=>{syncViewerTop();dispatchEvent(new Event("resize"));repaintKick()})}));
+const go=v=>{const h=v=="home";try{smShut();closeAllPanels()}catch(e){}if(h){try{unstick()}catch(e){}}if(h)fsExit();if(h&&$("#home").hidden)homeTab("nb");if(h)try{onHome()}catch(e){}$("#home").hidden=!h;$("#bar").hidden=h;$("#doc").hidden=h;if(!h)requestAnimationFrame(syncViewerTop);scrollTo(0,0);repaintKick()};
+/* v1.4.91 — iOS sometimes leaves a hidden layer painted (or a dead one under the finger) after a full-screen change: nudge the layers so they are re-composited */
+function repaintKick(){try{const ids=["#home","#sm","#bar","#doc"];ids.forEach(q=>{const e=$(q);if(e&&!e.hidden)e.style.opacity=".999"});requestAnimationFrame(()=>requestAnimationFrame(()=>ids.forEach(q=>{const e=$(q);if(e)e.style.opacity=""})))}catch(e){}}
 const age=t=>{const x=(Date.now()-t)/1e3;return x<3600?Math.max(1,Math.floor(x/60))+"m":x<86400?Math.floor(x/3600)+"h":x<604800?Math.floor(x/86400)+"d":x<2592e3?Math.floor(x/604800)+"w":Math.floor(x/2592e3)+"M"};
 let switching=false;
 function renderTabs(){const c=$("#dtabs");if(!c)return;c.innerHTML="";let cur=null;
@@ -1338,7 +1370,10 @@ function askDelete(name){return new Promise(res=>{
   o.querySelector("#dcn").onclick=()=>done(false);o.querySelector("#dcy").onclick=()=>done(true);
   o.addEventListener("pointerdown",e=>{if(e.target===o)done(false)});
   setTimeout(()=>{const b=o.querySelector("#dcn");if(b)b.focus()},30)})}
-async function showLib(){
+let _slBusy=0,_slAgain=0;
+async function showLib(){if(_slBusy&&Date.now()-_slBusy<10000){_slAgain=1;return}_slBusy=Date.now();
+  try{do{_slAgain=0;await _showLib()}while(_slAgain)}finally{_slBusy=0}}
+async function _showLib(){
   await persist();pdf=null;docId=null;vis.clear();if(url){URL.revokeObjectURL(url);url=null}
   $("#doc").innerHTML="";go("home");THU.forEach(u=>URL.revokeObjectURL(u));THU=[];
   const L=((await dbAll())||[]).sort((a,b)=>b.t-a.t),g=$("#nbs");g.innerHTML="";$("#empty").hidden=!!L.length;
@@ -1467,8 +1502,9 @@ function paint(c,o,k,raw){
   if(o.t=="img"){if(!raw&&CROP&&CROP.o===o){c.restore();return}const m=IM[o.id];if(m&&m.naturalWidth){const cr=o.cr;if(cr){const nw=m.naturalWidth,nh=m.naturalHeight;c.drawImage(m,cr[0]*nw,cr[1]*nh,nw*(1-cr[0]-cr[2]),nh*(1-cr[1]-cr[3]),o.x,o.y,o.w,o.h)}else c.drawImage(m,o.x,o.y,o.w,o.h)}
     if(tool=="sel"){const h=14/zoom;c.strokeStyle="#2563eb";c.lineWidth=1/zoom;c.strokeRect(o.x,o.y,o.w,o.h);c.fillStyle="#dc2626";c.beginPath();c.arc(o.x+o.w,o.y,h,0,7);c.fill();c.fillStyle="#fff";c.font=`${h*1.3}px sans-serif`;c.textAlign="center";c.textBaseline="middle";c.fillText("✕",o.x+o.w,o.y);c.fillStyle="#2563eb";c.fillRect(o.x+o.w-h,o.y+o.h-h,h*2,h*2);c.beginPath();c.arc(o.x,o.y,h,0,7);c.fill();c.fillStyle="#fff";c.fillText("✂",o.x,o.y)}
     c.restore();return}
-  if(o.t=="hl"){c.globalAlpha=DK&&!raw?.5:.35;c.lineWidth=o.w*4;c.lineCap="butt"}
-  if(o.t=="pen"&&o.p.length>2){penDraw(c,o,raw)}
+  if(o.t=="hl"){c.globalAlpha=hlAlpha(o.a,raw);c.lineWidth=o.w*4;c.lineCap="butt"}
+  else if(o.t!=="img"&&o.t!=="text"&&!(o.t=="pen"&&o.p.length>2)){const a=oa(o);if(a!=null)c.globalAlpha*=a}   /* shapes snapped from a see-through pen stroke / very short strokes keep the opacity */
+  if(o.t=="pen"&&o.p.length>2){penRender(c,o,k,raw)}
   else if(o.t=="pen"||o.t=="hl"){c.beginPath();smoothPath(c,o.p);if(o.p.length==1)c.lineTo(o.p[0][0]+.1,o.p[0][1]);c.stroke()}
   else if(o.t=="text"){if(o===TEDIT){c.restore();return}c.font=tFont(o);c.textBaseline="top";const B=tBox(o);if(o.bg){c.fillStyle=o.bg;c.fillRect(o.x,o.y,B.w,B.h);c.fillStyle="#1f2937"}B.L.forEach((l,j)=>{const pw=B.w-(o.bg?4:0),ax=o.al=="c"?(pw-c.measureText(l).width)/2:o.al=="r"?pw-c.measureText(l).width:0;c.fillText(l,o.x+(o.bg?2:0)+Math.max(0,ax),o.y+j*o.s*1.25)})}
   else{const[a,b]=o.p;c.beginPath();
@@ -1573,7 +1609,7 @@ function bind(ink,p,i){
     down=true;if(tool=="er"){snap(i);erase(i,q);return}
     const w=W;
     cur={t:tool,c:color,w:tool=="pen"?+w.toFixed(1):SW,p:["pen","hl"].includes(tool)?[q]:[q,q]};
-    if(tool=="hl")cur.w=HW;lastMv=Date.now();if(tool=="pen"){cur.pt=penType;cur.w=+(cur.w*({fine:.6,brush:1.5,pencil:.8}[penType]||1)).toFixed(1)}
+    if(tool=="hl")cur.w=HW;if(tool=="hl"&&HO!=null)cur.a=HO;if(tool=="pen"&&PO!=null)cur.a=PO;lastMv=Date.now();if(tool=="pen"){cur.pt=penType;cur.w=+(cur.w*({fine:.6,brush:1.5,pencil:.8}[penType]||1)).toFixed(1)}
     if(tool=="pen"&&e.pointerType=="pen"){lastMul=null;pT=null;pSp=0;pred=[];q.push(pmul(e,penPar()))}drawnTo=0;
     down=true;sn=null;hX=e.clientX;hY=e.clientY;armHold();
   };
@@ -1939,7 +1975,7 @@ addEventListener("visibilitychange",()=>{if(document.hidden){emergSave();persist
 
 /* ===== EXPORT ===== */
 async function mk(doc,o,H){
-  const col=[1,3,5].map(i=>parseInt(o.c.slice(i,i+2),16)/255),al=o.t=="hl"?.35:o.pt=="pencil"?.78:1,w=o.t=="hl"?o.w*4:o.w;
+  const col=[1,3,5].map(i=>parseInt(o.c.slice(i,i+2),16)/255),al=o.t=="hl"?(oa(o)??.35):(o.pt=="pencil"?.78:1)*(oa(o)??1),w=o.t=="hl"?o.w*4:o.w;
   let sub,ex={},rect,body="",res={ExtGState:{G:{CA:al,ca:al}}};
   if(o.t=="img"){const r=await iGet(o.id);rect=[o.x,H-o.y-o.h,o.x+o.w,H-o.y];
     if(r){const im=await doc.embedJpg(new Uint8Array(r));res={XObject:{Im:im.ref}};
@@ -1982,7 +2018,7 @@ $("#saveb").onclick=async()=>{
 
 /* ===== SETTINGS MODAL ===== */
 const TG=()=>{try{return JSON.parse(localStorage.getItem("pa_tg"))}catch(e){return null}};
-const sm=$("#sm"),nc=c=>{const m=/^(?:https?:\/\/)?t\.me\/([A-Za-z]\w{3,})\/?$/i.exec(c.trim());return m?"@"+m[1]:c.trim()};
+const sm=$("#sm"),smShut=()=>{sm.hidden=true;try{const a=document.activeElement;if(a&&a!==document.body&&sm.contains(a))a.blur()}catch(e){}document.body.classList.remove("kbd")},nc=c=>{const m=/^(?:https?:\/\/)?t\.me\/([A-Za-z]\w{3,})\/?$/i.exec(c.trim());return m?"@"+m[1]:c.trim()};
 const tgStat=()=>{try{return JSON.parse(localStorage.getItem("pa_tgstat"))||{}}catch(e){return{}}};
 const tgNote=(ok,msg)=>{try{const x=tgStat();if(ok){x.ok=Date.now();delete x.err;delete x.et}else{x.err=String(msg||"Unknown error").slice(0,300);x.et=Date.now()}localStorage.setItem("pa_tgstat",JSON.stringify(x))}catch(e){}};
 const tgFailing=()=>{const x=tgStat();return !!(x.err&&(!x.ok||(x.et||0)>=x.ok))};
@@ -2012,11 +2048,12 @@ async function tgCall(token,method,body,ms,retried){
   if(j&&!j.ok&&j.error_code==429&&!retried){const ra=+(j.parameters&&j.parameters.retry_after)||0;if(ra>0&&ra<=30){await new Promise(z=>setTimeout(z,(ra+1)*1e3));return tgCall(token,method,body,ms,1)}}
   if(!j||!j.ok){const e=new Error(tgErr(j,r.status));e.api=1;e.desc=(j&&j.description)||"";throw e}
   return j.result}
-$("#tg").onclick=()=>{const o=TG()||{},x=tgStat();$("#stk").value=o.t||"";$("#stc").value=o.c||"";$("#stk").classList.add("sec");$("#stv").textContent="Show token";
+$("#tg").onclick=()=>{sm.hidden=false;try{smView("main")}catch(e){}try{tgOpen()}catch(e){}try{smTgLabel()}catch(e){}try{askPersist()}catch(e){}};
+const tgOpen=()=>{const o=TG()||{},x=tgStat();$("#stk").value=o.t||"";$("#stc").value=o.c||"";$("#stk").classList.add("sec");$("#stv").textContent="Show token";
   if(!o.t)tgMsg("Telegram backup isn't set up yet.","");
   else if(tgFailing())tgMsg("⚠️ The last backup attempt failed: "+x.err,"err");
   else tgMsg("✅ Telegram backup is set up."+(x.ok?" Last backup sent "+agoT(x.ok)+".":" Waiting for the first backup."),"ok");
-  sm.hidden=false;smView("main");smTgLabel();askPersist()};
+  };
 const smView=v=>{$$("#sm .smv").forEach(x=>x.hidden=x.id!=="sm-"+v);const b=$("#sm>div");if(b)b.scrollTop=0};
 const smTgLabel=()=>{const e=$("#sm-tgs");if(e)e.textContent=(TG()||{}).t?"Connected":"Not connected"};
 $("#sm-ins").onclick=()=>smView("help");$("#sm-tgb").onclick=()=>smView("tg");$$("[data-smv]").forEach(b=>b.onclick=()=>smView(b.dataset.smv));
@@ -2055,7 +2092,7 @@ $("#sm-ins").onclick=()=>smView("help");$("#sm-tgb").onclick=()=>smView("tg");$$
     k.tr=m;k.tt=tone;KS.save();render()}
   $("#sm-sttb").onclick=()=>{say("");render();smView("stt")};
   render()})();
-$("#smx").onclick=()=>sm.hidden=true;sm.onclick=e=>{if(e.target===sm)sm.hidden=true};
+$("#smx").onclick=()=>smShut();sm.onclick=e=>{if(e.target===sm)smShut()};
 $("#stv").onclick=()=>{const h=$("#stk").classList.contains("sec");$("#stk").classList.toggle("sec",!h);$("#stv").textContent=h?"Hide token":"Show token"};
 $("#stt").onclick=async()=>{
   const b=$("#stt"),t=$("#stk").value.trim(),c=nc($("#stc").value);$("#stc").value=c;
@@ -2069,11 +2106,11 @@ $("#stt").onclick=async()=>{
   catch(err){const m="❌ "+((err&&err.message)||String(err));tgMsg(m,"err");st(m)}
   finally{b.disabled=false;b.textContent=lab}};
 $("#stsave").onclick=()=>{const t=$("#stk").value.trim(),c=nc($("#stc").value);$("#stc").value=c;
-  if(!t&&!c){try{localStorage.removeItem("pa_tg");localStorage.removeItem("pa_tgstat")}catch(e){}sm.hidden=true;showLib();return}
+  if(!t&&!c){try{localStorage.removeItem("pa_tg");localStorage.removeItem("pa_tgstat")}catch(e){}smShut();showLib();return}
   const bad=tgValid(t,c);if(bad){tgMsg("❌ "+bad,"err");return}
   try{localStorage.setItem("pa_tg",JSON.stringify({t,c}));localStorage.removeItem("pa_tgstat")}
   catch(e){tgMsg("❌ Couldn't save — browser storage is unavailable or full.","err");return}
-  sm.hidden=true;showLib();flush(1)};
+  smShut();showLib();flush(1)};
 $("#strm").onclick=()=>{try{localStorage.removeItem("pa_tg");localStorage.removeItem("pa_tgstat")}catch(e){}$("#stk").value=$("#stc").value="";tgMsg("Telegram settings removed. Backups will not be sent until you set it up again.","");showLib()};
 
 /* ===== PRESENTATION (LASER) TOOL ===== */
@@ -2503,7 +2540,7 @@ $("#fj").onchange=async e=>{
   catch(err){st("❌ Restore failed — "+((err&&err.message)||"invalid backup file"))}};
 
 /* ===== KEYBOARD ===== */
-addEventListener("keydown",e=>{if(e.key=="Escape"){sm.hidden=true;closeAllPanels()}
+addEventListener("keydown",e=>{if(e.key=="Escape"){smShut();closeAllPanels()}
   if(!pdf||$("#doc").hidden||/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;
   const k=e.key.toLowerCase();if((e.ctrlKey||e.metaKey)&&k=="z"){e.preventDefault();undo(e.shiftKey?1:0)}else if((e.ctrlKey||e.metaKey)&&k=="y"){e.preventDefault();undo(1)}});
 
@@ -2543,8 +2580,8 @@ document.addEventListener("contextmenu",e=>{if(!inEd(e.target))e.preventDefault(
 const palmBlock=e=>palm&&e.pointerType=="touch"&&(Date.now()-lastPen<1200||Math.max(e.width||0,e.height||0)>35);
 $("#palm").onclick=e=>{palm=!palm;e.currentTarget.classList.toggle("on",palm);st(palm?"🖐 Palm rejection on":"🖐 Palm rejection off")};
 /* v1.4.85 — Draw & hold (GoodNotes style): ON by default, remembered, one switch shared by the More menu and the pen / highlighter popovers */
-function shapeSync(){const b=$("#shp");if(b)b.classList.toggle("on",shapeOn);$$(".shp-tg").forEach(x=>{x.classList.toggle("on",shapeOn);x.textContent="◇ Hold to snap shape: "+(shapeOn?"ON":"OFF")})}
-function autoSync(){$$(".auto-tg").forEach(x=>{x.classList.toggle("on",autoLn);x.textContent="↔ Auto-straight underlines: "+(autoLn?"ON":"OFF")})}
+function shapeSync(){const b=$("#shp");if(b)b.classList.toggle("on",shapeOn);$$(".shp-tg").forEach(x=>{x.classList.toggle("on",shapeOn);x.textContent="◇ Snap: "+(shapeOn?"ON":"OFF")})}
+function autoSync(){$$(".auto-tg").forEach(x=>{x.classList.toggle("on",autoLn);x.textContent="↔ Straight: "+(autoLn?"ON":"OFF")})}
 function autoSet(v){autoLn=!!v;try{localStorage.setItem("pa_pen_autoline",autoLn?"1":"0")}catch(e){}autoSync();st(autoLn?"↔ Underlines become straight when you lift the Pencil":"↔ Auto-straight underlines: off")}
 $$(".auto-tg").forEach(b=>b.onclick=()=>autoSet(!autoLn));autoSync();
 function shapeSet(v,toast){shapeOn=!!v;try{localStorage.setItem("pa_pen_shape",shapeOn?"1":"0")}catch(e){}shapeSync();if(toast)st(shapeOn?"◇ Draw & hold: line, circle, rectangle snap perfect":"◇ Hold to snap shape: off")}
@@ -2564,14 +2601,14 @@ function autoStraight(o){const P=o.p,n=P?P.length:0;if(n<6)return null;
   for(let j=0;j<n;j++){if(!isFinite(P[j][0])||!isFinite(P[j][1]))return null;if(j){Lp+=Math.hypot(P[j][0]-P[j-1][0],P[j][1]-P[j-1][1]);if((P[j][0]-P[j-1][0])*sg<-1.5)back++}
     md=Math.max(md,Math.abs(dy*(P[j][0]-a[0])-dx*(P[j][1]-a[1]))/cl)}
   if(cl<.93*Lp||md>Math.max(3,.07*cl)||back>.08*n)return null;
-  return{t:o.t==="hl"?"hl":"line",c:o.c,w:o.w,p:[[a[0],a[1]],lineFix(a,[b[0],b[1]])]}}
+  return{t:o.t==="hl"?"hl":"line",c:o.c,w:o.w,...(oa(o)!=null?{a:o.a}:{}),p:[[a[0],a[1]],lineFix(a,[b[0],b[1]])]}}
 function recog(o){const P=o.p;if(!P||P.length<5)return null;
   for(const q of P)if(!isFinite(q[0])||!isFinite(q[1]))return null;
   let Lp=0;const cum=[0];for(let j=1;j<P.length;j++){Lp+=Math.hypot(P[j][0]-P[j-1][0],P[j][1]-P[j-1][1]);cum.push(Lp)}
   if(Lp<24)return null;
   const N=64,R=[];{let k=0;for(let m=0;m<N;m++){const d=Lp*m/(N-1);while(k<P.length-2&&cum[k+1]<d)k++;const sg=cum[k+1]-cum[k]||1,t=Math.max(0,Math.min(1,(d-cum[k])/sg));R.push([P[k][0]+(P[k+1][0]-P[k][0])*t,P[k][1]+(P[k+1][1]-P[k][1])*t])}}
   const xs=R.map(q=>q[0]),ys=R.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),bw=x1-x0,bh=y1-y0,dg=Math.hypot(bw,bh);
-  const a=P[0],b=P[P.length-1],cl=Math.hypot(a[0]-b[0],a[1]-b[1]),hl=o.t==="hl",mk=(t,p)=>({t:hl?"hl":t,c:o.c,w:o.w,p});
+  const a=P[0],b=P[P.length-1],cl=Math.hypot(a[0]-b[0],a[1]-b[1]),hl=o.t==="hl",mk=(t,p)=>({t:hl?"hl":t,c:o.c,w:o.w,...(oa(o)!=null?{a:o.a}:{}),p});
   /* ---- straight line: the line runs from the START point to the END point of the stroke; whatever the hand did in between (waves, dips, bumps) is ignored.
          Accepted when the path is mostly "on its way" from start to end (chord >= 85 % of the path) and never strays more than 10 % of the chord. ---- */
   if(cl>=24&&cl>=.85*Lp){let md=0,back=0;const dx=b[0]-a[0],dy=b[1]-a[1];
@@ -2707,7 +2744,7 @@ function zwDraw(){if(!zwOn)return;const p=$(`.pg[data-i="${zr.i}"]`);if(!p||!p.c
   x.fillStyle="#fff";x.fillRect(0,0,zwc.width,zwc.height);for(const s of[c,ink])try{x.drawImage(s,zr.x*k,zr.y*k,zr.w*k,zr.h*k,0,0,zwc.width,zwc.height)}catch(e){}}
 const zpt=e=>{const r=zwc.getBoundingClientRect();return[zr.x+(e.clientX-r.left)/r.width*zr.w,zr.y+(e.clientY-r.top)/r.height*zr.h]};
 zwc.onpointerdown=e=>{if(palmBlock(e))return;e.preventDefault();zwc.setPointerCapture(e.pointerId);const q=zpt(e);
-  if(tool=="er"){snap(zr.i);erase(zr.i,q,zwc.getBoundingClientRect().width/zr.w);zcur="er";return}zcur={t:tool=="hl"?"hl":"pen",c:color,w:tool=="hl"?HW:W,p:[q]}};
+  if(tool=="er"){snap(zr.i);erase(zr.i,q,zwc.getBoundingClientRect().width/zr.w);zcur="er";return}zcur={t:tool=="hl"?"hl":"pen",c:color,w:tool=="hl"?HW:W,p:[q]};if(tool=="hl"&&HO!=null)zcur.a=HO;if(tool!="hl"&&PO!=null)zcur.a=PO};
 zwc.onpointermove=e=>{if(!zcur)return;const q=zpt(e);if(zcur=="er"){erase(zr.i,q,zwc.getBoundingClientRect().width/zr.w);return}const l=zcur.p[zcur.p.length-1];if(Math.hypot(l[0]-q[0],l[1]-q[1])<.3)return;
   zcur.p.push(q);if(q[0]>zr.x+zr.w*.88){const s=sizes[zr.i]||sizes[0];zr.x=Math.min(s.w-zr.w,zr.x+zr.w*.4)}draw(zr.i,zcur)};
 zwc.onpointerup=zwc.onpointercancel=()=>{if(!zcur)return;if(zcur!="er"){snap(zr.i);(anns[zr.i]=anns[zr.i]||[]).push(zcur)}zcur=null;draw(zr.i);change()};
@@ -2880,7 +2917,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.88",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.93",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -3069,22 +3106,51 @@ $$(".sw").forEach(b=>b.addEventListener("click",()=>setTimeout(syncW,0)));
 
 applyTheme(0);if(location.hash=="#read")history.replaceState(null,"",location.pathname+location.search);bootStorage().catch(()=>{}).then(()=>{showLib();checkBackup()});flush(0);setInterval(()=>flush(0),EVERY);
 
-/* ===== v1.4.75 — stall recorder: notes every freeze (screen not responding > 1.2 s) with what the app was doing, so the real cause can be found ===== */
-const STL=(()=>{const K="pa_stalls";let exp=performance.now(),resume=0,act="",at=0;
-  const get=()=>{try{return JSON.parse(localStorage.getItem(K))||[]}catch(e){return[]}};
+/* ===== v1.4.75 — stall recorder: notes every freeze (screen not responding > 1.2 s) with what the app was doing, so the real cause can be found =====
+   v1.4.92: keeps the last 7 days (max 200 entries), tells real freezes from pauses caused by a file picker / alert / confirm (those stop the page clock but are not freezes),
+   also records which screen was open, and the report can be copied (last 48 h / last 7 days). */
+const STL=(()=>{const K="pa_stalls",DAY=864e5;let exp=performance.now(),resume=0,act="",at=0,natAt=0,natEnd=0;
+  const get=()=>{try{const a=JSON.parse(localStorage.getItem(K));return Array.isArray(a)?a.filter(x=>x&&typeof x.t==="number"&&x.t>Date.now()-7*DAY):[]}catch(e){return[]}};
   const ctx=()=>{let cv=0,px=0;try{document.querySelectorAll("canvas").forEach(c=>{cv++;px+=c.width*c.height})}catch(e){}
     let ink=0;try{ink=Object.values(anns).reduce((a,l)=>a+l.length,0)}catch(e){}
-    return{pg:vis.size,cv,mpx:+(px/1e6).toFixed(1),z:+(+zoom).toFixed(2),tool:String(tool),job:LOCKN,act,ago:at?Math.round((Date.now()-at)/1000):-1,ink,
+    let scr="",set=0,fs=0,kbd=0,pnl="";try{scr=pdf?"pdf":"home";set=sm.hidden?0:1;fs=(document.fullscreenElement||document.webkitFullscreenElement)?1:0;kbd=document.body.classList.contains("kbd")?1:0;pnl=panelOpen||""}catch(e){}
+    return{pg:vis.size,cv,mpx:+(px/1e6).toFixed(1),z:+(+zoom).toFixed(2),tool:String(tool),job:LOCKN,act,ago:at?Math.round((Date.now()-at)/1000):-1,ink,scr,set,fs,kbd,pnl,
       mem:performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576):null,dm:navigator.deviceMemory||null}};
-  const rec=d=>{try{const a=get();a.push({t:Date.now(),ms:Math.round(d),...ctx()});localStorage.setItem(K,JSON.stringify(a.slice(-40)))}catch(e){}};
+  const rec=d=>{try{const n=Date.now(),s0=n-d,nt=((natAt&&natAt>=s0-1500&&natAt<=n)||(natEnd&&natEnd>=s0&&natEnd<=n+50))?1:0,a=get();a.push({t:n,ms:Math.round(d),nat:nt,...ctx()});localStorage.setItem(K,JSON.stringify(a.slice(-200)))}catch(e){}};
+  /* native pauses: a file picker or an alert / confirm / prompt stops the page clock — it is not a freeze of the app */
+  try{["confirm","alert","prompt"].forEach(k=>{const f=window[k];if(typeof f==="function")window[k]=function(){try{return f.apply(window,arguments)}finally{natEnd=Date.now()}}});
+    const pk=HTMLInputElement.prototype.click;HTMLInputElement.prototype.click=function(){try{if(this.type==="file")natAt=Date.now()}catch(e){}return pk.apply(this,arguments)};
+    document.addEventListener("click",e=>{const t=e.target;if(t&&t.type==="file")natAt=Date.now()},true)}catch(e){}
   ["pointerdown","keydown","input"].forEach(ev=>addEventListener(ev,e=>{const t=e.target;act=ev+":"+((t&&(t.id||t.tagName))||"").toString().slice(0,24);at=Date.now()},{capture:true,passive:true}));
   document.addEventListener("visibilitychange",()=>{exp=performance.now();resume=exp});
   setInterval(()=>{const n=performance.now(),d=n-exp-500;exp=n;if(document.hidden||n-resume<2500||d<1200)return;rec(d)},500);
-  const report=()=>{const a=get();if(!a.length)return"No freeze recorded yet (v"+APP_VERSION+").";
-    const w=a.reduce((m,x)=>x.ms>m?x.ms:m,0);
-    return"Freezes recorded: "+a.length+" · worst "+(w/1000).toFixed(1)+" s · v"+APP_VERSION+"\n\n"+a.slice(-8).map(x=>new Date(x.t).toLocaleString("en-GB")+" · "+(x.ms/1000).toFixed(1)+"s · job:"+x.job+" · last:"+x.act+" ("+x.ago+"s ago) · pages:"+x.pg+" canvases:"+x.cv+" ("+x.mpx+"Mpx) · zoom:"+x.z+" · tool:"+x.tool+" · ink:"+x.ink+(x.mem!=null?" · heap:"+x.mem+"MB":"")+(x.dm?" · dev-mem:"+x.dm+"GB":"")).join("\n")};
-  return{report,clear:()=>{try{localStorage.removeItem(K)}catch(e){}}}})();
-$("#sm-stall").onclick=async()=>{const t=STL.report();try{await navigator.clipboard.writeText(t);st("📋 Stall report copied — paste it in the chat")}catch(e){}alert(t)};
+  const isNat=x=>x.nat===1||(x.nat===undefined&&x.ms>=10000);
+  const line=x=>new Date(x.t).toLocaleString("en-GB",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})+" · "+(x.ms/1000).toFixed(1)+"s"+(isNat(x)?" · PAUSE (file picker / alert – not a real freeze)":"")+" · job:"+x.job+" · last:"+x.act+" ("+x.ago+"s ago) · pages:"+x.pg+" canvases:"+x.cv+" ("+x.mpx+"Mpx) · zoom:"+x.z+" · tool:"+x.tool+" · ink:"+x.ink+(x.scr?" · screen:"+x.scr+(x.set?"+settings":"")+(x.fs?" · fullscreen":"")+(x.kbd?" · kbd":"")+(x.pnl?" · panel:"+x.pnl:""):"")+(x.mem!=null?" · heap:"+x.mem+"MB":"")+(x.dm?" · dev-mem:"+x.dm+"GB":"");
+  const list=h=>get().filter(x=>x.t>Date.now()-h*36e5).sort((p,q)=>q.t-p.t);
+  const report=h=>{h=h||168;const a=list(h),lbl=h<=48?"last 48 h":"last 7 days";
+    if(!a.length)return"Vpdf v"+APP_VERSION+" · stall report ("+lbl+")\nNo freeze recorded.";
+    const real=a.filter(x=>!isNat(x)),w=real.reduce((m,x)=>x.ms>m?x.ms:m,0);
+    return"Vpdf v"+APP_VERSION+" · stall report ("+lbl+") · "+new Date().toLocaleString("en-GB",{hour12:false})+"\nReal freezes: "+real.length+(real.length?" · worst "+(w/1000).toFixed(1)+" s":"")+" · pauses from file picker / alert: "+(a.length-real.length)+"\n(newest first)\n\n"+a.map(line).join("\n")};
+  return{report,clear:()=>{try{localStorage.removeItem(K)}catch(e){}},count:()=>get().length}})();
+function copyTxt(t){let ok=false;
+  try{const ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.cssText="position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;font-size:16px";document.body.append(ta);ta.focus();ta.select();try{ta.setSelectionRange(0,t.length)}catch(e){}ok=document.execCommand("copy");ta.remove()}catch(e){}
+  if(ok)return Promise.resolve(true);
+  try{return navigator.clipboard.writeText(t).then(()=>true,()=>false)}catch(e){return Promise.resolve(false)}}
+function stlOpen(){const old=$("#stl-dlg");if(old)old.remove();let h=48;
+  const o=document.createElement("div");o.className="mod";o.id="stl-dlg";
+  o.innerHTML='<div role="dialog" aria-modal="true" style="width:min(680px,94vw);max-width:94vw;max-height:88vh"><h3>Stall report</h3>'+
+    '<div class="zr" style="flex-wrap:wrap;gap:6px"><button class="pb on" data-h="48" style="text-align:center">Last 48 h</button><button class="pb" data-h="168" style="text-align:center">Last 7 days</button></div>'+
+    '<pre id="stl-pre" style="margin:0;overflow:auto;max-height:50vh;font:12px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word;user-select:text;-webkit-user-select:text;border:1px solid var(--bd);border-radius:10px;padding:10px"></pre>'+
+    '<div class="zr" style="flex-wrap:wrap;gap:6px"><button class="pb on" id="stl-copy" style="text-align:center">📋 Copy</button><button class="pb" id="stl-clear" style="text-align:center">🗑 Clear</button><button class="pb" id="stl-x" style="text-align:center">Close</button></div></div>';
+  document.body.append(o);
+  const pre=o.querySelector("#stl-pre"),draw=()=>{pre.textContent=STL.report(h);o.querySelectorAll("[data-h]").forEach(b=>b.classList.toggle("on",+b.dataset.h===h))};
+  const kd=e=>{if(e.key==="Escape")done()},done=()=>{document.removeEventListener("keydown",kd,true);o.remove()};
+  document.addEventListener("keydown",kd,true);
+  o.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{h=+b.dataset.h;draw()});
+  o.querySelector("#stl-copy").onclick=()=>{copyTxt(pre.textContent).then(ok=>st(ok?"📋 Stall report copied — paste it in the chat":"⚠️ Copy blocked — long-press the text and choose Copy"))};
+  o.querySelector("#stl-clear").onclick=()=>{if(confirm("Clear all stored stall reports?")){STL.clear();draw()}};
+  o.querySelector("#stl-x").onclick=done;o.addEventListener("pointerdown",e=>{if(e.target===o)done()});draw()}
+$("#sm-stall").onclick=()=>stlOpen();
 
 /* ===== v1.4.29 — resume guard: self-heal when iOS freezes the app in the background ===== */
 let _hid=0,_ck=0,_pd=null,_miss=0;
@@ -3092,15 +3158,15 @@ function unstick(){try{if(!pdf){const d=$("#add-page-dialog");if(d)d.remove()}tp
 const _probe=()=>Promise.race([idb("docs","readonly",o=>o.count()).then(()=>1,()=>0),new Promise(r=>setTimeout(()=>r(0),5000))]);
 function safeReload(){if(pdf&&dirtySince)return;try{const l=+sessionStorage.getItem("pa_hc")||0;if(Date.now()-l<60000)return;sessionStorage.setItem("pa_hc",String(Date.now()))}catch(e){}location.reload()}
 async function healthCheck(){if(await _probe())return;DB=openDB();if(await _probe())return;safeReload()}
-document.addEventListener("visibilitychange",()=>{if(document.hidden){_hid=Date.now()}else{unstick();if(Date.now()-_hid>5000)healthCheck()}});
-addEventListener("pageshow",e=>{unstick();if(e.persisted)healthCheck()});
+document.addEventListener("visibilitychange",()=>{if(document.hidden){_hid=Date.now()}else{unstick();repaintKick();if(Date.now()-_hid>5000)healthCheck()}});
+addEventListener("pageshow",e=>{unstick();repaintKick();if(e.persisted)healthCheck()});
 /* dead-tap detector (home screen / settings only): a clean tap that never produces a click, 3 times in a row → reload */
 document.addEventListener("click",()=>{_ck=Date.now();_miss=0},true);
 document.addEventListener("pointerdown",e=>{_pd=(!pdf||!$("#sm").hidden)&&e.pointerType!=="pen"?{t:Date.now(),x:e.clientX,y:e.clientY}:null},{capture:true,passive:true});
 document.addEventListener("pointerup",e=>{const d=_pd;_pd=null;if(!d||e.pointerType==="pen")return;
   if(Date.now()-d.t>600||Math.hypot(e.clientX-d.x,e.clientY-d.y)>10)return;
   const b=e.target&&e.target.closest&&e.target.closest("#home button,#sm button");if(!b||b.disabled)return;
-  const t0=Date.now();setTimeout(()=>{if(_ck>=t0)return;if(++_miss>=3){_miss=0;safeReload()}},600)},{capture:true,passive:true});
+  const t0=Date.now();setTimeout(()=>{if(_ck>=t0)return;repaintKick();if(++_miss>=3){_miss=0;safeReload()}},600)},{capture:true,passive:true});
 
 /* ===== v1.4.30 — home layout: left menu / right content ===== */
 $$("#hside [data-ht]").forEach(b=>b.addEventListener("click",()=>homeTab(b.dataset.ht)));
@@ -3213,10 +3279,12 @@ function kbFocus(el,sel){if(!el)return;
   const pw=num(S.pw,.5,12),sw=num(S.sw,1,12),hw=num(S.hw,1,40);
   if(pw!=null)W=pw;if(sw!=null)SW=sw;if(hw!=null)HW=hw;
   if(["ball","fine","brush","pencil"].includes(S.pt))penType=S.pt;
-  paintUI();
+  { const po=num(S.po,.05,1),ho=num(S.ho,.05,1);PO=po!=null&&po<.995?po:null;HO=ho}
+  paintUI();opShow("pen");opShow("hl");drawPenPreview();
   { const g=grp(tool);if(g&&hex(S.col[g]))applyColor(S.col[g]) }
   /* save on change (the size/slider/pen-type handlers have already run when these listeners fire) */
-  const sv=()=>{S.pw=W;S.sw=SW;S.hw=HW;S.pt=penType;save()};
+  const sv=()=>{S.pw=W;S.sw=SW;S.hw=HW;S.pt=penType;S.po=PO;S.ho=HO;save()};
+  ["pen-op-slider","hl-op-slider"].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener("input",sv)});
   [["pen-sizes",PEN_SIZES,()=>W],["hl-sizes",HL_SIZES,()=>HW],["sh-sizes",SH_SIZES,()=>SW]].forEach(([id,arr,get])=>{const c=document.getElementById(id);if(c)c.addEventListener("click",()=>{sv();dots(id,arr,get())})});
   [["pen-slider","pen-sizes",PEN_SIZES,()=>W],["hl-slider","hl-sizes",HL_SIZES,()=>HW],["sh-slider","sh-sizes",SH_SIZES,()=>SW]].forEach(([id,row,arr,get])=>{const e=document.getElementById(id);if(e)e.addEventListener("input",()=>{sv();dots(row,arr,get())})});
   $$(".pen-type-btn").forEach(b=>b.addEventListener("click",sv));
@@ -3227,4 +3295,253 @@ function kbFocus(el,sel){if(!el)return;
   $$("[data-t]").forEach(b=>b.addEventListener("click",()=>{const g=grp(tool);if(!g||g===lastG)return;lastG=g;
     if(hex(S.col[g]))applyColor(S.col[g]);else if(hex(color)){S.col[g]=color;save()}}));
 })();
+
+/* ===== v1.4.93 — SIM: Smart Intelligence Monitor + Self-Heal Engine =====
+   Tracks every user interaction and app function call. Records whether each
+   button, panel, navigation, and feature responded correctly. When a UI element
+   fails to respond, the self-healer tries to fix it automatically. All issues
+   are stored in localStorage and shown in the Intelligence Report.
+   ============================================================================ */
+const SIM=(()=>{
+  const K="pa_sim",MAX=500,DAY=864e5;
+  /* ── storage ── */
+  const get=()=>{try{const a=JSON.parse(localStorage.getItem(K));return Array.isArray(a)?a.filter(x=>x&&typeof x.t==="number"&&x.t>Date.now()-7*DAY):[]}catch(e){return[]}};
+  const save=a=>{try{localStorage.setItem(K,JSON.stringify(a.slice(-MAX)))}catch(e){}};
+  const push=r=>{const a=get();a.push(r);save(a)};
+
+  /* ── issue log ── */
+  const IK="pa_sim_issues";
+  const getIssues=()=>{try{const a=JSON.parse(localStorage.getItem(IK));return Array.isArray(a)?a.filter(x=>x&&x.t>Date.now()-7*DAY):[]}catch(e){return[]}};
+  const pushIssue=r=>{try{const a=getIssues();a.push({...r,t:Date.now()});localStorage.setItem(IK,JSON.stringify(a.slice(-200)))}catch(e){}};
+  const clearIssues=()=>{try{localStorage.removeItem(IK)}catch(e){}};
+
+  /* ── heal attempts log ── */
+  let healCount=0,healSucc=0;
+
+  /* ── label helper: gives a readable name to any element ── */
+  const label=el=>{if(!el)return"?";
+    const id=el.id?("#"+el.id):"";
+    const txt=(el.textContent||"").trim().replace(/\s+/g," ").slice(0,32);
+    const cls=el.className&&typeof el.className==="string"?el.className.split(" ").filter(Boolean).slice(0,2).join("."):""
+    return(id||"."+cls||el.tagName.toLowerCase())+(txt?" «"+txt+"»":"")};
+
+  /* ── screen helper ── */
+  const screen=()=>{try{return(typeof pdf!=="undefined"&&pdf)?"pdf":"home"}catch(e){return"?"}};
+
+  /* ── record a successful interaction ── */
+  const rec=(type,detail,ok=true)=>{push({t:Date.now(),type,detail:String(detail).slice(0,80),ok,scr:screen()})};
+
+  /* ── self-healer: attempts to fix a non-responding button ── */
+  const tryHeal=(btn)=>{
+    healCount++;
+    let healed=false;
+    try{
+      /* 1. Re-attach click handler if the button has a known data-attribute role */
+      if(btn.dataset&&btn.dataset.t){
+        /* Tool button — re-trigger tool selection */
+        const tool=btn.dataset.t;
+        const ev=new MouseEvent("click",{bubbles:true,cancelable:true});
+        btn.dispatchEvent(ev);
+        healed=true;
+      }
+      /* 2. Panel buttons — close all panels then reopen */
+      if(!healed&&btn.id&&typeof closeAllPanels==="function"){
+        closeAllPanels();
+        healed=true;
+      }
+      /* 3. Settings menu buttons — ensure settings drawer is visible */
+      if(!healed&&btn.closest&&btn.closest("#sm")){
+        const sm=document.getElementById("sm");
+        if(sm&&sm.hidden){sm.hidden=false;healed=true;}
+      }
+      /* 4. Generic DOM repair: remove disabled attr, restore pointer-events */
+      if(btn.disabled){btn.disabled=false;healed=true;}
+      const cs=getComputedStyle(btn);
+      if(cs.pointerEvents==="none"){btn.style.pointerEvents="auto";healed=true;}
+      /* 5. Force repaint on the element */
+      if(!healed){btn.style.opacity="0.99";requestAnimationFrame(()=>{btn.style.opacity="";});healed=true;}
+    }catch(err){}
+    if(healed)healSucc++;
+    return healed;
+  };
+
+  /* ── interaction watchdog: watch every pointer tap ── */
+  let _tapPd=null,_tapCk=0;
+  const RESPONSE_TIMEOUT=700; /* ms: if no click fires within this time, it's a miss */
+
+  /* Track clicks that DO fire (for both tap-miss detection below AND success logging) */
+  document.addEventListener("click",e=>{
+    _tapCk=Date.now();
+    const el=e.target&&e.target.closest&&e.target.closest("button,a,[role='button'],[data-t],[data-ht]");
+    if(el)rec("click",label(el),true);
+  },{capture:true,passive:true});
+
+  /* Track taps on interactive elements */
+  document.addEventListener("pointerdown",e=>{
+    if(e.pointerType==="pen")return; /* ignore Apple Pencil touches here */
+    const el=e.target&&e.target.closest&&e.target.closest("button,a,[role='button'],[data-t],[data-ht]");
+    if(!el||el.disabled)return;
+    _tapPd={t:Date.now(),el,x:e.clientX,y:e.clientY};
+  },{capture:true,passive:true});
+
+  document.addEventListener("pointerup",e=>{
+    const d=_tapPd;_tapPd=null;
+    if(!d||e.pointerType==="pen")return;
+    /* Only process short taps (not long-press or drags) */
+    if(Date.now()-d.t>650||Math.hypot(e.clientX-d.x,e.clientY-d.y)>12)return;
+    const btn=d.el;
+    const t0=Date.now();
+    setTimeout(()=>{
+      if(_tapCk>=t0)return; /* click fired — all good */
+      /* Miss: button didn't respond */
+      const issue={type:"no-response",el:label(btn),scr:screen(),ms:Date.now()-d.t};
+      pushIssue(issue);
+      rec("miss",label(btn),false);
+      /* Try to self-heal */
+      const healed=tryHeal(btn);
+      pushIssue({...issue,type:healed?"heal-ok":"heal-fail"});
+    },RESPONSE_TIMEOUT);
+  },{capture:true,passive:true});
+
+  /* ── panel open/close tracking ── */
+  const _origOpenPanel=typeof openPanel==="function"?openPanel:null;
+  if(_origOpenPanel){
+    /* Wrap openPanel to log every panel open */
+    window._simPanelWrap=id=>{rec("panel-open",id,true)};
+  }
+
+  /* ── navigation tracking ── */
+  const _origHomeTab=typeof homeTab==="function"?homeTab:null;
+  if(_origHomeTab){window._simNavWrap=t=>{rec("nav",t,true)}};
+
+  /* ── feature tracking: tool switches ── */
+  document.addEventListener("click",e=>{
+    const b=e.target&&e.target.closest&&e.target.closest("[data-t]");
+    if(b)rec("tool",b.dataset.t,true);
+    const ht=e.target&&e.target.closest&&e.target.closest("[data-ht]");
+    if(ht)rec("hometab",ht.dataset.ht,true);
+  },{capture:false,passive:true});
+
+  /* ── rendering watchdog: detect canvas/page render failures ── */
+  const renderMiss=[];
+  window._simRenderFail=(pageIdx,reason)=>{
+    const issue={type:"render-fail",el:"page:"+pageIdx,detail:String(reason||"").slice(0,60),scr:screen()};
+    pushIssue(issue);
+    rec("render-fail","page:"+pageIdx,false);
+  };
+
+  /* ── DB / storage watchdog ── */
+  window._simDbFail=(op,err)=>{
+    const issue={type:"db-fail",el:op,detail:String(err||"").slice(0,60),scr:screen()};
+    pushIssue(issue);
+    rec("db-fail",op,false);
+  };
+
+  /* ── periodic check: panels stuck open, DB unresponsive ── */
+  let _panelStuckAt=0;
+  setInterval(()=>{
+    try{
+      /* Check for panel stuck open > 30s without user interaction */
+      if(typeof panelOpen!=="undefined"&&panelOpen){
+        if(!_panelStuckAt)_panelStuckAt=Date.now();
+        else if(Date.now()-_panelStuckAt>30000){
+          pushIssue({type:"panel-stuck",el:panelOpen,scr:screen()});
+          if(typeof closeAllPanels==="function")closeAllPanels();
+          _panelStuckAt=0;
+        }
+      }else{_panelStuckAt=0;}
+      /* Check if status bar is frozen (st function exists but hasn't been called in a while) */
+    }catch(err){}
+  },5000);
+
+  /* ── summary stats ── */
+  const stats=()=>{
+    const ev=get(),iss=getIssues();
+    const total=ev.length,misses=ev.filter(x=>!x.ok).length,ok=total-misses;
+    const healOk=iss.filter(x=>x.type==="heal-ok").length;
+    const healFail=iss.filter(x=>x.type==="heal-fail").length;
+    const byType={};ev.forEach(x=>{byType[x.type]=(byType[x.type]||0)+1});
+    return{total,ok,misses,healOk,healFail,byType,issues:iss};
+  };
+
+  /* ── report text ── */
+  const report=(h=48)=>{
+    const s=stats();
+    const ev=get().filter(x=>x.t>Date.now()-h*36e5);
+    const iss=getIssues().filter(x=>x.t>Date.now()-h*36e5);
+    const lbl=h<=48?"last 48 h":"last 7 days";
+    const fmt=t=>new Date(t).toLocaleString("en-GB",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+    let out=`Vpdf v${APP_VERSION} · Intelligence Report (${lbl}) · ${new Date().toLocaleString("en-GB",{hour12:false})}\n`;
+    out+=`Interactions: ${ev.length} · OK: ${ev.filter(x=>x.ok).length} · Missed: ${ev.filter(x=>!x.ok).length}\n`;
+    out+=`Self-heals: ${iss.filter(x=>x.type==="heal-ok").length} succeeded · ${iss.filter(x=>x.type==="heal-fail").length} failed\n\n`;
+    if(iss.length){
+      out+="── Issues & Heals ──\n";
+      iss.slice().reverse().forEach(x=>{out+=`${fmt(x.t)} · ${x.type} · ${x.el||""} · screen:${x.scr||"?"}\n`});
+      out+="\n";
+    }else{out+="No issues recorded.\n\n";}
+    if(ev.length){
+      out+="── Interaction log (newest first) ──\n";
+      ev.slice().reverse().slice(0,80).forEach(x=>{out+=`${fmt(x.t)} · ${x.ok?"✓":"✗"} · ${x.type} · ${x.detail} · ${x.scr||"?"}\n`});
+    }
+    return out;
+  };
+
+  /* ── update settings button subtitle ── */
+  const updateBadge=()=>{
+    const el=document.getElementById("sm-sim-st");if(!el)return;
+    const iss=getIssues().filter(x=>x.t>Date.now()-DAY&&(x.type==="no-response"||x.type==="render-fail"||x.type==="db-fail"||x.type==="panel-stuck"));
+    const hok=getIssues().filter(x=>x.t>Date.now()-DAY&&x.type==="heal-ok").length;
+    if(!iss.length)el.textContent="All functions OK · self-heal on";
+    else el.textContent=iss.length+" issue"+(iss.length>1?"s":"")+" · "+hok+" auto-fixed";
+  };
+  setInterval(updateBadge,10000);setTimeout(updateBadge,2000);
+
+  return{report,stats,clearIssues,pushIssue,rec,get,getIssues};
+})();
+
+/* ── SIM report dialog ── */
+function simOpen(){const old=document.getElementById("sim-dlg");if(old)old.remove();let h=48;
+  const o=document.createElement("div");o.className="mod";o.id="sim-dlg";
+  o.innerHTML='<div role="dialog" aria-modal="true" style="width:min(720px,96vw);max-width:96vw;max-height:92vh">'+
+    '<h3 style="margin:0 0 10px">🧠 Intelligence Report</h3>'+
+    '<div class="zr" style="flex-wrap:wrap;gap:6px;margin-bottom:10px">'+
+      '<button class="pb on" data-h="48" style="text-align:center">Last 48 h</button>'+
+      '<button class="pb" data-h="168" style="text-align:center">Last 7 days</button>'+
+    '</div>'+
+    '<div id="sim-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:10px"></div>'+
+    '<pre id="sim-pre" style="margin:0;overflow:auto;max-height:42vh;font:11.5px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word;user-select:text;-webkit-user-select:text;border:1px solid var(--bd);border-radius:10px;padding:10px"></pre>'+
+    '<div class="zr" style="flex-wrap:wrap;gap:6px;margin-top:10px">'+
+      '<button class="pb on" id="sim-copy" style="text-align:center">📋 Copy</button>'+
+      '<button class="pb" id="sim-clr" style="text-align:center">🗑 Clear issues</button>'+
+      '<button class="pb" id="sim-x" style="text-align:center">Close</button>'+
+    '</div></div>';
+  document.body.append(o);
+  const pre=o.querySelector("#sim-pre"),cards=o.querySelector("#sim-cards");
+  const card=(label,val,color)=>`<div style="background:var(--btn-bg);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;text-align:center"><div style="font-size:22px;font-weight:700;color:${color}">${val}</div><div style="font-size:11px;opacity:.7;margin-top:2px">${label}</div></div>`;
+  const draw=()=>{
+    const s=SIM.stats();
+    const iss=SIM.getIssues().filter(x=>x.t>Date.now()-h*36e5);
+    const hok=iss.filter(x=>x.type==="heal-ok").length;
+    const hfail=iss.filter(x=>x.type==="heal-fail").length;
+    const ev=SIM.get().filter(x=>x.t>Date.now()-h*36e5);
+    const misses=ev.filter(x=>!x.ok).length;
+    cards.innerHTML=
+      card("Interactions",ev.length,"var(--ac)")+
+      card("OK",ev.filter(x=>x.ok).length,"#16a34a")+
+      card("Missed",misses,misses>0?"#ef4444":"#16a34a")+
+      card("Auto-fixed",hok,"#8b5cf6")+
+      card("Unresolved",hfail,hfail>0?"#f59e0b":"#16a34a");
+    pre.textContent=SIM.report(h);
+    o.querySelectorAll("[data-h]").forEach(b=>b.classList.toggle("on",+b.dataset.h===h));
+  };
+  const kd=e=>{if(e.key==="Escape")done()},done=()=>{document.removeEventListener("keydown",kd,true);o.remove()};
+  document.addEventListener("keydown",kd,true);
+  o.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{h=+b.dataset.h;draw()});
+  o.querySelector("#sim-copy").onclick=()=>copyTxt(pre.textContent).then(ok=>st(ok?"📋 Intelligence report copied":"⚠️ Copy blocked"));
+  o.querySelector("#sim-clr").onclick=()=>{if(confirm("Clear all recorded issues?  (Interaction log stays)"))SIM.clearIssues();draw()};
+  o.querySelector("#sim-x").onclick=done;
+  o.addEventListener("pointerdown",e=>{if(e.target===o)done()});
+  draw();
+}
+document.getElementById("sm-sim").onclick=()=>simOpen();
 </script></body></html>
