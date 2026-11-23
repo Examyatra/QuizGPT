@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.84">
+<meta name="app-version" content="1.4.85">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -1495,6 +1495,15 @@ function hit(o,x,y,r){
 function snap(i){hist.push([i,JSON.stringify(anns[i]||[])]);if(hist.length>40)hist.shift();redo=[]}
 function bind(ink,p,i){
   let cur=null,down=false,mv=null,mt=null,pid=-1,dT=0,R=null,rq=0,lastRaw=null,lastMul=null,drawnTo=0,pT=null,pX=0,pY=0,pSp=0,pred=[];
+  /* v1.4.85 — glitch guard. Safari / iPadOS sometimes delivers a stray sample inside getCoalescedEvents() (position 0,0, a different pointer, or a
+     point thousands of px away). Joined to the stroke it became a long straight line across the writing. A sample is now accepted only if it is a real
+     finite position of THIS pointer and not physically impossible (>150 px jump faster than 9 px/ms). */
+  let gX=null,gY=0,gT=0;
+  const sampleOk=x=>{const cx=x.clientX,cy=x.clientY;if(!isFinite(cx)||!isFinite(cy)||(cx===0&&cy===0))return false;
+    if(x.pointerId!==undefined&&x.pointerId!==pid)return false;
+    const t=x.timeStamp>0?x.timeStamp:performance.now();
+    if(gX!=null){const d=Math.hypot(cx-gX,cy-gY),dt=Math.max(1,t-gT);if(d>150&&d/dt>9)return false}
+    gX=cx;gY=cy;gT=t;return true};
   const pmul=(x,P)=>{const pr=x.pressure>0?x.pressure:.5,pp=Math.max(0,Math.min(1,.5+(pr-.5)*(.4+P.s*1.6))),o=Math.min(.92,.35+P.w*.7);let mu=P.m+(1.6-P.m)*pp;
     /* v1.4.84: natural ink flow — a fast flick thins the line a little (max 14 %), a slow stroke stays full: like a real pen (not for Brush / Pencil, which have their own look) */
     {const tt=x.timeStamp;if(pT!=null&&tt>pT){const v=Math.hypot(x.clientX-pX,x.clientY-pY)/(tt-pT);pSp=pSp*.85+Math.min(v,4)*.15}pT=tt;pX=x.clientX;pY=x.clientY;
@@ -1509,6 +1518,7 @@ function bind(ink,p,i){
     try{draw(i,cur)}finally{if(pp)cur.p.length=n0}})};
   ink.addEventListener("touchstart",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});   /* Pencil never scrolls, selects or opens menus */
   ink.addEventListener("touchmove",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});ink.oncontextmenu=e=>e.preventDefault();
+  ink.addEventListener("lostpointercapture",e=>{if(down&&cur&&e.pointerId===pid&&(cur.t==="pen"||cur.t==="hl"))ink.onpointerup(e)});   /* v1.4.85: capture lost (page re-rendered, system gesture) -> end the stroke, never leave it dangling */
   const pt=e=>{const r=R||ink.getBoundingClientRect();return[+((e.clientX-r.left)/zoom).toFixed(2),+((e.clientY-r.top)/zoom).toFixed(2)]};
   let lpT=0;const tAt=(qx,qy,rr)=>{const TL=anns[i]||[];for(let j=TL.length-1;j>=0;j--){const o=TL[j];if(o.t!="text")continue;const B=tBox(o);if(qx>o.x-rr&&qx<o.x+B.w+rr&&qy>o.y-rr&&qy<o.y+B.h+rr)return o}return null};
   let ftap=null;   /* v1.4.51: with "Pencil only", a finger TAP still selects / edits text (a drag still scrolls the page) */
@@ -1523,7 +1533,8 @@ function bind(ink,p,i){
     if(e.pointerType=="touch"&&down&&cur&&e.pointerId!==pid){if(cur.p.length<=8&&Date.now()-dT<300){down=false;cur=null;mv=null;draw(i)}return}   /* palm / extra finger landing while writing: keep the stroke */
     if(e.pointerType=="touch"&&othersFresh(e.pointerId)){down=false;cur=null;mv=null;draw(i);return}
     if(penOnly&&e.pointerType=="touch"&&(tool=="text"||tool=="note"||tool=="sel"||tool=="spk")&&!palmBlock(e)&&!CROP){ftap={id:e.pointerId,x:e.clientX,y:e.clientY,t:Date.now()};clearTimeout(lpT);lpT=setTimeout(()=>{const f=ftap;if(!f||f.id!==e.pointerId)return;const r=ink.getBoundingClientRect(),ft=tAt((f.x-r.left)/zoom,(f.y-r.top)/zoom,8/zoom);if(ft){f.lp=1;selTSet(ft,i);LPM.show(f.x,f.y)}},500);return}
-    if((penOnly&&e.pointerType=="touch")||palmBlock(e))return;if(e.pointerType=="mouse"&&e.button)return;e.preventDefault();R=ink.getBoundingClientRect();pid=e.pointerId;dT=lastInk=Date.now();lastRaw=null;const q=pt(e);ink.setPointerCapture(e.pointerId);
+    if((penOnly&&e.pointerType=="touch")||palmBlock(e))return;if(e.pointerType=="mouse"&&e.button)return;e.preventDefault();if(down&&cur&&e.pointerType!=="touch")ink.onpointerup({pointerId:pid});   /* v1.4.85: a lost pointerup must never swallow / glue strokes */
+    R=ink.getBoundingClientRect();pid=e.pointerId;dT=lastInk=Date.now();lastRaw=null;gX=e.clientX;gY=e.clientY;gT=e.timeStamp>0?e.timeStamp:performance.now();const q=pt(e);ink.setPointerCapture(e.pointerId);
     if(CROP){if(CROP.i==i&&cropDown(q))down=true;return}
     if(tool=="laser")return;
     if(tool=="text"||tool=="note"||tool=="sel"||tool=="spk"){
@@ -1555,7 +1566,9 @@ function bind(ink,p,i){
   };
   ink.onpointermove=e=>{if(down&&e.pointerId!==pid)return;lastInk=Date.now();
     if(e.pointerType=="touch"&&down&&othersFresh(e.pointerId)&&(!cur||(cur.p.length<=8&&Date.now()-dT<300))){down=false;cur=null;mv=null;if(tool=="lasso")lassoUp(i);draw(i);return}
-    if(!down)return;const q=pt(e);
+    if(!down)return;
+    if(cur&&e.pointerType==="pen"&&e.buttons===0&&e.pressure===0&&(tool==="pen"||tool==="hl")){ink.onpointerup(e);return}   /* v1.4.85: Pencil already lifted (pointerup was lost) -> hovering must not keep drawing a line */
+    const q=pt(e);
     if(CROP){cropMove(q);return}
     if(mt){const o=mt.o;
       if(mt.k=="m"){if(!mt.moved&&Math.hypot(q[0]-mt.dx-o.x,q[1]-mt.dy-o.y)<4/zoom)return;if(!mt.sn){snap(i);mt.sn=1}mt.moved=true;clearTimeout(lpT);LPM.hide();o.x=q[0]-mt.dx;o.y=q[1]-mt.dy}
@@ -1572,12 +1585,12 @@ function bind(ink,p,i){
       if(!tail||Math.hypot((tail.clientX||0)-(e.clientX||0),(tail.clientY||0)-(e.clientY||0))>.01)LS.push(e);
       const PP=cur.p[0].length>2?penPar():null;
       const MS=Math.max(.08,.3/zoom);   /* v1.4.84: ignore sub-pixel jitter (about 0.3 screen px) -> fewer points, calmer line, faster live drawing */
-      for(const x of LS){const q2=pt(x),l=cur.p[cur.p.length-1];if(Math.hypot(l[0]-q2[0],l[1]-q2[1])<MS)continue;
+      for(const x of LS){if(!sampleOk(x))continue;const q2=pt(x),l=cur.p[cur.p.length-1];lastRaw=PP?[q2[0],q2[1],lastMul||1]:[q2[0],q2[1]];if(Math.hypot(l[0]-q2[0],l[1]-q2[1])<MS)continue;
         if(PP)q2.push(pmul(x,PP));
         if(tool=="pen"&&e.pointerType!="pen"){const a=1/(1+(+$("#ps-motionsmooth").value||2)*.3);q2[0]=l[0]+(q2[0]-l[0])*a;q2[1]=l[1]+(q2[1]-l[1])*a}
         cur.p.push(q2)}
-      lastRaw=cur.p[0].length>2?[q[0],q[1],lastMul||1]:q;lastMv=Date.now();
-      pred=[];if(tool=="pen"&&e.pointerType=="pen"){try{if(typeof e.getPredictedEvents==="function"){const hp=cur.p[0].length>2;for(const x of(e.getPredictedEvents()||[]).slice(0,3)){const q3=pt(x);if(hp)q3.push(lastMul||1);pred.push(q3)}}}catch(_){pred=[]}}}else cur.p[1]=q;
+      lastMv=Date.now();
+      pred=[];if(tool=="pen"&&e.pointerType=="pen"){try{if(typeof e.getPredictedEvents==="function"){const hp=cur.p[0].length>2;const tip=cur.p[cur.p.length-1],lim=26/zoom;for(const x of(e.getPredictedEvents()||[]).slice(0,2)){if(!isFinite(x.clientX)||!isFinite(x.clientY)||(x.clientX===0&&x.clientY===0))break;const q3=pt(x);if(Math.hypot(q3[0]-tip[0],q3[1]-tip[1])>lim)break;if(hp)q3.push(lastMul||1);pred.push(q3)}}}catch(_){pred=[]}}}else cur.p[1]=q;
     liveDraw()};
   ink.onpointerup=ink.onpointercancel=e=>{if(!down)return;if(e&&cur&&e.pointerId!==pid)return;down=false;pred=[];R=null;lcDrop();lastInk=Date.now();if(rq){cancelAnimationFrame(rq);rq=0}
     if(cur&&lastRaw&&(cur.t=="pen"||cur.t=="hl")){const l=cur.p[cur.p.length-1];if(Math.hypot(l[0]-lastRaw[0],l[1]-lastRaw[1])>.35)cur.p.push(lastRaw)}   /* the last point of every stroke is always kept */
@@ -2812,7 +2825,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.84",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.85",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -3121,4 +3134,42 @@ function kbFocus(el,sel){if(!el)return;
   const fix=e=>{if(!e.hasAttribute("autocomplete"))e.setAttribute("autocomplete","off");if(!e.hasAttribute("data-1p-ignore"))e.setAttribute("data-1p-ignore","");if(!e.hasAttribute("data-lpignore"))e.setAttribute("data-lpignore","true")};
   const scan=r=>{if(ok(r))fix(r);if(r&&r.querySelectorAll)r.querySelectorAll('input,textarea').forEach(e=>{if(ok(e))fix(e)})};
   scan(document);new MutationObserver(m=>m.forEach(x=>x.addedNodes.forEach(n=>n.nodeType==1&&scan(n)))).observe(document.body,{childList:true,subtree:true})})();
+
+/* ===== v1.4.85 — every tool keeps its OWN settings, saved the moment you change them and restored every time the app opens =====
+   pen size · pen type · highlighter size · shape size (line / arrow / rectangle / oval) · eraser size (already saved) · colour per tool.
+   Nothing here changes any other value: moving the pen size never touches the shape size, and so on. Stored in localStorage "pa_pen_tools"
+   (travels in the backup zip because of the pa_pen_ prefix). */
+(()=>{const KEY="pa_pen_tools";let S={};
+  try{S=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){S={}}
+  if(typeof S!=="object"||Array.isArray(S))S={};if(!S.col||typeof S.col!=="object")S.col={};
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},
+    num=(v,a,b)=>{v=+v;return isFinite(v)&&v>=a&&v<=b?v:null},
+    grp=t=>t==="pen"?"pen":t==="hl"?"hl":(t==="line"||t==="arrow"||t==="rect"||t==="oval")?"shape":(t==="text"||t==="note")?"text":null,
+    hex=c=>typeof c==="string"&&/^#[0-9a-f]{6}$/i.test(c),
+    dots=(id,arr,v)=>{const c=document.getElementById(id);if(!c)return;const k=arr.findIndex(z=>Math.abs(z.px-v)<1e-6);c.querySelectorAll(".size-dot").forEach((d,j)=>d.classList.toggle("on",j===k))},
+    paintUI=()=>{const a=$("#pen-slider"),b=$("#hl-slider");
+      if(a){a.value=W;$("#pen-slider-val").textContent=W+"mm"}
+      if(b){b.value=HW;$("#hl-slider-val").textContent=HW+"mm"}
+      dots("pen-sizes",PEN_SIZES,W);dots("hl-sizes",HL_SIZES,HW);dots("sh-sizes",SH_SIZES,SW);
+      $$(".pen-type-btn").forEach(x=>x.classList.toggle("on",x.dataset.pt===penType));
+      syncW();drawHlPreview()},
+    applyColor=c=>{if(!hex(c))return;const sw=$$(".sw").find(x=>(x.dataset.c||"").toLowerCase()===c.toLowerCase());try{pickC(c,sw||null)}catch(e){color=c}syncW();drawHlPreview()};
+  /* restore */
+  const pw=num(S.pw,.5,12),sw=num(S.sw,1,12),hw=num(S.hw,1,40);
+  if(pw!=null)W=pw;if(sw!=null)SW=sw;if(hw!=null)HW=hw;
+  if(["ball","fine","brush","pencil"].includes(S.pt))penType=S.pt;
+  paintUI();
+  { const g=grp(tool);if(g&&hex(S.col[g]))applyColor(S.col[g]) }
+  /* save on change (the size/slider/pen-type handlers have already run when these listeners fire) */
+  const sv=()=>{S.pw=W;S.sw=SW;S.hw=HW;S.pt=penType;save()};
+  [["pen-sizes",PEN_SIZES,()=>W],["hl-sizes",HL_SIZES,()=>HW],["sh-sizes",SH_SIZES,()=>SW]].forEach(([id,arr,get])=>{const c=document.getElementById(id);if(c)c.addEventListener("click",()=>{sv();dots(id,arr,get())})});
+  [["pen-slider","pen-sizes",PEN_SIZES,()=>W],["hl-slider","hl-sizes",HL_SIZES,()=>HW],["sh-slider","sh-sizes",SH_SIZES,()=>SW]].forEach(([id,row,arr,get])=>{const e=document.getElementById(id);if(e)e.addEventListener("input",()=>{sv();dots(row,arr,get())})});
+  $$(".pen-type-btn").forEach(b=>b.addEventListener("click",sv));
+  /* colour: remembered per tool group (pen / highlighter / shapes / text) — changing the pen colour no longer recolours the highlighter */
+  const colUI=".sw,.cdot,#cc,.crow",colSave=e=>{const t=e.target;if(!t||!t.closest||!t.closest(colUI))return;setTimeout(()=>{const g=grp(tool);if(g&&hex(color)){S.col[g]=color;save()}},0)};
+  ["click","input","change"].forEach(ev=>document.addEventListener(ev,colSave,true));
+  let lastG=grp(tool);
+  $$("[data-t]").forEach(b=>b.addEventListener("click",()=>{const g=grp(tool);if(!g||g===lastG)return;lastG=g;
+    if(hex(S.col[g]))applyColor(S.col[g]);else if(hex(color)){S.col[g]=color;save()}}));
+})();
 </script></body></html>
