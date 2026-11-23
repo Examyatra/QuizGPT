@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<!-- Gateway Checking v5.7 (2026-11-20) -->
+<html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gateway Checking v5.6</title>
+<style>
+:root{--bg:#f4f5f8;--sf:#fff;--s2:#eceef3;--ln:#dfe2e9;--tx:#161a22;--mu:#667085;--ac:#3d4fe0;--ok:#12805c;--wn:#b26a00;--bad:#c42b3a;--nv:#6a7282}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1117;--sf:#171b24;--s2:#212735;--ln:#2a3242;--tx:#e8ebf2;--mu:#8d96a8;--ac:#7b8cff;--ok:#4fd1a1;--wn:#f0b250;--bad:#ff7b87;--nv:#9aa3b5}}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top,0) 0 calc(84px + env(safe-area-inset-bottom,0))}
+.w{max-width:720px;margin:0 auto;padding:0 14px}
+header{display:flex;align-items:baseline;justify-content:space-between;padding:16px 0 8px}
+h1{font-size:20px;margin:0}h1 small{font-size:12px;color:var(--mu);font-weight:500}
+h2{font-size:18px;margin:6px 0 10px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:12px;margin:10px 0}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:12px;padding:11px 12px;margin:3px 0 8px}
+label{font-size:12.5px;font-weight:600;color:var(--mu)}
+.btn{display:block;width:100%;min-height:46px;background:var(--s2);border:1px solid var(--ln);border-radius:12px;padding:10px 14px;font-weight:600;margin:6px 0;cursor:pointer}
+.btn.p{background:var(--ac);border-color:var(--ac);color:#fff}.btn:disabled{opacity:.5}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}
+.stat{background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:14px;text-align:left;cursor:pointer}
+.stat span{font-size:20px}.stat b{display:block;font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}.stat small{color:var(--mu);font-size:13px}
+.s-working b{color:var(--ok)}.s-recheck b{color:var(--wn)}.s-neverWorked b{color:var(--bad)}.s-toTest b{color:var(--nv)}
+.t{font-size:12.5px;color:var(--mu);overflow-wrap:anywhere}
+.back{background:none;border:0;color:var(--ac);font-weight:600;padding:8px 0;cursor:pointer}
+.co{display:block;width:100%;text-align:left;background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:13px;margin:8px 0;cursor:pointer}
+.co b{font-size:16px}.bar{height:6px;background:var(--s2);border-radius:6px;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
+.m{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 0;border-top:1px solid var(--ln)}
+.m:first-child{border-top:0}.d{width:10px;height:10px;border-radius:50%;background:var(--nv);flex:none}
+.working .d{background:var(--ok)}.recheck .d{background:var(--wn)}.neverWorked .d{background:var(--bad)}
+.busy .d{animation:pl 1s infinite}@keyframes pl{50%{opacity:.2}}
+.i{flex:1 1 170px;min-width:0}.bt{display:flex;gap:6px}.n{font-weight:600;overflow-wrap:anywhere;font-size:14px}
+.m button{min-height:34px;padding:4px 10px;font-size:12.5px;background:var(--s2);border:1px solid var(--ln);border-radius:9px;cursor:pointer;font-weight:600}
+details{border-top:1px solid var(--ln);padding:8px 0}details:first-of-type{border-top:0}
+summary{cursor:pointer;font-weight:600;list-style:none}summary::-webkit-details-marker{display:none}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:20px;padding:1px 8px;margin-left:6px;background:var(--s2)}
+.pill.ok{color:var(--ok)}.pill.bad{color:var(--bad)}.pill.wn{color:var(--wn)}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border:1px solid var(--ln);border-radius:12px;padding:10px;font-size:13px;max-height:320px;overflow:auto}
+.empty{text-align:center;color:var(--mu);padding:22px 8px}
+#pg{position:sticky;top:env(safe-area-inset-top,0);z-index:5;background:var(--ac);color:#fff;border-radius:12px;padding:8px 12px;margin:6px 0;display:flex;justify-content:space-between;align-items:center;font-size:13px}
+#pg[hidden]{display:none}#pg button{background:#fff3;border:0;color:#fff;border-radius:8px;padding:4px 10px;font-weight:700}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--sf);border-top:1px solid var(--ln);display:flex;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0));gap:4px;z-index:9}
+nav button{flex:1;background:none;border:0;border-radius:12px;padding:6px 2px;color:var(--mu);font-size:11.5px;font-weight:600;cursor:pointer}
+nav button span{display:block;font-size:20px}nav button.on{color:var(--ac);background:var(--s2)}
+nav button.t2{background:var(--ac);color:#fff}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0) + 10px);transform:translateX(-50%);width:min(92vw,460px);background:var(--sf);border:1px solid var(--ln);border-left:4px solid var(--ok);border-radius:12px;padding:10px 12px;z-index:20;box-shadow:0 8px 28px #0005;font-size:13.5px}
+#toast.e{border-left-color:var(--bad)}#toast[hidden]{display:none}
+
+.btn{min-height:36px;padding:6px 12px;border-radius:10px;margin:4px 0;font-size:14px}.card{border-radius:12px;padding:10px}
+.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:8px 0}.sg .stat{padding:8px 6px;text-align:center;border-radius:10px}.sg .stat b{font-size:22px}.sg .stat small{font-size:11.5px}
+.tb{display:flex;gap:6px;margin:6px 0}.tb .btn{width:auto;flex:1;margin:0}.tb .btn:last-child{flex:0 0 44px}
+.card .co{padding:8px 10px;margin:4px 0;border-radius:10px}
+.seg{display:flex;border:1px solid var(--ln);border-radius:10px;overflow:hidden;margin:4px 0}.seg button{flex:1;border:0;background:var(--sf);padding:7px 4px;font-size:12.5px;font-weight:600;cursor:pointer}.seg button.on{background:var(--ac);color:#fff}
+
+.cg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.tile{aspect-ratio:1;display:flex;flex-direction:column;justify-content:space-between;text-align:left;background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:9px;cursor:pointer;min-width:0;overflow:hidden}
+.tile b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.tile .t{font-size:11px;line-height:1.35}.tile .bar{margin-top:6px}
+.kr{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.kc{flex:1 1 90px;max-width:160px;display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:7px 10px;font-weight:700;font-size:13.5px;cursor:pointer}
+.kc small{font-size:10.5px;color:var(--mu);font-weight:500}.kc.on{border-color:var(--ac);background:var(--s2);box-shadow:0 0 0 1px var(--ac) inset}
+.dd{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--nv);margin-right:6px}.dd.ok{background:var(--ok)}.dd.wn{background:var(--wn)}.dd.bad{background:var(--bad)}
+.th{font-size:20px;line-height:1;min-width:24px;text-align:center}
+
+.ml{max-height:260px;overflow:auto;border:1px solid var(--ln);border-radius:12px;margin:4px 0 8px}
+.mi{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--ln);padding:9px 10px;font-size:13.5px;cursor:pointer;overflow-wrap:anywhere}
+.mi:first-child{border-top:0}.mi.on{background:var(--s2);box-shadow:inset 3px 0 0 var(--ac);font-weight:700}
+.ks{border:1px solid var(--ln);border-radius:12px;padding:8px;margin:6px 0}
+.kb{display:flex;gap:6px;align-items:center}
+.kb input{flex:1 1 auto;min-width:0;margin:0}
+.kb .btn{width:auto;flex:none;margin:0;min-height:44px;white-space:nowrap}
+.kb .btn.dl{padding:6px 10px;color:var(--bad);font-size:16px}
+.ks .t{margin-top:6px}
+.kb .btn.fx{flex:1}
+.kp{padding:8px 10px}
+.kh{display:flex;align-items:center;gap:4px 8px;flex-wrap:wrap;margin-bottom:6px}.kh b{font-size:14px}.kh .t{font-size:11.5px}
+.ft{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.ft button{border:1px solid var(--ln);background:var(--sf);border-radius:12px;padding:2px 8px;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap;min-height:24px}
+.ft button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.kset{display:flex;gap:6px;align-items:center;margin:0 0 6px}.kset .seg{flex:1;margin:0;border-radius:8px}.kset .seg button{padding:4px 2px;font-size:11.5px}
+.kset .btn{width:auto;flex:none;margin:0;min-height:28px;padding:3px 10px;font-size:11.5px;white-space:nowrap;border-radius:8px}
+.kp .kb{margin:0 0 4px}.kp .kb input{padding:8px 10px;font-size:14px;border-radius:10px}
+.kp .kb .btn{min-height:38px;padding:4px 12px;font-size:13px}.kp .kb .btn.dl{padding:4px 9px;font-size:15px}
+.kp .m{flex-wrap:nowrap;align-items:center;padding:6px 0;gap:6px}.kp .m .d{margin-top:0}.kp .m .i{flex:1 1 auto;min-width:0}
+.kp .m .n{font-size:13.5px}.kp .m .t{font-size:11px}
+.kp .bt{flex:none;gap:4px}.kp .bt button{min-width:32px;min-height:32px;font-size:13px;padding:2px 6px}
+.kp .th{font-size:18px;min-width:22px;flex:none}
+.er{color:var(--bad);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.res{border:1px solid var(--ln);border-radius:12px;padding:8px 10px;margin:6px 0;font-size:13.5px;overflow-wrap:anywhere}.res.ok{border-color:var(--ok)}.res.no{border-color:var(--bad)}
+</style></head><body>
+<div class="w"><header><h1>AI Gateway <small>Checking v5.6</small></h1><span class="t" id="chip"></span></header>
+<div id="pg" hidden><span id="pgt"></span><button id="stop">Stop</button></div>
+<main id="main"></main></div>
+<div id="toast" hidden></div>
+<nav id="nav"></nav>
+<script>
+const VER='v5.7',DEF='https://examyatri-gateway.vyup2987.workers.dev',$=i=>document.getElementById(i);
+const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,v)}catch(e){return ''}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CATS=[['working','Working','✅'],['recheck','Retest','⚠️'],['neverWorked','Not working','❌'],['toTest','Never tested','⏳']];
+const S={url:ls('ey_url')||DEF,tk:ls('ey_tk'),rows:[],provs:[],view:'home',q:'',sel:'',busy:false,stop:false,wv:'',open:new Set(),cc:{},ld:new Set()};
+const comp=id=>id.replace(/-\d+$/,''),tail=id=>(S.provs.find(p=>p.id===id)||{}).key||'';
+const cnt=rs=>{const c={working:0,recheck:0,neverWorked:0,toTest:0};rs.forEach(r=>c[r.cat]++);return c};
+const CI={working:0,recheck:1,neverWorked:2,toTest:3};
+const ccObj=a=>({working:a[0],recheck:a[1],neverWorked:a[2],toTest:a[3]});
+const ccOf=ids=>{const c=[0,0,0,0];ids.forEach(id=>(S.cc[id]||c).forEach((v,i)=>c[i]+=v));return ccObj(c)};
+const total=()=>{let n=0;for(const k in S.cc)n+=S.cc[k].reduce((a,b)=>a+b,0);return n||S.rows.length};
+function recc(){if(!S.ld.size)return;const m={};S.ld.forEach(id=>m[id]=[0,0,0,0]);S.rows.forEach(r=>{const a=m[r.model.split('|')[0]];if(a)a[CI[r.cat]]++});Object.assign(S.cc,m)}
+const pills=c=>`✅ ${c.working} · ⚠️ ${c.recheck} · ❌ ${c.neverWorked} · ⏳ ${c.toTest}`;
+const ago=t=>{if(!t)return 'kabhi nahi';const m=Math.round((Date.now()-t)/6e4);return m<60?m+' min pehle':m<1440?Math.round(m/60)+' ghante pehle':Math.round(m/1440)+' din pehle'};
+let tt;const toast=(m,e)=>{const t=$('toast');t.textContent=m;t.className=e?'e':'';t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,4500)};
+async function api(m,p,b){
+  const r=await fetch(S.url.replace(/\/+$/,'')+p,{method:m,headers:{'content-type':'application/json','x-admin-token':S.tk},body:b?JSON.stringify(b):undefined});
+  let j={};try{j=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(j.error==='Unauthorized'?'Token galat hai (Settings mein check karo)':j.error||'HTTP '+r.status);return j;
+}
+const rowH=r=>{const [p,...m]=r.model.split('|');return `<div class="m ${r.cat}${r.busy?' busy':''}"><i class="d"></i><div class="i"><div class="n">${esc(m.join('|'))}</div><div class="t">${esc(p)}${r.lat?' · '+(r.lat/1e3).toFixed(1)+'s':''} · ${ago(r.tested)}${r.err?' · '+esc(r.err):''}</div></div><div class="bt"><button data-test="${esc(r.model)}">Test</button><button data-mark="${esc(r.model)}">${r.cat==='working'?'Mark ✖':'Mark ✔'}</button></div></div>`};
+const sortR=a=>[...a].sort((x,y)=>CATS.findIndex(c=>c[0]===x.cat)-CATS.findIndex(c=>c[0]===y.cat)||x.model.localeCompare(y.model));
+const rowsH=(rs,max=150)=>rs.length?rs.slice(0,max).map(rowH).join('')+(rs.length>max?`<div class="t">Pehle ${max} dikh rahe hain (${rs.length} mein se). Search karo.</div>`:''):'<div class="empty">Is list mein kuch nahi.</div>';
+function keysFor(s){const [k,v]=s.split(':');
+  return S.rows.filter(r=>k==='cat'?r.cat===v:k==='co'?comp(r.model.split('|')[0])===v:r.model.split('|')[0]===v).map(r=>r.model)}
+
+/* ---------- views ---------- */
+function home(){
+  const c=cnt(S.rows),cs=new Set(S.provs.map(p=>comp(p.id))).size;
+  return `<div class="sg">${CATS.slice(0,2).map(([k,l,e])=>`<button class="stat s-${k}" data-go="list:${k}"><b>${c[k]}</b><small>${e} ${l}</small></button>`).join('')}</div>
+  <div class="tb"><button class="btn p" data-act="disc">🔍 Models khojo</button><button class="btn" data-act="load" title="Refresh (30s cached, fast)">↻</button><button class="btn" data-act="loadforce" title="Force fresh data (bypasses cache)">↻!</button></div>
+  <div class="t">${cs} companies · ${S.provs.length} keys · ${total()} models${S.t?' · data '+ago(S.t):''}</div>
+  ${total()?'':'<div class="empty">Abhi koi model nahi. <b>Models khojo</b> dabao (sirf list laata hai, test nahi karta).</div>'}`;
+}
+function list(){
+  const k=S.view.split(':')[1],m=CATS.find(x=>x[0]===k),all=S.rows.filter(r=>r.cat===k);
+  return `<button class="back" data-go="home">← Home</button><h2>${m[2]} ${m[1]} (${all.length})</h2>
+  <input id="q" placeholder="Model dhoondo…" value="${esc(S.q)}"><button class="btn p" data-run="cat:${k}" ${all.length?'':'disabled'}>Ye sab test karo</button>
+  <div class="card" id="rows">${rowsH(fl(all))}</div>`;
+}
+const fl=a=>{const q=S.q.trim().toLowerCase();return q?a.filter(r=>r.model.toLowerCase().includes(q)):a};
+const badge=n=>{const ps=S.provs.filter(p=>comp(p.id)===n);return (ps.some(p=>p.prio>0)?' ⭐':'')+(ps.length&&ps.every(p=>p.off)?' ⏸':'')};
+const curP=ps=>{const v=new Set(ps.map(p=>p.prio||0));return v.size===1?[...v][0]:null};
+const seg=(ids,p)=>`<div class="seg">${[[1,'⭐ High'],[0,'Normal'],[-1,'⬇ Low']].map(([v,l])=>`<button data-prio="${v}" data-ids="${esc(ids.join(','))}" class="${p===v?'on':''}">${l}</button>`).join('')}</div>`;
+function cos(){
+  const g={};S.provs.forEach(p=>(g[comp(p.id)]=g[comp(p.id)]||[]).push(p.id));
+  const names=Object.keys(g).sort();
+  return `<h2>Companies (${names.length})</h2><button class="btn p" data-addco="">+ Nayi company / key add karo</button>`+(names.length?`<div class="cg">`+names.map(n=>{
+    const c=ccOf(g[n]),tn=c.working+c.recheck+c.neverWorked+c.toTest,pc=tn?Math.round(c.working/tn*100):0;
+    return `<button class="tile" data-go="co:${esc(n)}"><div><b>${esc(n)}${badge(n)}</b><div class="t">${g[n].length} key · ${tn} model</div></div><div><div class="t">✅${c.working} ⚠️${c.recheck}<br>❌${c.neverWorked} ⏳${c.toTest}</div><div class="bar"><i style="width:${pc}%"></i></div></div></button>`}).join('')+`</div>`:'<div class="empty">Koi company nahi. Pehle key add karo.</div>');
+}
+const th=r=>r.busy?'⏳':r.cat==='working'?'👍':(r.cat==='recheck'||r.cat==='neverWorked')?'👎':(r.err?'⏳':'');
+const keyRow=r=>{const m=r.model.split('|').slice(1).join('|'),meta=r.busy?'Test ho raha hai…':(r.tested?(r.lat?(r.lat/1e3).toFixed(1)+'s · ':'')+ago(r.tested):'Abhi test nahi hua');
+  return `<div class="m ${r.cat}${r.busy?' busy':''}"><i class="d"></i><div class="i"><div class="n">${esc(m)}</div><div class="t">${meta}</div>${r.err?`<div class="t er" title="${esc(r.err)}">${esc(r.err)}</div>`:''}</div><div class="bt"><button data-test="${esc(r.model)}" title="Test" aria-label="Test">▶</button><button data-mark="${esc(r.model)}" title="${r.cat==='working'?'Not working mark karo':'Working mark karo'}" aria-label="Mark">${r.cat==='working'?'✖':'✔'}</button></div><span class="th">${th(r)}</span></div>`};
+const kPart=r=>r.model.split('|').slice(1).join('|').toLowerCase();
+const kall=()=>S.rows.filter(r=>r.model.split('|')[0]===S.key);
+const kfl=all=>{const q=S.kq.trim().toLowerCase(),f=S.kf;return sortR(kall().filter(r=>(all||f==='all'||r.cat===f)&&(!q||kPart(r).includes(q))))};
+const kLab=()=>{const q=S.kq.trim();if(!q)return '▶ Test';const n=kfl(true).length;return n?'▶ Test ('+n+')':'＋ Add & test'};
+const kInfo=()=>{const q=S.kq.trim(),n=kfl(true).length;return q?(n?n+' model mile · Test dabao to ye sab test honge':'Koi match nahi · "Add & test" se ye model id add hoke test hoga'):kall().length+' models · naam likho, phir Test dabao'};
+const kTabs=()=>{const c=cnt(kall());return [['all','Sab',kall().length],['working','✅',c.working],['recheck','⚠️',c.recheck],['neverWorked','❌',c.neverWorked],['toTest','⏳',c.toTest]].map(([k,l,n])=>`<button data-kf="${k}" class="${S.kf===k?'on':''}">${l} <b>${n}</b></button>`).join('')};
+const kRows=()=>{const rs=kfl(),q=S.kq.trim();
+  if(!rs.length)return `<div class="empty">${q?'Koi match nahi.':S.kf==='all'?'Is key ke models abhi nahi mile. Neeche "Aur options" mein Model list laao dabao.':'Is list mein kuch nahi.'}</div>`;
+  return rs.slice(0,S.kn).map(keyRow).join('')+(rs.length>S.kn?`<button class="btn" data-act="kmore">Aur dikhao (${rs.length-S.kn} baaki)</button>`:'')};
+function paintK(){const t=$('kt'),i=$('kinfo'),l=$('kml');if(t){t.textContent=kLab();t.disabled=!S.kq.trim()||S.busy}if(i)i.textContent=kInfo();if(l)l.innerHTML=kRows()}
+async function ktest(){
+  const q=S.kq.trim(),id=S.key;if(!q||!id||S.busy)return;
+  const ms=kfl(true);
+  if(ms.length){if(ms.length>24&&!confirm(ms.length+' models test karein?'))return;return run(ms.map(r=>r.model),true)}
+  try{await api('POST','/admin/models',{provider:id,models:[q]});const k=id+'|'+q;if(!S.rows.some(r=>r.model===k))S.rows.push({model:k,cat:'toTest'});run([k],true)}catch(e){toast(e.message,1)}
+}
+function coV(){
+  const n=S.view.slice(3),ps=S.provs.filter(p=>comp(p.id)===n),ids=ps.map(p=>p.id);
+  if(!ids.includes(S.key))S.key='';
+  const chips=ps.map((pv,i)=>{const c=ccObj(S.cc[pv.id]||[0,0,0,0]),st=c.working?'ok':c.recheck?'wn':c.neverWorked?'bad':'';
+    return `<button class="kc ${pv.id===S.key?'on':''}" data-key="${esc(pv.id)}"><span><i class="dd ${st}"></i>Key ${i+1}${pv.prio>0?' ⭐':pv.prio<0?' ⬇':''}${pv.off?' ⏸':''}</span><small>${esc(tail(pv.id))}</small></button>`}).join('');
+  let panel='<div class="empty">Upar se koi key chuno.</div>';
+  if(S.key){
+    const id=S.key,pv=ps.find(p=>p.id===id)||{},L=S.ld.has(id),no=ids.indexOf(id)+1,tl=esc(tail(id));
+    panel=!L?`<div class="card kp"><div class="kh"><b>Key ${no}</b><span class="t">${tl}</span></div><div class="t">${pills(ccObj(S.cc[id]||[0,0,0,0]))}</div><div class="empty">Models load ho rahe hain…</div></div>`:`<div class="card kp"><div class="kh"><b>Key ${no}</b><span class="t">${tl}</span><div class="ft">${kTabs()}</div></div>
+    <div class="kset">${seg([id],pv.prio||0)}<button class="btn" data-pause="${esc(id)}">${pv.off?'▶ Resume':'⏸ Pause'}</button></div>
+    <div class="kb"><input id="kq" placeholder="🔎 Model search karo…" value="${esc(S.kq)}" autocapitalize="none" autocomplete="off" enterkeyhint="go"><button class="btn p" id="kt" data-act="ktest" ${S.kq.trim()&&!S.busy?'':'disabled'}>${kLab()}</button><button class="btn dl" data-del="${esc(id)}" title="Is key ko delete karo" aria-label="Is key ko delete karo">🗑</button></div>
+    <div id="kml">${kRows()}</div>
+    <details data-k="more-${esc(id)}" ${S.open.has('more-'+id)?'open':''}><summary class="t">⋯ Aur options</summary>
+    <button class="btn" data-fetch="${esc(id)}">📥 Model list laao (test nahi hoga)</button>
+    <div class="r2"><input id="am-${esc(id)}" placeholder="model id khud likho" autocapitalize="none" autocomplete="off"><button class="btn" data-addm="${esc(id)}">＋ Add & test</button></div></details></div>`;
+  }
+  return `<button class="back" data-go="cos">← Companies</button><h2>${esc(n)}</h2>
+  <div class="kb"><button class="btn p fx" data-addco="${esc(n)}">+ Nayi key add karo</button><button class="btn dl" data-delco="${esc(n)}" title="Company delete" aria-label="Company delete">🗑</button></div>
+  <div class="kr">${chips}</div>${panel}`;
+}
+const normEp=u=>{u=(u||'').trim().replace(/[?#].*$/,'').replace(/\/+$/,'');return !u||/\/(chat\/completions|completions|responses|messages)$/i.test(u)?u:u+'/chat/completions'};
+const epOf=n=>(S.provs.find(p=>comp(p.id)===n)||{}).endpoint||'';
+function add(){
+  const n=S.addCo||'',cs=[...new Set(S.provs.map(p=>comp(p.id)))].sort();
+  return `<button class="back" data-go="${n?'co:'+esc(n):'cos'}">← Back</button><h2>🔑 API key add karo</h2><div class="card">
+  <label>Company ka naam</label><input id="ac" list="acl" value="${esc(n)}" placeholder="jaise groq, openrouter" autocapitalize="none" autocomplete="off"><datalist id="acl">${cs.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
+  <label>Endpoint (…/v1 likho to /chat/completions khud jud jayega)</label><input id="ae" value="${esc(epOf(n))}" placeholder="https://api.example.com/v1" inputmode="url" autocapitalize="none">
+  <label>API key</label><input id="ak" type="password" autocomplete="off">
+  <label>Models (optional, comma se)</label><input id="am" placeholder="khali chhodo to khud khoje jayenge" autocapitalize="none">
+  <label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="aa" checked style="width:auto;margin:0"> Auto: models khojo (sirf list banegi, test tum khud karoge)</label><div class="t" id="ah"></div>
+  <button class="btn p" data-act="addsave">Save</button></div>
+  <div class="t">Company pehle se hai to nayi key uske saath alag key ki tarah jud jayegi. Endpoint OpenAI-compatible hona chahiye. Save ke baad models sirf khoje jayenge. Server khud test nahi karta — Manual test se tum karo.</div>`;
+}
+const hint=()=>{const h=$('ah');if(!h)return;const co=$('ac').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'').replace(/-\d+$/,'');if(!co){h.textContent='';return}const u=new Set(S.provs.map(p=>p.id));let id=co;for(let n=2;u.has(id);n++)id=co+'-'+n;h.textContent=id===co?'Nayi company: '+co:co+' pehle se hai → ye key "'+id+'" banegi'};
+async function addKey(){
+  const co=$('ac').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'').replace(/-\d+$/,''),ep=normEp($('ae').value),k=$('ak').value.trim();
+  if(!co||!ep||!k)return toast('Company, endpoint aur key teeno chahiye',1);
+  const u=new Set(S.provs.map(p=>p.id));let id=co;for(let n=2;u.has(id);n++)id=co+'-'+n;
+  const ms=$('am').value.split(',').map(x=>x.trim()).filter(Boolean),auto=$('aa').checked;
+  try{await api('POST','/admin/provider',{id,endpoint:ep,key:k,models:ms});
+    S.provs.push({id,endpoint:ep,key:'…'+k.slice(-4),prio:0,off:false});S.ld.add(id);ms.forEach(m=>S.rows.push({model:id+'|'+m,cat:'toTest'}));save();
+    toast('Key save hui: '+id);S.addCo='';go('co:'+co);
+    if(auto)await fetchM(id)
+  }catch(e){toast(e.message,1)}
+}
+function drop(ids){ids.forEach(i=>{delete S.cc[i];S.ld.delete(i)});S.provs=S.provs.filter(p=>!ids.includes(p.id));S.rows=S.rows.filter(r=>!ids.includes(r.model.split('|')[0]));save()}
+async function delKey(id){
+  if(!confirm('Key '+id+' ('+tail(id)+') aur uske saare models hata dein?'))return;
+  try{await api('DELETE','/admin/provider?id='+encodeURIComponent(id));drop([id]);toast('Hata diya: '+id);const c=comp(id);go(S.provs.some(p=>comp(p.id)===c)?'co:'+c:'cos')}catch(e){toast(e.message,1)}
+}
+async function delCo(n){
+  const ids=S.provs.filter(p=>comp(p.id)===n).map(p=>p.id);if(!confirm(n+' ki '+ids.length+' key aur sab models hata dein?'))return;
+  try{await api('DELETE','/admin/provider?id='+encodeURIComponent(ids.join(',')));drop(ids);toast(n+' hata di');go('cos')}catch(e){toast(e.message,1)}
+}
+async function setP(ids,b){try{await api('POST','/admin/set',{ids,...b});S.provs.forEach(p=>{if(ids.includes(p.id))Object.assign(p,b)});save();render()}catch(e){toast(e.message,1)}}
+async function fetchM(id){
+  if(S.busy)return;S.busy=true;pg('Model list la raha hai…');
+  await loadKey(id);if(!S.ld.has(id)){S.busy=false;pg('');return render()}
+  try{const j=await api('GET','/admin/models?add=1&provider='+encodeURIComponent(id)),have=new Set(S.rows.map(r=>r.model));
+    j.models.forEach(m=>{if(!have.has(id+'|'+m))S.rows.push({model:id+'|'+m,cat:'toTest'})});save();toast(j.models.length+' models mile, '+j.added+' naye')}catch(e){toast(e.message,1)}
+  S.busy=false;pg('');render();
+}
+async function addM(id){
+  const m=($('am-'+id).value||'').trim();if(!m)return toast('Model id likho',1);
+  try{await api('POST','/admin/models',{provider:id,models:[m]});if(!S.rows.some(r=>r.model===id+'|'+m))S.rows.push({model:id+'|'+m,cat:'toTest'});run([id+'|'+m])}catch(e){toast(e.message,1)}
+}
+async function markRow(k){
+  const r=S.rows.find(x=>x.model===k),st=r&&r.cat==='working'?'failed':'working';
+  try{merge((await api('POST','/admin/mark',{models:[k],status:st})).results||{});toast(st==='working'?'Working mark ho gaya':'Not working mark ho gaya')}catch(e){toast(e.message,1)}
+}
+Object.assign(S,{kq:'',kf:'all',kn:2000,mt:'rand',mr:[],mrs:null,mtc:'',mco:'',mkey:'',mq:'',mm:'',mres:null,mbusy:false,mload:false});
+const cos2=()=>[...new Set(S.provs.map(p=>comp(p.id)))].sort();
+const icon=v=>v.cat==='working'?'👍':v.cat==='toTest'?'⏳':'👎';
+const sugH=()=>{if(S.mco)return '';const q=S.mtc.trim().toLowerCase(),m=cos2().filter(c=>c.includes(q)).slice(0,12);
+  return m.length?m.map(c=>`<button class="kc" data-tsco="${esc(c)}">${esc(c)}<small>${S.provs.filter(p=>comp(p.id)===c).length} key</small></button>`).join(''):'<div class="t">Koi company nahi mili.</div>'};
+const mlH=()=>{const q=S.mq.trim().toLowerCase(),all=sortR(S.rows.filter(r=>r.model.split('|')[0]===S.mkey)).filter(r=>!q||r.model.toLowerCase().includes(q));
+  if(!all.length)return `<div class="empty">${S.mload?'Model list load ho rahi hai…':'Is key ke models nahi mile.'}</div>`;
+  return (S.mload?'<div class="t" style="padding:6px 10px">Model list update ho rahi hai…</div>':'')+all.slice(0,300).map(r=>{const m=r.model.split('|').slice(1).join('|');return `<button class="mi ${m===S.mm?'on':''}" data-tsm="${esc(m)}"><span>${esc(m)}</span><span>${th(r)||'·'}</span></button>`}).join('')+(all.length>300?`<div class="t" style="padding:6px 10px">Pehle 300 dikh rahe hain. Search karo.</div>`:'')};
+const resH=()=>{if(S.mbusy)return '<div class="res">⏳ Test ho raha hai… ("hii" bheja gaya)</div>';const v=S.mres;if(!v)return '';
+  if(v.error)return `<div class="res no">👎 ${esc(v.error)}</div>`;
+  return `<div class="res ${v.cat==='working'?'ok':v.cat==='toTest'?'':'no'}">${icon(v)} ${v.cat==='working'?'Working':v.cat==='toTest'?'Rate limit / baad mein':'Fail'}${v.lat?' · '+(v.lat/1e3).toFixed(1)+'s':''}${v.err?'<br>'+esc(v.err):''}${v.reply?'<br><span class="t">Reply: '+esc(v.reply)+'</span>':''}</div>`};
+const selH=()=>`<div class="t" style="margin:6px 0">${S.mm?'Chuna hua: <b>'+esc(S.mm)+'</b>':'Upar list se ek model chuno'}</div><button class="btn p" data-act="tone" ${S.mm&&!S.mbusy?'':'disabled'}>▶ Test karo ("hii" bhejega)</button>${resH()}`;
+const bodyH=()=>{if(!S.mco)return '';const ids=S.provs.filter(p=>comp(p.id)===S.mco).map(p=>p.id);
+  return (ids.length>1?`<div class="kr">${ids.map((id,i)=>`<button class="kc ${id===S.mkey?'on':''}" data-tskey="${esc(id)}">Key ${i+1}<small>${esc(tail(id))}</small></button>`).join('')}</div>`:'')+
+  `<label>Model chuno (${S.rows.filter(r=>r.model.split('|')[0]===S.mkey).length})</label><input id="tmq" placeholder="model dhoondo…" value="${esc(S.mq)}" autocapitalize="none" autocomplete="off"><div class="ml" id="tml">${mlH()}</div><div id="tsel">${selH()}</div>`};
+const paintSug=()=>{const e=$('tsug');if(e)e.innerHTML=sugH()},paintML=()=>{const e=$('tml');if(e)e.innerHTML=mlH()},paintSel=()=>{const e=$('tsel');if(e)e.innerHTML=selH()},paintBody=()=>{const e=$('tbody');if(e)e.innerHTML=bodyH()};
+function test(){
+  const seg=`<div class="seg">${[['rand','🎲 12 random test'],['one','🎯 Ek model test']].map(([k,l])=>`<button data-mt="${k}" class="${S.mt===k?'on':''}">${l}</button>`).join('')}</div>`;
+  let body;
+  if(S.mt==='rand'){
+    const rs=S.mr,ok=rs.filter(r=>r.cat==='working').length,no=rs.filter(r=>r.cat==='recheck'||r.cat==='neverWorked').length;
+    body=`<div class="card"><div class="t">Random 12: sirf naye (untested) models test hote hain — purane working models ko chheda nahi jata. Har model ko sirf "hii" bheja jata hai.</div>
+    <button class="btn p" data-act="trand" ${S.busy?'disabled':''}>▶ 12 models test karo</button>
+    ${S.mrs?`<div class="t">Test hue: ${S.mrs.tested} · naye models mile: ${S.mrs.discovered} · 👍 ${ok} · 👎 ${no}</div>`:''}
+    ${rs.map(r=>{const [p,...m]=r.model.split('|');return `<div class="m ${r.cat}"><i class="d"></i><div class="i"><div class="n">${esc(m.join('|'))}</div><div class="t">${esc(p)}${r.lat?' · '+(r.lat/1e3).toFixed(1)+'s':''}${r.err?' · '+esc(r.err):''}${r.reply?'<br>Reply: '+esc(r.reply):''}</div></div><span class="th">${icon(r)}</span></div>`}).join('')}</div>`;
+  }else{
+    body=`<div class="card"><label>Company ka naam likho</label><input id="tco" value="${esc(S.mtc)}" placeholder="jaise mer…" autocapitalize="none" autocomplete="off"><div class="kr" id="tsug">${sugH()}</div><div id="tbody">${bodyH()}</div></div>`;
+  }
+  return `<h2>🧪 Manual test</h2>${seg}${body}<div class="t">Test mein har jagah sirf "hii" bheja jata hai. Model "working" tab maana jata hai jab wo koi bhi jawab de.</div>`;
+}
+async function pickCo(n){
+  S.mco=n;S.mtc=n;S.mm='';S.mq='';S.mres=null;S.mkey=(S.provs.find(p=>comp(p.id)===n)||{}).id||'';
+  const e=$('tco');if(e)e.value=n;paintSug();paintBody();loadMl(S.mkey);
+}
+async function loadMl(id){
+  if(!id)return;S.mload=true;paintML();
+  await loadKey(id);if(!S.ld.has(id)){S.mload=false;return paintML()}
+  try{const j=await api('GET','/admin/models?add=1&provider='+encodeURIComponent(id)),have=new Set(S.rows.map(r=>r.model));
+    j.models.forEach(m=>{if(!have.has(id+'|'+m))S.rows.push({model:id+'|'+m,cat:'toTest'})});save()}catch(e){toast(e.message,1)}
+  S.mload=false;if(S.mkey===id&&S.view==='test')paintML();
+}
+async function tone(){
+  if(!S.mm||S.mbusy)return;const k=S.mkey+'|'+S.mm;S.mbusy=true;S.mres=null;paintSel();
+  try{const j=await api('POST','/admin/test',{models:[k]}),v=j.results&&j.results[k];if(v){mergeS(j.results);S.mres=v}else S.mres={error:'Provider/model nahi mila'}}catch(e){S.mres={error:e.message}}
+  S.mbusy=false;if(S.view==='test'){paintSel();paintML()}
+}
+async function rand12(){
+  if(S.busy)return;S.busy=true;pg('12 models test ho rahe hain…');render();
+  try{const j=await api('POST','/admin/test',{}),res=j.results||{};mergeS(res);S.mr=Object.keys(res).map(k=>({model:k,...res[k]}));S.mrs={tested:j.tested,discovered:j.discovered};if(!S.mr.length)toast('Test ke liye koi model nahi (sab abhi test ho chuke / cooldown)',1)}catch(e){toast(e.message,1)}
+  S.busy=false;pg('');render();
+}
+function set(){
+  return `<h2>⚙ Settings</h2><div class="card"><label>Worker URL</label><input id="su" value="${esc(S.url)}" inputmode="url"><label>Admin token</label><input id="st" type="password" value="${esc(S.tk)}" autocomplete="off">
+  <button class="btn p" data-act="save">Save & Connect</button><button class="btn" data-act="forget">Token bhulao (is device se hatao)</button></div>
+  <div class="t">Page ${VER}${S.wv?' · Worker '+esc(S.wv):''}<br>Token sirf is browser mein save hota hai. Shared device par "Token bhulao" dabao.</div>`;
+}
+
+/* ---------- shell ---------- */
+const NAV=[['home','🏠','Home'],['cos','🏢','Companies'],['test','🧪','Manual test'],['set','⚙️','Settings']];
+function render(){
+  const v=S.view.split(':')[0],V={home,list,cos,co:coV,add,test,set}[v];
+  if(v==='list'&&$('q')&&document.activeElement===$('q'))return;
+  if(v==='co'&&$('kq')&&document.activeElement===$('kq'))return;
+  $('main').innerHTML=V();
+  $('nav').innerHTML=NAV.map(([k,e,l])=>`<button data-go="${k}" class="${(k===v||(k==='cos'&&(v==='co'||v==='add'))||(k==='home'&&v==='list'))?'on':''}${k==='test'&&k!==v?' t2':''}"><span>${e}</span>${l}</button>`).join('');
+  $('chip').textContent=S.provs.length?S.provs.length+' keys':'';
+  if(v==='add')hint();
+}
+function go(v){if(v.startsWith('co:')&&S.view!==v){S.key='';S.kq='';S.kf='all';S.kn=2000}S.view=v;if(v.startsWith('list'))S.q='';render();scrollTo(0,0)}
+function mergeS(res){for(const k in res){const r=S.rows.find(x=>x.model===k),pid=k.split('|')[0],a=S.cc[pid];
+  if(a&&!S.ld.has(pid)){const o=r?CI[r.cat]:(a[3]>0?3:2),n=CI[res[k].cat];if(o!==n){if(a[o]>0)a[o]--;a[n]++}}
+  if(r)Object.assign(r,res[k]);else S.rows.push({model:k,...res[k]})}save()}
+function merge(res){mergeS(res);render()}
+const save=()=>{recc();ls('ey_cache',JSON.stringify({t:S.t||0,rows:S.rows.filter(r=>r.cat==='working'||r.cat==='recheck'),provs:S.provs,wv:S.wv,cc:S.cc}))};
+async function loadKey(id,force){
+  if(!id||(S.ld.has(id)&&!force))return;
+  try{const j=await api('GET','/admin/status?provider='+encodeURIComponent(id)+(force?'&refresh=1':'')),m=new Map(S.rows.map(r=>[r.model,r]));
+    for(const c in j.lists)for(const x of j.lists[c]){const r=m.get(x.model);if(!r)S.rows.push({...x,cat:c});else if(!(r.tested>x.tested))Object.assign(r,x,{cat:c})}
+    S.ld.add(id);save()}catch(e){toast(e.message,1)}
+  if(S.key===id&&S.view.startsWith('co:'))render();
+}
+async function load(quiet,force){
+  if(!S.tk){if(!quiet)toast('Pehle Settings mein token daalo',1);return go('set')}
+  // 'force' bypasses the server-side 30s cache (adds ?refresh=1); normal refresh uses it.
+  const path='/admin/status?lite=1'+(force?'&refresh=1':'');
+  try{const j=await api('GET',path);
+    if(j.health){const ids=new Set((j.providers||[]).map(p=>p.id)),now=Date.now(),by={working:[],recheck:[],neverWorked:[],toTest:[]};
+      for(const k in j.health){const h=j.health[k]||{},i=k.indexOf('|');if(i<0||!ids.has(k.slice(0,i)))continue;
+        const cat=h.ok==null?'toTest':h.ok?'working':h.last_ok?'recheck':'neverWorked';
+        by[cat].push({model:k,cat,lat:h.lat||0,fails:h.fails||0,err:h.err||'',tested:h.tested||0,parked_until:(h.cool||0)>now?h.cool:0})}
+      by.working.sort((a,b)=>a.lat-b.lat);S.rows=[].concat(by.working,by.recheck,by.neverWorked,by.toTest)}
+    else{S.rows=[];for(const c in j.lists)for(const x of j.lists[c])S.rows.push({...x,cat:c})}
+    S.provs=j.providers;S.wv=j.version||'';S.t=Date.now();S.ld=j.health?new Set(S.provs.map(p=>p.id)):new Set();if(j.counts)S.cc=j.counts;save();
+    const cacheNote=j.cached?' (cached '+j.cached_age_s+'s pehle ka)':'';
+    if(!quiet)toast('Connected · '+S.provs.length+' keys, '+total()+' models'+cacheNote);render();if(S.key&&S.view.startsWith('co:'))loadKey(S.key)}
+  catch(e){toast(e.message,1)}
+}
+const pg=t=>{$('pg').hidden=!t;$('pgt').textContent=t||''};
+async function run(keys,force){
+  if(S.busy)return;
+  if(keys.length>1&&!force){const now=Date.now(),n0=keys.length,m=new Map(S.rows.map(r=>[r.model,r]));keys=keys.filter(k=>{const r=m.get(k);return !(r&&r.tested&&now-r.tested<6e5)});if(keys.length<n0)toast((n0-keys.length)+' model skip (10 min mein test hue)')}
+  if(!keys.length)return toast('Test ke liye koi model nahi',1);
+  S.busy=true;S.stop=false;
+  for(let i=0;i<keys.length&&!S.stop;i+=12){
+    const part=keys.slice(i,i+12);S.rows.forEach(r=>{if(part.includes(r.model))r.busy=true});render();
+    pg('Test: '+Math.min(i+12,keys.length)+' / '+keys.length);
+    try{merge((await api('POST','/admin/test',{models:part})).results||{})}catch(e){toast(e.message,1);S.stop=true}
+    S.rows.forEach(r=>r.busy=false);
+  }
+  S.busy=false;pg('');render();toast(S.stop?'Roka gaya':'Test poora hua');
+}
+async function disc(){
+  if(S.busy)return;S.busy=true;pg('Models khoj raha hai…');
+  try{const j=await api('POST','/admin/discover',{});await load(true);toast('Naye models: '+j.discovered+' (test tum Manual test se karo)')}catch(e){toast(e.message,1)}
+  S.busy=false;pg('');render();
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-go],[data-test],[data-chat],[data-run],[data-act],[data-del],[data-addco],[data-fetch],[data-addm],[data-mark],[data-prio],[data-pause],[data-delco],[data-key],[data-mt],[data-kf],[data-tsco],[data-tskey],[data-tsm]');if(!b)return;const d=b.dataset;
+  if(d.mt){S.mt=d.mt;render()}else if(d.kf!==undefined){S.kf=d.kf;S.kn=2000;render()}else if(d.tsco!==undefined)pickCo(d.tsco);else if(d.tskey){S.mkey=d.tskey;S.mm='';S.mq='';S.mres=null;paintBody();loadMl(S.mkey)}else if(d.tsm!==undefined){S.mm=d.tsm;S.mres=null;paintML();paintSel()}else if(d.act==='tone')tone();else if(d.act==='trand')rand12();else if(d.act==='ktest')ktest();else if(d.act==='kmore'){S.kn+=500;paintK()}
+  else if(d.key!==undefined){S.key=d.key===S.key?'':d.key;S.kq='';S.kf='all';S.kn=2000;render();if(S.key)loadKey(S.key)}else if(d.prio!==undefined)setP(d.ids.split(','),{prio:+d.prio});else if(d.pause){const p=S.provs.find(x=>x.id===d.pause);setP([d.pause],{off:!(p&&p.off)})}else if(d.delco)delCo(d.delco);else if(d.go)go(d.go);else if(d.test)run([d.test]);else if(d.chat){S.sel=d.chat;go('test')}else if(d.run)run(keysFor(d.run));
+  else if(d.del)delKey(d.del);else if(d.fetch)fetchM(d.fetch);else if(d.addm)addM(d.addm);else if(d.mark)markRow(d.mark);else if(d.addco!==undefined){S.addCo=d.addco;go('add')}else if(d.act==='addsave')addKey();else if(d.act==='load')load();else if(d.act==='loadforce')load(false,true);else if(d.act==='disc')disc();
+  else if(d.act==='save'){S.url=$('su').value.trim()||DEF;S.tk=$('st').value.trim();ls('ey_url',S.url);ls('ey_tk',S.tk);load().then(()=>{if(S.provs.length)go('home')})}
+  else if(d.act==='forget'){S.tk='';ls('ey_tk','');$('st').value='';toast('Token hata diya')}
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='ae')e.target.dataset.t=1;
+  if(e.target.id==='tco'){S.mtc=e.target.value;if(S.mco&&S.mtc!==S.mco){S.mco='';S.mkey='';S.mm='';S.mq='';S.mres=null;paintBody()}paintSug()}
+  if(e.target.id==='kq'){S.kq=e.target.value;S.kn=2000;paintK()}
+  if(e.target.id==='tmq'){S.mq=e.target.value;paintML()}
+  if(e.target.id==='ac'){hint();const ep=epOf(e.target.value.trim().toLowerCase());if(ep&&!$('ae').dataset.t)$('ae').value=ep}
+if(e.target.id==='q'){S.q=e.target.value;$('rows').innerHTML=rowsH(fl(S.rows.filter(r=>r.cat===S.view.split(':')[1])))}});
+document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k)e.target.open?S.open.add(k):S.open.delete(k)},true);
+document.addEventListener('change',e=>{if(e.target.id==='ae')e.target.value=normEp(e.target.value)});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='kq'){e.preventDefault();e.target.blur();ktest()}});
+$('stop').onclick=()=>{S.stop=true};
+try{const c=JSON.parse(ls('ey_cache')||'null');if(c){S.rows=c.rows||[];S.provs=c.provs||[];S.wv=c.wv||'';S.cc=c.cc||{};S.t=c.t||0;S.rows.forEach(r=>delete r.busy)}}catch(e){}
+render();if(!S.tk)go('set');else if(!S.t||Date.now()-S.t>3e5)load(true);
+</script></body></html>
