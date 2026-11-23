@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.77">
+<meta name="app-version" content="1.4.80">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -703,7 +703,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
     <div class="fpanel-section-label" style="margin-bottom:8px">Size</div>
     <div class="size-row" id="hl-sizes"></div>
     <div class="slider-row" style="margin-top:10px">
-      <input type="range" id="hl-slider" min="4" max="40" step="1" value="12">
+      <input type="range" id="hl-slider" min="1" max="40" step="0.5" value="12">
       <span class="slider-val" id="hl-slider-val">12mm</span>
     </div>
   </div>
@@ -868,7 +868,7 @@ let theme=(()=>{try{return localStorage.getItem("pa_theme")||"auto"}catch(e){ret
 let pinv=(()=>{try{return localStorage.getItem("pa_pinv")!="0"}catch(e){return true}})();
 let DK=false;
 /* v1.4.53 dark-PDF look: soft charcoal page (not pure black) + soft white text, mid-tones lifted a little so thin text keeps its weight */
-const DKBG="#141414",DK_LO=20,DK_HI=248,DK_G=.82;
+const DKBG="#141414",DK_LO=20,DK_HI=253,DK_G=.82;   /* v1.4.80: text white 248 -> 253 (crisper) */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],PL=window.PDFLib;
 const LOW=(navigator.deviceMemory||4)<=2,ZMAX=LOW?3:3.5,MAXPX=LOW?1.2e6:5e6,DPR=Math.min(devicePixelRatio||1,LOW?1:3);   /* v1.4.46: sharper canvas — the page and the ink are drawn at up to 5 Mpx (was 3 Mpx), so they are no longer stretched on iPad */
 let pdf,file,url,name="",docId=null,zoom=LOW?1:1.2,tool="pen",previousTool="lasso",color="#e11d48",W=3,HW=12,penOnly=(()=>{try{return localStorage.getItem("pa_penonly")!=="0"}catch(e){return true}})(),curPage=0;
@@ -983,7 +983,7 @@ const PEN_SIZES=[
   {px:10,label:"1.9mm"},{px:14,label:"3.8mm"}
 ];
 const ER_SIZES=[8,12,20,30,44];
-const HL_SIZES=[{px:5,label:"4mm"},{px:9,label:"8mm"},{px:14,label:"12mm"},{px:20,label:"20mm"},{px:28,label:"30mm"}];
+const HL_SIZES=[{px:1.5,label:"1mm",dot:8},{px:3,label:"2mm",dot:10},{px:4,label:"3mm",dot:12},{px:5,label:"4mm"},{px:9,label:"8mm"},{px:14,label:"12mm"},{px:20,label:"20mm"},{px:28,label:"30mm"}];
 
 let activePenSize=1; // index
 
@@ -992,7 +992,7 @@ function buildSizeRow(containerId,sizes,onSelect,activeIdx,isEr){
   sizes.forEach((s,i)=>{
     const wrap=document.createElement("div");wrap.className="size-dot-wrap";
     const d=document.createElement("div");
-    const sz=isEr?s:s.px;
+    const sz=isEr?s:(s.dot||s.px);
     d.className="size-dot"+(i===activeIdx?" on":"");
     d.style.cssText=`width:${Math.min(sz,32)}px;height:${Math.min(sz,32)}px;min-width:${Math.min(sz,32)}px`;
     if(isEr)d.style.borderRadius="4px";
@@ -1016,7 +1016,7 @@ let ERW=(()=>{try{const v=+localStorage.getItem(ER_KEY);return ER_SIZES.includes
 const saveERW=()=>{try{localStorage.setItem(ER_KEY,String(ERW))}catch(e){}};
 buildSizeRow("er-sizes",ER_SIZES,(i,s)=>{ERW=s;saveERW()},ER_SIZES.indexOf(ERW),true);
 
-buildSizeRow("hl-sizes",HL_SIZES,(i,s)=>{HW=s.px;$("#hl-slider").value=s.px;$("#hl-slider-val").textContent=s.label;drawHlPreview()},2,false);
+buildSizeRow("hl-sizes",HL_SIZES,(i,s)=>{HW=s.px;$("#hl-slider").value=s.px;$("#hl-slider-val").textContent=s.label;drawHlPreview()},5,false);
 
 $("#pen-slider").oninput=e=>{W=+e.target.value;$("#pen-slider-val").textContent=W+"mm";drawPenPreview()};
 $("#hl-slider").oninput=e=>{HW=+e.target.value;$("#hl-slider-val").textContent=HW+"mm";drawHlPreview()};
@@ -1101,7 +1101,8 @@ function autoReturnToTool(t="lasso"){tool=t;$$('[data-t]').forEach(b=>b.classLis
 function autoReturnToLasso(){autoReturnToTool("lasso");}
 /* Shapes picker + More-tools popover (the "+" button) */
 const SHT=["line","arrow","rect","oval"];
-[["#shpb","shp-panel"],["#mor","more-panel"]].forEach(([b,id])=>$(b).onclick=function(){if(panelOpen===id)closeAllPanels();else{openPanel(id,this);panelFor=null}});
+[["#shpb","shp-panel"],["#mor","more-panel"]].forEach(([b,id])=>$(b).onclick=function(){if(panelOpen===id)closeAllPanels();else{if(id=="shp-panel"){const lb=document.querySelector('#shp-panel [data-t="line"]');if(lb)lb.click()}   /* v1.4.80: Shapes always starts with the straight Line already selected */
+  openPanel(id,this);panelFor=null}});
 $$("[data-t]").forEach(b=>b.addEventListener("click",()=>{$("#shpb").classList.toggle("on",SHT.includes(tool));$("#mor").classList.toggle("on",!!b.closest("#more-panel")&&!SHT.includes(tool))}));
 $$(".mcell").forEach(c=>c.addEventListener("click",e=>{if(!e.target.closest(".ibtn"))c.querySelector(".ibtn").click()}));
 ["zw","sig","bkm","tools","sbt"].forEach(id=>$("#"+id).addEventListener("click",()=>closeAllPanels()));
@@ -1186,12 +1187,19 @@ const DK_LUT=(()=>{const L=new Uint8ClampedArray(256);for(let v=0;v<256;v++)L[v]
    RULE 4  Pictures: real photos keep their real colours (only the glare of pure white is softened). Diagrams / screenshots / scans / logos on a
            white background are converted with rules 1-3. The decision uses how "flat" the picture is (a few colours = graphic, thousands of
            shades = photo), not how much white it has - so a clinical photo with a bright sclera or white border is never turned into a negative. */
-const DK_YMIN=.115;                                     /* GoodNotes' deep pink heading (#B81868) has Y~0.118 -> same strength */
+const DK_YMIN=.175,DK_YMAX=.46;                     /* v1.4.80: every hue is kept between these two perceived brightnesses (readable on the dark page, never washed-out) */                                     /* GoodNotes' deep pink heading (#B81868) has Y~0.118 -> same strength */
 const DK_HF=(()=>{const T=new Float32Array(360),lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)};
   for(let h=0;h<360;h++){const hh=h/60,X=1-Math.abs(hh%2-1);let r,g,b;
     switch(hh|0){case 0:r=1;g=X;b=0;break;case 1:r=X;g=1;b=0;break;case 2:r=0;g=1;b=X;break;case 3:r=0;g=X;b=1;break;case 4:r=X;g=0;b=1;break;default:r=1;g=0;b=X}
     let L=.2;for(;L<.8;L+=.01){const m=L-.5,R=(r*1+m)*255,G=(g*1+m)*255,B=(b*1+m)*255;   /* full-chroma colour of this hue at lightness L */
       if(.2126*lin(R)+.7152*lin(G)+.0722*lin(B)>=DK_YMIN)break}
+    T[h]=L}
+  return T})();
+const DK_HC=(()=>{const T=new Float32Array(360),lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)};   /* v1.4.80: per-hue ceiling = lightness where the full-chroma colour reaches DK_YMAX */
+  for(let h=0;h<360;h++){const hh=h/60,X=1-Math.abs(hh%2-1);let r,g,b;
+    switch(hh|0){case 0:r=1;g=X;b=0;break;case 1:r=X;g=1;b=0;break;case 2:r=0;g=1;b=X;break;case 3:r=0;g=X;b=1;break;case 4:r=X;g=0;b=1;break;default:r=1;g=0;b=X}
+    let L=.3;for(;L<.8;L+=.01){const m=L-.5,R=(r*1+m)*255,G=(g*1+m)*255,B=(b*1+m)*255;
+      if(.2126*lin(R)+.7152*lin(G)+.0722*lin(B)>=DK_YMAX)break}
     T[h]=L}
   return T})();
 function dkConvert(d){for(let i=0;i<d.length;i+=4){const r=d[i],g=d[i+1],b=d[i+2],mx=r>g?(r>b?r:b):(g>b?g:b),mn=r<g?(r<b?r:b):(g<b?g:b),c=mx-mn,
@@ -1200,8 +1208,9 @@ function dkConvert(d){for(let i=0;i<d.length;i+=4){const r=d[i],g=d[i+1],b=d[i+2
   const nl=DK_LUT[255-(((mx+mn)>>1))],l=(mx+mn)/510,cc=c/255;
   let h=mx==r?(g-b)/c:mx==g?(b-r)/c+2:(r-g)/c+4;if(h<0)h+=6;
   const wf=Math.max(0,Math.min(1,(cc-.12)/.4)),fl=DK_HF[((h*60)|0)%360]*wf;      /* RULE 3: hue floor, faded by chroma */
-  let Lp=1-l;if(Lp<fl)Lp=fl;const cap=1-.32*wf;if(Lp>cap)Lp=cap;                    /* RULE 2: mirror the lightness; strong colours never wash out to a pastel (max L .68) */
-  const Cp=Math.min(cc,1-Math.abs(2*Lp-1)),X=Cp*(1-Math.abs(h%2-1)),m=Lp-Cp/2;let R,G,B;
+  let Lp=1-l;const hi=DK_HC[((h*60)|0)%360],ce=1-(1-hi)*wf;if(Lp>ce)Lp=ce;if(Lp<fl)Lp=fl;const cap=1-.32*wf;if(Lp>cap)Lp=cap;   /* v1.4.80: per-hue brightness window [DK_YMIN .. DK_YMAX] for ALL colours, faded by chroma */                    /* RULE 2: mirror the lightness; strong colours never wash out to a pastel (max L .68) */
+  const ccv=Math.min(1,cc*(1+.32*wf)+.06*wf),Cp=Math.min(ccv,1-Math.abs(2*Lp-1)),   /* v1.4.80: +32 % chroma on strong colours (soft edge pixels barely change) */
+   X=Cp*(1-Math.abs(h%2-1)),m=Lp-Cp/2;let R,G,B;
   switch(h|0){case 0:R=Cp;G=X;B=0;break;case 1:R=X;G=Cp;B=0;break;case 2:R=0;G=Cp;B=X;break;case 3:R=0;G=X;B=Cp;break;case 4:R=X;G=0;B=Cp;break;default:R=Cp;G=0;B=X}
   const w=Math.min(1,(c-5)/14),v=1-w;
   d[i]=nl*v+(R+m)*255*w;d[i+1]=nl*v+(G+m)*255*w;d[i+2]=nl*v+(B+m)*255*w}}
@@ -1218,10 +1227,14 @@ function dkIsPhoto(t){const n=t.length/4,sp=Math.max(1,Math.floor(n/4000)),M=new
   return true}                                  /* photo / artwork / already-dark picture: keep its real colours */
 /* photos keep their colours; only pure-white glare is softened (soft knee) and the whole picture is dimmed a little so it sits well on the dark page */
 const DK_PH=(()=>{const L=new Uint8ClampedArray(256);for(let v=0;v<256;v++){let x=v;if(x>190)x=190+(x-190)*.5;L[v]=x*.93}return L})();
+/* v1.4.80 — gentle sharpening of the converted page (3x3 unsharp, amount .32): thin text and headings look crisp instead of soft/matte. Skipped on low-memory devices. */
+function dkSharpen(im,W,H){const d=im.data,o=new Uint8ClampedArray(d),a=.32,k=1+4*a,w4=W*4;
+  for(let y=1;y<H-1;y++){let i=y*w4+4;for(let x=1;x<W-1;x++,i+=4){
+    d[i]=k*o[i]-a*(o[i-4]+o[i+4]+o[i-w4]+o[i+w4]);d[i+1]=k*o[i+1]-a*(o[i-3]+o[i+5]+o[i+1-w4]+o[i+1+w4]);d[i+2]=k*o[i+2]-a*(o[i-2]+o[i+6]+o[i+2-w4]+o[i+2+w4])}}}
 async function darken(page,vp,c){
   const W=c.width,H=c.height,x=c.getContext("2d"),keep=[];
   for(const r of(await imgRects(page,vp,W,H)).slice(0,60)){const im=x.getImageData(r[0],r[1],r[2],r[3]);if(dkIsPhoto(im.data))keep.push([r,im])}
-  const im=x.getImageData(0,0,W,H);dkConvert(im.data);x.putImageData(im,0,0);
+  const im=x.getImageData(0,0,W,H);dkConvert(im.data);if(!LOW)dkSharpen(im,W,H);x.putImageData(im,0,0);
   for(const[r,s]of keep){const d=s.data;for(let i=0;i<d.length;i+=4){d[i]=DK_PH[d[i]];d[i+1]=DK_PH[d[i+1]];d[i+2]=DK_PH[d[i+2]]}x.putImageData(s,r[0],r[1])}}
 
 /* ===== INDEXEDDB ===== */
@@ -2764,7 +2777,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.77",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.80",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
