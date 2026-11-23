@@ -12,7 +12,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0}[hidden]{display:none!important}
 :root{--a3:#8b5cf6;--a4:#f472b6}
 html{height:100vh;height:100dvh}
-body{height:100%;overflow:hidden;background:radial-gradient(900px 420px at 50% -140px,color-mix(in srgb,var(--a1) 20%,transparent),transparent),var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center;font-variant-numeric:tabular-nums}
+body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center;font-variant-numeric:tabular-nums}
 main{width:100%;max-width:440px;height:100%;display:flex;flex-direction:column;gap:10px;padding:8px 16px 6px}
 main>*{animation:up .55s cubic-bezier(.2,.8,.2,1) both}main>:nth-child(2){animation-delay:.05s}main>:nth-child(3){animation-delay:.1s}main>:nth-child(4){animation-delay:.15s}main>:nth-child(5){animation-delay:.2s}
 button{font-family:inherit;cursor:pointer;border:0}
@@ -77,7 +77,7 @@ input[type=range]{width:100%;accent-color:var(--a1);margin:10px 0 2px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .btn2{padding:14px;border-radius:15px;background:var(--s2);color:var(--tx);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .15s}.btn2:active{transform:scale(.96)}
 .note{font-size:12px;color:var(--mu);line-height:1.55;margin:0}
-body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;background:radial-gradient(42% 30% at 18% 18%,color-mix(in srgb,var(--a1) 26%,transparent),transparent),radial-gradient(40% 30% at 86% 32%,color-mix(in srgb,var(--a3) 24%,transparent),transparent),radial-gradient(46% 34% at 50% 98%,color-mix(in srgb,var(--a4) 20%,transparent),transparent);animation:drift 18s ease-in-out infinite alternate}
+body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;background:radial-gradient(42% 30% at 18% 18%,color-mix(in srgb,var(--a1) 26%,transparent),transparent),radial-gradient(40% 30% at 86% 32%,color-mix(in srgb,var(--a3) 24%,transparent),transparent),radial-gradient(46% 34% at 50% 98%,color-mix(in srgb,var(--a4) 20%,transparent),transparent);animation:drift 18s ease-in-out infinite alternate,bgh 120s linear infinite}
 .orb{position:absolute;inset:0;opacity:0;transition:opacity .5s;animation:spin 3.2s linear infinite}
 .orb:before{content:"";position:absolute;top:calc(6% - 5px);left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#fff;box-shadow:0 0 12px 3px var(--a2)}
 body.live .orb{opacity:1}
@@ -110,6 +110,14 @@ body.live .ico{animation-duration:1.2s}
 @keyframes ping{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--a1) 55%,transparent)}100%{box-shadow:0 0 0 8px transparent}}
 @keyframes pop{40%{transform:scale(1.07)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+input[type=text]{width:150px;background:var(--s2);border:1px solid var(--ln);color:var(--tx);border-radius:12px;padding:10px 12px;font-size:12px;font-weight:600;font-family:inherit}
+input[type=text]:focus{outline:2px solid var(--a1);outline-offset:1px}
+.bars.r30,.lbls.r30{gap:2px}.bars.r30 .col i{border-radius:4px 4px 2px 2px}.lbls.r30 span{font-size:9px;overflow:visible;white-space:nowrap}
+.bars.r12,.lbls.r12{gap:5px}
+.sum{gap:8px}.sum div{padding:11px 4px}.sum b{font-size:17px}
+html::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(900px 420px at 50% -140px,color-mix(in srgb,var(--a1) 20%,transparent),transparent);animation:bgh 120s linear infinite}
+@keyframes bgh{to{filter:hue-rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){html::before,body::before{animation:none!important}}
 </style>
 </head>
 <body>
@@ -131,7 +139,7 @@ body.live .ico{animation-duration:1.2s}
 </svg>
 <main>
 <header class="top">
-  <button class="ib" id="bHist" aria-label="Last 7 days history"><svg class="ic"><use href="#i-hist"/></svg></button>
+  <button class="ib" id="bHist" aria-label="History"><svg class="ic"><use href="#i-hist"/></svg></button>
   <div class="brand"><div class="logo"><svg class="ic"><use href="#i-v"/></svg></div><h1>V-Step</h1></div>
   <button class="ib" id="bSet" aria-label="Settings"><svg class="ic"><use href="#i-set"/></svg></button>
 </header>
@@ -171,9 +179,12 @@ body.live .ico{animation-duration:1.2s}
 
 <div class="sheet" id="s-hist" aria-hidden="true"><div class="bd" data-close></div>
   <div class="pn"><div class="grab"></div>
-    <div class="ph"><h2>Last 7 days</h2><button class="x" data-close aria-label="Close"><svg class="ic"><use href="#i-x"/></svg></button></div>
-    <div class="card"><div class="bars" id="bars"></div><div class="lbls" id="lbls"></div><div class="leg">Daily goal</div></div>
-    <div class="sum"><div><b id="wk">0</b><span>7-day total</span></div><div><b id="best">0</b><span>best day</span></div><div><b id="streak">0</b><span>goal streak</span></div></div>
+    <div class="ph"><h2>History</h2><button class="x" data-close aria-label="Close"><svg class="ic"><use href="#i-x"/></svg></button></div>
+    <div class="seg" id="hseg" style="width:100%;margin-bottom:12px"><button data-r="7" class="on">7 days</button><button data-r="30">30 days</button><button data-r="0">Lifetime</button></div>
+    <div class="card"><div class="bars" id="bars"></div><div class="lbls" id="lbls"></div><div class="leg" id="legT">Daily goal</div></div>
+    <div class="sum"><div><b id="wk">0</b><span id="wkL">7-day total</span></div><div><b id="avg">0</b><span>avg / active day</span></div><div><b id="best">0</b><span>best day</span></div>
+    <div><b id="dys">0</b><span>days tracked</span></div><div><b id="hit">0</b><span>goal days</span></div><div><b id="streak">0</b><span>goal streak</span></div>
+    <div><b id="hkm">0</b><span>km</span></div><div><b id="hkc">0</b><span>kcal</span></div><div><b id="hmin">0</b><span>active time</span></div></div>
   </div>
 </div>
 
@@ -200,6 +211,11 @@ body.live .ico{animation-duration:1.2s}
       <button class="btn2" id="m10">−10 steps</button><button class="btn2" id="p10">+10 steps</button>
       <button class="btn2" id="csv"><svg class="ic"><use href="#i-down"/></svg>Export CSV</button>
       <button class="btn2" id="reset"><svg class="ic"><use href="#i-undo"/></svg>Reset today</button></div></div>
+    <div class="sec">Cloud backup</div>
+    <div class="card">
+      <div class="fld"><div><b>Backup ID</b><small>save it to restore later</small></div><input type="text" id="cid" placeholder="auto" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+      <div style="padding-top:14px"><button class="btn2" id="sync" style="width:100%">Sync now</button><p class="note" id="cloudTxt" style="margin-top:10px">Not backed up yet</p></div>
+    </div>
     <p class="note" style="padding:0 6px">Open this page directly in Chrome or Safari and keep the screen on. Phones pause motion sensors when the screen is off or the browser is in the background.</p>
   </div>
 </div>
@@ -277,15 +293,15 @@ function Detector(cfg){
 (function(){
   var $=function(i){return document.getElementById(i)};
   function dk(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
-  var DB={days:{},set:{sens:5,h:170,w:65,goal:10000,sl:0,theme:'auto'}};
+  var fresh=false,DB={days:{},set:{sens:5,h:170,w:65,goal:10000,sl:0,theme:'auto'}};
   try{
-    var raw=JSON.parse(localStorage.getItem('sc4')||'null');
+    var raw=JSON.parse(localStorage.getItem('sc4')||'null');fresh=!raw;
     if(raw){DB.days=raw.days||{};for(var k in raw.set)DB.set[k]=raw.set[k]}
-    var ks=Object.keys(DB.days).sort();while(ks.length>120)delete DB.days[ks.shift()];
+    var ks=Object.keys(DB.days).sort();while(ks.length>3650)delete DB.days[ks.shift()];
   }catch(e){}
-  var curKey=dk(),dirty=false;
+  var curKey=dk(),dirty=false,needPush=false;
   function today(){return DB.days[curKey]||(DB.days[curKey]={s:0,d:0,k:0,t:0})}
-  function save(){dirty=false;try{localStorage.setItem('sc4',JSON.stringify(DB))}catch(e){}}
+  function save(){dirty=false;needPush=true;try{localStorage.setItem('sc4',JSON.stringify(DB))}catch(e){}}
   var sensEl=$('sens'),hEl=$('h'),wEl=$('w'),goalEl=$('goal'),slEl=$('sl');
   sensEl.value=DB.set.sens;hEl.value=DB.set.h;wEl.value=DB.set.w;goalEl.value=DB.set.goal;slEl.value=DB.set.sl;
 
@@ -377,18 +393,39 @@ function Detector(cfg){
     $('sensTxt').textContent=sensEl.value+'/10';$('src').textContent=src;$('hz').textContent=hz+' Hz';$('thv').textContent=D.thNow.toFixed(2);
     week(goal);
   }
+  var hr=7;
+  function summ(n){ /* n = last n days, 0 = lifetime */
+    var o={steps:0,km:0,kcal:0,min:0,days:0,hit:0,best:0},g=+goalEl.value||10000,lim='',k,d,x;
+    if(n){x=new Date();x.setDate(x.getDate()-(n-1));lim=dk(x)}
+    for(k in DB.days){if(lim&&k<lim)continue;d=DB.days[k];
+      o.steps+=d.s;o.km+=d.d;o.kcal+=d.k;o.min+=d.t/60000;
+      if(d.s>0)o.days++;if(d.s>=g)o.hit++;if(d.s>o.best)o.best=d.s}
+    o.km=+o.km.toFixed(2);o.kcal=Math.round(o.kcal);o.min=Math.round(o.min);
+    o.avg=o.days?Math.round(o.steps/o.days):0;return o;
+  }
   function week(goal){
-    var tot=0,mx=goal,i,d,v,k,vals=[],best=0,st=0,L='SMTWTFS';
-    for(i=6;i>=0;i--){d=new Date();d.setDate(d.getDate()-i);v=(DB.days[dk(d)]||{}).s||0;vals.push([d,v]);tot+=v;if(v>mx)mx=v}
-    for(k in DB.days)if(DB.days[k].s>best)best=DB.days[k].s;
-    for(i=0;i<120;i++){d=new Date();d.setDate(d.getDate()-i);v=(DB.days[dk(d)]||{}).s||0;if(v>=goal)st++;else if(i>0)break}
-    $('wk').textContent=tot.toLocaleString();$('best').textContent=best.toLocaleString();$('streak').textContent=st;
-    var s=vals.map(function(p){return p[1]}).join()+'|'+goal;if(s===sig)return;sig=s;
+    if(!$('s-hist').classList.contains('open'))return;
+    var mx=goal,i,d,v,j,k,vals=[],st=0,S=summ(hr),pre,t,c,cls=hr===30?' r30':hr===0?' r12':'';
+    if(hr){for(i=hr-1;i>=0;i--){d=new Date();d.setDate(d.getDate()-i);v=(DB.days[dk(d)]||{}).s||0;
+      vals.push([hr===7?'SMTWTFS'[d.getDay()]:(i%5===0?d.getDate():''),v,i===0])}}
+    else{for(i=11;i>=0;i--){d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);pre=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);t=0;c=0;
+      for(k in DB.days)if(k.slice(0,7)===pre&&DB.days[k].s>0){t+=DB.days[k].s;c++}
+      vals.push(['JFMAMJJASOND'[d.getMonth()],c?Math.round(t/c):0,i===0])}}
+    vals.forEach(function(p){if(p[1]>mx)mx=p[1]});
+    for(i=0;i<3650;i++){d=new Date();d.setDate(d.getDate()-i);v=(DB.days[dk(d)]||{}).s||0;if(v>=goal)st++;else if(i>0)break}
+    $('wk').textContent=S.steps.toLocaleString();$('wkL').textContent=hr===7?'7-day total':hr===30?'30-day total':'lifetime total';
+    $('avg').textContent=S.avg.toLocaleString();$('best').textContent=S.best.toLocaleString();
+    $('dys').textContent=S.days;$('hit').textContent=S.hit;$('streak').textContent=st;
+    $('hkm').textContent=S.km.toFixed(1);$('hkc').textContent=S.kcal.toLocaleString();
+    $('hmin').textContent=S.min>=60?Math.floor(S.min/60)+'h '+(S.min%60)+'m':S.min+'m';
+    $('legT').textContent=hr?'Daily goal':'Daily goal · monthly bars = avg steps per active day';
+    var sg=hr+'|'+vals.map(function(p){return p[1]}).join()+'|'+goal;if(sg===sig)return;sig=sg;
     var b='',l='';
     vals.forEach(function(p,j){
-      b+='<div class="col'+(j===6?' t':p[1]>=goal?' hit':'')+'"><i style="--h:'+Math.max(4,Math.round(p[1]/mx*104))+'px;--d:'+(j*70)+'ms"></i></div>';
-      l+='<span'+(j===6?' class="t"':'')+'>'+L[p[0].getDay()]+'</span>';
+      b+='<div class="col'+(p[2]?' t':p[1]>=goal?' hit':'')+'"><i style="--h:'+Math.max(4,Math.round(p[1]/mx*104))+'px;--d:'+(j*(hr===7?70:25))+'ms"></i></div>';
+      l+='<span'+(p[2]?' class="t"':'')+'>'+p[0]+'</span>';
     });
+    $('bars').className='bars'+cls;$('lbls').className='lbls'+cls;
     $('bars').innerHTML=b+'<div class="gl" style="bottom:'+Math.round(goal/mx*104)+'px"></div>';$('lbls').innerHTML=l;
   }
   function draw(){
@@ -408,11 +445,70 @@ function Detector(cfg){
     catch(e){msg('Export is not available here')}
   }
 
+  /* ---- cloud backup: jsonblob.com (free, no key). Har browser ka apna alag blob ID ---- */
+  var API='https://jsonblob.com/api/jsonBlob',cid='',busy=false,again=false,pulled=false,blocked=false;
+  try{cid=localStorage.getItem('sc4id')||''}catch(e){}
+  function cmsg(t){$('cloudTxt').textContent=t}
+  function hhmm(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
+  function setId(id){cid=id;$('cid').value=id;try{localStorage.setItem('sc4id',id)}catch(e){}}
+  function dropId(){cid='';$('cid').value='';try{localStorage.removeItem('sc4id')}catch(e){}}
+  function applySet(){sensEl.value=DB.set.sens;hEl.value=DB.set.h;wEl.value=DB.set.w;goalEl.value=DB.set.goal;slEl.value=DB.set.sl;theme(DB.set.theme||'auto')}
+  function payload(){return JSON.stringify({v:1,u:new Date().toISOString(),sum:{d7:summ(7),d30:summ(30),life:summ(0)},set:DB.set,days:DB.days})}
+  function req(m,id,body,ka){
+    var o={method:m,headers:{'Accept':'application/json'}};
+    if(body){o.headers['Content-Type']='application/json';o.body=body;if(ka&&body.length<60000)o.keepalive=true}
+    return fetch(API+(id?'/'+id:''),o);
+  }
+  function merge(s){ /* cloud me jo din local me nahi (ya local me khali) hai wo wapas aa jaye */
+    var n=0,k,v,L;
+    if(s&&s.days)for(k in s.days){v=s.days[k];L=DB.days[k];
+      if((!L||(L.s===0&&L.t===0))&&/^\d{4}-\d\d-\d\d$/.test(k)&&v&&typeof v.s==='number'&&typeof v.d==='number'&&typeof v.k==='number'&&typeof v.t==='number'&&v.s>0){DB.days[k]=v;n++}}
+    if(fresh&&s&&s.set&&typeof s.set==='object'){for(k in s.set)if(k in DB.set)DB.set[k]=s.set[k];applySet()}
+    fresh=false;
+    if(n){save();sig='';render()}
+    return n;
+  }
+  async function sync(ka){
+    if(busy){again=true;return}
+    if(!cid&&blocked)return;
+    busy=true;
+    try{
+      var r,n=0;
+      if(cid&&!pulled){
+        r=await req('GET',cid);
+        if(r.status===404)dropId();
+        else{if(!r.ok)throw 0;n=merge(await r.json());pulled=true}
+      }
+      if(!cid){
+        r=await req('POST','',payload(),ka);
+        if(!r.ok)throw 0;
+        var id=(r.headers.get('Location')||r.headers.get('X-jsonblob')||'').split('/').pop();
+        if(!id){blocked=true;busy=false;cmsg('Uploaded, but this browser hides the ID. Create a blob at jsonblob.com and paste its ID above.');return}
+        setId(id);pulled=true;
+      }else{
+        r=await req('PUT',cid,payload(),ka);
+        if(r.status===404){dropId();busy=false;return sync(ka)}
+        if(!r.ok)throw 0;
+      }
+      needPush=false;
+      cmsg((n?'Restored '+n+' day'+(n>1?'s':'')+' from cloud · ':'')+'Backed up '+hhmm());
+    }catch(e){cmsg('Backup pending, will retry when online')}
+    busy=false;if(again){again=false;sync()}
+  }
+  function flush(){if(needPush)sync(true)}
+  $('sync').onclick=function(){
+    var v=$('cid').value.trim();
+    if(v&&v!==cid){if(!/^[0-9a-z-]{8,}$/i.test(v)){cmsg('Invalid Backup ID');return}setId(v);pulled=false;blocked=false}
+    else if(!v&&cid)$('cid').value=cid;
+    cmsg('Syncing...');needPush=true;sync();
+  };
+
   /* ---- sheets, theme, settings ---- */
   function sheet(id,open){
     var s=$(id);s.classList.toggle('open',open);s.setAttribute('aria-hidden',!open);
     if(open&&id==='s-hist'){sig='';render()}
   }
+  document.querySelectorAll('#hseg button').forEach(function(b){b.onclick=function(){hr=+b.dataset.r;document.querySelectorAll('#hseg button').forEach(function(x){x.classList.toggle('on',x===b)});sig='';render()}});
   $('bHist').onclick=function(){sheet('s-hist',true)};$('bSet').onclick=function(){sheet('s-set',true)};
   document.querySelectorAll('[data-close]').forEach(function(b){b.onclick=function(){sheet(b.closest('.sheet').id,false)}});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.sheet.open').forEach(function(s){sheet(s.id,false)})});
@@ -427,10 +523,12 @@ function Detector(cfg){
   [sensEl,hEl,wEl,goalEl,slEl].forEach(function(el){el.oninput=function(){
     DB.set.sens=+sensEl.value;DB.set.h=+hEl.value||170;DB.set.w=+wEl.value||65;DB.set.goal=+goalEl.value||10000;DB.set.sl=+slEl.value||0;save();render()}});
   document.addEventListener('visibilitychange',async function(){
-    if(document.hidden)save();else if(running&&navigator.wakeLock){try{wake=await navigator.wakeLock.request('screen')}catch(e){}}
+    if(document.hidden){save();flush()}else if(running&&navigator.wakeLock){try{wake=await navigator.wakeLock.request('screen')}catch(e){}}
   });
-  window.addEventListener('pagehide',save);
+  window.addEventListener('pagehide',function(){save();flush()});
   theme(DB.set.theme||'auto');setToggle();render();draw();
+  $('cid').value=cid;setTimeout(sync,1200);
+  setInterval(function(){if(needPush&&navigator.onLine!==false)sync()},60000);
 })();
 </script>
 </body>
