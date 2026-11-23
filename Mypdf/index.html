@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.83">
+<meta name="app-version" content="1.4.84">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -336,8 +336,16 @@ body.nobar #showbar{display:block}body.pres #showbar{display:none!important}
 .tb img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 .tb.cv{background:linear-gradient(135deg,#1e3a8a 0%,#2f5fb3 60%,#1e3f80 100%)}
 .ag{position:absolute;left:7px;bottom:6px;font-style:normal;font-size:12px;font-weight:600;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);color:#fff;border-radius:5px;padding:1px 6px}
-.dl{position:absolute;top:6px;right:6px;padding:0;width:26px;height:26px;font-size:13px;border-radius:50%;border:none;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
+.dl{position:absolute;top:6px;right:6px;padding:0;width:32px;height:32px;font-size:13px;border-radius:50%;border:none;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
 .tb:hover .dl{opacity:1}
+/* v1.4.84: professional trash icon (SVG), always visible on touch screens, red when pressed; confirm dialog before every delete */
+.dl svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.dl:hover,.dl:active{background:#dc2626}
+@media(hover:none){.dl{opacity:1}}
+#dcf>div{max-width:340px;gap:10px}#dcf .dci{width:46px;height:46px;border-radius:50%;background:rgba(220,38,38,.14);color:#ef4444;display:flex;align-items:center;justify-content:center;align-self:center}
+#dcf .dci svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#dcf h3{text-align:center;margin:2px 0 0}#dcf p{margin:0;text-align:center;font-size:14px;line-height:1.45;opacity:.8;word-break:break-word}
+#dcf .zr{margin-top:6px;gap:8px}#dcf .pb{flex:1;text-align:center;padding:12px}#dcf .dcd{background:#dc2626;color:#fff;border-color:#dc2626}
 .nb b{font-size:13px;font-weight:600;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word;cursor:pointer;line-height:1.3}
 .nb small{opacity:.55;font-size:12px}
 
@@ -868,10 +876,10 @@ let theme=(()=>{try{return localStorage.getItem("pa_theme")||"auto"}catch(e){ret
 let pinv=(()=>{try{return localStorage.getItem("pa_pinv")!="0"}catch(e){return true}})();
 let DK=false;
 /* v1.4.53 dark-PDF look: soft charcoal page (not pure black) + soft white text, mid-tones lifted a little so thin text keeps its weight */
-const DKBG="#141414",DK_LO=20,DK_HI=253,DK_G=.82;   /* v1.4.83: text white 248 -> 253 (crisper) */
+const DKBG="#141414",DK_LO=20,DK_HI=253,DK_G=.82;   /* v1.4.84: text white 248 -> 253 (crisper) */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],PL=window.PDFLib;
 const LOW=(navigator.deviceMemory||4)<=2,ZMAX=LOW?3:3.5,MAXPX=LOW?1.2e6:5e6,DPR=Math.min(devicePixelRatio||1,LOW?1:3);   /* v1.4.46: sharper canvas — the page and the ink are drawn at up to 5 Mpx (was 3 Mpx), so they are no longer stretched on iPad */
-let pdf,file,url,name="",docId=null,zoom=LOW?1:1.2,tool="pen",previousTool="lasso",color="#e11d48",W=3,SW=3,HW=12,   /* v1.4.83: W = pen size, SW = shape size (line / arrow / rectangle / oval) — independent */penOnly=(()=>{try{return localStorage.getItem("pa_penonly")!=="0"}catch(e){return true}})(),curPage=0;
+let pdf,file,url,name="",docId=null,zoom=LOW?1:1.2,tool="pen",previousTool="lasso",color="#e11d48",W=3,SW=3,HW=12,   /* v1.4.84: W = pen size, SW = shape size (line / arrow / rectangle / oval) — independent */penOnly=(()=>{try{return localStorage.getItem("pa_penonly")!=="0"}catch(e){return true}})(),curPage=0;
 let ina,anns={},sizes=[],hist=[],redo=[],timer,vis=new Set(),q=Promise.resolve();
 const COL=["#e11d48","#2563eb","#16a34a","#f59e0b","#111111","#ffffff"];
 let ord=[],bm=new Set(),tpl={},SR={},TXT={},selObjs=[],selPage=-1,lz=null,lm=null,lastMv=0,lastPen=0,lastInk=0,shapeOn=false,palm=true,curStamp="✅",stampS=40;
@@ -1101,7 +1109,7 @@ function autoReturnToTool(t="lasso"){tool=t;$$('[data-t]').forEach(b=>b.classLis
 function autoReturnToLasso(){autoReturnToTool("lasso");}
 /* Shapes picker + More-tools popover (the "+" button) */
 const SHT=["line","arrow","rect","oval"];
-[["#shpb","shp-panel"],["#mor","more-panel"]].forEach(([b,id])=>$(b).onclick=function(){if(panelOpen===id)closeAllPanels();else{if(id=="shp-panel"){const lb=document.querySelector('#shp-panel [data-t="line"]');if(lb)lb.click()}   /* v1.4.83: Shapes always starts with the straight Line already selected */
+[["#shpb","shp-panel"],["#mor","more-panel"]].forEach(([b,id])=>$(b).onclick=function(){if(panelOpen===id)closeAllPanels();else{if(id=="shp-panel"){const lb=document.querySelector('#shp-panel [data-t="line"]');if(lb)lb.click()}   /* v1.4.84: Shapes always starts with the straight Line already selected */
   openPanel(id,this);panelFor=null}});
 $$("[data-t]").forEach(b=>b.addEventListener("click",()=>{$("#shpb").classList.toggle("on",SHT.includes(tool));$("#mor").classList.toggle("on",!!b.closest("#more-panel")&&!SHT.includes(tool))}));
 $$(".mcell").forEach(c=>c.addEventListener("click",e=>{if(!e.target.closest(".ibtn"))c.querySelector(".ibtn").click()}));
@@ -1187,7 +1195,7 @@ const DK_LUT=(()=>{const L=new Uint8ClampedArray(256);for(let v=0;v<256;v++)L[v]
    RULE 4  Pictures: real photos keep their real colours (only the glare of pure white is softened). Diagrams / screenshots / scans / logos on a
            white background are converted with rules 1-3. The decision uses how "flat" the picture is (a few colours = graphic, thousands of
            shades = photo), not how much white it has - so a clinical photo with a bright sclera or white border is never turned into a negative. */
-const DK_YMIN=.175,DK_YMAX=.46;                     /* v1.4.83: every hue is kept between these two perceived brightnesses (readable on the dark page, never washed-out) */                                     /* GoodNotes' deep pink heading (#B81868) has Y~0.118 -> same strength */
+const DK_YMIN=.175,DK_YMAX=.46;                     /* v1.4.84: every hue is kept between these two perceived brightnesses (readable on the dark page, never washed-out) */                                     /* GoodNotes' deep pink heading (#B81868) has Y~0.118 -> same strength */
 const DK_HF=(()=>{const T=new Float32Array(360),lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)};
   for(let h=0;h<360;h++){const hh=h/60,X=1-Math.abs(hh%2-1);let r,g,b;
     switch(hh|0){case 0:r=1;g=X;b=0;break;case 1:r=X;g=1;b=0;break;case 2:r=0;g=1;b=X;break;case 3:r=0;g=X;b=1;break;case 4:r=X;g=0;b=1;break;default:r=1;g=0;b=X}
@@ -1195,7 +1203,7 @@ const DK_HF=(()=>{const T=new Float32Array(360),lin=v=>{v/=255;return v<=.04045?
       if(.2126*lin(R)+.7152*lin(G)+.0722*lin(B)>=DK_YMIN)break}
     T[h]=L}
   return T})();
-const DK_HC=(()=>{const T=new Float32Array(360),lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)};   /* v1.4.83: per-hue ceiling = lightness where the full-chroma colour reaches DK_YMAX */
+const DK_HC=(()=>{const T=new Float32Array(360),lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)};   /* v1.4.84: per-hue ceiling = lightness where the full-chroma colour reaches DK_YMAX */
   for(let h=0;h<360;h++){const hh=h/60,X=1-Math.abs(hh%2-1);let r,g,b;
     switch(hh|0){case 0:r=1;g=X;b=0;break;case 1:r=X;g=1;b=0;break;case 2:r=0;g=1;b=X;break;case 3:r=0;g=X;b=1;break;case 4:r=X;g=0;b=1;break;default:r=1;g=0;b=X}
     let L=.3;for(;L<.8;L+=.01){const m=L-.5,R=(r*1+m)*255,G=(g*1+m)*255,B=(b*1+m)*255;
@@ -1208,8 +1216,8 @@ function dkConvert(d){for(let i=0;i<d.length;i+=4){const r=d[i],g=d[i+1],b=d[i+2
   const nl=DK_LUT[255-(((mx+mn)>>1))],l=(mx+mn)/510,cc=c/255;
   let h=mx==r?(g-b)/c:mx==g?(b-r)/c+2:(r-g)/c+4;if(h<0)h+=6;
   const wf=Math.max(0,Math.min(1,(cc-.12)/.4)),fl=DK_HF[((h*60)|0)%360]*wf;      /* RULE 3: hue floor, faded by chroma */
-  let Lp=1-l;const hi=DK_HC[((h*60)|0)%360],ce=1-(1-hi)*wf;if(Lp>ce)Lp=ce;if(Lp<fl)Lp=fl;const cap=1-.32*wf;if(Lp>cap)Lp=cap;   /* v1.4.83: per-hue brightness window [DK_YMIN .. DK_YMAX] for ALL colours, faded by chroma */                    /* RULE 2: mirror the lightness; strong colours never wash out to a pastel (max L .68) */
-  const ccv=Math.min(1,cc*(1+.32*wf)+.06*wf),Cp=Math.min(ccv,1-Math.abs(2*Lp-1)),   /* v1.4.83: +32 % chroma on strong colours (soft edge pixels barely change) */
+  let Lp=1-l;const hi=DK_HC[((h*60)|0)%360],ce=1-(1-hi)*wf;if(Lp>ce)Lp=ce;if(Lp<fl)Lp=fl;const cap=1-.32*wf;if(Lp>cap)Lp=cap;   /* v1.4.84: per-hue brightness window [DK_YMIN .. DK_YMAX] for ALL colours, faded by chroma */                    /* RULE 2: mirror the lightness; strong colours never wash out to a pastel (max L .68) */
+  const ccv=Math.min(1,cc*(1+.32*wf)+.06*wf),Cp=Math.min(ccv,1-Math.abs(2*Lp-1)),   /* v1.4.84: +32 % chroma on strong colours (soft edge pixels barely change) */
    X=Cp*(1-Math.abs(h%2-1)),m=Lp-Cp/2;let R,G,B;
   switch(h|0){case 0:R=Cp;G=X;B=0;break;case 1:R=X;G=Cp;B=0;break;case 2:R=0;G=Cp;B=X;break;case 3:R=0;G=X;B=Cp;break;case 4:R=X;G=0;B=Cp;break;default:R=Cp;G=0;B=X}
   const w=Math.min(1,(c-5)/14),v=1-w;
@@ -1227,7 +1235,7 @@ function dkIsPhoto(t){const n=t.length/4,sp=Math.max(1,Math.floor(n/4000)),M=new
   return true}                                  /* photo / artwork / already-dark picture: keep its real colours */
 /* photos keep their colours; only pure-white glare is softened (soft knee) and the whole picture is dimmed a little so it sits well on the dark page */
 const DK_PH=(()=>{const L=new Uint8ClampedArray(256);for(let v=0;v<256;v++){let x=v;if(x>190)x=190+(x-190)*.5;L[v]=x*.93}return L})();
-/* v1.4.83 — gentle sharpening of the converted page (3x3 unsharp, amount .32): thin text and headings look crisp instead of soft/matte. Skipped on low-memory devices. */
+/* v1.4.84 — gentle sharpening of the converted page (3x3 unsharp, amount .32): thin text and headings look crisp instead of soft/matte. Skipped on low-memory devices. */
 function dkSharpen(im,W,H){const d=im.data,o=new Uint8ClampedArray(d),a=.32,k=1+4*a,w4=W*4;
   for(let y=1;y<H-1;y++){let i=y*w4+4;for(let x=1;x<W-1;x++,i+=4){
     d[i]=k*o[i]-a*(o[i-4]+o[i+4]+o[i-w4]+o[i+w4]);d[i+1]=k*o[i+1]-a*(o[i-3]+o[i+5]+o[i+1-w4]+o[i+1+w4]);d[i+2]=k*o[i+2]-a*(o[i-2]+o[i+6]+o[i+2-w4]+o[i+2+w4])}}}
@@ -1314,6 +1322,17 @@ function renderTabs(){const c=$("#dtabs");if(!c)return;c.innerHTML="";let cur=nu
 async function switchNb(id){const f=FILES[id];if(!f||id===docId||switching)return;switching=true;
   try{await persist(true);try{onHome()}catch(e){}io.disconnect();vis.clear();$("#doc").innerHTML="";pdf=null;docId=null;await openFile(f,id)}
   catch(e){st("❌ Couldn't open the PDF");showLib()}finally{switching=false}}
+const TRASH_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6h17"/><path d="M9 6V4.2c0-.7.5-1.2 1.2-1.2h3.6c.7 0 1.2.5 1.2 1.2V6"/><path d="M18.5 6l-.8 12.6a2 2 0 01-2 1.9H8.3a2 2 0 01-2-1.9L5.5 6"/><path d="M10 10.5v5.5M14 10.5v5.5"/></svg>';
+/* v1.4.84 — in-app "Are you sure?" dialog (the browser's own confirm box can be blocked / skipped in an installed app, so a tap used to delete at once) */
+function askDelete(name){return new Promise(res=>{
+  const o=document.createElement("div");o.className="mod";o.id="dcf";o.setAttribute("role","alertdialog");o.setAttribute("aria-modal","true");
+  o.innerHTML='<div><span class="dci">'+TRASH_SVG+'</span><h3>Delete this notebook?</h3><p><b></b></p><p>Your notes and drawings move to <i>Recently deleted</i> and can be recovered for 30 days.</p><div class="zr"><button class="pb" id="dcn">Cancel</button><button class="pb dcd" id="dcy">Delete</button></div></div>';
+  o.querySelector("p b").textContent=name;document.body.append(o);
+  const done=v=>{document.removeEventListener("keydown",kd,true);o.remove();res(v)},kd=e=>{if(e.key=="Escape"){e.preventDefault();done(false)}};
+  document.addEventListener("keydown",kd,true);
+  o.querySelector("#dcn").onclick=()=>done(false);o.querySelector("#dcy").onclick=()=>done(true);
+  o.addEventListener("pointerdown",e=>{if(e.target===o)done(false)});
+  setTimeout(()=>{const b=o.querySelector("#dcn");if(b)b.focus()},30)})}
 async function showLib(){
   await persist();pdf=null;docId=null;vis.clear();if(url){URL.revokeObjectURL(url);url=null}
   $("#doc").innerHTML="";go("home");THU.forEach(u=>URL.revokeObjectURL(u));THU=[];
@@ -1324,9 +1343,9 @@ async function showLib(){
     const c=document.createElement("div"),tb=document.createElement("div"),th=await thGet(r.id),x=document.createElement("button"),t=document.createElement("b"),m=document.createElement("small");
     c.className="nb";tb.className="tb";
     if(th){const im=new Image(),u=URL.createObjectURL(new Blob([th],{type:"image/jpeg"}));THU.push(u);im.src=u;tb.append(im)}else tb.classList.add("cv");
-    const ag=document.createElement("i");ag.className="ag";ag.textContent=age(r.t);x.className="dl";x.textContent="🗑";tb.append(ag,x);
+    const ag=document.createElement("i");ag.className="ag";ag.textContent=age(r.t);x.className="dl";x.setAttribute("aria-label","Delete notebook");x.title="Delete";x.innerHTML=TRASH_SVG;tb.append(ag,x);
     t.textContent=r.name.replace(/\.pdf$/i,"");m.textContent=`${r.np}p · ${r.n} ann`;
-    x.onclick=async e=>{e.stopPropagation();if(confirm("Delete this notebook's annotations?\n\n(They stay in Settings → Recover deleted notebooks for 30 days.)")){await dbDel(r.id);await thDel(r.id);delete FILES[r.id];showLib()}};
+    x.onclick=async e=>{e.stopPropagation();e.preventDefault();if(await askDelete(r.name.replace(/\.pdf$/i,""))){await dbDel(r.id);await thDel(r.id);delete FILES[r.id];showLib()}};
     tb.onclick=t.onclick=()=>openNb(r);c.append(tb,t,m);g.append(c);
   }
 }
@@ -1477,7 +1496,7 @@ function snap(i){hist.push([i,JSON.stringify(anns[i]||[])]);if(hist.length>40)hi
 function bind(ink,p,i){
   let cur=null,down=false,mv=null,mt=null,pid=-1,dT=0,R=null,rq=0,lastRaw=null,lastMul=null,drawnTo=0,pT=null,pX=0,pY=0,pSp=0,pred=[];
   const pmul=(x,P)=>{const pr=x.pressure>0?x.pressure:.5,pp=Math.max(0,Math.min(1,.5+(pr-.5)*(.4+P.s*1.6))),o=Math.min(.92,.35+P.w*.7);let mu=P.m+(1.6-P.m)*pp;
-    /* v1.4.83: natural ink flow — a fast flick thins the line a little (max 14 %), a slow stroke stays full: like a real pen (not for Brush / Pencil, which have their own look) */
+    /* v1.4.84: natural ink flow — a fast flick thins the line a little (max 14 %), a slow stroke stays full: like a real pen (not for Brush / Pencil, which have their own look) */
     {const tt=x.timeStamp;if(pT!=null&&tt>pT){const v=Math.hypot(x.clientX-pX,x.clientY-pY)/(tt-pT);pSp=pSp*.85+Math.min(v,4)*.15}pT=tt;pX=x.clientX;pY=x.clientY;
      if(typeof penType==="undefined"||(penType!="brush"&&penType!="pencil"))mu*=1-.14*Math.min(1,pSp/2.2)}
     lastMul=lastMul==null?mu:lastMul*o+mu*(1-o);return+lastMul.toFixed(2)};
@@ -1485,7 +1504,7 @@ function bind(ink,p,i){
      Incremental segment painting caused tiny joins/gaps as the Pencil moved;
      redraw only the active page's ink layer once per animation frame instead. */
   const liveDraw=()=>{if(rq)return;rq=requestAnimationFrame(()=>{rq=0;if(!(down&&cur))return;
-    /* v1.4.83: low latency — the ink is drawn a few points AHEAD of the Pencil tip (the browser's own prediction); those points are never saved */
+    /* v1.4.84: low latency — the ink is drawn a few points AHEAD of the Pencil tip (the browser's own prediction); those points are never saved */
     const n0=cur.p.length,pp=cur.t=="pen"&&pred.length?pred:null;if(pp)cur.p.push(...pp);
     try{draw(i,cur)}finally{if(pp)cur.p.length=n0}})};
   ink.addEventListener("touchstart",e=>{const t=e.changedTouches&&e.changedTouches[0];if(t&&t.touchType==="stylus"&&e.cancelable)e.preventDefault()},{passive:false});   /* Pencil never scrolls, selects or opens menus */
@@ -1552,7 +1571,7 @@ function bind(ink,p,i){
       const tail=LS[LS.length-1];
       if(!tail||Math.hypot((tail.clientX||0)-(e.clientX||0),(tail.clientY||0)-(e.clientY||0))>.01)LS.push(e);
       const PP=cur.p[0].length>2?penPar():null;
-      const MS=Math.max(.08,.3/zoom);   /* v1.4.83: ignore sub-pixel jitter (about 0.3 screen px) -> fewer points, calmer line, faster live drawing */
+      const MS=Math.max(.08,.3/zoom);   /* v1.4.84: ignore sub-pixel jitter (about 0.3 screen px) -> fewer points, calmer line, faster live drawing */
       for(const x of LS){const q2=pt(x),l=cur.p[cur.p.length-1];if(Math.hypot(l[0]-q2[0],l[1]-q2[1])<MS)continue;
         if(PP)q2.push(pmul(x,PP));
         if(tool=="pen"&&e.pointerType!="pen"){const a=1/(1+(+$("#ps-motionsmooth").value||2)*.3);q2[0]=l[0]+(q2[0]-l[0])*a;q2[1]=l[1]+(q2[1]-l[1])*a}
@@ -1572,7 +1591,7 @@ function rdp(P,e,pr){const n=P.length;if(n<4)return P;const keep=new Uint8Array(
   while(st.length){const[a,b]=st.pop();let md=0,mi=-1;const[ax,ay]=P[a],dx=P[b][0]-ax,dy=P[b][1]-ay,L=dx*dx+dy*dy;
     for(let i=a+1;i<b;i++){let d;if(!L)d=(P[i][0]-ax)**2+(P[i][1]-ay)**2;else{let t=((P[i][0]-ax)*dx+(P[i][1]-ay)*dy)/L;t=t<0?0:t>1?1:t;d=(P[i][0]-ax-t*dx)**2+(P[i][1]-ay-t*dy)**2}if(d>md){md=d;mi=i}}
     if(md>e2&&mi>0){keep[mi]=1;st.push([a,mi],[mi,b])}}
-  /* v1.4.83: when saving a stroke, also keep points where the pressure (line width) changes, so the line does not change thickness after you lift the Pencil */
+  /* v1.4.84: when saving a stroke, also keep points where the pressure (line width) changes, so the line does not change thickness after you lift the Pencil */
   if(pr&&P[0].length>2){let lp=P[0][2];for(let i=1;i<n-1;i++){if(keep[i]){lp=P[i][2];continue}if(Math.abs(P[i][2]-lp)>.07){keep[i]=1;lp=P[i][2]}}}
   return P.filter((_,i)=>keep[i])}
 function erase(i,q,sc){
@@ -1878,7 +1897,7 @@ docEl.addEventListener("touchend",pzEnd,{passive:true});docEl.addEventListener("
 $("#po").classList.toggle("on",penOnly);
 $("#po").onclick=e=>{penOnly=!penOnly;try{localStorage.setItem("pa_penonly",penOnly?"1":"0")}catch(x){}$("#po").classList.toggle("on",penOnly);st(penOnly?"✍️ Pencil writes · finger scrolls":"✍️ Finger can write too");$$(".pg canvas:last-child").forEach(c=>c.style.touchAction=penOnly?"pan-x pan-y":"none")};
 let sct;$("#doc").addEventListener("scroll",()=>{clearTimeout(sct);sct=setTimeout(()=>{if(!pdf)return;const top=$("#doc").getBoundingClientRect().top+80;for(const p of $$(".pg"))if(p.getBoundingClientRect().bottom>top){const next=+p.dataset.i;if(next!==curPage||pgDirty){curPage=next;pgDirty=false;change()}break}},300)},{passive:true});
-/* v1.4.83: live page number — updates while you are still scrolling (once per frame), not 0.3-0.8 s after you stop. Saving stays on the debounced handler above. */
+/* v1.4.84: live page number — updates while you are still scrolling (once per frame), not 0.3-0.8 s after you stop. Saving stays on the debounced handler above. */
 let pgDirty=false,pgRaf=0;
 $("#doc").addEventListener("scroll",()=>{if(pgRaf)return;pgRaf=requestAnimationFrame(()=>{pgRaf=0;if(!pdf)return;const L=$$(".pg");if(!L.length)return;const top=$("#doc").getBoundingClientRect().top+80;
   let lo=0,hi=L.length-1;while(lo<hi){const m=(lo+hi)>>1;if(L[m].getBoundingClientRect().bottom>top)hi=m;else lo=m+1}
@@ -2793,7 +2812,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.83",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.84",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
