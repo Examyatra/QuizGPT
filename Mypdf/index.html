@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.86">
+<meta name="app-version" content="1.4.87">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -1508,7 +1508,7 @@ function bind(ink,p,i){
   const armHold=()=>{clearTimeout(hT);hT=0;if(!shapeOn||!down||!cur||sn||(cur.t!=="pen"&&cur.t!=="hl"))return;hT=setTimeout(holdFire,HOLD_MS)};
   const holdFire=()=>{hT=0;if(!shapeOn||!down||!cur||sn||(cur.t!=="pen"&&cur.t!=="hl")||tool!==cur.t)return;
     let r=null;try{r=recog(cur)}catch(_){r=null}
-    if(!r)return;sn={orig:cur};cur=r;pred=[];lastRaw=null;liveDraw()};
+    if(!r)return;sn={orig:cur,mv:0};cur=r;pred=[];lastRaw=null;liveDraw()};
   const sampleOk=x=>{const cx=x.clientX,cy=x.clientY;if(!isFinite(cx)||!isFinite(cy)||(cx===0&&cy===0))return false;
     if(x.pointerId!==undefined&&x.pointerId!==pid)return false;
     const t=x.timeStamp>0?x.timeStamp:performance.now();
@@ -1587,8 +1587,9 @@ function bind(ink,p,i){
     if(tool=="lasso"){lassoMove(i,q);return}
     if(mv){const o=mv.o;if(mv.rs){const r=o.h/o.w;o.w=Math.max(30,q[0]-o.x);o.h=o.w*r}else{o.x=q[0]-mv.dx;o.y=q[1]-mv.dy}draw(i);return}
     if(tool=="er"){erase(i,q);return}
-    if(sn){   /* snapped: a line follows the tip, everything else stays put */
-      if(cur&&(cur.t==="line"||cur.t==="hl")&&cur.p.length===2)cur.p[1]=lineFix(cur.p[0],q);
+    if(sn){   /* snapped: a line follows the tip (after a real 10 px move), everything else stays put */
+      if(!sn.mv&&Math.hypot(e.clientX-hX,e.clientY-hY)>=10)sn.mv=1;
+      if(sn.mv&&cur&&(cur.t==="line"||cur.t==="hl")&&cur.p.length===2)cur.p[1]=lineFix(cur.p[0],q);
       liveDraw();return}
     if(["pen","hl"].includes(tool)){let ev=[];try{if(typeof e.getCoalescedEvents==="function")ev=e.getCoalescedEvents()||[]}catch(_){}
       const LS=ev.length?ev.slice():[e];
@@ -2547,7 +2548,7 @@ $("#shp").onclick=()=>shapeSet(!shapeOn,1);$$(".shp-tg").forEach(b=>b.onclick=()
    then tested as line / rectangle / circle / ellipse with size limits so ordinary handwriting (small letters, words, scribbles) is never turned into a shape.
    Returns the replacement object or null. The highlighter can only become a straight line. */
 function lineFix(a,b){const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy);if(!(L>1e-6))return[b[0],b[1]];
-  const deg=Math.atan2(dy,dx)*180/Math.PI;let best=null;for(const t of[-180,-135,-90,-45,0,45,90,135,180])if(Math.abs(deg-t)<=2.5){best=t;break}
+  const deg=Math.atan2(dy,dx)*180/Math.PI;let best=null;for(const t of[-180,-135,-90,-45,0,45,90,135,180])if(Math.abs(deg-t)<=(t%90===0?4:2.5)){best=t;break}
   if(best==null)return[b[0],b[1]];const r=best*Math.PI/180;return[+(a[0]+L*Math.cos(r)).toFixed(2),+(a[1]+L*Math.sin(r)).toFixed(2)]}
 function recog(o){const P=o.p;if(!P||P.length<5)return null;
   for(const q of P)if(!isFinite(q[0])||!isFinite(q[1]))return null;
@@ -2556,9 +2557,16 @@ function recog(o){const P=o.p;if(!P||P.length<5)return null;
   const N=64,R=[];{let k=0;for(let m=0;m<N;m++){const d=Lp*m/(N-1);while(k<P.length-2&&cum[k+1]<d)k++;const sg=cum[k+1]-cum[k]||1,t=Math.max(0,Math.min(1,(d-cum[k])/sg));R.push([P[k][0]+(P[k+1][0]-P[k][0])*t,P[k][1]+(P[k+1][1]-P[k][1])*t])}}
   const xs=R.map(q=>q[0]),ys=R.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),bw=x1-x0,bh=y1-y0,dg=Math.hypot(bw,bh);
   const a=P[0],b=P[P.length-1],cl=Math.hypot(a[0]-b[0],a[1]-b[1]),hl=o.t==="hl",mk=(t,p)=>({t:hl?"hl":t,c:o.c,w:o.w,p});
-  /* ---- straight line: the chord is (almost) as long as the path, and no point strays more than 5 % of it ---- */
-  if(cl>=24&&cl>=.88*Lp){let md=0;for(const q of R)md=Math.max(md,Math.abs((b[1]-a[1])*(q[0]-a[0])-(b[0]-a[0])*(q[1]-a[1]))/cl);
-    if(md<=Math.max(1.5,cl*.05))return mk("line",[[a[0],a[1]],lineFix(a,b)]);return null}
+  /* ---- straight line: fit ONE best line through the stroke (ignoring the first/last ~5 %: start hook / lift hook), accept wobble up to ~6 % of the length,
+         then put both ends ON that line, so a wavy underline becomes perfectly straight end to end ---- */
+  {const n=R.length,t0=3,t1=n-3,m=t1-t0;let mx=0,my=0;for(let j=t0;j<t1;j++){mx+=R[j][0];my+=R[j][1]}mx/=m;my/=m;
+    let sxx=0,syy=0,sxy=0;for(let j=t0;j<t1;j++){const dx=R[j][0]-mx,dy=R[j][1]-my;sxx+=dx*dx;syy+=dy*dy;sxy+=dx*dy}
+    const th=.5*Math.atan2(2*sxy,sxx-syy);let ux=Math.cos(th),uy=Math.sin(th);
+    if((b[0]-a[0])*ux+(b[1]-a[1])*uy<0){ux=-ux;uy=-uy}
+    const pr=q=>(q[0]-mx)*ux+(q[1]-my)*uy,pe=q=>-(q[0]-mx)*uy+(q[1]-my)*ux,Lc=pr(R[n-1])-pr(R[0]);
+    if(Lc>=24){let md=0,ss=0,back=0;for(let j=t0;j<t1;j++){const d=Math.abs(pe(R[j]));md=Math.max(md,d);ss+=d*d;if(j>t0&&pr(R[j])<pr(R[j-1])-1e-9)back++}
+      if(Lp<=1.25*Lc&&md<=Math.max(3,Lc*.06)&&Math.sqrt(ss/m)<=Math.max(1.5,Lc*.035)&&back<=.1*m){
+        const pa=pr(a),pb=pr(b),A=[+(mx+ux*pa).toFixed(2),+(my+uy*pa).toFixed(2)],B=[mx+ux*pb,my+uy*pb];return mk("line",[A,lineFix(A,B)])}}}
   if(hl)return null;
   /* ---- closed shapes: ends meet (or overlap), big enough, not a flat sliver ---- */
   if(dg<28||cl>.28*dg||Math.min(bw,bh)<10||Math.min(bw,bh)<.12*Math.max(bw,bh))return null;
@@ -2862,7 +2870,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.86",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.87",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
