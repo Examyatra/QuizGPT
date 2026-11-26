@@ -1,5 +1,5 @@
 /* Vpdf — Service Worker (offline-first). Bump the version whenever the code changes */
-const APP_VERSION = "1.4.92";            // change together with APP_VERSION in index.html
+const APP_VERSION = "1.4.98";            // change together with APP_VERSION in index.html
 const VERSION = "pa-app-" + APP_VERSION;  // app-shell cache (new for every version)
 const LIBS = "pa-libs-1";                 // pdf.js etc. (version-pinned) — not re-downloaded on every update
 const SHELL = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
@@ -65,7 +65,7 @@ self.addEventListener("fetch", e => {
   if (u.origin === location.origin) {             // own files: serve from cache, update in the background
     e.respondWith(caches.match(req, {ignoreSearch: true}).then(r => {
       const net = fetch(req).then(n => { const c = n.clone(); if (n.ok) caches.open(VERSION).then(x => x.put(req, c)); return n; }).catch(() => r);
-      return r || net;
+      return r || net.then(x => x || Response.error());   // offline + not cached: a clean network error instead of an undefined response
     }));
   }
 });

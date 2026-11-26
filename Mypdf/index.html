@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.93">
+<meta name="app-version" content="1.4.98">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -346,6 +346,12 @@ body.nobar #showbar{display:block}body.pres #showbar{display:none!important}
 #dcf .dci svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 #dcf h3{text-align:center;margin:2px 0 0}#dcf p{margin:0;text-align:center;font-size:14px;line-height:1.45;opacity:.8;word-break:break-word}
 #dcf .zr{margin-top:6px;gap:8px}#dcf .pb{flex:1;text-align:center;padding:12px}#dcf .dcd{background:#dc2626;color:#fff;border-color:#dc2626}
+#rdf>div{max-width:380px;width:100%;gap:10px}#rdf h3{text-align:center;margin:2px 0 0}#rdf .rdh{margin:0;text-align:center;font-size:13px;opacity:.65}
+#rdf .rdl{display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#rdf .rdi{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;text-align:left}#rdf .rdi .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+#rdf .rdi b{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#rdf .rdi small{font-size:12px;opacity:.6}
+#rdf .rdr{font-style:normal;font-size:12px;font-weight:600;color:#16a34a;border:1px solid currentColor;border-radius:999px;padding:4px 10px;flex:none}
+#rdf .zr .pb{flex:1;text-align:center;padding:12px}
 .nb b{font-size:13px;font-weight:600;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word;cursor:pointer;line-height:1.3}
 .nb small{opacity:.55;font-size:12px}
 
@@ -799,10 +805,11 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
      <button class="smb" id="sm-tgb"><i class="ic" style="--c:#2aabee"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4L3 11l6 2.2L11 20l3.2-4.6L19 19z"/><path d="M9 13.2L21 4"/></svg></i><span class="t"><b>Telegram</b><small id="sm-tgs">Not connected</small></span><em class="chev">›</em></button>
      <button class="smb" id="stb"><i class="ic" style="--c:#16a34a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 01-.6-8.96A6 6 0 0118 9.5 4 4 0 0117.5 18"/><path d="M12 12v8M9 15l3-3 3 3"/></svg></i><span class="t"><b>Full backup now</b><small>Send every notebook to Telegram</small></span><em class="chev">›</em></button>
      <button class="smb" id="sm-bkf"><i class="ic" style="--c:#f59e0b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 8l4-4 4 4"/><path d="M5 14v4.5A1.5 1.5 0 006.5 20h11a1.5 1.5 0 001.5-1.5V14"/></svg></i><span class="t"><b>Export backup file</b><small>Save a copy on this device</small></span><em class="chev">›</em></button>
+     <button class="smb" id="sm-undorestore"><i class="ic" style="--c:#f59e0b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></i><span class="t"><b>Undo last restore</b><small>Put notebooks back as they were before the last restore</small></span><em class="chev">›</em></button>
      <button class="smb" id="sm-stall"><i class="ic" style="--c:#10b981"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg></i><span class="t"><b>Stall report</b><small>Shows when / why the app froze</small></span><em class="chev">›</em></button>
      <button class="smb" id="sm-sim"><i class="ic" style="--c:#8b5cf6"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M16.9 16.9l2.1 2.1M4.9 19.1l2.1-2.1M16.9 7.1l2.1-2.1"/></svg></i><span class="t"><b>Intelligence report</b><small id="sm-sim-st">All functions tracked · self-heal on</small></span><em class="chev">›</em></button>
      <button class="smb" id="sm-imp"><i class="ic" style="--c:#6366f1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 11l4 4 4-4"/><path d="M5 14v4.5A1.5 1.5 0 006.5 20h11a1.5 1.5 0 001.5-1.5V14"/></svg></i><span class="t"><b>Import backup file</b><small>Restore from a Vpdf backup file</small></span><em class="chev">›</em></button>
-     <button class="smb" id="sm-trash"><i class="ic" style="--c:#64748b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 108-8 8 8 0 00-5.7 2.4L4 9"/><path d="M4 4v5h5M12 8v4l3 2"/></svg></i><span class="t"><b>Recently deleted</b><small>Bring back notebooks you removed</small></span><em class="chev">›</em></button>
+     <button class="smb" id="sm-trash"><i class="ic" style="--c:#64748b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 108-8 8 8 0 00-5.7 2.4L4 9"/><path d="M4 4v5h5M12 8v4l3 2"/></svg></i><span class="t"><b>Recently deleted</b><small>Pick which deleted notebook to bring back</small></span><em class="chev">›</em></button>
    </div>
    <input type="file" id="sm-impf" accept=".json,application/json" hidden>
    <div class="sgl">Voice typing</div>
@@ -877,6 +884,12 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <script>
+/* v1.4.95: script error log (last 30). Observes only — never changes behaviour; shown at the end of the stall report. */
+const ERRK="pa_errlog";
+const errLog=(k,m)=>{try{const a=JSON.parse(localStorage.getItem(ERRK)||"[]"),t=String(m).slice(0,240),l=a[a.length-1];if(l&&l.m===t&&Date.now()-l.t<2000)return;a.push({t:Date.now(),k,m:t});localStorage.setItem(ERRK,JSON.stringify(a.slice(-30)))}catch(e){}};
+addEventListener("error",e=>{try{errLog("error",(e.message||"error")+(e.filename?" @"+String(e.filename).split("/").pop()+":"+e.lineno:""))}catch(x){}});
+addEventListener("unhandledrejection",e=>{try{const r=e&&e.reason;errLog("promise",r&&r.message?r.message:String(r))}catch(x){}});
+const errTail=()=>{try{const a=JSON.parse(localStorage.getItem(ERRK)||"[]");if(!a.length)return"";return"\n\nScript errors (last "+a.length+", newest first)\n"+a.slice().reverse().map(x=>new Date(x.t).toLocaleString("en-GB",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})+" · "+x.k+" · "+x.m).join("\n")}catch(e){return""}};
 if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";   /* if a library is missing (first visit offline) the app still opens; it reloads itself once the internet is back */
 let theme=(()=>{try{return localStorage.getItem("pa_theme")||"auto"}catch(e){return"auto"}})();
 let pinv=(()=>{try{return localStorage.getItem("pa_pinv")!="0"}catch(e){return true}})();
@@ -1303,7 +1316,7 @@ const thGet=id=>thx("readonly",o=>o.get(id)),thPut=(id,b)=>thx("readwrite",o=>o.
 const isGen=id=>typeof id=="string"&&id.startsWith("gen:");   /* notebooks made with "Create PDF": the blank PDF is rebuilt from the page count, so it never has to be stored or backed up */
 const IM={};
 async function ldImg(id,cb){IM[id]=1;const r=await iGet(id);if(!r){delete IM[id];return}const im=new Image();im.onload=()=>{IM[id]=im;cb()};im.src=URL.createObjectURL(new Blob([r]))}
-const dbGet=id=>tx("readonly",o=>o.get(id)),dbPut=v=>tx("readwrite",o=>o.put(v)),dbDel=async id=>{try{const r=await dbGet(id);if(r)await metaPut("trash:"+id,{t:Date.now(),doc:r})}catch(e){}mirDel(id);opfsDel(id);return tx("readwrite",o=>o.delete(id))},dbAll=()=>tx("readonly",o=>o.getAll());
+const dbGet=id=>tx("readonly",o=>o.get(id)),dbPut=v=>tx("readwrite",o=>o.put(v)),dbDel=async id=>{try{const r=await dbGet(id);if(r)await metaPut("trash:"+id,{t:Date.now(),doc:r})}catch(e){}mirDel(id);opfsDel(id);const dr=await tx("readwrite",o=>o.delete(id));try{localStorage.setItem("pa_had",String(((await dbAll())||[]).length))}catch(e){}return dr},dbAll=()=>tx("readonly",o=>o.getAll());
 
 let saveChain=Promise.resolve(),saveRevision=0,dirtySince=0,maxSaveTimer=0,saveRetryTimer=0;
 // Writing must never be interrupted by persistence. Save only after a long pause,
@@ -1357,7 +1370,7 @@ function renderTabs(){const c=$("#dtabs");if(!c)return;c.innerHTML="";let cur=nu
   if(cur)c.scrollLeft=Math.max(0,cur.offsetLeft-c.clientWidth/2+cur.offsetWidth/2)}
 /* switch to another PDF opened in this session: save this one first, then open the other (no file picker needed) */
 async function switchNb(id){const f=FILES[id];if(!f||id===docId||switching)return;switching=true;
-  try{await persist(true);try{onHome()}catch(e){}io.disconnect();vis.clear();$("#doc").innerHTML="";pdf=null;docId=null;await openFile(f,id)}
+  try{await persist(true);try{onHome()}catch(e){}io.disconnect();vis.clear();releaseDoc();$("#doc").innerHTML="";docId=null;await openFile(f,id)}
   catch(e){st("❌ Couldn't open the PDF");showLib()}finally{switching=false}}
 const TRASH_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6h17"/><path d="M9 6V4.2c0-.7.5-1.2 1.2-1.2h3.6c.7 0 1.2.5 1.2 1.2V6"/><path d="M18.5 6l-.8 12.6a2 2 0 01-2 1.9H8.3a2 2 0 01-2-1.9L5.5 6"/><path d="M10 10.5v5.5M14 10.5v5.5"/></svg>';
 /* v1.4.84 — in-app "Are you sure?" dialog (the browser's own confirm box can be blocked / skipped in an installed app, so a tap used to delete at once) */
@@ -1374,7 +1387,7 @@ let _slBusy=0,_slAgain=0;
 async function showLib(){if(_slBusy&&Date.now()-_slBusy<10000){_slAgain=1;return}_slBusy=Date.now();
   try{do{_slAgain=0;await _showLib()}while(_slAgain)}finally{_slBusy=0}}
 async function _showLib(){
-  await persist();pdf=null;docId=null;vis.clear();if(url){URL.revokeObjectURL(url);url=null}
+  await persist();releaseDoc();docId=null;vis.clear();if(url){URL.revokeObjectURL(url);url=null}
   $("#doc").innerHTML="";go("home");THU.forEach(u=>URL.revokeObjectURL(u));THU=[];
   const L=((await dbAll())||[]).sort((a,b)=>b.t-a.t),g=$("#nbs");g.innerHTML="";$("#empty").hidden=!!L.length;
   const last=+localStorage.getItem("pa_lastbackup")||0,days=Math.floor((Date.now()-last)/864e5);
@@ -1427,6 +1440,8 @@ async function preloadSizes(){const tok=++preTok,P=pdf,o=[...ord];if(!P)return;
     if(i%12==11)await new Promise(r=>setTimeout(r,0))}}
 const io=new IntersectionObserver(es=>es.forEach(e=>{const i=+e.target.dataset.i;if(e.isIntersecting){vis.add(i);render(i)}else{vis.delete(i);free(i)}}),{rootMargin:"300px"});
 function free(i){const p=$(`.pg[data-i="${i}"]`);if(!p)return;(anns[i]||[]).forEach(o=>{if(o.t=="img"&&IM[o.id]&&IM[o.id].src){URL.revokeObjectURL(IM[o.id].src);delete IM[o.id]}});p.querySelectorAll("canvas").forEach(c=>{c.width=c.height=0});p.innerHTML="";delete p.dataset.z}
+/* v1.4.95: close the open PDF properly — free every page (canvas memory, image blob URLs), then destroy the pdf.js document so its worker memory is released. Never throws. */
+function releaseDoc(){try{$$(".pg").forEach(p=>{try{free(+p.dataset.i)}catch(e){}})}catch(e){}const d=pdf;pdf=null;if(d&&typeof d.destroy=="function")try{Promise.resolve(d.destroy()).catch(()=>{})}catch(e){}}
 /* v1.4.73 — render watchdog: the queue is serial, so ONE page that never finishes (pdf.js worker hiccup, iOS memory pressure) used to freeze
    every page after it. Now a page gets 25 s; if it hangs or fails, it is cancelled, marked "not drawn" and retried (3x, with a delay) while the queue moves on. */
 let CURT=null;const RTC={},RT_MS=25000;
@@ -2244,11 +2259,11 @@ function flush(manual,force,full){if(!manual&&!force&&Date.now()-lastInk<8000){c
       try{if(navigator.canShare&&navigator.canShare({files:fs}))await navigator.share({files:fs,title:"PDF annotation backup",text:"#annotations_backup"});else throw 0}
       catch(e){if(e&&e.name=="AbortError"){st("Backup cancelled");return}for(const f of fs){const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=f.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),6e4)}}
       for(const[b,p]of out){done(p);await bPut(b)}n=out.length}
-    if(n){if(!manual)autoSaved();try{localStorage.setItem("pa_lastbackup",Date.now())}catch(e){}$("#bn").hidden=true;if(tg)tgNote(1);if(!pdf)await showLib();st(tg?`✈️ ${n} backup file(s) sent to Telegram`:"🛟 Backup saved on this device")}
+    if(n){if(!manual)autoSaved();try{localStorage.setItem("pa_lastbackup",Date.now())}catch(e){}$("#bn").hidden=true;if(tg){tgNote(1);bkN=0}if(!pdf)await showLib();st(tg?`✈️ ${n} backup file(s) sent to Telegram`:"🛟 Backup saved on this device")}
     else if(manual)st(tg?"✈️ Telegram backup is up to date — nothing new to send":"🛟 Nothing new to back up")
   }catch(e){const msg=(e&&e.message)||String(e);
     if(TG()){if(!document.hidden)tgNote(0,msg);if(!pdf){showLib();checkBackup()}st("❌ Telegram backup failed: "+msg)}else if(manual)st("❌ Backup failed: "+msg);
-    if(manual)alert("❌ Backup failed\n\n"+msg+"\n\nYour notes are still safe on this device, and the app will retry automatically.")}
+    if(!manual)bkRetry(msg);if(manual)alert("❌ Backup failed\n\n"+msg+"\n\nYour notes are still safe on this device, and the app will retry automatically.")}
 })}
 const netDot=$("#net");
 function updateNet(){
@@ -2392,7 +2407,7 @@ async function askFpMerge(backupName,localName,backupAnnCount){
 
 $("#fj").onchange=async e=>{
   const fl=[...e.target.files];e.target.value="";if(!fl.length)return;
-  let n=0,mx=0,ns=0;
+  let n=0,mx=0,ns=0,fail=0,ei=0;
   const E=[],ds=new Set(),bad=[],parts={};
   try{
     /* ── 1. Load local notebooks; build fingerprint→id maps ── */
@@ -2405,6 +2420,8 @@ $("#fj").onchange=async e=>{
       if(d.pfp){const v=byFp.get("p"+d.pfp+"|"+(d.np||0));if(v)return v}
       return d.id};
 
+    /* v1.4.96: safety copy of every local notebook BEFORE the restore writes anything → Settings → "Undo last restore" */
+    try{if(loc.length)await metaPut("prerestore",{t:Date.now(),docs:loc})}catch(x){errLog("prerestore",x&&x.message||x)}
     /* ── 2. Parse and CRC32+checksum-verify zip files ── */
     for(const f of fl){
       const m=/-part(\d+)/i.exec(f.name);if(m)mx=Math.max(mx,+m[1]);
@@ -2443,6 +2460,8 @@ $("#fj").onchange=async e=>{
 
     /* ── 4. Apply entries with ord-aware remap and per-page merge ── */
     for(const en of E){
+      ei++;if(ei%6==1){st(`♻️ Restoring… ${ei}/${E.length}`);await new Promise(y=>setTimeout(y,0))}
+      try{
       let id=mapId(en.doc);
       let x=(await dbGet(id))||{id,sv:SCHEMA,anns:{},t:0};
 
@@ -2511,7 +2530,10 @@ $("#fj").onchange=async e=>{
              space (and ord may have been extended with orphan virtual pages). */
           okOrd(en.doc.ord,en.doc.np)?{bm:en.doc.bm||[],tpl:en.doc.tpl||{}}:{});}
 
-      x.n=cnt(x.anns);await dbPutM(x);ds.add(id)}
+      x.n=cnt(x.anns);await dbPutM(x);
+      /* read it back: a restored notebook is only counted once the stored copy really has every annotation */
+      let v=await dbGet(id);if(!v||cnt(v.anns||{})!==x.n){await dbPutM(x);v=await dbGet(id);if(!v||cnt(v.anns||{})!==x.n)throw new Error("write verification failed")}
+      ds.add(id)}catch(ex){fail++;try{errLog("restore",ex&&ex.message||ex)}catch(q){}}}
 
     /* ── 5. Bootstrap backup-state for newly restored notebooks ── */
     for(const id of ds){
@@ -2535,6 +2557,8 @@ $("#fj").onchange=async e=>{
     const msg=[];
     if(bad.length)msg.push("⚠️ "+bad.length+" file(s) were skipped because they are damaged or incomplete:\n\n"+bad.join("\n")+"\n\nDownload them again from Telegram and restore again.");
     if(warn.length)msg.push("⚠️ Some backup parts are missing, so older pages or images may be absent:\n\n"+warn.join("\n")+"\n\nSelect ALL the zip files of a PDF (part1, part2 …) in one go.");
+    if(fail)msg.push("⚠️ "+fail+" backup entr"+(fail>1?"ies":"y")+" could not be written and "+(fail>1?"were":"was")+" skipped. Everything else was restored. Try restoring the same files again.");
+    if(ds.size||n)msg.push("↩️ A safety copy of your notebooks from before this restore was kept — Settings → Undo last restore.");
     if(miss)msg.push("⚠️ "+miss+" image(s) could not be restored because their zip was not selected.");
     if(msg.length)alert(msg.join("\n\n"))}
   catch(err){st("❌ Restore failed — "+((err&&err.message)||"invalid backup file"))}};
@@ -2776,7 +2800,7 @@ try{drawPenPreview()}catch(e){}
 
 /* page indicator + fit */
 document.body.insertAdjacentHTML("beforeend",`<div id="pgi" aria-label="PDF page navigation"><input id="pgn" type="text" inputmode="none" readonly autocomplete="off" aria-label="Current page number — tap to go to a page"><span id="pgt" aria-label="Total pages"></span></div>`);
-function pgUpd(){if(document.activeElement===$("#pgn"))return;$("#pgn").value=curPage+1;$("#pgt").textContent="/ "+ord.length}
+function pgUpd(){if(document.hidden||document.activeElement===$("#pgn"))return;const n=$("#pgn"),t=$("#pgt"),a=String(curPage+1),b="/ "+ord.length;if(n.value!==a)n.value=a;if(t.textContent!==b)t.textContent=b}
 setInterval(pgUpd,400);
 function jumpFromInput(){const raw=$("#pgn").value.trim(),v=Number.parseInt(raw,10);if(!raw||!Number.isFinite(v)){pgUpd();return}goPage(Math.max(0,Math.min(ord.length-1,v-1)));pgUpd()}
 $("#pgn").addEventListener("keydown",e=>{if(e.key==="Enter"||e.keyCode===13){e.preventDefault();e.stopPropagation();jumpFromInput();e.target.blur()}else if(e.key==="Escape"){pgUpd();e.target.blur()}});
@@ -2917,7 +2941,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.93",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.98",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -3001,7 +3025,7 @@ async function bootStorage(){
   /* did the browser wipe everything? */
   let had=0;try{had=+localStorage.getItem("pa_had")||0}catch(e){}
   if(docs.length){try{localStorage.setItem("pa_had",String(docs.length))}catch(e){}}
-  else if(had>0){setTimeout(()=>alert("⚠️ Your notebooks are no longer on this device — the browser cleared its data.\n\nGet them back with: Home → ♻️ Restore (your Telegram backup zips), or Settings → 📥 Import backup file."),800)}
+  else if(had>0){try{localStorage.setItem("pa_had","0")}catch(e){}setTimeout(()=>alert("⚠️ Your notebooks are no longer on this device — the browser cleared its data.\n\nGet them back with: Home → ♻️ Restore (your Telegram backup zips), or Settings → 📥 Import backup file."),800)}
   const mt=await metaGet("schema"),old=(mt&&mt.v)||+localStorage.getItem("pa_schema")||1;
   if(old<SCHEMA&&docs.length){await metaPut("snap_v"+old,{t:Date.now(),docs});             /* full snapshot before migration */
     for(const r of docs){let ch=0;if(!r.anns){r.anns={};ch=1}if(!r.sv||r.sv<SCHEMA){r.sv=SCHEMA;ch=1}if(ch)await dbPutM(r)}}
@@ -3009,7 +3033,8 @@ async function bootStorage(){
   try{localStorage.setItem("pa_schema",String(SCHEMA))}catch(e){}
   saveSettings();setInterval(saveSettings,6e4);
   /* purge trash older than 30 days */
-  try{const ks=await mx("readonly",o=>o.getAllKeys());for(const k of ks)if(String(k).startsWith("trash:")){const t=await metaGet(k);if(t&&Date.now()-t.t>30*864e5)await mx("readwrite",o=>o.delete(k))}}catch(e){}}
+  try{const ks=await mx("readonly",o=>o.getAllKeys());for(const k of ks)if(String(k).startsWith("trash:")){const t=await metaGet(k);if(t&&Date.now()-t.t>30*864e5){const id=String(k).slice(6);try{if(!(await dbGet(id))){await mirDel(id);await opfsDel(id)}}catch(e){continue}   /* v1.4.95: remove any leftover backup copy so it cannot reappear — only if no live notebook uses this id */
+      await mx("readwrite",o=>o.delete(k))}}}catch(e){}}
 /* Update: as soon as a new version is found, save and reload (data stays safe in IndexedDB) */
 async function applyUpdate(v,guard){if(updating)return;if(guard){try{if(sessionStorage.getItem("pa_upd")==v)return;sessionStorage.setItem("pa_upd",v)}catch(e){}}
   updating=true;st("🔄 New version "+v+" — updating…");try{await persist()}catch(e){}setTimeout(()=>location.reload(),500)}
@@ -3131,7 +3156,7 @@ const STL=(()=>{const K="pa_stalls",DAY=864e5;let exp=performance.now(),resume=0
     if(!a.length)return"Vpdf v"+APP_VERSION+" · stall report ("+lbl+")\nNo freeze recorded.";
     const real=a.filter(x=>!isNat(x)),w=real.reduce((m,x)=>x.ms>m?x.ms:m,0);
     return"Vpdf v"+APP_VERSION+" · stall report ("+lbl+") · "+new Date().toLocaleString("en-GB",{hour12:false})+"\nReal freezes: "+real.length+(real.length?" · worst "+(w/1000).toFixed(1)+" s":"")+" · pauses from file picker / alert: "+(a.length-real.length)+"\n(newest first)\n\n"+a.map(line).join("\n")};
-  return{report,clear:()=>{try{localStorage.removeItem(K)}catch(e){}},count:()=>get().length}})();
+  return{report:h=>report(h)+errTail(),clear:()=>{try{localStorage.removeItem(K);localStorage.removeItem(ERRK)}catch(e){}},count:()=>get().length}})();
 function copyTxt(t){let ok=false;
   try{const ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.cssText="position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;font-size:16px";document.body.append(ta);ta.focus();ta.select();try{ta.setSelectionRange(0,t.length)}catch(e){}ok=document.execCommand("copy");ta.remove()}catch(e){}
   if(ok)return Promise.resolve(true);
@@ -3176,21 +3201,46 @@ homeTab("nb");
 /* ===== v1.4.46 — extra safety: backup file on the device, import, recover deleted notebooks ===== */
 const bufB64=b=>{const u=new Uint8Array(b);let o="";for(let i=0;i<u.length;i+=32768)o+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(o)};
 const b64Buf=t=>{const r=atob(t),u=new Uint8Array(r.length);for(let i=0;i<r.length;i++)u[i]=r.charCodeAt(i);return u.buffer};
-$("#sm-bkf").onclick=async()=>{try{if(pdf)await persist(true);st("⏳ Preparing backup file…");
+$("#sm-bkf").onclick=async()=>{try{st("⏳ Preparing backup file…");
+  /* v1.4.94: saving the open notebook can hang (OPFS lock) — wait max 8 s, then back up what is already stored */
+  if(pdf){const r=await Promise.race([persist(true).then(()=>"ok",()=>"err"),new Promise(r=>setTimeout(()=>r("timeout"),8000))]);if(r!=="ok")st("⏳ Open notebook is slow to save — backing up what is already stored…")}
   const docs=(await dbAll())||[];if(!docs.length){st("Nothing to back up yet");return}
   const ik=await itx("readonly",o=>o.getAllKeys()),parts=[`{"app":"vpdf-all","v":1,"t":${Date.now()},"settings":${JSON.stringify(allSettings(true))},"docs":${JSON.stringify(docs)},"imgs":{`];
-  let first=1;for(const id of ik){const b=await iGet(id);if(!b)continue;parts.push((first?"":",")+JSON.stringify(id)+":"+JSON.stringify(bufB64(b)));first=0}
+  let first=1,pi=0;for(const id of ik){pi++;if(pi%4==1){st(`⏳ Preparing backup file… images ${pi}/${ik.length}`);await new Promise(r=>setTimeout(r,0))}const b=await iGet(id);if(!b)continue;parts.push((first?"":",")+JSON.stringify(id)+":"+JSON.stringify(bufB64(b)));first=0}
   parts.push("}}");const blob=new Blob(parts,{type:"application/json"}),fn="Vpdf-backup-"+new Date().toISOString().slice(0,10)+".json";
-  try{const f=new File([blob],fn,{type:"application/json"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:fn});st("✅ Backup file shared / saved");return}}catch(e){if(e&&e.name=="AbortError")return}
+  try{const f=new File([blob],fn,{type:"application/json"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:fn});st("✅ Backup file shared / saved");return}}catch(e){if(e&&e.name=="AbortError"){st("Backup cancelled");return}}
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fn;document.body.append(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(a.href)},4000);st("✅ Backup file downloaded ("+docs.length+" notebooks)")}catch(e){st("❌ Backup file failed: "+(e&&e.message||e))}};
 $("#sm-imp").onclick=()=>$("#sm-impf").click();
 $("#sm-impf").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const j=JSON.parse(await f.text());if(!j||j.app!="vpdf-all"||!Array.isArray(j.docs))throw new Error("not a Vpdf backup file");
   let nd=0,ni=0;for(const r of j.docs){if(!r||!r.id)continue;const x=await dbGet(r.id);if(!x||(x.t||0)<(r.t||0)){await dbPutM(r);nd++}}
   for(const id in(j.imgs||{})){if(!(await iGet(id))){await iPut(id,b64Buf(j.imgs[id]));ni++}}
   st(`✅ Imported ${nd} notebook(s), ${ni} image(s) (newer local pages were kept)`);try{await showLib()}catch(x){}}catch(x){st("❌ Import failed: "+(x&&x.message||x))}};
-$("#sm-trash").onclick=async()=>{try{const ks=(await mx("readonly",o=>o.getAllKeys())).filter(k=>String(k).startsWith("trash:"));let n=0;
-  for(const k of ks){const t=await metaGet(k);if(t&&t.doc){await dbPutM(t.doc);await mx("readwrite",o=>o.delete(k));n++}}
-  st(n?`♻️ ${n} deleted notebook(s) recovered`:"No deleted notebooks to recover");if(n)try{await showLib()}catch(x){}}catch(x){st("❌ Couldn't recover: "+(x&&x.message||x))}};
+/* v1.4.94 — Recently deleted: show the list of deleted notebooks; tapping one restores ONLY that notebook */
+async function trashList(){const ks=(await mx("readonly",o=>o.getAllKeys())).filter(k=>String(k).startsWith("trash:")),out=[];
+  for(const k of ks){try{const t=await metaGet(k);if(t&&t.doc)out.push({k,t:t.t||0,doc:t.doc})}catch(e){}}
+  return out.sort((a,b)=>b.t-a.t)}
+$("#sm-trash").onclick=async()=>{try{
+  const items=await trashList();
+  if(!items.length){st("No deleted notebooks to recover");return}
+  const o=document.createElement("div");o.className="mod";o.id="rdf";o.setAttribute("role","dialog");o.setAttribute("aria-modal","true");
+  o.innerHTML='<div><h3>Recently deleted</h3><p class="rdh">Tap a notebook to recover it. Kept for 30 days.</p><div class="rdl"></div><div class="zr"><button class="pb" id="rdx">Close</button></div></div>';
+  const list=o.querySelector(".rdl");let restored=0;
+  const close=()=>{document.removeEventListener("keydown",kd,true);o.remove();if(restored)try{showLib()}catch(x){}},
+    kd=e=>{if(e.key=="Escape"){e.preventDefault();close()}};
+  const empty=()=>{if(!list.children.length){const p=document.createElement("p");p.className="rdh";p.textContent="No more deleted notebooks.";list.append(p)}};
+  for(const it of items){
+    const b=document.createElement("button");b.className="pb rdi";b.type="button";
+    const nm=document.createElement("b"),mt=document.createElement("small"),ic=document.createElement("em");
+    nm.textContent=String(it.doc.name||"Notebook").replace(/\.pdf$/i,"");
+    mt.textContent=`${it.doc.np||"?"}p · deleted ${age(it.t)} ago`;ic.textContent="Recover";ic.className="rdr";
+    const t=document.createElement("span");t.className="t";t.append(nm,mt);b.append(t,ic);
+    b.onclick=async()=>{if(b.disabled)return;b.disabled=true;
+      try{await dbPutM(it.doc);await mx("readwrite",o=>o.delete(it.k));restored++;b.remove();empty();st("♻️ «"+nm.textContent+"» recovered")}
+      catch(x){b.disabled=false;st("❌ Couldn't recover: "+(x&&x.message||x))}};
+    list.append(b)}
+  document.body.append(o);document.addEventListener("keydown",kd,true);
+  o.querySelector("#rdx").onclick=close;o.addEventListener("pointerdown",e=>{if(e.target===o)close()})
+}catch(x){st("❌ Couldn't open Recently deleted: "+(x&&x.message||x))}};
 
 /* ===== v1.4.46 — Create PDF: new notebook with N pages of a chosen style ===== */
 /* the blank PDF is rebuilt byte-for-byte from (token, page count): fixed dates, no random parts → same fingerprint every time */
@@ -3333,36 +3383,10 @@ const SIM=(()=>{
 
   /* ── self-healer: attempts to fix a non-responding button ── */
   const tryHeal=(btn)=>{
+    /* v1.4.95: repaint only. The old healer re-clicked tool buttons, closed panels, re-opened Settings and re-enabled disabled buttons —
+       on a false alarm that could toggle a tool, close the user's popover or put Settings back over a PDF. A real dead tap is handled by the reload guard. */
     healCount++;
-    let healed=false;
-    try{
-      /* 1. Re-attach click handler if the button has a known data-attribute role */
-      if(btn.dataset&&btn.dataset.t){
-        /* Tool button — re-trigger tool selection */
-        const tool=btn.dataset.t;
-        const ev=new MouseEvent("click",{bubbles:true,cancelable:true});
-        btn.dispatchEvent(ev);
-        healed=true;
-      }
-      /* 2. Panel buttons — close all panels then reopen */
-      if(!healed&&btn.id&&typeof closeAllPanels==="function"){
-        closeAllPanels();
-        healed=true;
-      }
-      /* 3. Settings menu buttons — ensure settings drawer is visible */
-      if(!healed&&btn.closest&&btn.closest("#sm")){
-        const sm=document.getElementById("sm");
-        if(sm&&sm.hidden){sm.hidden=false;healed=true;}
-      }
-      /* 4. Generic DOM repair: remove disabled attr, restore pointer-events */
-      if(btn.disabled){btn.disabled=false;healed=true;}
-      const cs=getComputedStyle(btn);
-      if(cs.pointerEvents==="none"){btn.style.pointerEvents="auto";healed=true;}
-      /* 5. Force repaint on the element */
-      if(!healed){btn.style.opacity="0.99";requestAnimationFrame(()=>{btn.style.opacity="";});healed=true;}
-    }catch(err){}
-    if(healed)healSucc++;
-    return healed;
+    try{if(typeof repaintKick=="function")repaintKick();healSucc++;return true}catch(err){return false}
   };
 
   /* ── interaction watchdog: watch every pointer tap ── */
@@ -3544,4 +3568,112 @@ function simOpen(){const old=document.getElementById("sim-dlg");if(old)old.remov
   draw();
 }
 document.getElementById("sm-sim").onclick=()=>simOpen();
+
+/* ===== v1.4.96 — stability watchdogs, self-healing and GoodNotes-style tap gestures (every block is isolated in try/catch: it can never stop the app from starting) ===== */
+(function(){
+  const safe=(n,f)=>{try{f()}catch(e){try{errLog("v1.4.96 "+n,e&&e.message||e)}catch(x){}}};
+
+  /* 1. Save watchdog — if an autosave timer was lost (exception, suspended tab, failed retry), unsaved work is pushed again.
+        Also writes the synchronous emergency copy so nothing depends on one async IndexedDB write. */
+  safe("watchdog",()=>{
+    let fails=0;
+    setInterval(()=>{
+      if(document.hidden||!pdf||!docId||!dirtySince||inkIsDown())return;
+      const age=Date.now()-dirtySince;
+      if(age<45000)return;                         // normal autosave has had its chance
+      try{emergSave()}catch(e){}
+      persist(age>18e4).then(()=>{if(!dirtySince)fails=0}).catch(()=>{});
+      if(++fails===3)st("⚠️ Saving keeps failing — export a backup now");
+    },15000);
+  });
+
+  /* 2. Error-burst breaker — many script errors in a short time means something is stuck: save, unstick, repaint (never reloads while there is unsaved work). */
+  safe("breaker",()=>{
+    const hits=[];let last=0;
+    const hit=()=>{const n=Date.now();hits.push(n);while(hits.length&&n-hits[0]>10000)hits.shift();
+      if(hits.length>=8&&n-last>60000){last=n;hits.length=0;
+        try{emergSave();persist(true).catch(()=>{})}catch(e){}
+        try{unstick();repaintKick()}catch(e){}
+        st("🛟 Recovered from repeated errors — your work was saved")}};
+    addEventListener("error",hit);addEventListener("unhandledrejection",hit);
+  });
+
+  /* 3. Low-storage guard — warns once before the browser starts refusing writes, and asks for persistent storage. */
+  safe("storage",()=>{
+    if(!(navigator.storage&&navigator.storage.estimate))return;
+    let warned=false;
+    const chk=async()=>{try{const e=await navigator.storage.estimate();if(!e||!e.quota)return;
+      const free=e.quota-e.usage,pct=e.usage/e.quota;
+      if(!warned&&(pct>.9||free<5e7)){warned=true;try{askPersist()}catch(x){}
+        st("⚠️ Device storage is almost full ("+Math.round(free/1e6)+" MB left) — free some space or export a backup")}}catch(x){}};
+    setTimeout(chk,8000);setInterval(chk,3e5);
+  });
+
+  /* 4. Library self-heal — if pdf.js / pdf-lib / JSZip failed to load (flaky network on first run), fetch them again (the service worker serves them from cache when it can). */
+  safe("libs",()=>{
+    const L=[["pdfjsLib","https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"],
+             ["PDFLib","https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"],
+             ["JSZip","https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"]];
+    let busy=false;
+    const heal=()=>{if(busy||!navigator.onLine)return;const miss=L.filter(x=>!window[x[0]]);if(!miss.length)return;busy=true;
+      Promise.all(miss.map(x=>new Promise(r=>{const s=document.createElement("script");s.src=x[1];s.onload=s.onerror=()=>r();document.head.append(s)}))).then(()=>{
+        busy=false;
+        if(window.pdfjsLib&&!pdfjsLib.GlobalWorkerOptions.workerSrc)pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        if(!L.some(x=>!window[x[0]])){st("✅ Libraries restored");if(!pdf&&!dirtySince)setTimeout(()=>location.reload(),600)}})};
+    setTimeout(heal,4000);addEventListener("online",()=>setTimeout(heal,1000));
+  });
+
+  /* 5. GoodNotes-style gestures: quick two-finger tap = Undo, quick three-finger tap = Redo (switch: More → Tap undo). */
+  safe("taps",()=>{
+    let on=true;try{on=localStorage.getItem("pa_tapundo")!=="0"}catch(e){}
+    const grid=document.querySelector("#more-panel .mgrid");
+    if(grid){const c=document.createElement("div");c.className="mcell";
+      c.innerHTML='<button class="ibtn" id="tu" title="Two-finger tap = undo · three-finger tap = redo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button><span>Tap undo</span>';
+      grid.append(c);const b=c.firstChild;b.classList.toggle("on",on);
+      b.onclick=()=>{on=!on;try{localStorage.setItem("pa_tapundo",on?"1":"0")}catch(e){}b.classList.toggle("on",on);st(on?"↶ 2-finger tap = undo · 3-finger tap = redo":"Tap gestures off")}}
+    const d=document.getElementById("doc");if(!d)return;
+    let g=null,penAt=0;
+    document.addEventListener("pointerdown",e=>{if(e.pointerType==="pen")penAt=Date.now()},{capture:true,passive:true});
+    d.addEventListener("touchstart",e=>{
+      if(!on||!pdf||inPres())return;
+      if(!g){g={t:Date.now(),n:0,xy:new Map(),moved:false,bad:Date.now()-penAt<1500||inkIsDown()}}
+      for(const t of e.changedTouches)g.xy.set(t.identifier,[t.clientX,t.clientY]);
+      g.n=Math.max(g.n,e.touches.length);
+    },{passive:true});
+    d.addEventListener("touchmove",e=>{
+      if(!g)return;
+      for(const t of e.changedTouches){const o=g.xy.get(t.identifier);if(o&&Math.hypot(t.clientX-o[0],t.clientY-o[1])>14)g.moved=true}
+      if(typeof pz!=="undefined"&&pz&&Math.abs(pz.z-pz.z0)>.01)g.moved=true;
+    },{passive:true});
+    const end=e=>{
+      if(!g)return;
+      if(e.touches.length)return;                     // wait until every finger is up
+      const x=g;g=null;
+      if(x.moved||x.bad||Date.now()-x.t>350)return;
+      if(x.n===2){undo(0);if(navigator.vibrate)try{navigator.vibrate(8)}catch(e){}}
+      else if(x.n===3){undo(1);if(navigator.vibrate)try{navigator.vibrate(8)}catch(e){}}
+    };
+    d.addEventListener("touchend",end,{passive:true});
+    d.addEventListener("touchcancel",()=>{g=null},{passive:true});
+  });
+})();
+
+/* ===== v1.4.96 — backup retry + undo restore ===== */
+var bkN=0;
+function bkRetry(msg){try{
+  if(!/in time|reach Telegram|offline|Telegram error \(5|rate-limit|complete file|check your internet/i.test(String(msg)))return;   /* only transient problems: a wrong token / chat never loops */
+  if(bkN>=8)return;const d=Math.min(9e5,3e4*Math.pow(2,bkN++));
+  clearTimeout(flT);flT=setTimeout(()=>flush(0),d)}catch(e){}}
+(function(){try{
+  const b=document.getElementById("sm-undorestore");if(!b)return;
+  b.onclick=async()=>{try{
+    const s=await metaGet("prerestore");
+    if(!s||!s.docs||!s.docs.length){alert("There is no restore to undo.");return}
+    if(!confirm("Undo the last restore?\n\nNotebooks that existed on "+new Date(s.t).toLocaleString("en-GB",{hour12:false})+" ("+s.docs.length+") go back to how they were then.\nNotebooks that the restore created are kept.\n\nOK = undo"))return;
+    if(pdf&&docId){alert("Close the open PDF first, then undo the restore.");return}
+    let k=0;for(const r of s.docs){try{await dbPutM(r);k++}catch(e){}}
+    await metaPut("prerestore",{t:s.t,docs:[]});
+    await showLib();st("↩️ Restore undone — "+k+" notebook(s) put back")}
+  catch(e){st("❌ Couldn't undo the restore — "+((e&&e.message)||"unknown error"))}}
+}catch(e){}})();
 </script></body></html>
