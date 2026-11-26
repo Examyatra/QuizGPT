@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.98">
+<meta name="app-version" content="1.4.99">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -897,11 +897,11 @@ let DK=false;
 /* v1.4.53 dark-PDF look: soft charcoal page (not pure black) + soft white text, mid-tones lifted a little so thin text keeps its weight */
 const DKBG="#141414",DK_LO=20,DK_HI=253,DK_G=.82;   /* v1.4.84: text white 248 -> 253 (crisper) */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],PL=window.PDFLib;
-const LOW=(navigator.deviceMemory||4)<=2,ZMAX=LOW?3:3.5,MAXPX=LOW?1.2e6:5e6,DPR=Math.min(devicePixelRatio||1,LOW?1:3);   /* v1.4.46: sharper canvas — the page and the ink are drawn at up to 5 Mpx (was 3 Mpx), so they are no longer stretched on iPad */
+const LOW=(navigator.deviceMemory||4)<=2,ZMAX=LOW?3:3.5,MAXPX=LOW?1.2e6:5e6,INKPX=LOW?1.2e6:7.5e6,DPR=Math.min(devicePixelRatio||1,LOW?1:3);   /* v1.4.46: sharper canvas — the page and the ink are drawn at up to 5 Mpx (was 3 Mpx), so they are no longer stretched on iPad */
 let pdf,file,url,name="",docId=null,zoom=LOW?1:1.2,tool="pen",previousTool="lasso",color="#e11d48",W=3,SW=3,HW=12,   /* v1.4.84: W = pen size, SW = shape size (line / arrow / rectangle / oval) — independent */penOnly=(()=>{try{return localStorage.getItem("pa_penonly")!=="0"}catch(e){return true}})(),curPage=0;
 let ina,anns={},sizes=[],hist=[],redo=[],timer,vis=new Set(),q=Promise.resolve();
 const COL=["#e11d48","#2563eb","#16a34a","#f59e0b","#111111","#ffffff"];
-let ord=[],bm=new Set(),tpl={},SR={},TXT={},selObjs=[],selPage=-1,lz=null,lm=null,lastMv=0,lastPen=0,lastInk=0,shapeOn=(()=>{try{return localStorage.getItem("pa_pen_shape")!=="0"}catch(e){return true}})(),palm=true,curStamp="✅",stampS=40;
+let ord=[],bm=new Set(),tpl={},SR={},TXT={},selObjs=[],selPage=-1,lz=null,lm=null,lastMv=0,lastPen=0,lastInk=0,shapeOn=(()=>{try{return localStorage.getItem("pa_pen_shape")==="1"}catch(e){return false}})(),palm=true,curStamp="✅",stampS=40;
 let autoLn=(()=>{try{return localStorage.getItem("pa_pen_autoline")!=="0"}catch(e){return true}})();
 /* ===== virtual (inserted) pages =====
    Added pages are NOT written into the PDF. The PDF file never changes, so its fingerprint stays the same and every backup/restore
@@ -1162,7 +1162,7 @@ const SHT=["line","arrow","rect","oval"];
 $$("[data-t]").forEach(b=>b.addEventListener("click",()=>{$("#shpb").classList.toggle("on",SHT.includes(tool));$("#mor").classList.toggle("on",!!b.closest("#more-panel")&&!SHT.includes(tool))}));
 $$(".mcell").forEach(c=>c.addEventListener("click",e=>{if(!e.target.closest(".ibtn"))c.querySelector(".ibtn").click()}));
 ["zw","sig","bkm","tools","sbt"].forEach(id=>$("#"+id).addEventListener("click",()=>closeAllPanels()));
-$("#cmp").onclick=()=>{if(!pdf)return;let a=0,b=0;for(const i in anns)(anns[i]||[]).forEach(o=>{if((o.t=="pen"||o.t=="hl")&&o.p.length>3){a+=o.p.length;o.p=rdp(o.p,.3);b+=o.p.length}});$$(".pg").forEach(p=>draw(+p.dataset.i));change();closeAllPanels();st(`🗜 Ink compacted: ${a} → ${b} points`)};
+$("#cmp").onclick=()=>{if(!pdf)return;let a=0,b=0;for(const i in anns)(anns[i]||[]).forEach(o=>{if((o.t=="pen"||o.t=="hl")&&o.p.length>3){a+=o.p.length;o.p=o.sm?rdp(o.p,.08,.03):rdp(o.p,.15);b+=o.p.length}});$$(".pg").forEach(p=>draw(+p.dataset.i));change();closeAllPanels();st(`🗜 Ink compacted: ${a} → ${b} points`)};
 // Set pen active by default
 document.querySelector('[data-t="pen"]').classList.add("on");
 
@@ -1458,7 +1458,9 @@ async function draw1(i){
   const k=Math.min(zoom*DPR,Math.sqrt(MAXPX/(v1.width*v1.height))),vp=virt?{width:v1.width*k,height:v1.height*k}:page.getViewport({scale:k});
   /* v1.4.47: smooth zoom — the new page is drawn on hidden canvases while the old picture stays on screen (just stretched);
      the two are swapped in one step, so the page never goes blank/white/black between zoom levels. */
-  const c=document.createElement("canvas"),ink=document.createElement("canvas");c.width=ink.width=vp.width;c.height=ink.height=vp.height;
+  const c=document.createElement("canvas"),ink=document.createElement("canvas");c.width=vp.width;c.height=vp.height;
+  /* v1.4.99: the ink layer has its own (higher) pixel budget. Zoomed in, the page was capped at 5 Mpx and the handwriting was stretched (soft edges); now the ink stays sharp up to 7.5 Mpx (same size as the page whenever the page is not capped) */
+  {const ki=Math.max(k,Math.min(zoom*DPR,Math.sqrt(INKPX/(v1.width*v1.height))));ink.width=Math.max(1,Math.round(v1.width*ki));ink.height=Math.max(1,Math.round(v1.height*ki))}
   ink.style.touchAction=penOnly?"pan-x pan-y":"none";bind(ink,p,i);
   if(virt){const x=c.getContext("2d");x.fillStyle=DK?DKBG:"#fff";x.fillRect(0,0,c.width,c.height)}
   else{try{const rt=page.render({canvasContext:c.getContext("2d"),viewport:vp});CURT=rt;await rt.promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}}
@@ -1472,6 +1474,8 @@ var PC=new WeakMap(),LIVEO=null;
 function penPts(o){const P=o.p,n=P.length,k0=P[0],k1=P[n-1],ch=PC.get(o);
   if(ch&&ch.n==n&&ch.a==k0[0]+","+k0[1]&&ch.b==k1[0]+","+k1[1])return ch.s;
   const hasP=k0.length>2,out=new Array(n);let sp=1;
+  if(o.sm){let pm=1;for(let j=0;j<n;j++){let m=P[j][2];if(m==null||!isFinite(m))m=pm;pm=m;out[j]=[P[j][0],P[j][1],m]}   /* v1.4.99: frozen stroke - the points ARE the finished line (no second smoothing / width pass), so it looks exactly like it did while writing */
+    PC.set(o,{n,a:k0[0]+","+k0[1],b:k1[0]+","+k1[1],s:out});return out}
   for(let j=0;j<n;j++){let m;
     if(hasP)m=P[j][2]||1;
     else{const a=P[Math.max(0,j-1)],b=P[Math.min(n-1,j+1)],d=Math.hypot(b[0]-a[0],b[1]-a[1])/(j==0||j==n-1?1:2);sp=sp*.8+Math.max(.45,Math.min(1.35,1.4-d*.16))*.2;m=sp}
@@ -1487,7 +1491,7 @@ function penDraw(c,o,raw){
   const pt=o.pt||"ball",S=penPts(o),n=S.length,col=raw?o.c:dc(o.c),live=o===LIVEO,W0=o.w;
   c.lineCap=c.lineJoin="round";c.strokeStyle=c.fillStyle=col;c.globalAlpha=1;
   if(pt=="brush"){
-    const L=Math.max(2,Math.min(9,Math.floor(n/3))),wd=S.map((q,j)=>{let t=1;if(j<L)t=.22+.78*(j/L);if(!live&&j>n-1-L)t=Math.min(t,.1+.9*((n-1-j)/L));
+    const L=Math.max(2,Math.min(9,Math.floor(n/3))),wd=S.map((q,j)=>{let t=1;if(j<L)t=.22+.78*(j/L);if(j>n-1-L)t=Math.min(t,.1+.9*((n-1-j)/L));   /* v1.4.99: same tip while writing and after lifting (was lift-only -> size jump) */
       return Math.max(.12*W0,W0*Math.max(.2,.3+(q[2]-.5)*1.5)*t)});
     const nx=[],ny=[];for(let j=0;j<n;j++){const a=S[Math.max(0,j-1)],b=S[Math.min(n-1,j+1)];let dx=b[0]-a[0],dy=b[1]-a[1];const d=Math.hypot(dx,dy);
       if(d<1e-6){dx=nx.length?-ny[j-1]:1;dy=nx.length?nx[j-1]:0}else{dx/=d;dy/=d}nx.push(-dy);ny.push(dx)}
@@ -1666,15 +1670,22 @@ function bind(ink,p,i){
     if(CROP){CROP.drag=null;return}
     if(mt){const m=mt;mt=null;clearTimeout(lpT);if(m.lp){draw(i);showTbar();return}if(m.k=="m"&&!m.moved&&(m.was||tool!="sel")){openEdit();return}if(m.sn)change();if(m.k=="s"&&m.o.s){TXS=Math.round(m.o.s);lsSet(TXK.s,TXS)}draw(i);showTbar();return}
     if(tool=="lasso"){lassoUp(i);return}if(mv){mv=null;draw(i);change();return}
-    if(cur){if(sn){const L=cur.p;if((cur.t==="line"||cur.t==="hl")&&L.length===2&&Math.hypot(L[0][0]-L[1][0],L[0][1]-L[1][1])<4)cur=sn.orig;sn=null}else if(autoLn&&(cur.t==="pen"||cur.t==="hl")){const r=autoStraight(cur);if(r)cur=r}if((cur.t=="pen"||cur.t=="hl")&&cur.p.length>3)cur.p=rdp(cur.p,.05,true);snap(i);(anns[i]=anns[i]||[]).push(cur);cur=null;draw(i)}change();};
+    if(cur){if(sn){const L=cur.p;if((cur.t==="line"||cur.t==="hl")&&L.length===2&&Math.hypot(L[0][0]-L[1][0],L[0][1]-L[1][1])<4)cur=sn.orig;sn=null}else if(autoLn&&(cur.t==="pen"||cur.t==="hl")){const r=autoStraight(cur);if(r)cur=r}if(cur.t=="pen"&&cur.p.length>2&&!cur.sm)freezePen(cur);else if((cur.t=="pen"||cur.t=="hl")&&cur.p.length>3)cur.p=rdp(cur.p,.05,true);snap(i);(anns[i]=anns[i]||[]).push(cur);cur=null;draw(i)}change();};
 }
+/* v1.4.99 — FREEZE ON LIFT. The line you see while writing is penPts(raw points): 2 smoothing passes + (for finger / mouse) a speed-based width.
+   Before, lifting the Pencil simplified the RAW points first and then ran those passes again on the shorter list, so the shape, the thickness and
+   (Brush) the tip length all changed the moment the Pencil left the glass. Now the finished smoothed points + widths are stored as they were drawn
+   (o.sm=1) and are never smoothed again. Brush / Pencil keep every point (their tip length and grain depend on the point count). */
+function freezePen(o){try{const S=penPts(o);let Q=S.map(q=>[+q[0].toFixed(2),+q[1].toFixed(2),+q[2].toFixed(2)]);
+  if((o.pt||"ball")=="ball"||o.pt=="fine"){if(Q.length>3)Q=rdp(Q,.03,.025)}
+  o.p=Q;o.sm=1;PC.delete(o)}catch(e){}}
 /* handwriting compaction: Douglas-Peucker, tolerance 0.08 pt (≈0.03 mm) — small enough that the stroke does not change shape when the Pencil lifts */
 function rdp(P,e,pr){const n=P.length;if(n<4)return P;const keep=new Uint8Array(n);keep[0]=keep[n-1]=1;const st=[[0,n-1]],e2=e*e;
   while(st.length){const[a,b]=st.pop();let md=0,mi=-1;const[ax,ay]=P[a],dx=P[b][0]-ax,dy=P[b][1]-ay,L=dx*dx+dy*dy;
     for(let i=a+1;i<b;i++){let d;if(!L)d=(P[i][0]-ax)**2+(P[i][1]-ay)**2;else{let t=((P[i][0]-ax)*dx+(P[i][1]-ay)*dy)/L;t=t<0?0:t>1?1:t;d=(P[i][0]-ax-t*dx)**2+(P[i][1]-ay-t*dy)**2}if(d>md){md=d;mi=i}}
     if(md>e2&&mi>0){keep[mi]=1;st.push([a,mi],[mi,b])}}
   /* v1.4.84: when saving a stroke, also keep points where the pressure (line width) changes, so the line does not change thickness after you lift the Pencil */
-  if(pr&&P[0].length>2){let lp=P[0][2];for(let i=1;i<n-1;i++){if(keep[i]){lp=P[i][2];continue}if(Math.abs(P[i][2]-lp)>.07){keep[i]=1;lp=P[i][2]}}}
+  if(pr&&P[0].length>2){const pw=typeof pr=="number"?pr:.07;let lp=P[0][2];for(let i=1;i<n-1;i++){if(keep[i]){lp=P[i][2];continue}if(Math.abs(P[i][2]-lp)>pw){keep[i]=1;lp=P[i][2]}}}
   return P.filter((_,i)=>keep[i])}
 function erase(i,q,sc){
   const a=anns[i]||[],r=ERW/2/(sc||zoom),next=[];let changed=false;
@@ -2764,8 +2775,8 @@ function zwOpen(){if(!pdf){st("Open a PDF first");return}zwOn=true;$("#zwb").hid
   const s=sizes[zr.i]||sizes[0],p=$(`.pg[data-i="${zr.i}"]`),t=p?p.getBoundingClientRect().top:0;zr.x=s.w*.05;zr.y=Math.max(0,Math.min(s.h-zr.h,(innerHeight*.4-t)/zoom));zwDraw()}
 function zwClose(){zwOn=false;$("#zwb").hidden=true;zcur=null}
 $("#zw").onclick=()=>zwOn?zwClose():zwOpen();
-function zwDraw(){if(!zwOn)return;const p=$(`.pg[data-i="${zr.i}"]`);if(!p||!p.children[1])return;const[c,ink]=p.children,k=c.width/(sizes[zr.i]||sizes[0]).w,x=zwc.getContext("2d");
-  x.fillStyle="#fff";x.fillRect(0,0,zwc.width,zwc.height);for(const s of[c,ink])try{x.drawImage(s,zr.x*k,zr.y*k,zr.w*k,zr.h*k,0,0,zwc.width,zwc.height)}catch(e){}}
+function zwDraw(){if(!zwOn)return;const p=$(`.pg[data-i="${zr.i}"]`);if(!p||!p.children[1])return;const[c,ink]=p.children,zw0=(sizes[zr.i]||sizes[0]).w,x=zwc.getContext("2d");
+  x.fillStyle="#fff";x.fillRect(0,0,zwc.width,zwc.height);for(const s of[c,ink])try{const k=s.width/zw0;x.drawImage(s,zr.x*k,zr.y*k,zr.w*k,zr.h*k,0,0,zwc.width,zwc.height)}catch(e){}}
 const zpt=e=>{const r=zwc.getBoundingClientRect();return[zr.x+(e.clientX-r.left)/r.width*zr.w,zr.y+(e.clientY-r.top)/r.height*zr.h]};
 zwc.onpointerdown=e=>{if(palmBlock(e))return;e.preventDefault();zwc.setPointerCapture(e.pointerId);const q=zpt(e);
   if(tool=="er"){snap(zr.i);erase(zr.i,q,zwc.getBoundingClientRect().width/zr.w);zcur="er";return}zcur={t:tool=="hl"?"hl":"pen",c:color,w:tool=="hl"?HW:W,p:[q]};if(tool=="hl"&&HO!=null)zcur.a=HO;if(tool!="hl"&&PO!=null)zcur.a=PO};
@@ -2941,7 +2952,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.98",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.99",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
