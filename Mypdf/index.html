@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.99">
+<meta name="app-version" content="1.4.103">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -915,7 +915,7 @@ function smTone(t){t=String(t==null?"":t);return/^\s*(✅|♻️)/u.test(t)?"ok"
 const st=t=>{$("#st").textContent=t;const h=$("#hst");if(h)h.textContent=t;const f=$("#smf");if(f){f.textContent=smClean(t);f.dataset.s=smTone(t)}const tm=$("#htm");if(tm)tm.textContent=t;const tz=$("#htoast");if(tz&&!$("#home").hidden&&!$("#hp-nb").hidden&&t&&!/^✅ Saved safely/.test(t)){tz.textContent=t;tz.hidden=false;clearTimeout(tz._t);tz._t=setTimeout(()=>{tz.hidden=true},4500)}};
 
 /* ===== TEXT + IMAGE EDITING ===== */
-let selT=null,CROP=null,TEDIT=null;
+let selT=null,CROP=null,TEDIT=null,IMS=null;   /* IMS = the image that is open for editing {i,o} */
 const MC=document.createElement("canvas").getContext("2d");
 const TXK={m:"pa_txmode",b:"pa_txbold",a:"pa_txalign",s:"pa_txsize"},lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 let TXS=(()=>{const v=+lsGet(TXK.s);return v>=6&&v<=120?v:18})(),TXM="type",TXL=["hing","hi","en"].includes(lsGet("pa_txlang"))?lsGet("pa_txlang"):"hing",TXB=lsGet(TXK.b)=="1",TXA=["l","c","r"].includes(lsGet(TXK.a))?lsGet(TXK.a):"l";
@@ -962,6 +962,29 @@ function cropDone(){if(!CROP)return;const C=CROP,o=C.o,R=C.R,F=C.F,i=C.i;snap(i)
   if(cr.every(v=>v<.0005))delete o.cr;else o.cr=cr;
   o.x=R.x0;o.y=R.y0;o.w=R.x1-R.x0;o.h=R.y1-R.y0;CROP=null;$("#cbar").hidden=true;draw(i);change();st("✂ Cropped")}
 function cropCancel(){if(!CROP)return;const i=CROP.i;CROP=null;$("#cbar").hidden=true;draw(i)}
+/* ===== v1.4.103 — image editing like GoodNotes: after inserting (or tapping an image with the Select tool) the image shows
+   corner handles (drag = resize, keeps the shape), a crop button, a delete button and a centre bar (drag = move). Tap outside = done. ===== */
+function imgGeo(o){const z=zoom,x0=o.x,y0=o.y,x1=o.x+o.w,y1=o.y+o.h,cx=(x0+x1)/2,cy=(y0+y1)/2,by=y0-30/z>2?y0-30/z:y0+30/z;
+  return{h:11/z,R:15/z,x0,y0,x1,y1,cx,cy,gw:Math.min(56/z,o.w*.7),gh:Math.min(22/z,o.h*.5),crop:[cx-22/z,by],del:[cx+22/z,by],corners:{nw:[x0,y0],ne:[x1,y0],sw:[x0,y1],se:[x1,y1]}}}
+function imgDown(q,i){if(!IMS)return null;if(IMS.i!=i){const j=IMS.i;IMS=null;draw(j);return null}
+  const o=IMS.o,L=anns[i]||[];if(L.indexOf(o)<0){IMS=null;return null}
+  const g=imgGeo(o),z=zoom,d=p=>Math.hypot(q[0]-p[0],q[1]-p[1]);
+  if(d(g.crop)<g.R+4/z){startCrop(i,o);return"crop"}
+  if(d(g.del)<g.R+4/z){snap(i);L.splice(L.indexOf(o),1);IMS=null;draw(i);change();return"del"}
+  const opp={nw:"se",ne:"sw",sw:"ne",se:"nw"};
+  for(const c in g.corners){const[x,y]=g.corners[c];if(Math.hypot(q[0]-x,q[1]-y)<22/z){const[ax,ay]=g.corners[opp[c]];return{o,c,ax,ay,r:o.h/o.w,sn:0,on:0,q0:q}}}
+  if((Math.abs(q[0]-g.cx)<g.gw/2+8/z&&Math.abs(q[1]-g.cy)<g.gh/2+8/z)||(q[0]>g.x0&&q[0]<g.x1&&q[1]>g.y0&&q[1]<g.y1))return{o,dx:q[0]-o.x,dy:q[1]-o.y,sn:0,on:0,q0:q};
+  IMS=null;draw(i);return null}   /* tap outside the image = finished (the image is already saved) */
+function imgPick(q,i){const L=anns[i]||[];for(let j=L.length-1;j>=0;j--){const o=L[j];if(o.t!="img")continue;
+  if(q[0]>o.x&&q[0]<o.x+o.w&&q[1]>o.y&&q[1]<o.y+o.h){IMS={i,o};draw(i);return{o,dx:q[0]-o.x,dy:q[1]-o.y,sn:0,on:0,q0:q}}}return null}
+function drawImgUI(c,i,k){if(!IMS||IMS.i!=i||tool!="sel"||CROP)return;const o=IMS.o;if((anns[i]||[]).indexOf(o)<0){IMS=null;return}
+  const z=zoom,g=imgGeo(o),B="#2563eb";c.save();c.scale(k,k);c.lineCap="round";
+  c.setLineDash([6/z,4/z]);c.strokeStyle=B;c.lineWidth=1.6/z;c.strokeRect(o.x,o.y,o.w,o.h);c.setLineDash([]);
+  for(const n in g.corners){const[x,y]=g.corners[n];c.beginPath();c.arc(x,y,g.h,0,7);c.fillStyle="#fff";c.fill();c.lineWidth=2.4/z;c.strokeStyle=B;c.stroke()}
+  const btn=(p,col,t)=>{c.beginPath();c.arc(p[0],p[1],g.R,0,7);c.fillStyle=col;c.fill();c.fillStyle="#fff";c.font=`${g.R*1.15}px sans-serif`;c.textAlign="center";c.textBaseline="middle";c.fillText(t,p[0],p[1]+g.R*.05)};
+  btn(g.crop,B,"✂");btn(g.del,"#dc2626","✕");
+  const rx=g.cx-g.gw/2,ry=g.cy-g.gh/2;c.beginPath();if(c.roundRect)c.roundRect(rx,ry,g.gw,g.gh,g.gh/2);else c.rect(rx,ry,g.gw,g.gh);c.fillStyle="rgba(37,99,235,.93)";c.fill();c.strokeStyle="#fff";c.lineWidth=1.5/z;c.stroke();
+  const a=g.gh*.3;c.beginPath();c.moveTo(g.cx-g.gw*.27,g.cy);c.lineTo(g.cx+g.gw*.27,g.cy);c.moveTo(g.cx,g.cy-a);c.lineTo(g.cx,g.cy+a);c.stroke();c.restore()}
 $("#cb-ok").onclick=cropDone;$("#cb-x").onclick=cropCancel;
 $("#cb-rs").onclick=()=>{if(!CROP)return;const F=CROP.F;CROP.R={x0:F.x,y0:F.y,x1:F.x+F.w,y1:F.y+F.h};draw(CROP.i)};
 function drawCropUI(c,i,k){if(!CROP||CROP.i!=i)return;const C=CROP,m=IM[C.o.id],F=C.F,R=C.R,h=10/zoom;c.save();c.scale(k,k);
@@ -1145,7 +1168,7 @@ $$("[data-t]").forEach(b=>b.onclick=function(){
   const wasOn=tool===t&&!this.classList.contains("panel-just-closed");
   if(tool!==t)previousTool=tool;tool=t;
   $$("[data-t]").forEach(x=>x.classList.toggle("on",x===this));
-  if(t!="lasso"&&selObjs.length)clearSel();if(CROP)cropCancel();if(selT&&t!="text"&&t!="note"&&t!="sel"&&t!="spk")selTSet(null,selT.i);$$(".pg").forEach(p=>draw(+p.dataset.i));
+  if(t!="lasso"&&selObjs.length)clearSel();if(CROP)cropCancel();if(t!="sel"&&IMS){const j=IMS.i;IMS=null;draw(j)}if(selT&&t!="text"&&t!="note"&&t!="sel"&&t!="spk")selTSet(null,selT.i);$$(".pg").forEach(p=>draw(+p.dataset.i));
   // Panel logic: every tool that has settings opens its own popover under the tool; tap again to close
   const pid=TOOL_PANEL[t];
   if(pid){if(panelFor===t&&panelOpen===pid)closeAllPanels();else{openPanel(pid,this);panelFor=t;if(window.onPanelOpen)onPanelOpen(t)}}
@@ -1153,7 +1176,7 @@ $$("[data-t]").forEach(b=>b.onclick=function(){
 });
 
 /* Goodnotes-style one-shot tool behavior: writing tools stay active; insertion tools return to Lasso. */
-function autoReturnToTool(t="lasso"){tool=t;$$('[data-t]').forEach(b=>b.classList.toggle("on",b.dataset.t===t));closeAllPanels();if(selT)showTbar();else lbar();$$(".pg").forEach(p=>draw(+p.dataset.i));}
+function autoReturnToTool(t="lasso"){tool=t;if(t!="sel")IMS=null;$$('[data-t]').forEach(b=>b.classList.toggle("on",b.dataset.t===t));closeAllPanels();if(selT)showTbar();else lbar();$$(".pg").forEach(p=>draw(+p.dataset.i));}
 function autoReturnToLasso(){autoReturnToTool("lasso");}
 /* Shapes picker + More-tools popover (the "+" button) */
 const SHT=["line","arrow","rect","oval"];
@@ -1358,9 +1381,13 @@ function syncViewerTop(){const b=$("#bar");if(b&&!b.hidden)document.documentElem
 addEventListener("resize",syncViewerTop,{passive:true});
 function homeTab(t){$$("#hside [data-ht]").forEach(b=>b.classList.toggle("on",b.dataset.ht===t));$("#hp-nb").hidden=t!=="nb";$("#hp-bk").hidden=t!=="bk";$("#hp-tools").hidden=t!=="tools";$("#open").hidden=t!=="nb";$("#mkpdf").hidden=t!=="nb";const m=$("#hmain");if(m)m.scrollTop=0}
 function fsEnter(){try{const e=document.documentElement,f=e.requestFullscreen||e.webkitRequestFullscreen;if(f&&!document.fullscreenElement&&!document.webkitFullscreenElement){const r=f.call(e);if(r&&r.catch)r.catch(()=>{})}}catch(x){}}
+/* v1.4.103 — full screen as soon as a notebook is open. Some paths (file picker, slow open) lose the tap that browsers require for full screen,
+   so the first Pencil / finger tap on the page tries once more (once per notebook; never when installed as an app, where iOS has no full-screen API). */
+let fsTry=0;const isApp=()=>{try{return matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||navigator.standalone}catch(e){return false}};
+document.addEventListener("pointerup",()=>{if(fsTry||!pdf||isApp()||document.fullscreenElement||document.webkitFullscreenElement)return;const d=document.getElementById("doc");if(!d||d.hidden)return;fsTry=1;fsEnter()},{capture:true,passive:true});
 function fsExit(){try{if(document.fullscreenElement||document.webkitFullscreenElement){const f=document.exitFullscreen||document.webkitExitFullscreen,r=f.call(document);if(r&&r.catch)r.catch(()=>{})}}catch(x){}}
 ["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>{requestAnimationFrame(()=>{syncViewerTop();dispatchEvent(new Event("resize"));repaintKick()})}));
-const go=v=>{const h=v=="home";try{smShut();closeAllPanels()}catch(e){}if(h){try{unstick()}catch(e){}}if(h)fsExit();if(h&&$("#home").hidden)homeTab("nb");if(h)try{onHome()}catch(e){}$("#home").hidden=!h;$("#bar").hidden=h;$("#doc").hidden=h;if(!h)requestAnimationFrame(syncViewerTop);scrollTo(0,0);repaintKick()};
+const go=v=>{const h=v=="home";try{smShut();closeAllPanels()}catch(e){}if(h){try{unstick()}catch(e){}}if(h){fsExit();fsTry=0}if(h&&$("#home").hidden)homeTab("nb");if(h)try{onHome()}catch(e){}$("#home").hidden=!h;$("#bar").hidden=h;$("#doc").hidden=h;if(!h)requestAnimationFrame(syncViewerTop);scrollTo(0,0);repaintKick()};
 /* v1.4.91 — iOS sometimes leaves a hidden layer painted (or a dead one under the finger) after a full-screen change: nudge the layers so they are re-composited */
 function repaintKick(){try{const ids=["#home","#sm","#bar","#doc"];ids.forEach(q=>{const e=$(q);if(e&&!e.hidden)e.style.opacity=".999"});requestAnimationFrame(()=>requestAnimationFrame(()=>ids.forEach(q=>{const e=$(q);if(e)e.style.opacity=""})))}catch(e){}}
 const age=t=>{const x=(Date.now()-t)/1e3;return x<3600?Math.max(1,Math.floor(x/60))+"m":x<86400?Math.floor(x/3600)+"h":x<604800?Math.floor(x/86400)+"d":x<2592e3?Math.floor(x/604800)+"w":Math.floor(x/2592e3)+"M"};
@@ -1390,7 +1417,7 @@ async function _showLib(){
   await persist();releaseDoc();docId=null;vis.clear();if(url){URL.revokeObjectURL(url);url=null}
   $("#doc").innerHTML="";go("home");THU.forEach(u=>URL.revokeObjectURL(u));THU=[];
   const L=((await dbAll())||[]).sort((a,b)=>b.t-a.t),g=$("#nbs");g.innerHTML="";$("#empty").hidden=!!L.length;
-  const last=+localStorage.getItem("pa_lastbackup")||0,days=Math.floor((Date.now()-last)/864e5);
+  let last=0;try{last=+localStorage.getItem("pa_lastbackup")||0}catch(e){}const days=Math.floor((Date.now()-last)/864e5);
   $("#hbk").textContent=TG()?tgLine():"⚠️ Telegram backup isn't set up yet — tap Telegram settings";
   for(const r of L){
     const c=document.createElement("div"),tb=document.createElement("div"),th=await thGet(r.id),x=document.createElement("button"),t=document.createElement("b"),m=document.createElement("small");
@@ -1459,8 +1486,9 @@ async function draw1(i){
   /* v1.4.47: smooth zoom — the new page is drawn on hidden canvases while the old picture stays on screen (just stretched);
      the two are swapped in one step, so the page never goes blank/white/black between zoom levels. */
   const c=document.createElement("canvas"),ink=document.createElement("canvas");c.width=vp.width;c.height=vp.height;
-  /* v1.4.99: the ink layer has its own (higher) pixel budget. Zoomed in, the page was capped at 5 Mpx and the handwriting was stretched (soft edges); now the ink stays sharp up to 7.5 Mpx (same size as the page whenever the page is not capped) */
-  {const ki=Math.max(k,Math.min(zoom*DPR,Math.sqrt(INKPX/(v1.width*v1.height))));ink.width=Math.max(1,Math.round(v1.width*ki));ink.height=Math.max(1,Math.round(v1.height*ki))}
+  /* v1.4.103: the ink layer has its own (higher) pixel budget. Zoomed in, the page was capped at 5 Mpx and the handwriting was stretched (soft edges); now the ink stays sharp up to 7.5 Mpx (same size as the page whenever the page is not capped) */
+  {const ki=Math.max(k,Math.min(zoom*DPR,Math.sqrt(INKPX/(v1.width*v1.height))));ink.width=Math.max(1,Math.round(v1.width*ki));ink.height=Math.max(1,Math.round(v1.height*ki));
+    try{if(!ink.getContext("2d")){ink.width=c.width;ink.height=c.height}}catch(e){ink.width=c.width;ink.height=c.height}}   /* out of canvas memory: fall back to the page size */
   ink.style.touchAction=penOnly?"pan-x pan-y":"none";bind(ink,p,i);
   if(virt){const x=c.getContext("2d");x.fillStyle=DK?DKBG:"#fff";x.fillRect(0,0,c.width,c.height)}
   else{try{const rt=page.render({canvasContext:c.getContext("2d"),viewport:vp});CURT=rt;await rt.promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}}
@@ -1474,7 +1502,7 @@ var PC=new WeakMap(),LIVEO=null;
 function penPts(o){const P=o.p,n=P.length,k0=P[0],k1=P[n-1],ch=PC.get(o);
   if(ch&&ch.n==n&&ch.a==k0[0]+","+k0[1]&&ch.b==k1[0]+","+k1[1])return ch.s;
   const hasP=k0.length>2,out=new Array(n);let sp=1;
-  if(o.sm){let pm=1;for(let j=0;j<n;j++){let m=P[j][2];if(m==null||!isFinite(m))m=pm;pm=m;out[j]=[P[j][0],P[j][1],m]}   /* v1.4.99: frozen stroke - the points ARE the finished line (no second smoothing / width pass), so it looks exactly like it did while writing */
+  if(o.sm){let pm=1;for(let j=0;j<n;j++){let m=P[j][2];if(m==null||!isFinite(m))m=pm;pm=m;out[j]=[P[j][0],P[j][1],m]}   /* v1.4.103: frozen stroke - the points ARE the finished line (no second smoothing / width pass), so it looks exactly like it did while writing */
     PC.set(o,{n,a:k0[0]+","+k0[1],b:k1[0]+","+k1[1],s:out});return out}
   for(let j=0;j<n;j++){let m;
     if(hasP)m=P[j][2]||1;
@@ -1491,7 +1519,7 @@ function penDraw(c,o,raw){
   const pt=o.pt||"ball",S=penPts(o),n=S.length,col=raw?o.c:dc(o.c),live=o===LIVEO,W0=o.w;
   c.lineCap=c.lineJoin="round";c.strokeStyle=c.fillStyle=col;c.globalAlpha=1;
   if(pt=="brush"){
-    const L=Math.max(2,Math.min(9,Math.floor(n/3))),wd=S.map((q,j)=>{let t=1;if(j<L)t=.22+.78*(j/L);if(j>n-1-L)t=Math.min(t,.1+.9*((n-1-j)/L));   /* v1.4.99: same tip while writing and after lifting (was lift-only -> size jump) */
+    const L=Math.max(2,Math.min(9,Math.floor(n/3))),wd=S.map((q,j)=>{let t=1;if(j<L)t=.22+.78*(j/L);if(j>n-1-L)t=Math.min(t,.1+.9*((n-1-j)/L));   /* v1.4.103: same tip while writing and after lifting (was lift-only -> size jump) */
       return Math.max(.12*W0,W0*Math.max(.2,.3+(q[2]-.5)*1.5)*t)});
     const nx=[],ny=[];for(let j=0;j<n;j++){const a=S[Math.max(0,j-1)],b=S[Math.min(n-1,j+1)];let dx=b[0]-a[0],dy=b[1]-a[1];const d=Math.hypot(dx,dy);
       if(d<1e-6){dx=nx.length?-ny[j-1]:1;dy=nx.length?nx[j-1]:0}else{dx/=d;dy/=d}nx.push(-dy);ny.push(dx)}
@@ -1519,7 +1547,6 @@ const penPar=()=>{const g=id=>{const v=parseFloat((document.getElementById(id)||
 function paint(c,o,k,raw){
   c.save();c.scale(k,k);c.lineCap=c.lineJoin="round";c.strokeStyle=c.fillStyle=raw?o.c:dc(o.c);c.lineWidth=o.w;if(o.pt=="pencil")c.globalAlpha=.78;
   if(o.t=="img"){if(!raw&&CROP&&CROP.o===o){c.restore();return}const m=IM[o.id];if(m&&m.naturalWidth){const cr=o.cr;if(cr){const nw=m.naturalWidth,nh=m.naturalHeight;c.drawImage(m,cr[0]*nw,cr[1]*nh,nw*(1-cr[0]-cr[2]),nh*(1-cr[1]-cr[3]),o.x,o.y,o.w,o.h)}else c.drawImage(m,o.x,o.y,o.w,o.h)}
-    if(tool=="sel"){const h=14/zoom;c.strokeStyle="#2563eb";c.lineWidth=1/zoom;c.strokeRect(o.x,o.y,o.w,o.h);c.fillStyle="#dc2626";c.beginPath();c.arc(o.x+o.w,o.y,h,0,7);c.fill();c.fillStyle="#fff";c.font=`${h*1.3}px sans-serif`;c.textAlign="center";c.textBaseline="middle";c.fillText("✕",o.x+o.w,o.y);c.fillStyle="#2563eb";c.fillRect(o.x+o.w-h,o.y+o.h-h,h*2,h*2);c.beginPath();c.arc(o.x,o.y,h,0,7);c.fill();c.fillStyle="#fff";c.fillText("✂",o.x,o.y)}
     c.restore();return}
   if(o.t=="hl"){c.globalAlpha=hlAlpha(o.a,raw);c.lineWidth=o.w*4;c.lineCap="butt"}
   else if(o.t!=="img"&&o.t!=="text"&&!(o.t=="pen"&&o.p.length>2)){const a=oa(o);if(a!=null)c.globalAlpha*=a}   /* shapes snapped from a see-through pen stroke / very short strokes keep the opacity */
@@ -1605,6 +1632,7 @@ function bind(ink,p,i){
     R=ink.getBoundingClientRect();pid=e.pointerId;dT=lastInk=Date.now();lastRaw=null;gX=e.clientX;gY=e.clientY;gT=e.timeStamp>0?e.timeStamp:performance.now();const q=pt(e);ink.setPointerCapture(e.pointerId);
     if(CROP){if(CROP.i==i&&cropDown(q))down=true;return}
     if(tool=="laser")return;
+    if(tool=="sel"){const r=imgDown(q,i);if(r){if(typeof r=="object"){mv=r;down=true}return}}
     if(tool=="text"||tool=="note"||tool=="sel"||tool=="spk"){
       const ae=document.activeElement;if(ae&&ae.tagName=="TEXTAREA")ae.blur();
       if(selT&&selT.i==i&&Math.hypot(q[0]-selT.o.x,q[1]-selT.o.y)<20/zoom){const o=selT.o;mt={o,k:"m",dx:q[0]-o.x,dy:q[1]-o.y,moved:true,was:false,sn:0};down=true;return}   /* top-left grip: drag = move the whole box */
@@ -1620,11 +1648,7 @@ function bind(ink,p,i){
     }
     if(tool=="lasso"){lassoDown(i,q);down=true;return}
     if(tool=="stamp"){snap(i);(anns[i]=anns[i]||[]).push({t:"text",x:q[0]-stampS/2,y:q[1]-stampS/2,s:stampS,c:"#000000",w:1,v:curStamp});draw(i);change();autoReturnToLasso();return}
-    if(tool=="sel"){const L=anns[i]||[],hr=18/zoom;for(let j=L.length-1;j>=0;j--){const o=L[j];if(o.t!="img")continue;
-      if(Math.hypot(q[0]-o.x,q[1]-o.y)<hr){startCrop(i,o);return}
-      if(Math.hypot(q[0]-(o.x+o.w),q[1]-o.y)<hr){snap(i);L.splice(j,1);draw(i);change();return}
-      const rs=Math.hypot(q[0]-(o.x+o.w),q[1]-(o.y+o.h))<hr;
-      if(rs||(q[0]>o.x&&q[0]<o.x+o.w&&q[1]>o.y&&q[1]<o.y+o.h)){snap(i);mv={o,rs,dx:q[0]-o.x,dy:q[1]-o.y};down=true;return}}return}
+    if(tool=="sel"){const m=imgPick(q,i);if(m){mv=m;down=true}return}
     down=true;if(tool=="er"){snap(i);erase(i,q);return}
     const w=W;
     cur={t:tool,c:color,w:tool=="pen"?+w.toFixed(1):SW,p:["pen","hl"].includes(tool)?[q]:[q,q]};
@@ -1643,7 +1667,9 @@ function bind(ink,p,i){
       else{if(!mt.sn){snap(i);mt.sn=1}if(mt.k=="s"){const f=Math.max(.15,Math.hypot(q[0]-o.x,q[1]-o.y)/Math.max(8,Math.hypot(mt.x0-o.x,mt.y0-o.y)));o.s=Math.max(6,+(mt.s0*f).toFixed(2));if(mt.bw0)o.bw=mt.bw0*f}else setLines(o,Math.max(1,Math.min(12,mt.L0+Math.round((q[1]-mt.qy)/(o.s*1.25)))))}
       draw(i);return}
     if(tool=="lasso"){lassoMove(i,q);return}
-    if(mv){const o=mv.o;if(mv.rs){const r=o.h/o.w;o.w=Math.max(30,q[0]-o.x);o.h=o.w*r}else{o.x=q[0]-mv.dx;o.y=q[1]-mv.dy}draw(i);return}
+    if(mv){const o=mv.o;if(mv.on===0){if(Math.hypot(q[0]-mv.q0[0],q[1]-mv.q0[1])<4/zoom)return;mv.on=1;if(mv.sn===0){snap(i);mv.sn=1}}
+      if(mv.c){const w=Math.max(30,Math.abs(q[0]-mv.ax),Math.abs(q[1]-mv.ay)/mv.r),h=w*mv.r;o.w=w;o.h=h;o.x=mv.c.includes("w")?mv.ax-w:mv.ax;o.y=mv.c.includes("n")?mv.ay-h:mv.ay}
+      else if(mv.rs){const r=o.h/o.w;o.w=Math.max(30,q[0]-o.x);o.h=o.w*r}else{o.x=q[0]-mv.dx;o.y=q[1]-mv.dy}draw(i);return}
     if(tool=="er"){erase(i,q);return}
     if(sn){   /* snapped: a line follows the tip (after a real 10 px move), everything else stays put */
       if(!sn.mv&&Math.hypot(e.clientX-hX,e.clientY-hY)>=10)sn.mv=1;
@@ -1669,10 +1695,10 @@ function bind(ink,p,i){
     if(cur&&lastRaw&&!sn&&(cur.t=="pen"||cur.t=="hl")){const l=cur.p[cur.p.length-1];if(Math.hypot(l[0]-lastRaw[0],l[1]-lastRaw[1])>.35)cur.p.push(lastRaw)}   /* the last point of every stroke is always kept */
     if(CROP){CROP.drag=null;return}
     if(mt){const m=mt;mt=null;clearTimeout(lpT);if(m.lp){draw(i);showTbar();return}if(m.k=="m"&&!m.moved&&(m.was||tool!="sel")){openEdit();return}if(m.sn)change();if(m.k=="s"&&m.o.s){TXS=Math.round(m.o.s);lsSet(TXK.s,TXS)}draw(i);showTbar();return}
-    if(tool=="lasso"){lassoUp(i);return}if(mv){mv=null;draw(i);change();return}
+    if(tool=="lasso"){lassoUp(i);return}if(mv){const ch=mv.sn!==0;mv=null;draw(i);if(ch)change();return}
     if(cur){if(sn){const L=cur.p;if((cur.t==="line"||cur.t==="hl")&&L.length===2&&Math.hypot(L[0][0]-L[1][0],L[0][1]-L[1][1])<4)cur=sn.orig;sn=null}else if(autoLn&&(cur.t==="pen"||cur.t==="hl")){const r=autoStraight(cur);if(r)cur=r}if(cur.t=="pen"&&cur.p.length>2&&!cur.sm)freezePen(cur);else if((cur.t=="pen"||cur.t=="hl")&&cur.p.length>3)cur.p=rdp(cur.p,.05,true);snap(i);(anns[i]=anns[i]||[]).push(cur);cur=null;draw(i)}change();};
 }
-/* v1.4.99 — FREEZE ON LIFT. The line you see while writing is penPts(raw points): 2 smoothing passes + (for finger / mouse) a speed-based width.
+/* v1.4.103 — FREEZE ON LIFT. The line you see while writing is penPts(raw points): 2 smoothing passes + (for finger / mouse) a speed-based width.
    Before, lifting the Pencil simplified the RAW points first and then ran those passes again on the shorter list, so the shape, the thickness and
    (Brush) the tip length all changed the moment the Pencil left the glass. Now the finished smoothed points + widths are stored as they were drawn
    (o.sm=1) and are never smoothed again. Brush / Pencil keep every point (their tip length and grain depend on the point count). */
@@ -1938,7 +1964,7 @@ function textSheet(i,q,note,ex,voice){
   if(SRC&&!ex)micOn();else{const n=t.value.length;kbFocus(t);try{t.setSelectionRange(n,n)}catch(e){}
     if(!VR.ok&&voice)msg("🎤 Browser me voice nahi — ⌨️ type karo");
     else if(!SRC)msg(ex?"✏️ Edit karo, phir Save":"✏️ Likhna shuru karo")}}
-function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;if(CROP)cropCancel();if(selT){selT=null}
+function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;if(CROP)cropCancel();IMS=null;if(selT){selT=null}
   const top=a[a.length-1];if(top&&top[0]==="__page__"){a.pop();b.push(top);restorePageState(r?top[1].after:top[1].before).then(()=>st(r?"↪ Page action restored":"↶ Page action undone")).catch(()=>st("❌ Couldn't restore page history"));return}
   const[i,s]=a.pop();b.push([i,JSON.stringify(anns[i]||[])]);anns[i]=JSON.parse(s);draw(i);change()}
 $("#un").onclick=()=>undo(0);$("#re").onclick=()=>undo(1);
@@ -2183,8 +2209,8 @@ $("#fm").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f||!
     const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,iw,ih);x.drawImage(bm,0,0,iw,ih);if(bm.close)bm.close();
     const b=await new Promise(r=>cv.toBlob(r,"image/jpeg",.8));cv.width=cv.height=0;
     const id="im"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await iPut(id,await b.arrayBuffer());
-    const i=curPage,sp=sizes[i]||sizes[0],w=sp.w*.4;snap(i);(anns[i]=anns[i]||[]).push({t:"img",id,x:sp.w*.3,y:sp.h*.3,w,h:w*ih/iw,c:"#000000"});
-    autoReturnToLasso();draw(i);change()}
+    const i=curPage,sp=sizes[i]||sizes[0],w=sp.w*.4;snap(i);const no={t:"img",id,x:sp.w*.3,y:sp.h*.3,w,h:w*ih/iw,c:"#000000"};(anns[i]=anns[i]||[]).push(no);
+    IMS={i,o:no};autoReturnToTool("sel");draw(i);change();st("🖼 Drag a corner to resize · ✂ crop · bar in the middle to move · tap outside to finish")}
   catch(err){st("❌ Couldn't add the image")}};
 
 /* ===== FILE OPEN ===== */
@@ -2616,9 +2642,9 @@ const palmBlock=e=>palm&&e.pointerType=="touch"&&(Date.now()-lastPen<1200||Math.
 $("#palm").onclick=e=>{palm=!palm;e.currentTarget.classList.toggle("on",palm);st(palm?"🖐 Palm rejection on":"🖐 Palm rejection off")};
 /* v1.4.85 — Draw & hold (GoodNotes style): ON by default, remembered, one switch shared by the More menu and the pen / highlighter popovers */
 function shapeSync(){const b=$("#shp");if(b)b.classList.toggle("on",shapeOn);$$(".shp-tg").forEach(x=>{x.classList.toggle("on",shapeOn);x.textContent="◇ Snap: "+(shapeOn?"ON":"OFF")})}
-function autoSync(){$$(".auto-tg").forEach(x=>{x.classList.toggle("on",autoLn);x.textContent="↔ Straight: "+(autoLn?"ON":"OFF")})}
-function autoSet(v){autoLn=!!v;try{localStorage.setItem("pa_pen_autoline",autoLn?"1":"0")}catch(e){}autoSync();st(autoLn?"↔ Underlines become straight when you lift the Pencil":"↔ Auto-straight underlines: off")}
-$$(".auto-tg").forEach(b=>b.onclick=()=>autoSet(!autoLn));autoSync();
+function autoLnSync(){$$(".auto-tg").forEach(x=>{x.classList.toggle("on",autoLn);x.textContent="↔ Straight: "+(autoLn?"ON":"OFF")})}
+function autoSet(v){autoLn=!!v;try{localStorage.setItem("pa_pen_autoline",autoLn?"1":"0")}catch(e){}autoLnSync();st(autoLn?"↔ Underlines become straight when you lift the Pencil":"↔ Auto-straight underlines: off")}
+$$(".auto-tg").forEach(b=>b.onclick=()=>autoSet(!autoLn));autoLnSync();
 function shapeSet(v,toast){shapeOn=!!v;try{localStorage.setItem("pa_pen_shape",shapeOn?"1":"0")}catch(e){}shapeSync();if(toast)st(shapeOn?"◇ Draw & hold: line, circle, rectangle snap perfect":"◇ Hold to snap shape: off")}
 $("#shp").onclick=()=>shapeSet(!shapeOn,1);$$(".shp-tg").forEach(b=>b.onclick=()=>shapeSet(!shapeOn,1));shapeSync();
 
@@ -2672,7 +2698,7 @@ function extras(c,i,k){const s=sizes[i]||sizes[0],t=tpl[i];c.save();c.scale(k,k)
   if(SR[i]){c.fillStyle="rgba(255,200,0,.45)";SR[i].forEach(r=>c.fillRect(r[0],r[1],r[2],r[3]))}
   c.restore()}
 function overlay(c,i,k){
-  drawTextSel(c,i,k);drawCropUI(c,i,k);
+  drawTextSel(c,i,k);drawCropUI(c,i,k);drawImgUI(c,i,k);
   if(selPage==i&&selObjs.length&&tool=="lasso"){const b=selBox();c.save();c.scale(k,k);c.setLineDash([6/zoom,4/zoom]);c.strokeStyle="#2563eb";c.lineWidth=1.5/zoom;c.strokeRect(b.x,b.y,b.w,b.h);c.setLineDash([]);c.fillStyle="#2563eb";c.fillRect(b.x+b.w-8/zoom,b.y+b.h-8/zoom,16/zoom,16/zoom);c.restore()}
   if(lz&&selPage==i){c.save();c.scale(k,k);c.setLineDash([5/zoom,4/zoom]);c.strokeStyle="#2563eb";c.lineWidth=1.5/zoom;c.beginPath();lz.forEach((q,j)=>j?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]));c.stroke();c.restore()}}
 const redrawAll=()=>$$(".pg").forEach(p=>draw(+p.dataset.i));
@@ -2801,7 +2827,7 @@ addEventListener("keydown",e=>{if(/INPUT|TEXTAREA/.test(document.activeElement.t
   if(inPres()){if(["ArrowRight","ArrowDown","PageDown"," "].includes(e.key)){e.preventDefault();goPage(Math.min(ord.length-1,curPage+1))}else if(["ArrowLeft","ArrowUp","PageUp"].includes(e.key)){e.preventDefault();goPage(Math.max(0,curPage-1))}}
   else if(selObjs.length&&(e.key=="Delete"||e.key=="Backspace")){e.preventDefault();delSel()}});
 
-function onHome(){selT=null;CROP=null;TEDIT=null;$("#cbar").hidden=true;SB.hidden=true;zwClose();presOff();selObjs=[];lbar();lastRes=null;lastQ=""}
+function onHome(){selT=null;CROP=null;IMS=null;TEDIT=null;$("#cbar").hidden=true;SB.hidden=true;zwClose();presOff();selObjs=[];lbar();lastRes=null;lastQ=""}
 
 
 /* ===== PRO FEATURES 2 ===== */
@@ -2952,7 +2978,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.99",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.103",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -3037,7 +3063,7 @@ async function bootStorage(){
   let had=0;try{had=+localStorage.getItem("pa_had")||0}catch(e){}
   if(docs.length){try{localStorage.setItem("pa_had",String(docs.length))}catch(e){}}
   else if(had>0){try{localStorage.setItem("pa_had","0")}catch(e){}setTimeout(()=>alert("⚠️ Your notebooks are no longer on this device — the browser cleared its data.\n\nGet them back with: Home → ♻️ Restore (your Telegram backup zips), or Settings → 📥 Import backup file."),800)}
-  const mt=await metaGet("schema"),old=(mt&&mt.v)||+localStorage.getItem("pa_schema")||1;
+  const mt=await metaGet("schema"),old=(mt&&mt.v)||(()=>{try{return+localStorage.getItem("pa_schema")}catch(e){return 0}})()||1;
   if(old<SCHEMA&&docs.length){await metaPut("snap_v"+old,{t:Date.now(),docs});             /* full snapshot before migration */
     for(const r of docs){let ch=0;if(!r.anns){r.anns={};ch=1}if(!r.sv||r.sv<SCHEMA){r.sv=SCHEMA;ch=1}if(ch)await dbPutM(r)}}
   if(!mt||mt.v<=SCHEMA)await metaPut("schema",{v:Math.max(SCHEMA,(mt&&mt.v)||0),app:APP_VERSION,t:Date.now()});
