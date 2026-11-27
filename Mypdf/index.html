@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.5.01">
+<meta name="app-version" content="1.5.02">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -50,6 +50,12 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .dtab{flex:0 0 auto;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--btn-bg);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:7px 14px;font-size:14px;font-weight:600;cursor:pointer}
 .dtab.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .dtab:first-child{margin-left:auto}.dtab:last-child{margin-right:auto}
+/* v1.5.02: every open-notebook tab has its own ✕ (closes the TAB only — the notebook stays saved on Home) */
+.dtab{display:flex;align-items:center;gap:6px;padding-right:6px}
+.dtab .dl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dtab .dx{flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:0;background:transparent;color:inherit;opacity:.65;font-size:13px;line-height:22px;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dtab .dx:hover,.dtab .dx:active{opacity:1;background:color-mix(in srgb,currentColor 18%,transparent)}
+.dtab.on .dx{opacity:.85}
 #doctab{display:none!important}
 #bar #manualsave{order:2}#bar #saveb{order:3}#bar .thb{order:4}#bar #net{order:5}
 #bar .bar-top{gap:8px}
@@ -1416,9 +1422,34 @@ const go=v=>{const h=v=="home";try{smShut();closeAllPanels()}catch(e){}if(h){try
 function repaintKick(){try{const ids=["#home","#sm","#bar","#doc"];ids.forEach(q=>{const e=$(q);if(e&&!e.hidden)e.style.opacity=".999"});requestAnimationFrame(()=>requestAnimationFrame(()=>ids.forEach(q=>{const e=$(q);if(e)e.style.opacity=""})))}catch(e){}}
 const age=t=>{const x=(Date.now()-t)/1e3;return x<3600?Math.max(1,Math.floor(x/60))+"m":x<86400?Math.floor(x/3600)+"h":x<604800?Math.floor(x/86400)+"d":x<2592e3?Math.floor(x/604800)+"w":Math.floor(x/2592e3)+"M"};
 let switching=false;
-function renderTabs(){const c=$("#dtabs");if(!c)return;c.innerHTML="";let cur=null;
-  for(const id of Object.keys(FILES)){const b=document.createElement("button");b.className="dtab"+(id===docId?" on":"");b.textContent=FILES[id].name.replace(/\.pdf$/i,"");b.title=FILES[id].name;if(id===docId)cur=b;b.onclick=()=>switchNb(id);c.append(b)}
+const TABHIDE=new Set(),TABCLOSING={v:0};   /* v1.5.02: tabs the user closed — the notebook itself stays saved on Home, only the tab disappears */
+function renderTabs(){const c=$("#dtabs");if(!c)return;c.innerHTML="";let cur=null;TABHIDE.delete(docId);
+  for(const id of Object.keys(FILES)){if(TABHIDE.has(id))continue;
+    const b=document.createElement("div");b.className="dtab"+(id===docId?" on":"");b.setAttribute("role","tab");b.tabIndex=0;b.title=FILES[id].name;
+    const l=document.createElement("span");l.className="dl";l.textContent=FILES[id].name.replace(/\.pdf$/i,"");
+    const x=document.createElement("button");x.className="dx";x.type="button";x.textContent="✕";x.title="Close this tab (the notebook stays saved on Home)";x.setAttribute("aria-label","Close tab");
+    if(id===docId)cur=b;
+    b.onclick=()=>switchNb(id);b.onkeydown=e=>{if(e.key=="Enter"||e.key==" "){e.preventDefault();switchNb(id)}};
+    b.addEventListener("auxclick",e=>{if(e.button==1){e.preventDefault();closeTab(id)}});
+    x.onclick=e=>{e.stopPropagation();closeTab(id)};
+    b.append(l,x);c.append(b)}
   if(cur)c.scrollLeft=Math.max(0,cur.offsetLeft-c.clientWidth/2+cur.offsetWidth/2)}
+/* v1.5.02 — close a tab like a browser / GoodNotes: save everything first (this device + Telegram), then remove only the TAB. The notebook, its drawings and its card on Home are never touched. */
+async function closeTab(id){if(TABCLOSING.v||switching||!FILES[id])return;TABCLOSING.v=1;
+  const nm=FILES[id].name.replace(/\.pdf$/i,"");
+  try{
+    const vis_=Object.keys(FILES).filter(k=>!TABHIDE.has(k)||k===docId),ix=vis_.indexOf(id),nb=vis_[ix+1]||vis_[ix-1]||null;
+    if(id===docId){
+      await persist(true);                                   /* 1. save this notebook on this device first */
+      TABHIDE.add(id);
+      if(nb&&nb!==id){await switchNb(nb)}else{await showLib()}   /* 2. show the neighbouring tab, or Home when it was the last one */
+    }else{TABHIDE.add(id);renderTabs()}
+    try{flush(0,1)}catch(e){}                                /* 3. send the latest state to Telegram (retried automatically if offline) */
+    st("✕ «"+nm+"» closed — still saved on Home")
+  }catch(e){TABHIDE.delete(id);try{renderTabs()}catch(x){}st("⚠️ Couldn't close the tab — your notebook is still saved")}
+  finally{TABCLOSING.v=0}}
+/* mouse wheel scrolls the tab strip sideways (phones/tablets already swipe) */
+{const dt=$("#dtabs");if(dt)dt.addEventListener("wheel",e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)&&dt.scrollWidth>dt.clientWidth){dt.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false})}
 /* switch to another PDF opened in this session: save this one first, then open the other (no file picker needed) */
 async function switchNb(id){const f=FILES[id];if(!f||id===docId||switching)return;switching=true;
   try{await persist(true);try{onHome()}catch(e){}io.disconnect();vis.clear();releaseDoc();$("#doc").innerHTML="";docId=null;await openFile(f,id)}
@@ -1449,7 +1480,7 @@ async function _showLib(){
     if(th){const im=new Image(),u=URL.createObjectURL(new Blob([th],{type:"image/jpeg"}));THU.push(u);im.src=u;tb.append(im)}else tb.classList.add("cv");
     const ag=document.createElement("i");ag.className="ag";ag.textContent=age(r.t);x.className="dl";x.setAttribute("aria-label","Delete notebook");x.title="Delete";x.innerHTML=TRASH_SVG;tb.append(ag,x);
     t.textContent=r.name.replace(/\.pdf$/i,"");m.textContent=`${r.np}p · ${r.n} ann`;
-    x.onclick=async e=>{e.stopPropagation();e.preventDefault();if(await askDelete(r.name.replace(/\.pdf$/i,""))){await dbDel(r.id);await thDel(r.id);delete FILES[r.id];showLib()}};
+    x.onclick=async e=>{e.stopPropagation();e.preventDefault();if(await askDelete(r.name.replace(/\.pdf$/i,""))){await dbDel(r.id);await thDel(r.id);delete FILES[r.id];TABHIDE.delete(r.id);showLib()}};
     tb.onclick=t.onclick=()=>openNb(r);c.append(tb,t,m);g.append(c);
   }
 }
@@ -3039,7 +3070,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.5.01",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.5.02",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
