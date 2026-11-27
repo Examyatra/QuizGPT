@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.5.02">
+<meta name="app-version" content="1.5.05">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -52,7 +52,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .dtab:first-child{margin-left:auto}.dtab:last-child{margin-right:auto}
 /* v1.5.02: every open-notebook tab has its own ✕ (closes the TAB only — the notebook stays saved on Home) */
 .dtab{display:flex;align-items:center;gap:6px;padding-right:6px}
-.dtab .dl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dtab .dtl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dtab .dx{flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:0;background:transparent;color:inherit;opacity:.65;font-size:13px;line-height:22px;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .dtab .dx:hover,.dtab .dx:active{opacity:1;background:color-mix(in srgb,currentColor 18%,transparent)}
 .dtab.on .dx{opacity:.85}
@@ -1426,7 +1426,7 @@ const TABHIDE=new Set(),TABCLOSING={v:0};   /* v1.5.02: tabs the user closed —
 function renderTabs(){const c=$("#dtabs");if(!c)return;c.innerHTML="";let cur=null;TABHIDE.delete(docId);
   for(const id of Object.keys(FILES)){if(TABHIDE.has(id))continue;
     const b=document.createElement("div");b.className="dtab"+(id===docId?" on":"");b.setAttribute("role","tab");b.tabIndex=0;b.title=FILES[id].name;
-    const l=document.createElement("span");l.className="dl";l.textContent=FILES[id].name.replace(/\.pdf$/i,"");
+    const l=document.createElement("span");l.className="dtl";l.textContent=FILES[id].name.replace(/\.pdf$/i,"");
     const x=document.createElement("button");x.className="dx";x.type="button";x.textContent="✕";x.title="Close this tab (the notebook stays saved on Home)";x.setAttribute("aria-label","Close tab");
     if(id===docId)cur=b;
     b.onclick=()=>switchNb(id);b.onkeydown=e=>{if(e.key=="Enter"||e.key==" "){e.preventDefault();switchNb(id)}};
@@ -1440,20 +1440,27 @@ async function closeTab(id){if(TABCLOSING.v||switching||!FILES[id])return;TABCLO
   try{
     const vis_=Object.keys(FILES).filter(k=>!TABHIDE.has(k)||k===docId),ix=vis_.indexOf(id),nb=vis_[ix+1]||vis_[ix-1]||null;
     if(id===docId){
-      await persist(true);                                   /* 1. save this notebook on this device first */
+      if(!(await saveSure())){st("⚠️ Couldn't save «"+nm+"» yet — tab kept open so nothing is lost. Try again in a moment.");return}   /* 1. save this notebook on this device first; if that fails the tab stays */
       TABHIDE.add(id);
-      if(nb&&nb!==id){await switchNb(nb)}else{await showLib()}   /* 2. show the neighbouring tab, or Home when it was the last one */
+      let ok=true;
+      if(nb&&nb!==id)ok=await switchNb(nb);else await showLib();   /* 2. show the neighbouring tab, or Home when it was the last one */
+      if(ok===false&&docId===id){TABHIDE.delete(id);renderTabs();return}
     }else{TABHIDE.add(id);renderTabs()}
-    try{flush(0,1)}catch(e){}                                /* 3. send the latest state to Telegram (retried automatically if offline) */
+    try{const p=flush(0,1);if(p&&p.catch)p.catch(()=>{})}catch(e){}   /* 3. send the latest state to Telegram (retried automatically if offline) */
     st("✕ «"+nm+"» closed — still saved on Home")
   }catch(e){TABHIDE.delete(id);try{renderTabs()}catch(x){}st("⚠️ Couldn't close the tab — your notebook is still saved")}
   finally{TABCLOSING.v=0}}
 /* mouse wheel scrolls the tab strip sideways (phones/tablets already swipe) */
 {const dt=$("#dtabs");if(dt)dt.addEventListener("wheel",e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)&&dt.scrollWidth>dt.clientWidth){dt.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false})}
 /* switch to another PDF opened in this session: save this one first, then open the other (no file picker needed) */
-async function switchNb(id){const f=FILES[id];if(!f||id===docId||switching)return;switching=true;
-  try{await persist(true);try{onHome()}catch(e){}io.disconnect();vis.clear();releaseDoc();$("#doc").innerHTML="";docId=null;await openFile(f,id)}
-  catch(e){st("❌ Couldn't open the PDF");showLib()}finally{switching=false}}
+/* v1.5.02: never throw away the notebook that is in memory unless it really reached storage (persist() swallows errors and retries later, so check dirtySince) */
+async function saveSure(){if(!docId||!pdf)return true;
+  for(let k=0;k<3;k++){await persist(true);if(!dirtySince)return true;await new Promise(r=>setTimeout(r,500))}
+  return !dirtySince}
+async function switchNb(id){const f=FILES[id];if(!f||id===docId||switching)return false;switching=true;
+  try{if(!(await saveSure())){st("⚠️ Couldn't save this notebook yet — staying here so nothing is lost. Try again in a moment.");return false}
+    try{onHome()}catch(e){}io.disconnect();vis.clear();releaseDoc();$("#doc").innerHTML="";docId=null;await openFile(f,id);return true}
+  catch(e){openFail(e);showLib();return false}finally{switching=false}}
 const TRASH_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6h17"/><path d="M9 6V4.2c0-.7.5-1.2 1.2-1.2h3.6c.7 0 1.2.5 1.2 1.2V6"/><path d="M18.5 6l-.8 12.6a2 2 0 01-2 1.9H8.3a2 2 0 01-2-1.9L5.5 6"/><path d="M10 10.5v5.5M14 10.5v5.5"/></svg>';
 /* v1.4.84 — in-app "Are you sure?" dialog (the browser's own confirm box can be blocked / skipped in an installed app, so a tap used to delete at once) */
 function askDelete(name){return new Promise(res=>{
@@ -1469,7 +1476,7 @@ let _slBusy=0,_slAgain=0;
 async function showLib(){if(_slBusy&&Date.now()-_slBusy<10000){_slAgain=1;return}_slBusy=Date.now();
   try{do{_slAgain=0;await _showLib()}while(_slAgain)}finally{_slBusy=0}}
 async function _showLib(){
-  await persist();releaseDoc();docId=null;vis.clear();if(url){URL.revokeObjectURL(url);url=null}
+  if(!(await saveSure())){try{emergSave()}catch(e){}}releaseDoc();docId=null;vis.clear();if(url){URL.revokeObjectURL(url);url=null}
   $("#doc").innerHTML="";go("home");THU.forEach(u=>URL.revokeObjectURL(u));THU=[];
   const L=((await dbAll())||[]).sort((a,b)=>b.t-a.t),g=$("#nbs");g.innerHTML="";$("#empty").hidden=!!L.length;
   let last=0;try{last=+localStorage.getItem("pa_lastbackup")||0}catch(e){}const days=Math.floor((Date.now()-last)/864e5);
@@ -1484,19 +1491,23 @@ async function _showLib(){
     tb.onclick=t.onclick=()=>openNb(r);c.append(tb,t,m);g.append(c);
   }
 }
-function openNb(r){fsEnter();const f=FILES[r.id];if(f){openFile(f,r.id).catch(()=>st("❌ Couldn't open the PDF"));return}
+function openNb(r){fsEnter();const f=FILES[r.id];if(f){openFile(f,r.id).catch(openFail);return}
   if(isGen(r.id)){openGen(r).catch(()=>st("❌ Couldn't open the notebook"));return}
   want=r.id;st("📂 «"+r.name.replace(/\.pdf$/i,"")+"» — select the PDF");$("#fi").click()}
 async function thumb(P,id){try{if(await thGet(id))return;const pg=await P.getPage(1),v=pg.getViewport({scale:260/pg.getViewport({scale:1}).width}),c=document.createElement("canvas");
   c.width=Math.round(v.width);c.height=Math.round(v.height);await pg.render({canvasContext:c.getContext("2d"),viewport:v}).promise;pg.cleanup();
   const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.7));c.width=c.height=0;await thPut(id,await b.arrayBuffer())}catch(e){}}
 
-async function openFile(f,wid){
+const openFail=e=>st(e&&e.name=="PasswordException"?"🔒 This PDF is password-protected — remove the password, then open it again":"❌ Couldn't open the PDF");
+let OPENING=0;   /* v1.5.02: a second tap while a notebook is still loading used to start a second open and mix the two */
+async function openFile(f,wid){if(OPENING)return;OPENING=1;try{await _openFile(f,wid)}finally{OPENING=0}}
+async function _openFile(f,wid){
   file=f;name=f.name;const fpr=await fpOf(f);curFp=fpr;docId=await resolveId(f,fpr,wid);FILES[docId]=f;anns={};hist=[];redo=[];vis.clear();curPage=0;
   const ex=await dbGet(docId);if(ex){anns=ex.anns||{};curPage=ex.page||0}
   if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(f);
   try{pdf=await pdfjsLib.getDocument({url,disableAutoFetch:true,rangeChunkSize:131072}).promise}
-  catch(e){pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise}
+  catch(e){if(e&&e.name=="PasswordException"){st("🔒 This PDF is password-protected — remove the password, then open it again");throw e}
+    pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise}
   const v=(await pdf.getPage(1)).getViewport({scale:1});sizes=[{w:v.width,h:v.height}];curPfp=(pdf.fingerprints&&pdf.fingerprints[0])||"";ord=(ex&&okOrd(ex.ord,pdf.numPages))?[...ex.ord]:[...Array(pdf.numPages).keys()];ord.forEach((v,i)=>{if(isV(v))sizes[i]=vSize(v)});bm=new Set(ex&&ex.bm||[]);tpl=(ex&&ex.tpl)||{};SR={};TXT={};selObjs=[];
   zoom=Math.max(.5,Math.min(1.6,(innerWidth-32)/v.width));
   const d=$("#doc");d.innerHTML="";go("read");if(location.hash!="#read")location.hash="read";
@@ -1526,11 +1537,12 @@ function free(i){const p=$(`.pg[data-i="${i}"]`);if(!p)return;(anns[i]||[]).forE
 function releaseDoc(){try{$$(".pg").forEach(p=>{try{free(+p.dataset.i)}catch(e){}})}catch(e){}const d=pdf;pdf=null;if(d&&typeof d.destroy=="function")try{Promise.resolve(d.destroy()).catch(()=>{})}catch(e){}}
 /* v1.4.73 — render watchdog: the queue is serial, so ONE page that never finishes (pdf.js worker hiccup, iOS memory pressure) used to freeze
    every page after it. Now a page gets 25 s; if it hangs or fails, it is cancelled, marked "not drawn" and retried (3x, with a delay) while the queue moves on. */
-let CURT=null;const RTC={},RT_MS=25000;
+let PEN_DOWN=null;   /* v1.5.05: {i,t} while a Pencil / mouse stroke is in progress */
+let CURT=null,RQN=0;const RTC={},RT_MS=25000;   /* RQN = renders queued or running (v1.5.04, used by the page doctor) */
 const rFail=i=>{const p=$(`.pg[data-i="${i}"]`);if(p)delete p.dataset.z;const n=RTC[i]=(RTC[i]||0)+1;
   if(n<=3)setTimeout(()=>{if(vis.has(i)&&pdf)render(i)},1200*n);else if(n==4)st("⚠️ Ek page draw nahi ho raha — thoda scroll karke dekho")};
-const render=i=>{q=q.then(()=>new Promise(res=>{let fin=0;
-  const end=ok=>{if(fin)return;fin=1;clearTimeout(t);if(ok)RTC[i]=0;else rFail(i);res()},
+const render=i=>{RQN++;q=q.then(()=>new Promise(res=>{let fin=0;
+  const end=ok=>{if(fin)return;fin=1;RQN=Math.max(0,RQN-1);clearTimeout(t);if(ok)RTC[i]=0;else rFail(i);res()},
     t=setTimeout(()=>{try{CURT&&CURT.cancel()}catch(e){}end(0)},RT_MS);
   draw1(i).then(()=>end(1),()=>end(0))})).catch(()=>{})};
 async function draw1(i){
@@ -1548,6 +1560,7 @@ async function draw1(i){
   if(virt){const x=c.getContext("2d");x.fillStyle=DK?DKBG:"#fff";x.fillRect(0,0,c.width,c.height)}
   else{try{const rt=page.render({canvasContext:c.getContext("2d"),viewport:vp});CURT=rt;await rt.promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}}
     finally{page.cleanup()}}
+  {const t0=Date.now();while(PEN_DOWN&&PEN_DOWN.i===i&&Date.now()-PEN_DOWN.t<6000&&Date.now()-t0<6000)await new Promise(r=>setTimeout(r,60))}   /* v1.5.05: a finished render must not replace the page while the Pencil is writing on it (it cut the stroke short) */
   if(!vis.has(i)||p.dataset.z!=zoom){c.width=c.height=ink.width=ink.height=0;return}   /* page left the screen or zoom changed meanwhile: drop it */
   p.querySelectorAll("canvas").forEach(o=>{o.width=o.height=0});p.replaceChildren(c,ink);
   draw(i);
@@ -1598,7 +1611,7 @@ function paintSeg(c,o,from,raw){const P=o.p,n=P.length;c.lineCap=c.lineJoin="rou
     if(b!==bk){if(open)c.stroke();c.beginPath();c.moveTo(a[0],a[1]);c.lineWidth=w;bk=b;open=true}
     c.quadraticCurveTo(P[j][0],P[j][1],e[0],e[1])}
   if(open)c.stroke()}
-const penPar=()=>{const g=id=>{const v=parseFloat((document.getElementById(id)||{}).value);return isNaN(v)?null:v};return{s:(g("ps-pressure")||3)/8,m:(g("ps-minw")==null?60:g("ps-minw"))/100,w:(g("ps-widthsmooth")==null?75:g("ps-widthsmooth"))/100}};
+let _ppC=null,_ppT=0;const penPar=()=>{const _n=Date.now();if(_ppC&&_n-_ppT<200)return _ppC;const g=id=>{const v=parseFloat((document.getElementById(id)||{}).value);return isNaN(v)?null:v};_ppT=_n;return _ppC={s:(g("ps-pressure")||3)/8,m:(g("ps-minw")==null?60:g("ps-minw"))/100,w:(g("ps-widthsmooth")==null?75:g("ps-widthsmooth"))/100}};
 function paint(c,o,k,raw){
   c.save();c.scale(k,k);c.lineCap=c.lineJoin="round";c.strokeStyle=c.fillStyle=raw?o.c:dc(o.c);c.lineWidth=o.w;if(o.pt=="pencil")c.globalAlpha=.78;
   if(o.t=="img"){if(!raw&&CROP&&CROP.o===o){c.restore();return}const m=IM[o.id];if(m&&m.naturalWidth){const cr=o.cr;if(cr){const nw=m.naturalWidth,nh=m.naturalHeight;c.drawImage(m,cr[0]*nw,cr[1]*nh,nw*(1-cr[0]-cr[2]),nh*(1-cr[1]-cr[3]),o.x,o.y,o.w,o.h)}else c.drawImage(m,o.x,o.y,o.w,o.h)}
@@ -1698,7 +1711,7 @@ function bind(ink,p,i){
     if(e.pointerType=="touch"&&othersFresh(e.pointerId)){down=false;cur=null;mv=null;draw(i);return}
     if(penOnly&&e.pointerType=="touch"&&(tool=="text"||tool=="note"||tool=="sel"||tool=="spk")&&!palmBlock(e)&&!CROP){ftap={id:e.pointerId,x:e.clientX,y:e.clientY,t:Date.now()};clearTimeout(lpT);lpT=setTimeout(()=>{const f=ftap;if(!f||f.id!==e.pointerId)return;const r=ink.getBoundingClientRect(),ft=tAt((f.x-r.left)/zoom,(f.y-r.top)/zoom,8/zoom);if(ft){f.lp=1;selTSet(ft,i);LPM.show(f.x,f.y)}},500);return}
     if((penOnly&&e.pointerType=="touch")||palmBlock(e))return;if(e.pointerType=="mouse"&&e.button)return;e.preventDefault();if(down&&cur&&e.pointerType!=="touch")ink.onpointerup({pointerId:pid});   /* v1.4.85: a lost pointerup must never swallow / glue strokes */
-    R=ink.getBoundingClientRect();pid=e.pointerId;dT=lastInk=Date.now();lastRaw=null;gX=e.clientX;gY=e.clientY;gT=e.timeStamp>0?e.timeStamp:performance.now();const q=pt(e);ink.setPointerCapture(e.pointerId);
+    R=ink.getBoundingClientRect();pid=e.pointerId;dT=lastInk=Date.now();lastRaw=null;gX=e.clientX;gY=e.clientY;gT=e.timeStamp>0?e.timeStamp:performance.now();const q=pt(e);try{ink.setPointerCapture(e.pointerId)}catch(_){}   /* v1.5.05: may throw if the pointer is already gone — never lose the stroke because of it */
     if(CROP){if(CROP.i==i&&cropDown(q))down=true;return}
     if(tool=="laser")return;
     if(tool=="sel"){const r=imgDown(q,i);if(r){if(typeof r=="object"){mv=r;down=true}return}}
@@ -1751,10 +1764,10 @@ function bind(ink,p,i){
       const tail=LS[LS.length-1];
       if(!tail||Math.hypot((tail.clientX||0)-(e.clientX||0),(tail.clientY||0)-(e.clientY||0))>.01)LS.push(e);
       const PP=cur.p[0].length>2?penPar():null;
-      const MS=Math.max(.08,.3/zoom);   /* v1.4.84: ignore sub-pixel jitter (about 0.3 screen px) -> fewer points, calmer line, faster live drawing */
+      const MS=Math.max(.08,.3/zoom),MSM_A=1/(1+((+((document.getElementById("ps-motionsmooth")||{}).value))||2)*.3);   /* v1.5.05: slider read once per event, not once per sample */   /* v1.4.84: ignore sub-pixel jitter (about 0.3 screen px) -> fewer points, calmer line, faster live drawing */
       for(const x of LS){if(!sampleOk(x))continue;const q2=pt(x),l=cur.p[cur.p.length-1];lastRaw=PP?[q2[0],q2[1],lastMul||1]:[q2[0],q2[1]];if(Math.hypot(l[0]-q2[0],l[1]-q2[1])<MS)continue;
         if(PP)q2.push(pmul(x,PP));
-        if(tool=="pen"&&e.pointerType!="pen"){const a=1/(1+(+$("#ps-motionsmooth").value||2)*.3);q2[0]=l[0]+(q2[0]-l[0])*a;q2[1]=l[1]+(q2[1]-l[1])*a}
+        if(tool=="pen"&&e.pointerType!="pen"){const a=MSM_A;q2[0]=l[0]+(q2[0]-l[0])*a;q2[1]=l[1]+(q2[1]-l[1])*a}
         cur.p.push(q2)}
       lastMv=Date.now();
       if(shapeOn&&!sn){const dx=e.clientX-hX,dy=e.clientY-hY;if(dx*dx+dy*dy>36){hX=e.clientX;hY=e.clientY;armHold()}}   /* moved: restart the hold timer; jitter < 6 px does not */
@@ -2061,6 +2074,9 @@ const tp=new Set(),tpT=new Map(),tpS=new Map(),TP_STALE=4000,TP_FRESH=1500;
 function tpPrune(){const n=Date.now();for(const id of[...tp])if(n-(tpT.get(id)||0)>TP_STALE){tp.delete(id);tpT.delete(id);tpS.delete(id)}}
 function othersFresh(id){const n=Date.now();for(const o of tp)if(o!==id&&n-(tpT.get(o)||0)<TP_FRESH)return true;return false}
 let inkDown=false,inkDownAt=0;
+document.addEventListener("pointerdown",e=>{if((e.pointerType=="pen"||e.pointerType=="mouse")&&e.target&&e.target.closest&&e.target.closest("#doc")){const pg=e.target.closest(".pg");PEN_DOWN={i:pg?+pg.dataset.i:-1,t:Date.now()}}},{capture:true,passive:true});
+document.addEventListener("pointermove",e=>{if(!PEN_DOWN||e.pointerType=="touch")return;if(e.buttons===0&&e.pressure===0){PEN_DOWN=null;return}PEN_DOWN.t=Date.now()},{capture:true,passive:true});   /* hovering = the pen is already up (a lost pointerup must not keep this flag alive) */
+["pointerup","pointercancel"].forEach(ev=>document.addEventListener(ev,e=>{if(e.pointerType!="touch")PEN_DOWN=null},{capture:true,passive:true}));
 const inkIsDown=()=>inkDown&&Date.now()-inkDownAt<8000;
 document.addEventListener("pointerdown",e=>{if(e.target&&e.target.closest&&e.target.closest("#doc")){inkDown=true;inkDownAt=Date.now()}},{capture:true,passive:true});
 document.addEventListener("pointermove",e=>{if(inkDown)inkDownAt=Date.now()},{capture:true,passive:true});
@@ -2089,6 +2105,45 @@ function pzEnd(e){
   /* the pinch also moved the fingers: carry the page along with them, so panning while pinching works too */
   const pg=$(`.pg[data-i="${p.i}"]`);if(pg&&pg0){const r=pg.getBoundingClientRect();docEl.scrollLeft+=r.left+p.fx*r.width-p.mx;docEl.scrollTop+=r.top+p.fy*r.height-p.my}}
 docEl.addEventListener("touchend",pzEnd,{passive:true});docEl.addEventListener("touchcancel",pzEnd,{passive:true});
+
+/* ===== v1.5.04 — SELF-HEALING: (1) a pinch that never got its "finger up" used to leave the page locked (no scroll / pan) until zoom or reopen;
+   (2) a page that stays blank / half drawn (iOS freed the canvas, an observer event was missed, a render failed 3x) is found and redrawn automatically ===== */
+let lastTouch=Date.now(),touchesNow=0,lastScrollT=0,hiddenAt=0,healN=0;
+function pzClean(){try{if(!pz){if(docEl.style.overflow=="hidden")docEl.style.overflow="";
+  $$('.pg[style*="will-change"],.pg[style*="transform"]').forEach(p=>{p.style.transform="";p.style.transformOrigin="";p.style.willChange=""})}}catch(e){}}
+function pzHeal(force){if(!pz){pzClean();return}
+  const idle=Date.now()-lastTouch;
+  if(force||(touchesNow<2&&idle>350)||idle>2500){
+    try{pzEnd({touches:[]})}catch(e){}
+    if(pz){try{pz.pg.style.transform="";pz.pg.style.transformOrigin="";pz.pg.style.willChange=""}catch(e){}pz=null}
+    docEl.style.overflow="";pzClean();if(++healN<4)st("♻️ Touch reset — you can scroll again")}}
+["touchstart","touchmove","touchend","touchcancel"].forEach(ev=>document.addEventListener(ev,e=>{lastTouch=Date.now();touchesNow=e.touches?e.touches.length:0;
+  if(ev=="touchstart"&&pz&&touchesNow<2)pzHeal(true)},{capture:true,passive:true}));
+setInterval(()=>{try{pzHeal();tpPrune()}catch(e){}},600);
+function pgDoctor(force){
+  if(!pdf||document.hidden||pz||!ord.length)return;
+  if(!force&&(inkIsDown()||Date.now()-lastScrollT<500))return;
+  const d=docEl.getBoundingClientRect(),c0=Math.max(0,curPage-8),c1=Math.min(ord.length-1,curPage+8);let done=0;
+  for(let i=c0;i<=c1&&done<4;i++){
+    const p=$(`.pg[data-i="${i}"]`);if(!p)continue;const r=p.getBoundingClientRect();
+    if(r.bottom<d.top-300||r.top>d.bottom+300)continue;           /* only pages that are (almost) on screen */
+    if(!vis.has(i))vis.add(i);                                    /* the observer missed it */
+    const sz_=sizes[i]||sizes[0];if(sz_&&Math.abs((parseFloat(p.style.width)||0)-sz_.w*zoom)>1.5)sz(p,i);   /* box has the wrong size */
+    const cs=p.querySelectorAll("canvas"),broken=cs.length<2||!cs[0].width||!cs[1].width;
+    const stale=p.dataset.z!=zoom;
+    if(!force&&!broken&&!stale){p._dr=0;continue}
+    if(!force&&p.dataset.z==zoom&&RQN>0)continue;                 /* a render is in progress: let it finish */
+    if(!force){p._dr=(p._dr||0)+1;if(p._dr>6)continue}            /* a page that truly cannot be drawn does not loop forever */
+    else p._dr=0;
+    delete p.dataset.z;RTC[i]=0;render(i);done++}}
+/* after the app was in the background the system may have freed the canvases: redraw what is on screen */
+document.addEventListener("visibilitychange",()=>{if(document.hidden){hiddenAt=Date.now();return}
+  try{pzHeal(true);const long=hiddenAt&&Date.now()-hiddenAt>20000;setTimeout(()=>pgDoctor(long),300)}catch(e){}});
+addEventListener("pageshow",()=>setTimeout(()=>{try{pgDoctor(true)}catch(e){}},400));
+["resize","orientationchange","fullscreenchange"].forEach(ev=>addEventListener(ev,()=>{clearTimeout(pgDoctor.t);pgDoctor.t=setTimeout(()=>{try{pgDoctor(false)}catch(e){}},500)}));
+docEl.addEventListener("scroll",()=>{lastScrollT=Date.now();clearTimeout(pgDoctor.s);pgDoctor.s=setTimeout(()=>{try{pgDoctor(false)}catch(e){}},700)},{passive:true});
+setInterval(()=>{try{pgDoctor(false)}catch(e){}},2500);
+
 $("#po").classList.toggle("on",penOnly);
 $("#po").onclick=e=>{penOnly=!penOnly;try{localStorage.setItem("pa_penonly",penOnly?"1":"0")}catch(x){}$("#po").classList.toggle("on",penOnly);st(penOnly?"✍️ Pencil writes · finger scrolls":"✍️ Finger can write too");$$(".pg canvas:last-child").forEach(c=>c.style.touchAction=penOnly?"pan-x pan-y":"none")};
 let sct;$("#doc").addEventListener("scroll",()=>{clearTimeout(sct);sct=setTimeout(()=>{if(!pdf)return;const top=$("#doc").getBoundingClientRect().top+80;for(const p of $$(".pg"))if(p.getBoundingClientRect().bottom>top){const next=+p.dataset.i;if(next!==curPage||pgDirty){curPage=next;pgDirty=false;change()}break}},300)},{passive:true});
@@ -2302,7 +2357,7 @@ $("#fm").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f||!
 $("#open").onclick=()=>{want=null;$("#fi").click()};
 $("#fi").onchange=async e=>{fsEnter();const f=e.target.files[0];e.target.value="";if(!f)return;const w=want;want=null;let wid=null;
   try{if(w){const fp=await fpOf(f),r=await dbGet(w);if(r&&(r.fp?r.fp==fp:w==f.name+"|"+f.size))wid=w;else if(!confirm("This doesn't look like the same PDF — a new notebook will be created. Open anyway?"))return}}catch(x){}
-  openFile(f,wid).catch(()=>st("❌ Couldn't open the PDF"))};
+  openFile(f,wid).catch(openFail)};
 $("#lib").onclick=()=>{if(location.hash=="#read")history.back();else showLib()};
 addEventListener("hashchange",()=>{if(location.hash!="#read"&&pdf)showLib()});
 
@@ -3066,11 +3121,11 @@ if("serviceWorker"in navigator&&/^https?:$/.test(location.protocol))addEventList
 /* offline-first: whenever the internet is available the service worker fills in any file it is missing; if a PDF library was missing at start, the app reloads itself once when the internet returns */
 if("serviceWorker"in navigator&&/^https?:$/.test(location.protocol)){const warm=()=>navigator.serviceWorker.ready.then(x=>x.active&&x.active.postMessage({type:"warm"})).catch(()=>{});addEventListener("load",()=>setTimeout(warm,3000));addEventListener("online",warm)}
 if(!window.pdfjsLib||!window.PDFLib||!window.JSZip){setTimeout(()=>st("📴 PDF engine not loaded yet — it loads by itself when the internet is available"),1500);addEventListener("online",()=>setTimeout(()=>{try{if(sessionStorage.getItem("pa_lib"))return;sessionStorage.setItem("pa_lib","1")}catch(e){}if(!pdf)location.reload()},2500))}
-if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[0])openFile(await p.files[0].getFile()).catch(()=>st("❌ Couldn't open the PDF"))});
+if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[0])openFile(await p.files[0].getFile()).catch(openFail)});
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.5.02",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.5.05",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -3166,7 +3221,8 @@ async function bootStorage(){
       await mx("readwrite",o=>o.delete(k))}}}catch(e){}}
 /* Update: as soon as a new version is found, save and reload (data stays safe in IndexedDB) */
 async function applyUpdate(v,guard){if(updating)return;if(guard){try{if(sessionStorage.getItem("pa_upd")==v)return;sessionStorage.setItem("pa_upd",v)}catch(e){}}
-  updating=true;st("🔄 New version "+v+" — updating…");try{await persist()}catch(e){}setTimeout(()=>location.reload(),500)}
+  updating=true;st("🔄 New version "+v+" — updating…");try{await saveSure()}catch(e){}
+  const rl=()=>{if(inkIsDown()){setTimeout(rl,1000);return}try{emergSave()}catch(e){}location.reload()};setTimeout(rl,500)}
 if("serviceWorker"in navigator){let had=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)applyUpdate("new");had=true});
   navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.type=="sw-version"){SWV=e.data.v;verUpd();if(SWV!==APP_VERSION)applyUpdate(SWV,1)}})}
