@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+<!-- NOTE FOR AI / DEVELOPERS: read README.md first. Every change you make must also be written in README.md (new version section + the "Current state" section if the structure changed), and the version bumped in index.html, sw.js and README.md. -->
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.108">
+<meta name="app-version" content="1.5.01">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -596,6 +597,8 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
     <span id="net" role="status" aria-label="Internet connection status" title="Internet connection status"></span>
   </div>
   <div id="tools-wrap"><div id="tstrip">
+    <button class="ibtn" id="pgsb" style="--c:#38bdf8" title="Pages (thumbnails)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg></button>
+    <button class="ibtn" id="srb" style="--c:#a78bfa" title="Search in PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg></button>
     <button class="ibtn" id="addpg" title="Add a page after the current page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h8l4.5 4.5v12.5H6z"/><path d="M14 3.5V8h4.5M12 11v6M9 14h6"/></svg></button>
     <button class="ibtn" id="imb" title="Add image"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></svg></button>
     <button class="ibtn" data-t="text" title="Text"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3" stroke-dasharray="3 3"/><path d="M8.5 16.5l3.5-9 3.5 9M9.8 13.5h4.4"/></svg></button>
@@ -624,6 +627,11 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
   </div></div>
 <div id="more-panel" class="fpanel" hidden data-anchor="#mor"><div class="fpanel-title">More tools</div>
   <div class="mgrid">
+    <div class="mcell"><button class="ibtn" id="shp" title="Shape recognition (pause at the end of a stroke)">◇</button><span>Shape snap</span></div>
+    <div class="mcell"><button class="ibtn on" id="palm" title="Palm rejection"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 013 0V11"/><path d="M11 10.5V4a1.5 1.5 0 013 0v6.5"/><path d="M14 10.5V5.5a1.5 1.5 0 013 0v7"/><path d="M17 9.5a1.5 1.5 0 013 0V14c0 4-3 7-7 7h-.5c-3 0-4.5-1.5-6-4l-2-3.4a1.5 1.5 0 012.5-1.6L8 14"/></svg></button><span>Palm rejection</span></div>
+    <div class="mcell"><button class="ibtn" id="po" title="Write with pen only">✍️</button><span>Pen only</span></div>
+  </div></div>
+<div id="legacy-tools" hidden>
     <div class="mcell"><button class="ibtn" id="sbt" title="Pages / Bookmarks / Search"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg></button><span>Pages</span></div>
     <div class="mcell"><button class="ibtn" data-t="sel" title="Select: move / resize / crop image, edit text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 013 0V11"/><path d="M11 10.5V4a1.5 1.5 0 013 0v6.5"/><path d="M14 10.5V5.5a1.5 1.5 0 013 0v7"/><path d="M17 9.5a1.5 1.5 0 013 0V14c0 4-3 7-7 7h-.5c-3 0-4.5-1.5-6-4l-2-3.4a1.5 1.5 0 012.5-1.6L8 14"/></svg></button><span>Select</span></div>
     <div class="mcell"><button class="ibtn" data-t="note" title="Sticky note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v10l-6 6H5z"/><path d="M19 14h-6v6"/></svg></button><span>Sticky note</span></div>
@@ -631,14 +639,8 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
     <div class="mcell"><button class="ibtn" id="sig" title="Insert signature"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4.5L15.5 5l3.5 3.5L8.5 19z"/><path d="M13.5 7l3.5 3.5"/><path d="M19.5 2v3.5M17.8 3.8h3.5"/></svg></button><span>Signature</span></div>
     <div class="mcell"><button class="ibtn" id="bkm" title="Bookmark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h11v17L12 16.5l-5.5 4z"/></svg></button><span>Bookmark</span></div>
     <div class="mcell"><button class="ibtn" id="tpl" title="Page template"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M3.5 9.5h17M9.5 9.5v11"/></svg></button><span>Template</span></div>
-    <div class="mcell"><button class="ibtn" id="zo" title="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><span>Zoom out</span></div>
-    <div class="mcell"><button class="ibtn" id="zi" title="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button><span>Zoom in</span></div>
-    <div class="mcell"><button class="ibtn" id="shp" title="Shape recognition (pause at the end of a stroke)">◇</button><span>Shape snap</span></div>
-    <div class="mcell"><button class="ibtn on" id="palm" title="Palm rejection"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 013 0V11"/><path d="M11 10.5V4a1.5 1.5 0 013 0v6.5"/><path d="M14 10.5V5.5a1.5 1.5 0 013 0v7"/><path d="M17 9.5a1.5 1.5 0 013 0V14c0 4-3 7-7 7h-.5c-3 0-4.5-1.5-6-4l-2-3.4a1.5 1.5 0 012.5-1.6L8 14"/></svg></button><span>Palm rejection</span></div>
-    <div class="mcell"><button class="ibtn" id="po" title="Write with pen only">✍️</button><span>Pen only</span></div>
-    <div class="mcell"><button class="ibtn" id="cmp" title="Compact handwriting (smaller backup)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h6V3M20 9h-6V3M4 15h6v6M20 15h-6v6"/></svg></button><span>Compact ink</span></div>
     <div class="mcell"><button class="ibtn" id="tools" title="PDF tools">🧰</button><span>PDF tools</span></div>
-  </div></div>
+</div>
 
 <!-- ===== PEN FLOATING PANEL ===== -->
 <div id="pen-panel" class="fpanel" hidden style="top:62px;left:50%;transform:translateX(-50%)">
@@ -709,6 +711,8 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
     <div style="flex:1;text-align:center;font-size:16px;font-weight:700">Eraser Tool</div>
   </div>
   <div>
+    <div class="fpanel-section-label" style="margin-bottom:10px">Type</div>
+    <div id="er-modes" style="display:flex;gap:8px;margin-bottom:14px"><button class="pb" data-erm="pixel" style="flex:1">Pixel</button><button class="pb" data-erm="stroke" style="flex:1">Stroke</button></div>
     <div class="fpanel-section-label" style="margin-bottom:10px">Size</div>
     <div class="size-row" id="er-sizes"></div>
   </div>
@@ -1063,9 +1067,11 @@ buildSizeRow("pen-sizes",PEN_SIZES,(i,s)=>{
 
 /* Eraser size: its own value (never touches pen/shape/highlighter W), saved in the browser */
 const ER_KEY="pa_eraser_size";
+let ERM=(()=>{try{return localStorage.getItem("pa_er_mode")=="stroke"?"stroke":"pixel"}catch(e){return"pixel"}})();   /* v1.4.116: eraser type — pixel (erases only what the eraser touches) or stroke (erases the whole stroke) */
 let ERW=(()=>{try{const v=+localStorage.getItem(ER_KEY);return ER_SIZES.includes(v)?v:20}catch(e){return 20}})();
 const saveERW=()=>{try{localStorage.setItem(ER_KEY,String(ERW))}catch(e){}};
 buildSizeRow("er-sizes",ER_SIZES,(i,s)=>{ERW=s;saveERW()},ER_SIZES.indexOf(ERW),true);
+$$("#er-modes [data-erm]").forEach(b=>{b.classList.toggle("on",b.dataset.erm===ERM);b.onclick=()=>{ERM=b.dataset.erm;try{localStorage.setItem("pa_er_mode",ERM)}catch(e){}$$("#er-modes [data-erm]").forEach(x=>x.classList.toggle("on",x===b))}});
 
 buildSizeRow("hl-sizes",HL_SIZES,(i,s)=>{HW=s.px;$("#hl-slider").value=s.px;$("#hl-slider-val").textContent=s.label;drawHlPreview()},5,false);
 
@@ -1165,34 +1171,45 @@ const TOOL_PANEL={pen:"pen-panel",hl:"hl-panel",er:"er-panel",stamp:"st-panel",l
 // Tool button click → open relevant panel OR toggle off
 /* v1.4.104 — settings corner (like Photoshop / Procreate tool buttons): tapping the tool itself only SELECTS it with its last settings (no popup);
    the small triangle in the bottom-right corner of the button opens that tool's settings. Tools inside the More / Shapes popups behave as before. */
-$$("#tstrip .ibtn[data-t]").forEach(b=>{if(TOOL_PANEL[b.dataset.t])b.classList.add("hasset")});
+$$("#tstrip .ibtn[data-t],#shp-panel .ibtn[data-t]").forEach(b=>{if(TOOL_PANEL[b.dataset.t])b.classList.add("hasset")});
 $$("[data-t]").forEach(b=>b.onclick=function(ev){
   const t=this.dataset.t;
-  let corner=false;try{if(ev&&ev.clientX){const r=this.getBoundingClientRect();corner=ev.clientX>r.left+r.width*.56&&ev.clientY>r.top+r.height*.5}}catch(e){}
+  let corner=false;try{if(ev&&ev.clientX){const r=this.getBoundingClientRect();corner=ev.clientX>r.left+r.width*.5&&ev.clientY<r.top+r.height*.5}}catch(e){}
   const wasOn=tool===t&&!this.classList.contains("panel-just-closed");
   if(tool!==t)previousTool=tool;tool=t;
   $$("[data-t]").forEach(x=>x.classList.toggle("on",x===this));
   if(t!="lasso"&&selObjs.length)clearSel();if(CROP)cropCancel();if(t!="sel"&&IMS){const j=IMS.i;IMS=null;draw(j)}if(selT&&t!="text"&&t!="note"&&t!="sel"&&t!="spk")selTSet(null,selT.i);$$(".pg").forEach(p=>draw(+p.dataset.i));
   // Panel logic: every tool that has settings opens its own popover under the tool; tap again to close
   const pid=TOOL_PANEL[t];
-  if(pid){if(this.classList.contains("hasset")&&!corner){if(panelOpen)closeAllPanels();try{if(!localStorage.getItem("pa_hint_set")){localStorage.setItem("pa_hint_set","1");st("◢ Tap the small corner of a tool to open its settings")}}catch(e){}}
+  if(pid){if(this.classList.contains("hasset")&&!corner){if(panelOpen)closeAllPanels();try{if(!localStorage.getItem("pa_hint_set")){localStorage.setItem("pa_hint_set","1");st("◥ Tap the small corner of a tool to open its settings")}}catch(e){}}
     else if(panelFor===t&&panelOpen===pid)closeAllPanels();else{openPanel(pid,this);panelFor=t;if(window.onPanelOpen)onPanelOpen(t)}}
   else closeAllPanels();
 });
 
 /* settings-corner triangle */
-(()=>{const st_=document.createElement("style");st_.textContent=".ibtn.hasset{position:relative}.ibtn.hasset::after{content:\"\";position:absolute;right:4px;bottom:4px;width:0;height:0;border-style:solid;border-width:0 0 9px 9px;border-color:transparent transparent currentColor transparent;opacity:.8;pointer-events:none;border-bottom-right-radius:2px}";document.head.appendChild(st_)})();
+(()=>{const st_=document.createElement("style");st_.textContent=".ibtn.hasset{position:relative}.ibtn.hasset::after{content:\"\";position:absolute;right:4px;top:4px;width:11px;height:11px;background:currentColor;clip-path:polygon(0 0,100% 0,100% 100%);opacity:.8;pointer-events:none}";document.head.appendChild(st_)})();
 /* Goodnotes-style one-shot tool behavior: writing tools stay active; insertion tools return to Lasso. */
-function autoReturnToTool(t="lasso"){tool=t;if(t!="sel")IMS=null;$$('[data-t]').forEach(b=>b.classList.toggle("on",b.dataset.t===t));closeAllPanels();if(selT)showTbar();else lbar();$$(".pg").forEach(p=>draw(+p.dataset.i));}
+function autoReturnToTool(t="lasso"){tool=t;{const ib=$("#imb");if(ib)ib.classList.toggle("on",t==="sel")}if(t!="sel")IMS=null;$$('[data-t]').forEach(b=>b.classList.toggle("on",b.dataset.t===t));closeAllPanels();if(selT)showTbar();else lbar();$$(".pg").forEach(p=>draw(+p.dataset.i));}
 function autoReturnToLasso(){autoReturnToTool("lasso");}
 /* Shapes picker + More-tools popover (the "+" button) */
 const SHT=["line","arrow","rect","oval"];
-[["#shpb","shp-panel"],["#mor","more-panel"]].forEach(([b,id])=>$(b).onclick=function(){if(panelOpen===id)closeAllPanels();else{if(id=="shp-panel"){const lb=document.querySelector('#shp-panel [data-t="line"]');if(lb)lb.click()}   /* v1.4.84: Shapes always starts with the straight Line already selected */
-  openPanel(id,this);panelFor=null}});
+[["#mor","more-panel"]].forEach(([b,id])=>$(b).onclick=function(){if(panelOpen===id)closeAllPanels();else{openPanel(id,this);panelFor=null}});
+/* v1.4.109 — Shapes button works like the other tools: tap = select the LAST used shape (with its last settings, no popup);
+   tap the corner (top-right) = open the shape picker. The button shows the last used shape. Each shape in the picker also has its own settings corner. */
+(()=>{const SK="pa_last_shape",sb=$("#shpb");let last="line";try{const v=localStorage.getItem(SK);if(SHT.includes(v))last=v}catch(e){}
+  sb.classList.add("hasset");
+  const icon=()=>{const b=document.querySelector('#shp-panel [data-t="'+last+'"] svg');if(b){const o=sb.querySelector("svg");if(o)o.outerHTML=b.outerHTML}sb.title="Shapes: "+last};
+  icon();
+  sb.onclick=function(ev){let corner=false;try{if(ev&&ev.clientX){const r=this.getBoundingClientRect();corner=ev.clientX>r.left+r.width*.5&&ev.clientY<r.top+r.height*.5}}catch(e){}
+    if(corner){if(panelOpen==="shp-panel")closeAllPanels();else{openPanel("shp-panel",this);panelFor=null}return}
+    const lb=document.querySelector('#shp-panel [data-t="'+last+'"]');if(lb)lb.click()};
+  $$("#shp-panel [data-t]").forEach(b=>b.addEventListener("click",()=>{if(SHT.includes(b.dataset.t)){last=b.dataset.t;try{localStorage.setItem(SK,last)}catch(e){}icon()}}));
+  /* v1.4.111 — right-click (mouse) on any tool with settings = same as tapping its corner */
+  $$(".ibtn.hasset").forEach(b=>b.addEventListener("contextmenu",e=>{e.preventDefault();const r=b.getBoundingClientRect();b.dispatchEvent(new MouseEvent("click",{bubbles:true,clientX:r.right-3,clientY:r.top+3}))}));
+})();
 $$("[data-t]").forEach(b=>b.addEventListener("click",()=>{$("#shpb").classList.toggle("on",SHT.includes(tool));$("#mor").classList.toggle("on",!!b.closest("#more-panel")&&!SHT.includes(tool))}));
 $$(".mcell").forEach(c=>c.addEventListener("click",e=>{if(!e.target.closest(".ibtn"))c.querySelector(".ibtn").click()}));
 ["zw","sig","bkm","tools","sbt"].forEach(id=>$("#"+id).addEventListener("click",()=>closeAllPanels()));
-$("#cmp").onclick=()=>{if(!pdf)return;let a=0,b=0;for(const i in anns)(anns[i]||[]).forEach(o=>{if((o.t=="pen"||o.t=="hl")&&o.p.length>3){a+=o.p.length;o.p=o.sm?rdp(o.p,.08,.03):rdp(o.p,.15);b+=o.p.length}});$$(".pg").forEach(p=>draw(+p.dataset.i));change();closeAllPanels();st(`🗜 Ink compacted: ${a} → ${b} points`)};
 // Set pen active by default
 document.querySelector('[data-t="pen"]').classList.add("on");
 
@@ -1642,6 +1659,8 @@ function bind(ink,p,i){
     const ae=document.activeElement;if(ae&&ae.tagName=="TEXTAREA")ae.blur();
     const r=ink.getBoundingClientRect(),qx=(e.clientX-r.left)/zoom,qy=(e.clientY-r.top)/zoom,TL=anns[i]||[];let ft=null;
     for(let j=TL.length-1;j>=0;j--){const o=TL[j];if(o.t!="text")continue;const B=tBox(o),rr=8/zoom;if(qx>o.x-rr&&qx<o.x+B.w+rr&&qy>o.y-rr&&qy<o.y+B.h+rr){ft=o;break}}
+    /* v1.4.115 — with "Pen only" ON a finger TAP now also works on images in the Image tool: tap an image = select it, tap its crop / delete buttons, tap empty space = finish (dragging the handles stays with the Pencil) */
+    if(!ft&&tool=="sel"&&!CROP){const q=[qx,qy];if(IMS)imgDown(q,i);if(!IMS)imgPick(q,i);return}
     if(ft){if(selT&&selT.o===ft||tool!="sel"){selTSet(ft,i);openEdit()}else selTSet(ft,i)}else{if(selT)selTSet(null,selT.i);if(tool=="text"||tool=="note")textBox(p,i,[qx,qy],tool=="note");else if(tool=="spk")speakBox(p,i,[qx,qy])}});
   ink.onpointerdown=e=>{
     if(e.pointerType=="touch"&&down&&cur&&e.pointerId!==pid){if(cur.p.length<=8&&Date.now()-dT<300){down=false;cur=null;mv=null;draw(i)}return}   /* palm / extra finger landing while writing: keep the stroke */
@@ -1740,6 +1759,7 @@ function erase(i,q,sc){
       const P=o.p||[];let touched=P.some(pt=>Math.hypot(pt[0]-q[0],pt[1]-q[1])<=r);
       for(let j=1;j<P.length&&!touched;j++)touched=dseg(q[0],q[1],P[j-1],P[j])<=r;
       if(!touched){next.push(o);continue}changed=true;
+      if(ERM==="stroke")continue;   /* stroke eraser: the whole touched stroke goes */
       const fragments=[];let cur=[];const flush=()=>{if(cur.length)fragments.push(cur);cur=[]};
       const sample=(A,B)=>{const len=Math.hypot(B[0]-A[0],B[1]-A[1]),n=Math.max(1,Math.ceil(len/3));for(let k=1;k<=n;k++){const t=k/n,pt=[A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t];if(Math.hypot(pt[0]-q[0],pt[1]-q[1])<=r)flush();else{if(!cur.length)cur.push([A[0]+(B[0]-A[0])*(k-1)/n,A[1]+(B[1]-A[1])*(k-1)/n]);cur.push(pt)}}};
       if(P.length===1){if(Math.hypot(P[0][0]-q[0],P[0][1]-q[1])>r)fragments.push(P.slice())}else{if(Math.hypot(P[0][0]-q[0],P[0][1]-q[1])>r)cur.push(P[0]);for(let j=1;j<P.length;j++)sample(P[j-1],P[j]);flush()}
@@ -1996,8 +2016,12 @@ function setZoom(z,fx,fy){const d=$("#doc"),r=d.getBoundingClientRect();if(fx==n
   const n=ai!=null&&$(`.pg[data-i="${ai}"]`);if(n){const b=n.getBoundingClientRect();d.scrollLeft+=b.left+ax*b.width-fx;d.scrollTop+=b.top+ay*b.height-fy}}
 /* v1.4.107 — gentle zoom steps: 0.2 below 300 %, then 25 % steps (300, 325, 350, 375, 400) — never a 50 % jump */
 const zStep=(z,d)=>d>0?(z<3-1e-6?Math.min(3,+(z+.2).toFixed(3)):Math.min(ZMAX,Math.floor(z*4+1e-6)/4+.25)):(z>3+1e-6?Math.max(3,Math.ceil(z*4-1e-6)/4-.25):+(z-.2).toFixed(3));
-$("#zi").onclick=()=>setZoom(zStep(zoom,1));$("#zo").onclick=()=>setZoom(zStep(zoom,-1));
-$("#doc").addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setZoom(zoom*(e.deltaY<0?1.12:1/1.12),e.clientX,e.clientY)}},{passive:false});
+/* v1.4.109 — live zoom badge: shows the zoom % just above the page number while you zoom (pinch, + / − buttons, Ctrl+wheel); it fades away by itself ~1 s after you stop. */
+document.body.insertAdjacentHTML("beforeend",'<div id="zbd" aria-live="off"></div>');
+(()=>{const st_=document.createElement("style");st_.textContent="#zbd{position:fixed;left:10px;bottom:calc(58px + env(safe-area-inset-bottom,0px));z-index:141;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:12px;padding:5px 12px;box-shadow:var(--panel-shadow);font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:inherit;opacity:0;transform:translateY(6px);transition:opacity .22s ease,transform .22s ease;pointer-events:none}#zbd.on{opacity:1;transform:none}body.pres #zbd{display:none!important}";document.head.appendChild(st_)})();
+let zbdT=0;function zShow(z){const b=$("#zbd");if(!b)return;b.textContent=Math.round(z*100)+"%";b.classList.add("on");clearTimeout(zbdT);zbdT=setTimeout(()=>b.classList.remove("on"),1000)}
+
+$("#doc").addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setZoom(zoom*(e.deltaY<0?1.12:1/1.12),e.clientX,e.clientY);zShow(zoom)}},{passive:false});
 
 /* ===== 2-finger pinch zoom (works while scrolling AND while writing) ===== */
 let pz=null;const docEl=$("#doc");
@@ -2024,7 +2048,7 @@ docEl.addEventListener("touchstart",e=>{
   if(pz&&e.cancelable)e.preventDefault()},{passive:false});
 docEl.addEventListener("touchmove",e=>{
   if(!pz||e.touches.length<2)return;if(e.cancelable)e.preventDefault();
-  const m=tmid(e.touches),z=Math.max(.5,Math.min(ZMAX,pz.z0*tdist(e.touches)/pz.d));pz.z=z;pz.mx=m[0];pz.my=m[1];
+  const m=tmid(e.touches),z=Math.max(.5,Math.min(ZMAX,pz.z0*tdist(e.touches)/pz.d));pz.z=z;pz.mx=m[0];pz.my=m[1];zShow(z);
   pz.pg.style.transform=`translate(${m[0]-pz.sx}px,${m[1]-pz.sy}px) scale(${z/pz.z0})`},{passive:false});
 function pzEnd(e){
   if(!pz||e.touches.length>=2)return;const p=pz;pz=null;docEl.style.overflow="";
@@ -2224,7 +2248,16 @@ $("#addpg").addEventListener("click",addPageAfter);
 /* ===== END PRESENTATION TOOL ===== */
 
 /* ===== IMAGE INSERT ===== */
-$("#imb").onclick=()=>{if(!pdf){st("Open a PDF first");return}$("#fm").click()};
+/* v1.4.114 — Image button: tap = IMAGE / TEXT EDIT mode (tap an image or text on the page → resize, move, crop, delete handles; tap empty space = done, saved in place).
+   Tap the button's top-right corner = add a new image. */
+$("#imb").classList.add("hasset");
+$("#imb").onclick=function(ev){if(!pdf){st("Open a PDF first");return}
+  let corner=false;try{if(ev&&ev.clientX){const r=this.getBoundingClientRect();corner=ev.clientX>r.left+r.width*.5&&ev.clientY<r.top+r.height*.5}}catch(e){}
+  if(corner){$("#fm").click();return}
+  const sb=document.querySelector('[data-t="sel"]');if(sb)sb.click();closeAllPanels();
+  $$("#tstrip [data-t]").forEach(x=>x.classList.remove("on"));$("#imb").classList.add("on");
+  st("🖼 Tap an image or text to edit · tap empty space to finish")};
+$$("[data-t]").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.t!=="sel")$("#imb").classList.remove("on")}));
 $("#fm").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f||!pdf)return;
   try{const bm=await createImageBitmap(f),sc=Math.min(1,1000/Math.max(bm.width,bm.height)),iw=Math.round(bm.width*sc),ih=Math.round(bm.height*sc),cv=document.createElement("canvas");cv.width=iw;cv.height=ih;
     const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,iw,ih);x.drawImage(bm,0,0,iw,ih);if(bm.close)bm.close();
@@ -2786,7 +2819,13 @@ function movePage(f,t){const n=ord.length;if(f==t||t<0||t>=n)return;
 /* sidebar: thumbnails / bookmarks / search */
 const SB=$("#sb");let sbTab="pg",sbv=0,thQ=Promise.resolve(),lastRes=null,lastQ="";
 $("#sbt").onclick=()=>{if(!pdf)return;SB.hidden=!SB.hidden;renderSb()};$("#sbx").onclick=()=>SB.hidden=true;
-$$("[data-sb]").forEach(b=>b.onclick=()=>{sbTab=b.dataset.sb;$$("[data-sb]").forEach(x=>x.classList.toggle("on",x===b));renderSb()});
+$$("[data-sb]").forEach(b=>b.onclick=()=>{sbTab=b.dataset.sb;$$("[data-sb]").forEach(x=>x.classList.toggle("on",x===b));renderSb();sbBtn()});
+/* v1.4.116 — toolbar Pages (thumbnails) and Search buttons open the side panel on the right tab */
+const sbBtn=()=>{$("#pgsb").classList.toggle("on",!SB.hidden&&sbTab=="pg");$("#srb").classList.toggle("on",!SB.hidden&&sbTab=="se")};
+const sbTabs=()=>$$("[data-sb]").forEach(x=>x.classList.toggle("on",x.dataset.sb===sbTab));
+$("#pgsb").onclick=()=>{if(!pdf){st("Open a PDF first");return}closeAllPanels();if(!SB.hidden&&sbTab=="pg")SB.hidden=true;else{sbTab="pg";SB.hidden=false;sbTabs();renderSb()}sbBtn()};
+$("#srb").onclick=()=>{if(!pdf){st("Open a PDF first");return}closeAllPanels();if(!SB.hidden&&sbTab=="se")SB.hidden=true;else{sbTab="se";SB.hidden=false;sbTabs();renderSb();const q=$("#sq");if(q){q.focus();q.select()}}sbBtn()};
+try{new MutationObserver(sbBtn).observe(SB,{attributes:true,attributeFilter:["hidden"]})}catch(e){}
 function renderSb(){if(!pdf||SB.hidden)return;const c=$("#sbc");c.innerHTML="";const v=++sbv;
   if(sbTab=="pg"){const g=document.createElement("div");g.className="thg";c.append(g);
     ord.forEach((s,i)=>{const d=document.createElement("div");d.className="thi"+(i==curPage?" cur":"");d.draggable=true;
@@ -2797,7 +2836,8 @@ function renderSb(){if(!pdf||SB.hidden)return;const c=$("#sbc");c.innerHTML="";c
       d.ondragleave=()=>d.classList.remove("over");d.ondrop=e=>{e.preventDefault();movePage(+e.dataTransfer.getData("text/plain"),i)};g.append(d);
       thQ=thQ.then(async()=>{if(v!=sbv||!pdf)return;if(isV(s)){const z=vSize(s);cv.width=120;cv.height=Math.round(120*z.h/z.w);const x=cv.getContext("2d");x.fillStyle=DK?DKBG:"#fff";x.fillRect(0,0,cv.width,cv.height);return}const pg=await pdf.getPage(s+1),w=pg.getViewport({scale:1}).width,vv=pg.getViewport({scale:120/w});
         cv.width=vv.width;cv.height=vv.height;await pg.render({canvasContext:cv.getContext("2d"),viewport:vv}).promise;if(DK)try{await darken(pg,vv,cv)}catch(e){}pg.cleanup()}).catch(()=>{})})}
-  else if(sbTab=="bm"){if(!bm.size)c.textContent="No bookmarks — tap 🔖 to add the current page";
+  else if(sbTab=="bm"){{const a=document.createElement("button");a.className="srow";a.textContent=(bm.has(curPage)?"🔖 Remove bookmark · page ":"🔖 Bookmark this page · page ")+(curPage+1);a.onclick=()=>{$("#bkm").click();renderSb()};c.append(a)}
+    if(!bm.size){const h=document.createElement("div");h.textContent="No bookmarks yet";h.style.cssText="padding:8px 12px;opacity:.7";c.append(h)}
     [...bm].sort((a,b)=>a-b).forEach(i=>{const b=document.createElement("button");b.className="srow";b.textContent="🔖 Page "+(i+1)+"  (long-press to remove ✕)";
       b.onclick=()=>goPage(i);b.oncontextmenu=e=>{e.preventDefault();bm.delete(i);change();renderSb()};c.append(b)})}
   else{c.innerHTML='<input id="sq" placeholder="Search in PDF…" inputmode="search" enterkeyhint="search" autocapitalize="off" autocorrect="off" spellcheck="false"><div id="sr"></div>';const q=$("#sq");q.value=lastQ;
@@ -2999,7 +3039,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.108",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.5.01",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -3158,7 +3198,7 @@ $$(".sw").forEach(b=>b.addEventListener("click",()=>setTimeout(syncW,0)));
   function applyOrder(){let sv=[];try{sv=JSON.parse(localStorage.getItem(KEY))||[]}catch(e){}
     const m=new Map([...strip.children].map(el=>[el.dataset.k,el]));
     [...sv.filter(k=>m.has(k)),...DEF.filter(k=>!sv.includes(k))].forEach(k=>strip.appendChild(m.get(k)))}
-  try{if(localStorage.getItem("pa_tb_gn3")!="1"){localStorage.removeItem(KEY);localStorage.setItem("pa_tb_gn3","1")}}catch(e){}
+  try{if(localStorage.getItem("pa_tb_gn4")!="1"){localStorage.removeItem(KEY);localStorage.setItem("pa_tb_gn4","1")}}catch(e){}
   applyOrder();
   $("#strb").onclick=()=>{try{localStorage.removeItem(KEY)}catch(e){}applyOrder();st("↺ Toolbar layout reset")};
   try{new ResizeObserver(()=>{const h=bar.offsetHeight;if(h)document.documentElement.style.setProperty("--barh",h+"px")}).observe(bar)}catch(e){}
@@ -3683,11 +3723,11 @@ document.getElementById("sm-sim").onclick=()=>simOpen();
 
   /* 5. GoodNotes-style gestures: quick two-finger tap = Undo, quick three-finger tap = Redo (switch: More → Tap undo). */
   safe("taps",()=>{
-    let on=true;try{on=localStorage.getItem("pa_tapundo")!=="0"}catch(e){}
+    let on=true;try{localStorage.removeItem("pa_tapundo")}catch(e){}   /* v1.4.115: switch removed from the panel — the gesture is always ON */
     const grid=document.querySelector("#more-panel .mgrid");
     if(grid){const c=document.createElement("div");c.className="mcell";
       c.innerHTML='<button class="ibtn" id="tu" title="Two-finger tap = undo · three-finger tap = redo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button><span>Tap undo</span>';
-      grid.append(c);const b=c.firstChild;b.classList.toggle("on",on);
+      (document.getElementById("legacy-tools")||grid).append(c);const b=c.firstChild;b.classList.toggle("on",on);
       b.onclick=()=>{on=!on;try{localStorage.setItem("pa_tapundo",on?"1":"0")}catch(e){}b.classList.toggle("on",on);st(on?"↶ 2-finger tap = undo · 3-finger tap = redo":"Tap gestures off")}}
     const d=document.getElementById("doc");if(!d)return;
     let g=null,penAt=0;
