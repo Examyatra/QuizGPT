@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- Exam Yatri website v2.0 (2026-11-13) -->
-<!-- Quiz GPT build: exam-fixed-76 (audit + fixes: (1) "Max 100 questions" popup no longer shows by itself or in the Summary flow - programmatic checks only fix the number silently, the popup opens only on a real user edit / quiz Start; Exam Yatri 8-page toast hidden in Summary flow; (2) Summary card: broken \uD83C\uDFAF text in the "Make quiz from this text instead" button replaced by a real emoji; (3) Home "Last extracted text" now opens a chooser (Questions banao / Summarize karo / Cancel) instead of starting the quiz flow directly; (4) Extract buttons renamed "Questions banao" and "Summarize karo" (PDF and Images mode); (5) Summary prompt: new PRESENTATION rules (page heading with emoji, divider between pages, empty lines, short bold-keyword bullets, tables/numbered lists, separate Remember line) - content style and coverage rules unchanged; (6) starting a fresh PDF always resets the flow back to Quiz) | previous: exam-fixed-75 (Summary flow: Extract button split in two ("Extract text & create questions" = old flow, "Extract text & summarize it" = new); summary step 4 with Gemini/ChatGPT/Claude picker + Generate summary; bridge script v20 pastes the page-wise-summary prompt + text, sends it and then hides its own panel; saved texts menu got a 4th button "Summarize it") | previous: exam-fixed-74 (laptop-only volume +/- stack beside the speaker; per-question timer (resets to 0 on each new question, revisits continue their own time); result screen: total time + average time per question + time on each question in review) | previous: exam-fixed-73 (every quiz record now carries meta {file, range, createdAt, mode, exam, count, device, src}; shared/transferred quizzes keep the ORIGINAL date + PDF name + details on every device; old quizzes get meta backfilled) | previous: exam-fixed-72 (Durable saves: every quiz/text/practice-log is mirrored localStorage -> IndexedDB and auto-restored; received quiz is saved + verified before it starts (warning + backup file if the browser cannot store); resend never overwrites local progress; saved list shows timer, correct count, source device, attempt history) | previous: exam-fixed-71 (Receive popup: clean SVG icons for QR / Link / Code; link box accepts the full pasted link in any shape (https://…, encoded, with extra text, any domain), Paste button, Enter; 5-digit code also works in the Link box) | previous: exam-fixed-70 (audit: extra CSS guard so the keyboard ring can never show on phone/tablet) | previous: exam-fixed-69 (Laptop-only keyboard control: shortcuts + double-press-to-send + option highlight ring now run only on laptop/desktop; phones and tablets (Android/iPhone/iPad) never get them | previous: exam-fixed-68 (AI Mode prompt: asks for 2-3 relevant web images / labelled diagrams placed inside the matching sections (format unchanged) | previous: exam-fixed-67 (clean UI: removed the "Tap anywhere to start the music" text and the "Popup block hai" toast; blocked audio just starts on the student's next tap, silently | previous: exam-fixed-66 (FM: default = online FM when internet is on (last used station, else Vividh Bharati), offline Lo-fi when there is none; tab hidden -> FM only PAUSES (no teardown), tab back -> instant resume (<20 s away: same connection; longer: same audio element reconnects to live; 3+ min: released, direct reconnect of the exact stream, no station search); internet back -> failed FM retries | previous: exam-fixed-65 (full audit pass: no code changes beyond 62-64 (5 new palettes, short link pill + Copy, single reusable Google AI Mode tab, new explanation prompt); all scripts syntax-checked, no duplicate ids, tag counts balanced | previous: exam-fixed-64 (Google lookup: every [Google] tap reuses ONE named tab (window.open name, no noopener) instead of opening a new tab each time; popup-blocked toast; opener cleared; closed tab -> browser makes a new one | previous: exam-fixed-63 (QR share screen: short tidy link pill under the QR (host/…tail, never the full URL) with a Copy button beside it; tap the pill also copies; clipboard fallback; duplicate link icon button removed | previous: exam-fixed-62 (5 new palettes for site + quiz player: AMOLED black+gold, Synthwave neon, Pastel lilac night, Mocha sand, Arctic silver (11 -> 16 palettes; new glow layouts: diagonal + centered halo) | previous: exam-fixed-61 (Google lookup: [Google] chip button opens Google AI Mode directly (udm=50); new student prompt: Devanagari Hindi with English technical terms kept as-is (no bracket translations), fixed Ek line me + Matlab sections, 1-2 topic-fitting extra headings, 70-120 words total) | previous: exam-fixed-60 (retry audit: after the gateway itself failed (it already tried many AIs for up to 90 s) eyAsk retries only ONCE (was 5x), part-1 unreadable-reply re-ask 2x (was 3x), background auto-retries 3 (was 6)) | previous: exam-fixed-59 (8-unit limit now also checks the PDF page RANGE before extraction (same rule as images: more than 8 -> Exam Yatri off, Gemini on). Earlier: exam-fixed-58 (Exam Yatri limit: more than 8 extracted pages or more than 8 uploaded images -> Exam Yatri is greyed out and blocked (tap + Start), Gemini is auto-selected, a note explains why; Exam Yatri comes back automatically when the input shrinks to 8 or less, unless the student chose another site herself). Earlier: exam-fixed-57 (ALWAYS-SHOW-PAGE: one resolver for every mode (ChatGPT / Claude / Gemini / Exam Yatri API): evidence page -> segment page -> AI PG confirmed in notes -> content search of the notes -> AI PG -> notes page range; tolerant PG parsing ("PG 12", "**PG:** p.12", en-dash ranges); player shows Page N after the question mark in every mode). Earlier: exam-fixed-56 (Page number: Exam Yatri path no longer blanks the AI PG when evidence is not matched (last-resort keeps AI digits); player shows "Page N" after the question in every mode, also from srcPages). Earlier: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
+<!-- Quiz GPT build: exam-fixed-78 (Summary: language chips Hindi+English (default) / English / Hinglish; summary is now written in small BATCHES (3/4/5 pages per message, default 5): the auto-script (bridge v21) sends the next batch by itself after every reply; prompt rebuilt: batch plan, no Canvas/tools, unclear-OCR rule, no-drift rule, completeness over word count) | previous: exam-fixed-77 (readable guard: contrast audit on every screen/popup/theme so no text hides behind a colour; every popup now opens with its own different palette) | previous: exam-fixed-76 (audit + fixes: (1) "Max 100 questions" popup no longer shows by itself or in the Summary flow - programmatic checks only fix the number silently, the popup opens only on a real user edit / quiz Start; Exam Yatri 8-page toast hidden in Summary flow; (2) Summary card: broken \uD83C\uDFAF text in the "Make quiz from this text instead" button replaced by a real emoji; (3) Home "Last extracted text" now opens a chooser (Questions banao / Summarize karo / Cancel) instead of starting the quiz flow directly; (4) Extract buttons renamed "Questions banao" and "Summarize karo" (PDF and Images mode); (5) Summary prompt: new PRESENTATION rules (page heading with emoji, divider between pages, empty lines, short bold-keyword bullets, tables/numbered lists, separate Remember line) - content style and coverage rules unchanged; (6) starting a fresh PDF always resets the flow back to Quiz) | previous: exam-fixed-75 (Summary flow: Extract button split in two ("Extract text & create questions" = old flow, "Extract text & summarize it" = new); summary step 4 with Gemini/ChatGPT/Claude picker + Generate summary; bridge script v20 pastes the page-wise-summary prompt + text, sends it and then hides its own panel; saved texts menu got a 4th button "Summarize it") | previous: exam-fixed-74 (laptop-only volume +/- stack beside the speaker; per-question timer (resets to 0 on each new question, revisits continue their own time); result screen: total time + average time per question + time on each question in review) | previous: exam-fixed-73 (every quiz record now carries meta {file, range, createdAt, mode, exam, count, device, src}; shared/transferred quizzes keep the ORIGINAL date + PDF name + details on every device; old quizzes get meta backfilled) | previous: exam-fixed-72 (Durable saves: every quiz/text/practice-log is mirrored localStorage -> IndexedDB and auto-restored; received quiz is saved + verified before it starts (warning + backup file if the browser cannot store); resend never overwrites local progress; saved list shows timer, correct count, source device, attempt history) | previous: exam-fixed-71 (Receive popup: clean SVG icons for QR / Link / Code; link box accepts the full pasted link in any shape (https://…, encoded, with extra text, any domain), Paste button, Enter; 5-digit code also works in the Link box) | previous: exam-fixed-70 (audit: extra CSS guard so the keyboard ring can never show on phone/tablet) | previous: exam-fixed-69 (Laptop-only keyboard control: shortcuts + double-press-to-send + option highlight ring now run only on laptop/desktop; phones and tablets (Android/iPhone/iPad) never get them | previous: exam-fixed-68 (AI Mode prompt: asks for 2-3 relevant web images / labelled diagrams placed inside the matching sections (format unchanged) | previous: exam-fixed-67 (clean UI: removed the "Tap anywhere to start the music" text and the "Popup block hai" toast; blocked audio just starts on the student's next tap, silently | previous: exam-fixed-66 (FM: default = online FM when internet is on (last used station, else Vividh Bharati), offline Lo-fi when there is none; tab hidden -> FM only PAUSES (no teardown), tab back -> instant resume (<20 s away: same connection; longer: same audio element reconnects to live; 3+ min: released, direct reconnect of the exact stream, no station search); internet back -> failed FM retries | previous: exam-fixed-65 (full audit pass: no code changes beyond 62-64 (5 new palettes, short link pill + Copy, single reusable Google AI Mode tab, new explanation prompt); all scripts syntax-checked, no duplicate ids, tag counts balanced | previous: exam-fixed-64 (Google lookup: every [Google] tap reuses ONE named tab (window.open name, no noopener) instead of opening a new tab each time; popup-blocked toast; opener cleared; closed tab -> browser makes a new one | previous: exam-fixed-63 (QR share screen: short tidy link pill under the QR (host/…tail, never the full URL) with a Copy button beside it; tap the pill also copies; clipboard fallback; duplicate link icon button removed | previous: exam-fixed-62 (5 new palettes for site + quiz player: AMOLED black+gold, Synthwave neon, Pastel lilac night, Mocha sand, Arctic silver (11 -> 16 palettes; new glow layouts: diagonal + centered halo) | previous: exam-fixed-61 (Google lookup: [Google] chip button opens Google AI Mode directly (udm=50); new student prompt: Devanagari Hindi with English technical terms kept as-is (no bracket translations), fixed Ek line me + Matlab sections, 1-2 topic-fitting extra headings, 70-120 words total) | previous: exam-fixed-60 (retry audit: after the gateway itself failed (it already tried many AIs for up to 90 s) eyAsk retries only ONCE (was 5x), part-1 unreadable-reply re-ask 2x (was 3x), background auto-retries 3 (was 6)) | previous: exam-fixed-59 (8-unit limit now also checks the PDF page RANGE before extraction (same rule as images: more than 8 -> Exam Yatri off, Gemini on). Earlier: exam-fixed-58 (Exam Yatri limit: more than 8 extracted pages or more than 8 uploaded images -> Exam Yatri is greyed out and blocked (tap + Start), Gemini is auto-selected, a note explains why; Exam Yatri comes back automatically when the input shrinks to 8 or less, unless the student chose another site herself). Earlier: exam-fixed-57 (ALWAYS-SHOW-PAGE: one resolver for every mode (ChatGPT / Claude / Gemini / Exam Yatri API): evidence page -> segment page -> AI PG confirmed in notes -> content search of the notes -> AI PG -> notes page range; tolerant PG parsing ("PG 12", "**PG:** p.12", en-dash ranges); player shows Page N after the question mark in every mode). Earlier: exam-fixed-56 (Page number: Exam Yatri path no longer blanks the AI PG when evidence is not matched (last-resort keeps AI digits); player shows "Page N" after the question in every mode, also from srcPages). Earlier: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
 <html lang="en">
 <head>
 
@@ -1859,6 +1859,13 @@ body:not(.flow-summary) #sumCard,body:not(.flow-summary) #sumStepLabel{display:n
 #sumCard .site-pick{box-shadow:0 2px 8px rgba(0,0,0,.2)!important}
 #sumCard .ai-row3 .site-pick.active{box-shadow:0 3px 10px color-mix(in srgb,var(--c) 22%,transparent)!important}
 #sumCard .sum-lang-row{margin-top:14px}
+#sumCard .sum-opt-row{margin-top:14px}
+#sumCard .sum-opt-row>label{display:block;font-size:.8rem;font-weight:600;color:var(--ink-dim);margin-bottom:8px}
+#sumCard .sum-chips{display:flex;flex-wrap:wrap;gap:8px}
+#sumCard .sum-chip{cursor:pointer;padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel-raised);color:var(--ink);font-size:.88rem;font-weight:600;font-family:var(--sans);-webkit-tap-highlight-color:transparent}
+#sumCard .sum-chip.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 24%,var(--panel-raised));color:var(--ink);box-shadow:0 2px 10px color-mix(in srgb,var(--accent) 22%,transparent)}
+#sumCard .sum-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#sumCard #sumPerNote{margin-top:8px}
 </style>
 <style id="yaiMatte">
 /* ===== Matte pass: same layout, same buttons — only colour intensity, glow and gloss are toned down =====
@@ -2261,15 +2268,26 @@ body::before{opacity:.8}
         <button type="button" class="site-pick sum-pick" style="--c:#d97757" data-sum="claude"><span class="dot" style="background:#d97757"></span>Claude</button>
       </div>
     </div>
-    <div class="row sum-lang-row">
-      <div class="field">
-        <label data-i18n="sumLangLabel">Summary language</label>
-        <input type="text" id="sumLanguage" value="Hindi + English mix" list="quizLangOptions" autocomplete="off" style="width:190px; padding:9px 11px; border-radius:8px; border:1px solid var(--line); background:var(--panel-raised); color:var(--ink); font-size:0.92rem; font-family:var(--sans);" placeholder="e.g. Hindi + English mix, English">
+    <div class="sum-opt-row sum-lang-row">
+      <label data-i18n="sumLangLabel">Summary language</label>
+      <div class="sum-chips" id="sumLangBar" role="group" aria-label="Summary language">
+        <button type="button" class="sum-chip" data-lang="hien">Hindi + English</button>
+        <button type="button" class="sum-chip" data-lang="en">English</button>
+        <button type="button" class="sum-chip" data-lang="hg">Hinglish</button>
       </div>
+    </div>
+    <div class="sum-opt-row">
+      <label data-i18n="sumPerLabel">Pages per message</label>
+      <div class="sum-chips" id="sumPerBar" role="group" aria-label="Pages per message">
+        <button type="button" class="sum-chip" data-per="3">3 pages</button>
+        <button type="button" class="sum-chip" data-per="4">4 pages</button>
+        <button type="button" class="sum-chip" data-per="5">5 pages</button>
+      </div>
+      <div class="note" id="sumPerNote"></div>
     </div>
     <button class="btn-main" id="sumGenBtn">✨ <span data-i18n="sumGenBtn">Generate summary</span></button>
     <div class="result-actions" style="margin-top:12px;"><button class="btn-sm" id="sumToQuizBtn" type="button">🎯 Make quiz from this text instead</button></div>
-    <div class="note" data-i18n="sumNote">The AI site opens and the auto-script pastes your extracted text with a page-wise summary prompt and sends it, then its panel disappears so you can read the summary. Come back to this tab when you are done.</div>
+    <div class="note" data-i18n="sumNote">The AI site opens and the auto-script pastes your extracted text with the summary prompt and sends it. The summary comes in small batches (3-5 pages per message) for better quality, and the script sends the next batch by itself after each reply. Come back to this tab when you are done.</div>
   </div>
 
   <div class="card" id="generatingCard" style="display:none;">
@@ -2396,8 +2414,9 @@ const I18N = {
     step4label: "TURN THIS INTO A QUIZ",
     step4sum: "SUMMARISE THIS WITH AI",
     sumLangLabel: "Summary language",
+    sumPerLabel: "Pages per message",
     sumGenBtn: "Generate summary",
-    sumNote: "The AI site opens and the auto-script pastes your extracted text with a page-wise summary prompt and sends it, then its panel disappears so you can read the summary. Come back to this tab when you are done.",
+    sumNote: "The AI site opens and the auto-script pastes your extracted text with the summary prompt and sends it. The summary comes in small batches (3-5 pages per message) for better quality, and the script sends the next batch by itself after each reply. Come back to this tab when you are done.",
     methodAutoTitle: "Auto-generate",
     methodAutoDesc: "One click. The app calls an AI model directly and the quiz opens automatically.",
     methodAutoBadge: "FASTEST",
@@ -2521,8 +2540,9 @@ const I18N = {
     step4label: "इसे क्विज़ में बदलें",
     step4sum: "AI से इसकी समरी बनवाएँ",
     sumLangLabel: "समरी की भाषा",
+    sumPerLabel: "एक मैसेज में कितने पेज",
     sumGenBtn: "समरी बनाएँ",
-    sumNote: "AI साइट खुलेगी, ऑटो-स्क्रिप्ट आपका टेक्स्ट पेज-वाइज समरी प्रॉम्प्ट के साथ पेस्ट करके भेज देगी और अपना पैनल हटा लेगी, ताकि आप आराम से समरी पढ़ सकें। पढ़कर इसी टैब पर वापस आ जाएँ।",
+    sumNote: "AI साइट खुलेगी, ऑटो-स्क्रिप्ट आपका टेक्स्ट समरी प्रॉम्प्ट के साथ पेस्ट करके भेज देगी। बेहतर क्वालिटी के लिए समरी छोटे बैच (3-5 पेज प्रति मैसेज) में आएगी और हर जवाब के बाद स्क्रिप्ट अगला बैच खुद भेज देगी। काम पूरा होने पर इस टैब पर वापस आ जाएँ।",
     methodAutoTitle: "ऑटो-जनरेट करें",
     methodAutoDesc: "एक क्लिक में। ऐप सीधे AI मॉडल को कॉल करता है और क्विज़ अपने आप खुल जाता है।",
     methodAutoBadge: "सबसे तेज़",
@@ -9621,7 +9641,7 @@ header{box-shadow:none!important}
 // ==UserScript==
 // @name         Quiz Auto Bridge
 // @namespace    quiz-auto-bridge
-// @version      4.1
+// @version      4.2
 // @description  Quiz app ke prompt parts AI site me auto-paste + auto-send. Persistent watcher: signup/consent/popup hone par bhi input box aane tak khud rukta hai.
 // @match        __APP_ORIGIN__/*
 // @match        https://gemini.google.com/*
@@ -9639,7 +9659,7 @@ header{box-shadow:none!important}
 (function () {
   'use strict';
   const APP_ORIGIN = '__APP_ORIGIN__';
-  const K_BUNDLE = 'qz_bundle', K_RESULT = 'qz_result', K_POS = 'qz_pos', K_MIN = 'qz_min', K_AT = 'qz_result_at', K_TAKEN = 'qz_result_taken', K_ALIVE = 'qz_app_alive', K_CLAIM = 'qz_claim', K_RUN = 'qz_run', BRIDGE_V = '20', TAB = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  const K_BUNDLE = 'qz_bundle', K_RESULT = 'qz_result', K_POS = 'qz_pos', K_MIN = 'qz_min', K_AT = 'qz_result_at', K_TAKEN = 'qz_result_taken', K_ALIVE = 'qz_app_alive', K_CLAIM = 'qz_claim', K_RUN = 'qz_run', BRIDGE_V = '21', TAB = Math.random().toString(36).slice(2) + Date.now().toString(36);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const buzz = ms => { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(ms); } catch (e) {} };
 
@@ -10902,41 +10922,90 @@ header{box-shadow:none!important}
     ui.showClose();
   }
 
-  /* ---- summary run: paste text + prompt, send, then remove the panel so the student can read the reply ---- */
+  /* ---- summary run: paste text + prompt, send; if the summary is split in batches, send each next-batch message after the previous reply is complete ---- */
   async function runSummary(bundle, ui) {
-    const part = bundle.prompts[0];
-    toClipboard(part.text);   // fallback: Ctrl+V if auto-paste does not work
-    ui.setStep(1, '\u2460 Summary prompt paste ho raha hai...', 'Thoda ruko, abhi kuch mat dabao.');
-    const ok = await insertPrompt(part.text);
-    if (stopped) return;
-    if (!ok) {
-      highlight(first(INPUT_SEL));
-      ui.setStep(1, '\u26A0\uFE0F Input box nahi mila', 'Prompt clipboard me hai. Blinking box me tap karo \u2192 Paste \u2192 phir Send dabao.', { attention: true });
-      ui.showClose();
-      return;
+    const P = bundle.prompts, total = P.length;
+    ui.setButtons([{ label: '\u23F9 Stop', fn: () => {
+      stopped = true; clearHighlight();
+      ui.setStep(0, '\u23F9 Roka gaya', 'Jo batch aa chuke hain wo AI chat me padh sakte ho. Baaki ke liye AI chat me \"next\" likho.');
+      ui.setButtons([]); ui.showClose();
+    } }]);
+    for (let i = 0; i < total && !stopped; i++) {
+      const part = P[i], label = total > 1 ? 'Batch ' + (i + 1) + '/' + total : 'Summary';
+      ui.setProgress(i, total);
+      toClipboard(part.text);   // fallback: Ctrl+V if auto-paste does not work
+      const base = getBlocks().length;
+      ui.setStep(1, '\u2460 ' + label + ': message paste ho raha hai...', 'Thoda ruko, abhi kuch mat dabao.');
+      const ok = await insertPrompt(part.text);
+      if (stopped) return;
+      if (!ok) {
+        highlight(first(INPUT_SEL));
+        ui.setStep(1, '\u26A0\uFE0F ' + label + ': input box nahi mila', 'Message clipboard me hai. Blinking box me tap karo \u2192 Paste \u2192 phir Send dabao.', { attention: true });
+        ui.showClose();
+        return;
+      }
+      if (i === 0) {
+        inCountdown = true; skipWait = false;
+        const secs = Math.round(rnd(2, 4));
+        for (let c = secs; c > 0 && !stopped && !skipWait; c--) {
+          ui.setStep(2, '\u2461 ' + c + ' sec me Send hoga', 'Turant bhejna ho to \"Send now\", rokna ho to \"Stop\".');
+          await sleep(1000);
+        }
+        inCountdown = false;
+      } else { await pause(1500, 3500); }
+      if (stopped) return;
+      const sent = await clickSend();
+      let started = false;
+      if (sent) { for (let k = 0; k < 25 && !stopped && !started; k++) { started = isGenerating() || !sendEnabled(); if (!started) await sleep(1000); } }
+      if (stopped) return;
+      if (!started) {   // send click did not visibly work: keep the panel, point at Send, continue only once the AI really starts
+        highlight(sendBtn() || first(INPUT_SEL));
+        ui.setStep(2, '\uD83D\uDC46 ' + label + ': Send nahi hua', 'Blinking Send button dabao. Jawab shuru hote hi script aage badhegi.', { attention: true });
+        ui.showClose();
+        for (let k = 0; k < 240 && !stopped && !isGenerating(); k++) await sleep(1000);
+        if (stopped || !isGenerating()) return;
+      }
+      clearHighlight();
+      if (total === 1) {   // single message: same as before, the panel disappears so the student can read
+        ui.setStep(3, '\u2705 Summary prompt bhej diya', 'Ab AI ka jawab padho. Ye panel abhi hat jayega.');
+        await sleep(1500);
+        ui.remove();
+        return;
+      }
+      ui.setStep(3, '\u2462 ' + label + ': AI summary likh raha hai', 'Padhte raho. Ye poora hote hi agla batch khud chalega. Panel ko \u2013 se chhota kar sakte ho.');
+      const done = await waitDone(base, 20 * 60000, null, null);
+      if (stopped) return;
+      // reply stopped in the middle with a "Continue" button? press it (max 3 times)
+      for (let c = 0; c < 3 && !stopped; c++) {
+        const cb = findBtn(CONTINUE_RE, true);
+        if (!cb) break;
+        ui.setStep(3, '\u2462 ' + label + ': reply beech me ruka tha', '\"Continue\" dabaya ja raha hai...');
+        await pause(2000, 5000); try { cb.click(); } catch (e) {}
+        await waitDone(base, 10 * 60000, null, null);
+      }
+      if (stopped) return;
+      const prob = detectProblem();
+      if (prob && (prob.k === 'limit' || prob.k === 'human' || prob.k === 'login')) {
+        const m = FATAL_MSG[prob.k];
+        ui.setStep(0, m[0] + ' \u2014 ' + (i + (done ? 1 : 0)) + '/' + total + ' batch aaye', m[1], { attention: true });
+        ui.setButtons([]); ui.showClose();
+        return;
+      }
+      if (!done || getBlocks().length <= base) {
+        ui.setStep(0, '\u26A0\uFE0F ' + label + ': jawab nahi mila', 'AI chat khud dekho. Jawab aaya ho to chat me \"next\" likh kar aage badho.', { attention: true });
+        ui.setButtons([]); ui.showClose();
+        return;
+      }
+      ui.setProgress(i + 1, total);
+      if (i < total - 1) {   // cool-down before the next batch (gentle on the site, avoids rate limits)
+        const secs = Math.round(rnd(5, 10));
+        for (let c = secs; c > 0 && !stopped; c--) { ui.setStep(2, '\u23F3 ' + label + ' ho gaya', 'Agla batch ' + c + ' sec me khud bhejunga. Tab tab tak summary padh sakte ho.'); await sleep(1000); }
+      }
     }
-    inCountdown = true; skipWait = false;
-    const secs = Math.round(rnd(2, 4));
-    for (let c = secs; c > 0 && !stopped && !skipWait; c--) {
-      ui.setStep(2, '\u2461 ' + c + ' sec me Send hoga', 'Turant bhejna ho to "Send now", rokna ho to "Stop".');
-      await sleep(1000);
-    }
-    inCountdown = false;
     if (stopped) return;
-    const sent = await clickSend();
-    let started = false;
-    if (sent) { for (let k = 0; k < 25 && !stopped && !started; k++) { started = isGenerating() || !sendEnabled(); if (!started) await sleep(1000); } }
-    if (stopped) return;
-    if (!started) {   // send click did not visibly work: keep the panel, point at Send, remove the panel only once the AI really starts
-      highlight(sendBtn() || first(INPUT_SEL));
-      ui.setStep(2, '\uD83D\uDC46 Send nahi hua', 'Blinking Send button dabao. Jawab shuru hote hi ye panel hat jayega.', { attention: true });
-      ui.showClose();
-      for (let k = 0; k < 240 && !stopped && !isGenerating(); k++) await sleep(1000);
-      if (stopped || !isGenerating()) return;
-    }
-    clearHighlight();
-    ui.setStep(3, '\u2705 Summary prompt bhej diya', 'Ab AI ka jawab padho. Ye panel abhi hat jayega.');
-    await sleep(1500);
+    ui.setProgress(total, total);
+    ui.setStep(4, '\u2705 Saare ' + total + ' batch ho gaye', 'Poori summary AI chat me hai. Ye panel abhi hat jayega.');
+    await sleep(3000);
     ui.remove();
   }
 
@@ -10987,7 +11056,7 @@ header{box-shadow:none!important}
     if (bundle.kind === 'summary' && Date.now() - bundle.ts > 20 * 60000) return;   // summary: opened-and-forgotten bundles must not fire into a later, unrelated chat
     // consumed = chat screen already reached once. Only an interrupted run (reload/redirect/crash within 10 min) may continue.
     const verdict = claimVerdict(bundle), key = bkey(bundle);
-    if (verdict === 'skip' || (bundle.consumed && verdict !== 'resume')) return;
+    if (verdict === 'skip' || (bundle.consumed && verdict !== 'resume') || (bundle.kind === 'summary' && verdict === 'resume')) return;   // a summary run is never resumed after a reload (it would paste the prompt again)
     writeClaim(key, 'running');
     sleep(500).then(() => {   // two tabs racing: the last writer wins, the other backs off
       const c = readClaim();
@@ -12100,57 +12169,106 @@ header{box-shadow:none!important}
 })();
 </script>
 <script>
-/* ===== exam-fixed-75: summary step 4 (Gemini / ChatGPT / Claude -> Generate summary) ===== */
+/* ===== exam-fixed-78: summary step 4 (Gemini / ChatGPT / Claude -> language + pages per message -> Generate summary; summary comes in BATCHES) ===== */
 (function () {
   const SITES = { gemini: 'https://gemini.google.com/app', chatgpt: 'https://chatgpt.com/', claude: 'https://claude.ai/new' };
-  const NEED_V = 20;   // bridge script version that understands summary bundles
-  const bar = document.getElementById('sumAiBar'), langEl = document.getElementById('sumLanguage'), genBtn = document.getElementById('sumGenBtn');
-  let site = 'gemini'; try { const s = localStorage.getItem('yai_sum_ai'); if (SITES[s]) site = s; } catch (e) {}
-  function paint() { bar.querySelectorAll('.sum-pick').forEach(b => b.classList.toggle('active', b.dataset.sum === site)); }
+  const NEED_V = 21;   // bridge script version that sends the summary batches one after another
+  const bar = document.getElementById('sumAiBar'), langBar = document.getElementById('sumLangBar'), perBar = document.getElementById('sumPerBar'), perNote = document.getElementById('sumPerNote'), genBtn = document.getElementById('sumGenBtn');
+  const LANG_NAME = { hien: 'Hindi + English', en: 'English', hg: 'Hinglish' };
+  let site = 'gemini'; try { const v = localStorage.getItem('yai_sum_ai'); if (SITES[v]) site = v; } catch (e) {}
+  let lang = 'hien'; try { const v = localStorage.getItem('yai_sum_lang2'); if (LANG_NAME[v]) lang = v; } catch (e) {}   // default every time = Hindi + English
+  let per = 5; try { const v = parseInt(localStorage.getItem('yai_sum_per'), 10); if (v >= 3 && v <= 5) per = v; } catch (e) {}
+  function paint() {
+    bar.querySelectorAll('.sum-pick').forEach(b => b.classList.toggle('active', b.dataset.sum === site));
+    langBar.querySelectorAll('.sum-chip').forEach(b => { const on = b.dataset.lang === lang; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    perBar.querySelectorAll('.sum-chip').forEach(b => { const on = parseInt(b.dataset.per, 10) === per; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    let n = 0; try { n = countExtractedPages(String((typeof resultText !== 'undefined' && resultText && resultText.value) || (typeof rawExtractedText !== 'undefined' ? rawExtractedText : '') || '')); } catch (e) {}
+    perNote.textContent = n ? (n + ' pages = ' + planBatches(new Array(n).fill(0), per).length + ' message(s). Kam pages per message = zyada detail aur behtar quality.') : 'Kam pages per message = zyada detail aur behtar quality.';
+  }
   bar.querySelectorAll('.sum-pick').forEach(b => b.addEventListener('click', () => { site = b.dataset.sum; try { localStorage.setItem('yai_sum_ai', site); } catch (e) {} paint(); }));
-  paint();
-  try { langEl.value = localStorage.getItem('yai_sum_lang') || 'Hindi + English mix'; } catch (e) {}
-  langEl.addEventListener('input', () => { try { localStorage.setItem('yai_sum_lang', langEl.value); } catch (e) {} });
+  langBar.querySelectorAll('.sum-chip').forEach(b => b.addEventListener('click', () => { lang = b.dataset.lang; try { localStorage.setItem('yai_sum_lang2', lang); } catch (e) {} paint(); }));
+  perBar.querySelectorAll('.sum-chip').forEach(b => b.addEventListener('click', () => { per = parseInt(b.dataset.per, 10); try { localStorage.setItem('yai_sum_per', String(per)); } catch (e) {} paint(); }));
 
-  function buildSummaryPrompt(text, lang) {
-    const mix = /hindi|hinglish/i.test(lang) && /english|mix|hinglish/i.test(lang);
-    const langRule = mix
-      ? '4. LANGUAGE = natural Hindi + English mix (like an Indian teacher explaining in class). Write the sentence structure and connecting words in Hindi (Devanagari): "का मतलब", "होता है", "में", "से", "को", "जब", "इसलिए", "कुल", "सीधे", "ले जाती हैं" etc. Keep every medical / scientific / technical term, name, drug, disease, organ, formula and unit in English exactly as in the book. Example of the exact style: "Cranial nerve palsy का मतलब brain से निकलने वाली किसी एक या ज़्यादा cranial nerves का कमजोर होना या काम करना बंद कर देना है।" and "Human body में कुल 12 pairs of cranial nerves होते हैं।" and "ये nerves सीधे brain से face, eyes, neck और throat तक signals ले जाती हैं।" Do not translate technical terms into Hindi and do not put English translations in brackets.'
-      : '4. Write everything in ' + lang + ', in simple, friendly words. Keep technical / subject terms as they are written in the book.';
+  // "--- Page 12 ---" markers -> ['12', ...]
+  function pageLabels(text) {
+    const out = [], re = /^--- (Page [^\n]*?) ---$/gm; let m;
+    while ((m = re.exec(String(text || '')))) out.push(m[1].replace(/^Page\s*/i, '').trim() || String(out.length + 1));
+    return out;
+  }
+  // even split: 11 pages at 5 per message -> 4 + 4 + 3 (never a lonely 1-page tail)
+  function planBatches(labels, perMsg) {
+    const n = labels.length; if (!n) return [];
+    const k = Math.ceil(n / perMsg), base = Math.floor(n / k); let extra = n % k, i = 0; const out = [];
+    for (let b = 0; b < k; b++) { const size = base + (extra > 0 ? 1 : 0); if (extra > 0) extra--; out.push(labels.slice(i, i + size)); i += size; }
+    return out;
+  }
+  const rng = arr => (arr.length === 1 ? 'Page ' + arr[0] : 'Pages ' + arr[0] + ' to ' + arr[arr.length - 1]) + (arr.length > 1 && arr.length <= 6 ? ' (' + arr.join(', ') + ')' : '');
+  const nextLine = (i, K, batches) => i < K - 1
+    ? '"➡️ Batch ' + (i + 1) + '/' + K + ' done. Next: ' + rng(batches[i + 1]) + '. Send "next" to continue."'
+    : '"✅ All ' + K + ' batches done. Every page is summarized."';
+
+  function langRule(key) {
+    if (key === 'en') return '4. LANGUAGE = simple, clear English, short sentences, like a friendly teacher talking to a beginner. Keep subject terms exactly as the book writes them; the first time a hard term appears, explain it in plain words in the same sentence (no translations in brackets).';
+    if (key === 'hg') return '4. LANGUAGE = Hinglish: spoken Hindi written in ROMAN (English) letters, like a friendly teacher explaining on WhatsApp. NO Devanagari script anywhere. Sentence structure and connecting words in Hindi: "ka matlab", "hota hai", "mein", "se", "ko", "jab", "isliye", "kul", "seedhe", "le jaati hain" etc. Keep every medical / scientific / technical term, name, drug, disease, organ, formula and unit in English exactly as in the book. Example of the exact style: "Cranial nerve palsy ka matlab hai brain se nikalne wali kisi ek ya zyada cranial nerves ka kamzor ho jana ya kaam karna band kar dena." and "Human body mein kul 12 pairs of cranial nerves hote hain." and "Ye nerves seedhe brain se face, eyes, neck aur throat tak signals le jaati hain." Do not translate technical terms into Hindi and do not put translations in brackets.';
+    return '4. LANGUAGE = natural Hindi + English mix (like an Indian teacher explaining in class). Write the sentence structure and connecting words in Hindi (Devanagari): "का मतलब", "होता है", "में", "से", "को", "जब", "इसलिए", "कुल", "सीधे", "ले जाती हैं" etc. Keep every medical / scientific / technical term, name, drug, disease, organ, formula and unit in English (Roman script) exactly as in the book. Example of the exact style: "Cranial nerve palsy का मतलब brain से निकलने वाली किसी एक या ज़्यादा cranial nerves का कमजोर होना या काम करना बंद कर देना है।" and "Human body में कुल 12 pairs of cranial nerves होते हैं।" and "ये nerves सीधे brain से face, eyes, neck और throat तक signals ले जाती हैं।" Do not translate technical terms into Hindi and do not put English translations in brackets.';
+  }
+
+  function buildSummaryPrompt(text, langKey, batches) {
+    const K = batches.length, N = batches.reduce((a, b) => a + b.length, 0), hasPages = K > 0;
+    const unit = hasPages ? 'Page' : 'Section';
+    const batchBlock = !hasPages ? [
+      'STRUCTURE: the text has no page markers. Treat every heading / sub-heading as a "Section" and use the heading format below with "Section <n>" instead of "Page <number>". Work through the text in order and cover EVERYTHING. If the text is long and your reply would run out of space, stop cleanly at the end of a section, write the line "➡️ Send "next" to continue from Section <n>", and continue from exactly there when I say "next" (never shorten the remaining sections to fit).'
+    ] : (K === 1 ? [
+      'BATCH MODE: the text below has only ' + N + ' page' + (N > 1 ? 's' : '') + ', so write all of it in THIS one reply (' + rng(batches[0]) + '). Take your time: depth and accuracy matter more than speed.',
+      'Write the summary directly in the chat as normal text: no Canvas / document / file / artifact / code block, no web search, no tools.'
+    ] : [
+      'BATCH MODE (strict - this is how I want it, because quality drops a lot when many pages are summarized in one reply):',
+      '- The text below has ' + N + ' pages. Do NOT summarize all of it in one reply. You will work in ' + K + ' batches, ONE batch per reply:',
+      ...batches.map((bt, i) => '  Batch ' + (i + 1) + '/' + K + ': ' + rng(bt)),
+      '- In THIS reply write ONLY Batch 1 (' + rng(batches[0]) + '). Not even one page of any later batch, no preview, no overview of the whole text, no "I will now...".',
+      '- The last line of your reply must be exactly: ' + nextLine(0, K, batches),
+      '- When I send "next" (or a message starting with "NEXT BATCH"), write ONLY the next batch of this plan, in exactly the same page-block format, presentation, language and depth, and end with the matching status line. Never repeat earlier pages and never touch later pages. The pages always come from the text in this first message: never ask me to paste anything again.',
+      '- Every page of the batch gets its own full block, in order. Never skip a page, never merge two pages, never postpone a page to the next batch. Because each batch is small you have plenty of room: do NOT rush and do NOT get shorter or lazier in later batches. Batch ' + K + ' must be as detailed as Batch 1.',
+      '- Write the summary directly in the chat as normal text: no Canvas / document / file / artifact / code block, no web search, no tools.'
+    ]);
+    const head = hasPages ? '## 📄 Page <number> - <short title: what this page is about>' : '## 📄 Section <n> - <short title: what this section is about>';
     return [
       'You are a patient, expert teacher. I am a student who knows NOTHING about this subject. This is the first time I am reading this topic / book and I want your help to understand it quickly, without wasting my time.',
       '',
-      'Below is the text extracted from my book / notes. It comes from OCR, so it may contain small spelling or formatting mistakes: silently correct them using common sense. The text is divided by markers like "--- Page 12 ---".',
+      'Below is the text extracted from my book / notes. It comes from OCR, so it may contain small spelling or formatting mistakes: silently correct them using common sense. ' + (hasPages ? 'The text is divided by markers like "--- Page 12 ---".' : ''),
       '',
-      'TASK: Give me a PAGE-WISE SUMMARY. Go through the pages in the same order and write one summary block for EVERY page, in this shape:',
+      ...batchBlock,
       '',
-      '## 📄 Page <number> - <short title: what this page is about>',
-      '- One or two opening lines: the main topic / concept of the page (definition first, if the page defines something).',
-      '- Then the bullet points. Use as many as the page needs (usually 4 to 9; a dense page needs more, a light page fewer). Each bullet is a clear sentence that explains an idea, not just a keyword. Where it really helps, add one small everyday example or analogy.',
-      '- Finish with "💡 Remember:" and one line for the single most important takeaway (or a small memory trick if the page has a list).',
+      'TASK: Give me a ' + (hasPages ? 'PAGE-WISE' : 'SECTION-WISE') + ' SUMMARY. Go through the ' + unit.toLowerCase() + 's in the same order and write one summary block for EVERY ' + unit.toLowerCase() + ' of the current batch, in this shape:',
       '',
-      'PRESENTATION (very important - the content and writing style above stay exactly as they are; this only decides how the answer LOOKS on screen, so it must be clean, airy and easy to scan, never a dense wall of small text):',
-      'P1. Every page starts with its own big Markdown heading in the exact form "## 📄 Page <number> - <title>", and every page ends with a horizontal line (a line containing only ---) followed by an empty line. This way I can see at a glance where one page ends and the next begins. If you like, use a different emoji in the heading of each new page (📘 📗 📙 📕 📒) but keep the word "Page" and the number.',
-      'P2. Leave an EMPTY LINE between the heading, the opening lines, every group of bullets, every numbered item and the Remember line. Never put two different ideas in the same paragraph and never let the text become one continuous block.',
-      'P3. Keep each bullet to 1 or 2 short lines. If an idea needs more, split it into a main bullet with 2 or 3 indented sub-bullets. No long paragraphs.',
-      'P4. Put the key term, name, number or definition of each bullet in **bold** so the page can be scanned quickly. Do not bold whole sentences.',
-      'P5. Where a page has types, classification, stages, layers, steps, causes or features, show them as a numbered list with each item on its own line. For comparisons, values, doses, cut-offs or table rows use a small Markdown table. Use a small emoji (🔹 ⚠️ 🔬 💊 ✅ 📌) at the start of an important bullet or sub-heading where it helps, but do not decorate every line.',
+      head,
+      '- One or two opening lines: the main topic / concept of the ' + unit.toLowerCase() + ' (definition first, if it defines something).',
+      '- Then the bullet points. Use as many as the ' + unit.toLowerCase() + ' needs (usually 4 to 9; a dense one needs more, a light one fewer). Each bullet is a clear sentence that explains an idea, not just a keyword. Where it really helps, add one small everyday example or analogy.',
+      '- Finish with "💡 Remember:" and one line for the single most important takeaway (or a small memory trick if there is a list).',
+      '',
+      'PRESENTATION (very important - it only decides how the answer LOOKS on screen: clean, airy and easy to scan, never a dense wall of text):',
+      'P1. Every block starts with its own big Markdown heading in the exact form above, and ends with a horizontal line (a line containing only ---) followed by an empty line, so I can see at a glance where one ' + unit.toLowerCase() + ' ends and the next begins. You may use a different emoji in each heading (📘 📗 📙 📕 📒) but keep the word "' + unit + '" and the number.',
+      'P2. Leave an EMPTY LINE between the heading, the opening lines, every group of bullets, every numbered item and the Remember line. Never put two different ideas in one paragraph.',
+      'P3. Keep each bullet to 1 or 2 short lines. If an idea needs more, make a main bullet with 2 or 3 indented sub-bullets. No long paragraphs.',
+      'P4. Put the key term, name, number or definition of each bullet in **bold** so it can be scanned quickly. Do not bold whole sentences.',
+      'P5. Types, classification, stages, layers, steps, causes or features go in a numbered list with each item on its own line. Comparisons, values, doses, cut-offs and table rows go in a small Markdown table. Use a small emoji (🔹 ⚠️ 🔬 💊 ✅ 📌) at the start of an important bullet where it helps, but do not decorate every line.',
       'P6. The Remember line is its own separate line, starting with 💡, and its label is in **bold**.',
-      'P7. Better layout must never cost content: every concept, list item, number and term of the page must still be covered.',
+      'P7. Better layout must never cost content: every concept, list item, number and term must still be covered.',
       '',
-      'COVERAGE PROTOCOL (most important - do it silently for every page, do not print it):',
-      'A. Before writing a page, scan it and note EVERY distinct concept on it: headings and sub-headings, definitions, terms, causes, features, types / classifications, every item of every list, steps of a process, comparisons, exceptions, table rows, figure or box captions, formulas, and every number, cut-off, dose, year, name and unit.',
-      'B. Your summary of that page must contain ALL of them. If space is tight, compress by merging related items into one bullet, NEVER by dropping a concept. A concept that is missing from the summary is a failure.',
-      'C. Lists and tables: name every item (put them together in one compact bullet). Never replace a list with words like "several types" or "various causes". Keep numbers, names and values exact.',
-      'D. Follow the order of the page, so I can match my summary with the book page. If a sentence continues from the previous or onto the next page, cover it on the page where most of it appears and do not repeat it.',
-      'E. Before moving to the next page, silently check once: "did I miss any heading, list item, number, term, figure caption or box of this page?" and add it if so.',
+      'COVERAGE PROTOCOL (most important - do it silently for every ' + unit.toLowerCase() + ', do not print it):',
+      'A. Before writing a ' + unit.toLowerCase() + ', scan it and note EVERY distinct concept on it: headings and sub-headings, definitions, terms, causes, features, types / classifications, every item of every list, steps of a process, comparisons, exceptions, table rows, figure or box captions, formulas, and every number, cut-off, dose, year, name and unit.',
+      'B. Your summary must contain ALL of them. If space is tight, compress by merging related items into one bullet, NEVER by dropping a concept. A missing concept is a failure.',
+      'C. Lists and tables: name every item (together in one compact bullet). Never replace a list with words like "several types" or "various causes". Keep numbers, names and values exact.',
+      'D. Follow the order of the ' + unit.toLowerCase() + ', so I can match my summary with the book. If a sentence continues from the previous or onto the next page, cover it on the page where most of it appears and do not repeat it.',
+      'E. OCR damage: fix obvious spelling slips silently. If a number, dose, name or word is unreadable or doubtful, write [unclear in source] there instead of guessing. If a table came out jumbled, rebuild its rows logically; if you cannot, say so in one short ⚠️ line.',
+      'F. Before finishing the reply, silently check once: "does every ' + unit.toLowerCase() + ' of this batch have its block, and did I miss any heading, list item, number, term, figure caption or box?" Add what is missing.',
       '',
       'RULES:',
-      '1. BALANCE: not too long, not too short. A normal page summary takes about 1 minute to read (roughly 100 to 180 words); a very dense page may go up to about 220 words but must still stay quick to read. A first-time learner should understand the whole page and every concept on it from your summary alone.',
-      '2. Explain so that a complete beginner understands: clear cause and effect, no unexplained jargon, no assumed background. Use short, simple sentences.',
-      '3. Do not skip or merge pages. If a page has almost no text (cover, blank page, only a figure or table), say in one line what it contains. Do not copy sentences from the text; re-explain them. Do not add facts that are not in the text, except a short clarification needed to explain a term.',
-      langRule,
-      '5. Do not add source links, citations or reference numbers. Output only the page-wise summaries: no introduction, no closing remarks, no questions. If your reply is about to run out of space, stop cleanly at the end of a page and tell me the next page number so I can say "continue" (never shorten the remaining pages to fit).',
+      '1. BALANCE: easy to read but complete. A normal ' + unit.toLowerCase() + ' summary is roughly 120 to 220 words; a very dense one may go up to about 300. Completeness comes first: never cut a concept just to stay short, and never pad a light ' + unit.toLowerCase() + '.',
+      '2. Explain so that a complete beginner understands: clear cause and effect, no unexplained jargon, no assumed background. Short, simple sentences.',
+      '3. Do not skip or merge ' + unit.toLowerCase() + 's. If one has almost no text (cover, blank, only a figure or table), say in one line what it contains. Do not copy sentences from the text; re-explain them. Do not add facts that are not in the text, except a short clarification needed to explain a term. If the book itself looks wrong or cut off, say so in one ⚠️ line; do not silently "fix" facts.',
+      langRule(langKey),
+      '5. No source links, citations or reference numbers. Output only the ' + unit.toLowerCase() + ' blocks ' + (hasPages ? 'and the one batch status line' : '') + ': no introduction, no closing remarks, no questions.',
       '',
       'TEXT FROM THE BOOK:',
       '',
@@ -12158,16 +12276,31 @@ header{box-shadow:none!important}
     ].join('\n');
   }
 
+  function buildNextPrompt(i, batches, langKey) {
+    const K = batches.length;
+    return [
+      'NEXT BATCH (' + (i + 1) + ' of ' + K + '): write the summary of ONLY ' + rng(batches[i]) + ', taken from the text in my first message.',
+      'Use exactly the same page-block format, PRESENTATION rules, COVERAGE PROTOCOL and language (' + LANG_NAME[langKey] + ') as before, with the same depth and quality as Batch 1: do not get shorter or lazier as we go. Every page of this batch gets its own full block. Do not repeat earlier pages and do not touch later pages. Write it directly in the chat (no Canvas / file / tools).',
+      'Your last line must be exactly: ' + nextLine(i, K, batches)
+    ].join('\n');
+  }
+
   document.getElementById('sumToQuizBtn').addEventListener('click', () => { setFlowMode('quiz'); setTimeout(() => methodStepLabel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); });
+  // keep the "N pages = K messages" hint fresh when the summary card is shown
+  try { new MutationObserver(paint).observe(document.getElementById('sumCard'), { attributes: true, attributeFilter: ['style', 'class'] }); } catch (e) {}
+  paint();
+
   genBtn.addEventListener('click', async () => {
     const text = String((resultText && resultText.value) || rawExtractedText || '').trim();
     if (!text) { showToast('Pehle text extract karo'); return; }
     if (genBtn.dataset.busy === '1') return;
     genBtn.dataset.busy = '1'; setTimeout(() => { genBtn.dataset.busy = ''; }, 4000);   // one tap = one AI tab
-    const lang = (langEl.value || '').trim() || 'English', url = SITES[site];
-    const prompt = buildSummaryPrompt(text, lang);
-    let pg = 0; try { pg = countExtractedPages(text); } catch (e) {}
-    if (pg > 12 || prompt.length > 120000) showToast('Zyada pages hain (' + (pg || 'bahut') + '): AI ka reply beech me ruk sakta hai. Ruke to AI ko "continue" likh dena, ya page range chhoti rakho');
+    const url = SITES[site];
+    const labels = pageLabels(text), batches = planBatches(labels, per), K = Math.max(1, batches.length);
+    const prompt = buildSummaryPrompt(text, lang, batches);
+    const prompts = [{ text: prompt, q: 0, startN: 1 }];
+    for (let i = 1; i < batches.length; i++) prompts.push({ text: buildNextPrompt(i, batches, lang), q: 0, startN: 1 });
+    if (prompt.length > 120000) showToast('Text bahut bada hai (' + (labels.length || 'bahut') + ' pages): AI ki limit lag sakti hai. Page range chhoti rakho');
     try { const w = JSON.parse(localStorage.getItem('yai_wait') || 'null'); if (w && w.ts && Date.now() - w.ts < 3600000 && !localStorage.getItem('yai_inbox')) showToast('Dhyan: ek quiz abhi AI se ban raha hai. Summary shuru karne se us quiz ka auto-import ruk sakta hai (AI panel se Copy answer karke paste kar sakte ho)'); } catch (e) {}
     const bridgeV = parseInt(document.documentElement.getAttribute('data-quiz-bridge-v') || '0', 10) || 0;
     const bridgeOn = document.documentElement.getAttribute('data-quiz-bridge') === '1' && bridgeV >= NEED_V;
@@ -12175,23 +12308,231 @@ header{box-shadow:none!important}
     try { prepareAiTab(); } finally { selectedAiUrl = prevUrl; }   // open the tab inside the tap (no popup blocker); the quiz step's own AI choice stays untouched
     if (bridgeOn) {
       let host = ''; try { host = new URL(url).hostname; } catch (e) {}
-      const b = { id: Date.now(), kind: 'summary', mode: 'summary', total: 0, prompts: [{ text: prompt, q: 0, startN: 1 }], site: host, appUrl: location.href.split('#')[0] };
+      const b = { id: Date.now(), kind: 'summary', mode: 'summary', total: 0, prompts: prompts, site: host, appUrl: location.href.split('#')[0] };
       let el = document.getElementById('quizBridgeData');
       if (!el) { el = document.createElement('script'); el.type = 'application/json'; el.id = 'quizBridgeData'; document.body.appendChild(el); }
       el.textContent = JSON.stringify(b);
       document.dispatchEvent(new Event('quizbridge:send'));
       copyToClipboard(prompt).catch(() => {});   // safety net: if auto-paste fails, Ctrl+V works
-      showToast('Auto-script ON: AI site me text + summary prompt khud paste aur send hoga. Summary padh ke is tab par wapas aao');
+      showToast(K > 1 ? 'Auto-script ON: summary ' + K + ' batch me aayegi (' + per + ' pages tak per message). Agla batch script khud bhejegi' : 'Auto-script ON: AI site me text + summary prompt khud paste aur send hoga');
       openAiSite(url);
       return;
     }
     const ok = await copyToClipboard(prompt, 'summary-prompt.txt');
     const stale = document.documentElement.getAttribute('data-quiz-bridge') === '1';
     showToast(!ok ? COPY_FAIL_MSG
-      : stale ? 'Auto-script purani hai (menu > Script se dobara copy karke update karo). Abhi prompt copy ho gaya: AI site me paste karke Send karo'
-      : 'Prompt copy ho gaya: AI site me paste (Ctrl+V) karke Send karo');
+      : stale ? 'Auto-script purani hai (menu > Script se dobara copy karke update karo). Abhi prompt copy ho gaya: AI site me paste karke Send karo' + (K > 1 ? ', phir har batch ke baad "next" likho' : '')
+      : 'Prompt copy ho gaya: AI site me paste (Ctrl+V) karke Send karo' + (K > 1 ? ', phir har batch ke baad "next" likho (' + K + ' batch)' : ''));
     openAiSite(url);
   });
+})();
+</script>
+
+<!-- ===== exam-fixed-77: READABLE GUARD (contrast audit on every screen + a new palette for every popup) ===== -->
+<style id="yaiReadableCss">
+/* readable ink: dark theme text a bit brighter, light theme a bit darker (AA on every panel) */
+:root:not([data-theme="light"]){--ink-dim:#c7cce9;--ink-faint:#a3aad2}
+[data-theme="light"]{--ink-dim:#3d3f55;--ink-faint:#5a5c72}
+/* popup buttons: text colour comes from the guard (fill colour known), never a fixed white */
+.ey-pop-b .ey-pop-r,.gen-pop-btn,.gen-pop-ic,.combo-banner{color:var(--on-grad,#fff)!important}
+.ey-pop-b .ey-pop-r{background:var(--grad-main)!important;text-shadow:none!important}
+.ey-pop-b button{text-align:center}
+#dictChip .dcb{text-shadow:0 1px 2px rgba(0,0,0,.45)}
+::placeholder{color:var(--ink-faint)!important;opacity:1!important}
+</style>
+<script id="yaiReadableJs">
+(function () {
+  'use strict';
+  if (window.__yaiReadable) return; window.__yaiReadable = 1;
+  const root = document.documentElement;
+  const isLight = () => root.getAttribute('data-theme') === 'light';
+
+  /* ---------- colour helpers ---------- */
+  const cv = document.createElement('canvas'); cv.width = cv.height = 1;
+  const cx = cv.getContext('2d', { willReadFrequently: true });
+  const pc = new Map();
+  function parse(s) {                       // any CSS colour -> [r,g,b,a]  (a: 0..1)
+    if (!s) return null; s = String(s).trim(); if (pc.has(s)) return pc.get(s);
+    let out = null;
+    if (s === 'transparent') out = [0, 0, 0, 0];
+    else if (cx) {
+      cx.fillStyle = '#010203'; cx.fillStyle = s;
+      const ok = cx.fillStyle !== '#010203' || /^#010203$/i.test(s);
+      if (ok) { cx.clearRect(0, 0, 1, 1); cx.fillRect(0, 0, 1, 1); const d = cx.getImageData(0, 0, 1, 1).data; out = [d[0], d[1], d[2], d[3] / 255]; }
+    }
+    if (pc.size > 3000) pc.clear(); pc.set(s, out); return out;
+  }
+  const lin = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); };
+  const lum = c => .2126 * lin(c[0]) + .7152 * lin(c[1]) + .0722 * lin(c[2]);
+  const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+  const over = (f, b) => { const a = f[3] == null ? 1 : f[3]; return [f[0] * a + b[0] * (1 - a), f[1] * a + b[1] * (1 - a), f[2] * a + b[2] * (1 - a), 1]; };
+  const hex = c => '#' + [0, 1, 2].map(i => Math.max(0, Math.min(255, Math.round(c[i]))).toString(16).padStart(2, '0')).join('');
+  function toHsl(c) { const r = c[0] / 255, g = c[1] / 255, b = c[2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2; let h = 0, s = 0; if (mx !== mn) { const d = mx - mn; s = l > .5 ? d / (2 - mx - mn) : d / (mx + mn); h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; } return [h, s, l]; }
+  function fromHsl(h, s, l) { const f = n => { const k = (n + h / 30) % 12, a = s * Math.min(l, 1 - l); return 255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))); }; return [f(0), f(8), f(4), 1]; }
+  const DARK = [11, 12, 20, 1], LIGHT = [255, 255, 255, 1];
+
+  /* ---------- background of an element (worst-case lightest + darkest samples) ---------- */
+  const COLRE = /(rgba?\([^()]*\)|hsla?\([^()]*\)|color\([^()]*\)|(?:oklab|oklch|lab|lch)\([^()]*\)|#[0-9a-f]{3,8}\b)/gi;
+  let memo = new Map();
+  function baseBg() { const v = parse(getComputedStyle(root).getPropertyValue('--bg')); return v && v[3] > .9 ? v : (isLight() ? [240, 238, 232, 1] : [10, 9, 22, 1]); }
+  function bgOf(n) {
+    if (!n) { const b = baseBg(); return [b, b]; }
+    if (memo.has(n)) return memo.get(n);
+    const up = bgOf(n.parentElement), cs = getComputedStyle(n);
+    let lo = up[0], hi = up[1];
+    if (cs.backgroundClip !== 'text' && cs.webkitBackgroundClip !== 'text') {
+      const bc = parse(cs.backgroundColor), bi = cs.backgroundImage;
+      const stops = bi && bi.indexOf('gradient') > -1 ? (bi.match(COLRE) || []).map(parse).filter(Boolean) : [];
+      const cand = [];
+      [lo, hi].forEach(u => { const base = bc && bc[3] > 0 ? over(bc, u) : u; cand.push(base); stops.forEach(s => cand.push(over(s, base))); });
+      cand.sort((a, b) => lum(a) - lum(b)); lo = cand[0]; hi = cand[cand.length - 1];
+    }
+    const r = [lo, hi]; memo.set(n, r); return r;
+  }
+  const opacityOf = n => { let o = 1; for (; n && n.nodeType === 1; n = n.parentElement) { const v = parseFloat(getComputedStyle(n).opacity); if (!isNaN(v)) o *= v; } return o; };
+
+  /* ---------- contrast of a text colour over the worst background ---------- */
+  function worst(tc, bg, op) { let m = 99; bg.forEach(b => { const t = over([tc[0], tc[1], tc[2], (tc[3] == null ? 1 : tc[3]) * op], b); m = Math.min(m, ratio(t, b)); }); return m; }
+
+  function fixColor(tc, bg, need, op) {
+    const [h, s, l] = toHsl(tc);
+    const cw = worst(LIGHT, bg, op), cd = worst(DARK, bg, op), goDark = cd >= cw;
+    if (s > .18) {                          // coloured text: keep the hue, only move the lightness
+      for (let i = 1; i <= 24; i++) { const L = goDark ? Math.max(.06, l - i * .04) : Math.min(.97, l + i * .04); const c = fromHsl(h, s, L); if (worst(c, bg, op) >= need) return c; }
+    }
+    const best = goDark ? DARK : LIGHT, bw = goDark ? cd : cw;
+    return bw >= need ? best : null;
+  }
+
+  /* ---------- scan ---------- */
+  const SKIP = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, OPTION: 1, OPTGROUP: 1, CANVAS: 1, SVG: 1, VIDEO: 1, IMG: 1, HEAD: 1, META: 1, LINK: 1, TITLE: 1, TEMPLATE: 1 };
+  const saved = new WeakMap(); let touched = new Set(); let muted = false, running = false, timer = 0, trailTimer = 0;
+  function restoreAll() {
+    touched.forEach(el => {
+      const o = saved.get(el); if (!o) return;
+      ['color', 'background-image', 'background-color'].forEach(p => {
+        const mine = o.mine[p]; if (mine == null) return;
+        if (el.style.getPropertyValue(p) === mine && el.style.getPropertyPriority(p) === 'important') {
+          if (o.orig[p] != null && o.orig[p] !== '') el.style.setProperty(p, o.orig[p], o.prio[p] || ''); else el.style.removeProperty(p);
+        }
+      });
+      saved.delete(el); el.removeAttribute('data-rg');
+    });
+    touched = new Set();
+  }
+  function put(el, p, v) {
+    let o = saved.get(el); if (!o) { o = { orig: {}, prio: {}, mine: {} }; saved.set(el, o); }
+    if (!(p in o.orig)) { o.orig[p] = el.style.getPropertyValue(p); o.prio[p] = el.style.getPropertyPriority(p); }
+    el.style.setProperty(p, v, 'important'); o.mine[p] = el.style.getPropertyValue(p); touched.add(el); el.setAttribute('data-rg', '1');
+  }
+  function textual(el) { for (let c = el.firstChild; c; c = c.nextSibling) if (c.nodeType === 3 && /\S/.test(c.nodeValue)) return true; return false; }
+  const isField = el => el.tagName === 'INPUT' ? !/^(checkbox|radio|range|file|color|hidden|image|button|submit|reset)$/i.test(el.type) : (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT');
+
+  function scan() {
+    if (running) return; running = true; muted = true;
+    try {
+      restoreAll(); memo = new Map();
+      const jobs = [], tw = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT, {
+        acceptNode(n) {
+          if (SKIP[n.tagName.toUpperCase()] || n.closest && n.closest('svg')) return NodeFilter.FILTER_REJECT;
+          const cs = getComputedStyle(n); if (cs.display === 'none') return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      });
+      for (let n = tw.nextNode(); n; n = tw.nextNode()) {
+        if (!(textual(n) || isField(n))) continue;
+        const cs = getComputedStyle(n);
+        if (cs.visibility === 'hidden' || cs.backgroundClip === 'text' || cs.webkitBackgroundClip === 'text') continue;
+        if (/transparent|rgba\(\s*0,\s*0,\s*0,\s*0\)/.test(cs.webkitTextFillColor || '') && (cs.webkitTextFillColor || '') !== cs.color) continue;
+        const r = n.getBoundingClientRect(); if (r.width < 2 || r.height < 2) continue;
+        const tc = parse(cs.color); if (!tc || tc[3] === 0) continue;
+        const op = opacityOf(n); if (op < .05) continue;
+        const bg = bgOf(n);
+        const fs = parseFloat(cs.fontSize) || 14, bold = (parseInt(cs.fontWeight, 10) || 400) >= 700;
+        const need = (fs >= 24 || (fs >= 18.66 && bold)) ? 3.5 : 4.5;
+        const have = worst(tc, bg, op);
+        if (have >= need) continue;
+        jobs.push({ n, tc, bg, op, need, cs, hasOwnBg: (parse(cs.backgroundColor) || [0, 0, 0, 0])[3] > 0 || cs.backgroundImage.indexOf('gradient') > -1 });
+      }
+      jobs.forEach(j => {
+        let c = fixColor(j.tc, j.bg, j.need, j.op);
+        if (c) { put(j.n, 'color', hex(c)); return; }
+        if (j.hasOwnBg) {                     // fill and text cannot meet as-is: keep the gradient look, shift each fill colour until the text reads (>= 4.8)
+          const bi = j.cs.backgroundImage, raw = bi.indexOf('gradient') > -1 ? (bi.match(COLRE) || []).map(parse).filter(Boolean) : [];
+          const under = bgOf(j.n.parentElement), ends = (raw.length ? raw : [parse(j.cs.backgroundColor)]).map(c => over(c, under[0]));
+          const sc = ends.reduce((a, e) => [a[0] + e[0], a[1] + e[1], a[2] + e[2]], [0, 0, 0]).map(v => v / ends.length).concat(1);
+          const useDark = ratio(DARK, sc) >= ratio(LIGHT, sc), txt = useDark ? DARK : LIGHT;
+          const adj = e => { let [h, s, l] = toHsl(e), f = e; for (let i = 0; i < 30 && ratio(txt, f) < 4.8; i++) { l = useDark ? Math.min(.97, l + .03) : Math.max(.04, l - .03); f = fromHsl(h, s, l); } return hex(f); };
+          const fixed = ends.map(adj);
+          put(j.n, 'background-image', fixed.length > 1 ? 'linear-gradient(135deg,' + fixed.join(',') + ')' : 'none');
+          if (fixed.length < 2) put(j.n, 'background-color', fixed[0]);
+          put(j.n, 'color', hex(txt));
+        } else { put(j.n, 'color', hex(ratio(DARK, j.bg[0]) + ratio(DARK, j.bg[1]) >= ratio(LIGHT, j.bg[0]) + ratio(LIGHT, j.bg[1]) ? DARK : LIGHT)); }
+      });
+      window.__yaiReadableFixed = jobs.length;
+    } catch (e) { try { console.warn('readable guard', e); } catch (_) {} }
+    muted = false; running = false;
+    try { mo.takeRecords(); } catch (e) {}
+  }
+  function schedule(ms) {
+    clearTimeout(timer); timer = setTimeout(() => (window.requestIdleCallback ? requestIdleCallback(scan, { timeout: 400 }) : scan()), ms == null ? 120 : ms);
+    clearTimeout(trailTimer); trailTimer = setTimeout(() => scan(), 900);   // again after colour transitions finish
+  }
+  const mo = new MutationObserver(() => { if (!muted) { watchPopups(); schedule(); } });
+
+  /* ---------- a different palette for every popup ---------- */
+  const POP = '.modal-backdrop,.ey-pop,.yq-ov,#dictOv,.gen-pop,#moodPop,#dictChip';
+  const vis = new WeakMap();
+  let bag = [], lastPop = -1;
+  function nextIdx() {
+    const N = (window.QUIZ_PALETTES || QUIZ_PALETTES).length;
+    if (!bag.length) { bag = Array.from({ length: N }, (_, i) => i); for (let i = N - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; } if (bag[bag.length - 1] === lastPop) bag.unshift(bag.pop()); }
+    return (lastPop = bag.pop());
+  }
+  function palVars(p) {
+    const light = isLight(), mx = (c, k) => light ? `color-mix(in srgb, ${c} ${k}%, #14151c)` : c;
+    const a = mx(p.accent, 68), t = mx(p.teal, 68), pa = parse(p.accent) || [128, 128, 255, 1], pt = parse(p.teal) || pa;
+    // text on the accent→teal fill: pick whichever of white / near-black is readable on BOTH ends (light theme fills are darkened, so white)
+    const ends = light ? [[0, 0, 0, 1]] : [pa, pt];
+    const onG = Math.min(...ends.map(e => ratio(DARK, e))) >= Math.min(...ends.map(e => ratio(LIGHT, e))) ? '#0b0c14' : '#ffffff';
+    const v = { '--accent': a, '--accent-dim': `color-mix(in srgb, ${a} 70%, #000)`, '--teal': t, '--coral': mx(p.coral, 72), '--grad-main': `linear-gradient(135deg, ${a}, ${t})`, '--on-grad': light ? '#ffffff' : onG, '--glow': p.g1 };
+    if (!light) Object.assign(v, { '--bg': p.bg, '--panel': p.panel, '--panel-raised': p.panelR, '--line': p.line, '--line-soft': `color-mix(in srgb, ${p.line} 55%, ${p.bg})` });
+    return v;
+  }
+  function paintPopup(ov) {
+    const p = (window.QUIZ_PALETTES || QUIZ_PALETTES)[nextIdx()], v = palVars(p);
+    Object.keys(v).forEach(k => ov.style.setProperty(k, v[k]));
+    if (ov.id === 'dictOv' || ov.id === 'dictChip') {
+      const L = isLight();
+      ov.style.setProperty('--da', L ? v['--accent'] : p.accent);
+      if (!L) { ov.style.setProperty('--dp', p.bg); ov.style.setProperty('--dr', p.panel); ov.style.setProperty('--dl', p.line); ov.style.setProperty('--dll', `color-mix(in srgb, ${p.line} 60%, ${p.bg})`); ov.style.setProperty('--di', '#f2f4ff'); ov.style.setProperty('--dd', '#c7cce9'); ov.style.setProperty('--df', '#a3aad2'); }
+    }
+  }
+  function shown(el) {
+    const cs = getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+    if (el.id === 'dictOv' && !el.classList.contains('show')) return false;
+    if (el.id === 'moodPop' && !el.classList.contains('open')) return false;
+    return parseFloat(cs.opacity) > .05 || el.id === 'dictOv';
+  }
+  function watchPopups() {
+    let changed = false;
+    document.querySelectorAll(POP).forEach(el => {
+      const now = shown(el), was = vis.get(el) || false;
+      if (now && !was) { try { paintPopup(el); changed = true; } catch (e) {} }
+      vis.set(el, now);
+    });
+    if (changed) schedule(30);
+  }
+  /* the home chooser / any popup built later is picked up by the observer; theme switch re-audits everything */
+  mo.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class', 'style', 'hidden', 'data-theme', 'value', 'disabled'] });
+  new MutationObserver(() => schedule(30)).observe(root, { attributes: true, attributeFilter: ['data-theme', 'style'] });
+  window.addEventListener('resize', () => schedule(200));
+  document.addEventListener('input', () => schedule(200), true);
+  document.addEventListener('click', () => schedule(60), true);
+  window.addEventListener('load', () => schedule(200));
+  watchPopups(); schedule(300);
+  window.yaiAuditContrast = () => { scan(); return window.__yaiReadableFixed; };   // console: yaiAuditContrast() -> how many texts had to be fixed on this screen
 })();
 </script>
 </body>
