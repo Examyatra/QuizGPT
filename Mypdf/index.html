@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.4.103">
+<meta name="app-version" content="1.4.108">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -897,7 +897,7 @@ let DK=false;
 /* v1.4.53 dark-PDF look: soft charcoal page (not pure black) + soft white text, mid-tones lifted a little so thin text keeps its weight */
 const DKBG="#141414",DK_LO=20,DK_HI=253,DK_G=.82;   /* v1.4.84: text white 248 -> 253 (crisper) */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],PL=window.PDFLib;
-const LOW=(navigator.deviceMemory||4)<=2,ZMAX=LOW?3:3.5,MAXPX=LOW?1.2e6:5e6,INKPX=LOW?1.2e6:7.5e6,DPR=Math.min(devicePixelRatio||1,LOW?1:3);   /* v1.4.46: sharper canvas — the page and the ink are drawn at up to 5 Mpx (was 3 Mpx), so they are no longer stretched on iPad */
+const LOW=(navigator.deviceMemory||4)<=2,ZMAX=LOW?3:4,MAXPX=LOW?1.2e6:5e6,INKPX=LOW?1.2e6:7.5e6,DPR=Math.min(devicePixelRatio||1,LOW?1:3);   /* v1.4.46: sharper canvas — the page and the ink are drawn at up to 5 Mpx (was 3 Mpx), so they are no longer stretched on iPad */
 let pdf,file,url,name="",docId=null,zoom=LOW?1:1.2,tool="pen",previousTool="lasso",color="#e11d48",W=3,SW=3,HW=12,   /* v1.4.84: W = pen size, SW = shape size (line / arrow / rectangle / oval) — independent */penOnly=(()=>{try{return localStorage.getItem("pa_penonly")!=="0"}catch(e){return true}})(),curPage=0;
 let ina,anns={},sizes=[],hist=[],redo=[],timer,vis=new Set(),q=Promise.resolve();
 const COL=["#e11d48","#2563eb","#16a34a","#f59e0b","#111111","#ffffff"];
@@ -962,7 +962,7 @@ function cropDone(){if(!CROP)return;const C=CROP,o=C.o,R=C.R,F=C.F,i=C.i;snap(i)
   if(cr.every(v=>v<.0005))delete o.cr;else o.cr=cr;
   o.x=R.x0;o.y=R.y0;o.w=R.x1-R.x0;o.h=R.y1-R.y0;CROP=null;$("#cbar").hidden=true;draw(i);change();st("✂ Cropped")}
 function cropCancel(){if(!CROP)return;const i=CROP.i;CROP=null;$("#cbar").hidden=true;draw(i)}
-/* ===== v1.4.103 — image editing like GoodNotes: after inserting (or tapping an image with the Select tool) the image shows
+/* ===== v1.4.100 — image editing like GoodNotes: after inserting (or tapping an image with the Select tool) the image shows
    corner handles (drag = resize, keeps the shape), a crop button, a delete button and a centre bar (drag = move). Tap outside = done. ===== */
 function imgGeo(o){const z=zoom,x0=o.x,y0=o.y,x1=o.x+o.w,y1=o.y+o.h,cx=(x0+x1)/2,cy=(y0+y1)/2,by=y0-30/z>2?y0-30/z:y0+30/z;
   return{h:11/z,R:15/z,x0,y0,x1,y1,cx,cy,gw:Math.min(56/z,o.w*.7),gh:Math.min(22/z,o.h*.5),crop:[cx-22/z,by],del:[cx+22/z,by],corners:{nw:[x0,y0],ne:[x1,y0],sw:[x0,y1],se:[x1,y1]}}}
@@ -1159,22 +1159,29 @@ function armPanelTimer(){clearTimeout(panelTimer);if(panelOpen&&AUTOHIDE.has(pan
 ["pointerdown","pointermove","wheel","keydown","input"].forEach(ev=>document.addEventListener(ev,e=>{
   if(!panelOpen||!AUTOHIDE.has(panelOpen))return;const t=e.target;
   if(t&&t.closest&&t.closest(".fpanel"))armPanelTimer();
-  else if(ev=="pointerdown"&&t&&t.closest&&t.closest(".pg"))closeAllPanels()},true));
+  else if(ev=="pointerdown"&&t&&t.closest&&t.closest(".pg,#doc")&&!t.closest("[data-t],#shpb,#mor,#bar"))closeAllPanels()},true));   /* v1.4.105: any touch of the notebook (page or its margin) with Pencil, finger or mouse closes the open settings; the tool button\u0027s own corner re-tap also closes them */
 
 const TOOL_PANEL={pen:"pen-panel",hl:"hl-panel",er:"er-panel",stamp:"st-panel",line:"shape-panel",arrow:"shape-panel",rect:"shape-panel",oval:"shape-panel",text:"text-panel",note:"text-panel",sel:"sel-panel",laser:"lz-panel",spk:"spk-panel"};
 // Tool button click → open relevant panel OR toggle off
-$$("[data-t]").forEach(b=>b.onclick=function(){
+/* v1.4.104 — settings corner (like Photoshop / Procreate tool buttons): tapping the tool itself only SELECTS it with its last settings (no popup);
+   the small triangle in the bottom-right corner of the button opens that tool's settings. Tools inside the More / Shapes popups behave as before. */
+$$("#tstrip .ibtn[data-t]").forEach(b=>{if(TOOL_PANEL[b.dataset.t])b.classList.add("hasset")});
+$$("[data-t]").forEach(b=>b.onclick=function(ev){
   const t=this.dataset.t;
+  let corner=false;try{if(ev&&ev.clientX){const r=this.getBoundingClientRect();corner=ev.clientX>r.left+r.width*.56&&ev.clientY>r.top+r.height*.5}}catch(e){}
   const wasOn=tool===t&&!this.classList.contains("panel-just-closed");
   if(tool!==t)previousTool=tool;tool=t;
   $$("[data-t]").forEach(x=>x.classList.toggle("on",x===this));
   if(t!="lasso"&&selObjs.length)clearSel();if(CROP)cropCancel();if(t!="sel"&&IMS){const j=IMS.i;IMS=null;draw(j)}if(selT&&t!="text"&&t!="note"&&t!="sel"&&t!="spk")selTSet(null,selT.i);$$(".pg").forEach(p=>draw(+p.dataset.i));
   // Panel logic: every tool that has settings opens its own popover under the tool; tap again to close
   const pid=TOOL_PANEL[t];
-  if(pid){if(panelFor===t&&panelOpen===pid)closeAllPanels();else{openPanel(pid,this);panelFor=t;if(window.onPanelOpen)onPanelOpen(t)}}
+  if(pid){if(this.classList.contains("hasset")&&!corner){if(panelOpen)closeAllPanels();try{if(!localStorage.getItem("pa_hint_set")){localStorage.setItem("pa_hint_set","1");st("◢ Tap the small corner of a tool to open its settings")}}catch(e){}}
+    else if(panelFor===t&&panelOpen===pid)closeAllPanels();else{openPanel(pid,this);panelFor=t;if(window.onPanelOpen)onPanelOpen(t)}}
   else closeAllPanels();
 });
 
+/* settings-corner triangle */
+(()=>{const st_=document.createElement("style");st_.textContent=".ibtn.hasset{position:relative}.ibtn.hasset::after{content:\"\";position:absolute;right:4px;bottom:4px;width:0;height:0;border-style:solid;border-width:0 0 9px 9px;border-color:transparent transparent currentColor transparent;opacity:.8;pointer-events:none;border-bottom-right-radius:2px}";document.head.appendChild(st_)})();
 /* Goodnotes-style one-shot tool behavior: writing tools stay active; insertion tools return to Lasso. */
 function autoReturnToTool(t="lasso"){tool=t;if(t!="sel")IMS=null;$$('[data-t]').forEach(b=>b.classList.toggle("on",b.dataset.t===t));closeAllPanels();if(selT)showTbar();else lbar();$$(".pg").forEach(p=>draw(+p.dataset.i));}
 function autoReturnToLasso(){autoReturnToTool("lasso");}
@@ -1381,7 +1388,7 @@ function syncViewerTop(){const b=$("#bar");if(b&&!b.hidden)document.documentElem
 addEventListener("resize",syncViewerTop,{passive:true});
 function homeTab(t){$$("#hside [data-ht]").forEach(b=>b.classList.toggle("on",b.dataset.ht===t));$("#hp-nb").hidden=t!=="nb";$("#hp-bk").hidden=t!=="bk";$("#hp-tools").hidden=t!=="tools";$("#open").hidden=t!=="nb";$("#mkpdf").hidden=t!=="nb";const m=$("#hmain");if(m)m.scrollTop=0}
 function fsEnter(){try{const e=document.documentElement,f=e.requestFullscreen||e.webkitRequestFullscreen;if(f&&!document.fullscreenElement&&!document.webkitFullscreenElement){const r=f.call(e);if(r&&r.catch)r.catch(()=>{})}}catch(x){}}
-/* v1.4.103 — full screen as soon as a notebook is open. Some paths (file picker, slow open) lose the tap that browsers require for full screen,
+/* v1.4.102 — full screen as soon as a notebook is open. Some paths (file picker, slow open) lose the tap that browsers require for full screen,
    so the first Pencil / finger tap on the page tries once more (once per notebook; never when installed as an app, where iOS has no full-screen API). */
 let fsTry=0;const isApp=()=>{try{return matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||navigator.standalone}catch(e){return false}};
 document.addEventListener("pointerup",()=>{if(fsTry||!pdf||isApp()||document.fullscreenElement||document.webkitFullscreenElement)return;const d=document.getElementById("doc");if(!d||d.hidden)return;fsTry=1;fsEnter()},{capture:true,passive:true});
@@ -1486,7 +1493,7 @@ async function draw1(i){
   /* v1.4.47: smooth zoom — the new page is drawn on hidden canvases while the old picture stays on screen (just stretched);
      the two are swapped in one step, so the page never goes blank/white/black between zoom levels. */
   const c=document.createElement("canvas"),ink=document.createElement("canvas");c.width=vp.width;c.height=vp.height;
-  /* v1.4.103: the ink layer has its own (higher) pixel budget. Zoomed in, the page was capped at 5 Mpx and the handwriting was stretched (soft edges); now the ink stays sharp up to 7.5 Mpx (same size as the page whenever the page is not capped) */
+  /* v1.4.99: the ink layer has its own (higher) pixel budget. Zoomed in, the page was capped at 5 Mpx and the handwriting was stretched (soft edges); now the ink stays sharp up to 7.5 Mpx (same size as the page whenever the page is not capped) */
   {const ki=Math.max(k,Math.min(zoom*DPR,Math.sqrt(INKPX/(v1.width*v1.height))));ink.width=Math.max(1,Math.round(v1.width*ki));ink.height=Math.max(1,Math.round(v1.height*ki));
     try{if(!ink.getContext("2d")){ink.width=c.width;ink.height=c.height}}catch(e){ink.width=c.width;ink.height=c.height}}   /* out of canvas memory: fall back to the page size */
   ink.style.touchAction=penOnly?"pan-x pan-y":"none";bind(ink,p,i);
@@ -1502,7 +1509,7 @@ var PC=new WeakMap(),LIVEO=null;
 function penPts(o){const P=o.p,n=P.length,k0=P[0],k1=P[n-1],ch=PC.get(o);
   if(ch&&ch.n==n&&ch.a==k0[0]+","+k0[1]&&ch.b==k1[0]+","+k1[1])return ch.s;
   const hasP=k0.length>2,out=new Array(n);let sp=1;
-  if(o.sm){let pm=1;for(let j=0;j<n;j++){let m=P[j][2];if(m==null||!isFinite(m))m=pm;pm=m;out[j]=[P[j][0],P[j][1],m]}   /* v1.4.103: frozen stroke - the points ARE the finished line (no second smoothing / width pass), so it looks exactly like it did while writing */
+  if(o.sm){let pm=1;for(let j=0;j<n;j++){let m=P[j][2];if(m==null||!isFinite(m))m=pm;pm=m;out[j]=[P[j][0],P[j][1],m]}   /* v1.4.99: frozen stroke - the points ARE the finished line (no second smoothing / width pass), so it looks exactly like it did while writing */
     PC.set(o,{n,a:k0[0]+","+k0[1],b:k1[0]+","+k1[1],s:out});return out}
   for(let j=0;j<n;j++){let m;
     if(hasP)m=P[j][2]||1;
@@ -1519,7 +1526,7 @@ function penDraw(c,o,raw){
   const pt=o.pt||"ball",S=penPts(o),n=S.length,col=raw?o.c:dc(o.c),live=o===LIVEO,W0=o.w;
   c.lineCap=c.lineJoin="round";c.strokeStyle=c.fillStyle=col;c.globalAlpha=1;
   if(pt=="brush"){
-    const L=Math.max(2,Math.min(9,Math.floor(n/3))),wd=S.map((q,j)=>{let t=1;if(j<L)t=.22+.78*(j/L);if(j>n-1-L)t=Math.min(t,.1+.9*((n-1-j)/L));   /* v1.4.103: same tip while writing and after lifting (was lift-only -> size jump) */
+    const L=Math.max(2,Math.min(9,Math.floor(n/3))),wd=S.map((q,j)=>{let t=1;if(j<L)t=.22+.78*(j/L);if(j>n-1-L)t=Math.min(t,.1+.9*((n-1-j)/L));   /* v1.4.99: same tip while writing and after lifting (was lift-only -> size jump) */
       return Math.max(.12*W0,W0*Math.max(.2,.3+(q[2]-.5)*1.5)*t)});
     const nx=[],ny=[];for(let j=0;j<n;j++){const a=S[Math.max(0,j-1)],b=S[Math.min(n-1,j+1)];let dx=b[0]-a[0],dy=b[1]-a[1];const d=Math.hypot(dx,dy);
       if(d<1e-6){dx=nx.length?-ny[j-1]:1;dy=nx.length?nx[j-1]:0}else{dx/=d;dy/=d}nx.push(-dy);ny.push(dx)}
@@ -1566,10 +1573,22 @@ let LC=null;const lcDrop=()=>{if(LC){try{LC.c.width=LC.c.height=0}catch(e){}LC=n
 function draw(i,live){
   const p=$(`.pg[data-i="${i}"]`);if(!p||!p.children[1])return;const ink=p.children[1],c=ink.getContext("2d"),k=ink.width/(sizes[i]||sizes[0]).w,L=anns[i]||[];
   L.forEach(o=>{if(o.t=="img"&&!IM[o.id])ldImg(o.id,()=>draw(i))});
-  if(live&&L.length>=6&&ink.width&&ink.height){
+  if(live&&(L.length>=6||ink.width*ink.height>2.5e6)&&ink.width&&ink.height){
     if(!(LC&&LC.ink===ink&&LC.i===i&&LC.n===L.length&&LC.w===ink.width&&LC.h===ink.height&&LC.z===zoom)){
       lcDrop();try{const b=document.createElement("canvas");b.width=ink.width;b.height=ink.height;const x=b.getContext("2d");extras(x,i,k);L.forEach(o=>paint(x,o,k));LC={c:b,ink,i,n:L.length,w:ink.width,h:ink.height,z:zoom}}catch(e){lcDrop()}}
-    if(LC){c.clearRect(0,0,ink.width,ink.height);c.drawImage(LC.c,0,0);LIVEO=live;try{paint(c,live,k)}finally{LIVEO=null}overlay(c,i,k);if(zwOn)zwDraw();return}
+    if(LC){
+      /* v1.4.107 — dirty rectangle: while writing, only the small box around the moving stroke (plus where it was one frame ago) is cleared, copied from the
+         cache and repainted. At 350-400 % zoom the ink canvas is millions of pixels; clearing and copying all of it every frame made writing feel heavy. */
+      let R=null;const pts=live.p;
+      if((tool=="pen"||tool=="hl")&&!CROP&&pts&&pts.length&&live.t!="img"&&live.t!="text"){
+        let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const q of pts){if(q[0]<x0)x0=q[0];if(q[0]>x1)x1=q[0];if(q[1]<y0)y0=q[1];if(q[1]>y1)y1=q[1]}
+        const pad=((live.w||4)*(live.t=="hl"?4:2.6)+(live.t=="arrow"?30:0)+2)*k+8,W_=ink.width,H_=ink.height;
+        const d=[Math.max(0,Math.floor(x0*k-pad)),Math.max(0,Math.floor(y0*k-pad)),Math.min(W_,Math.ceil(x1*k+pad)),Math.min(H_,Math.ceil(y1*k+pad))],pd=LC.d;LC.d=d;
+        if(pd&&isFinite(d[0]+d[1]+d[2]+d[3]))R=[Math.min(pd[0],d[0]),Math.min(pd[1],d[1]),Math.max(pd[2],d[2]),Math.max(pd[3],d[3])]}
+      else LC.d=null;
+      if(R&&R[2]>R[0]&&R[3]>R[1]){c.save();c.beginPath();c.rect(R[0],R[1],R[2]-R[0],R[3]-R[1]);c.clip();c.clearRect(R[0],R[1],R[2]-R[0],R[3]-R[1]);c.drawImage(LC.c,0,0);LIVEO=live;try{paint(c,live,k)}finally{LIVEO=null}overlay(c,i,k);c.restore()}
+      else{c.clearRect(0,0,ink.width,ink.height);c.drawImage(LC.c,0,0);LIVEO=live;try{paint(c,live,k)}finally{LIVEO=null}overlay(c,i,k)}
+      if(zwOn)zwDraw();return}
   }
   lcDrop();
   c.clearRect(0,0,ink.width,ink.height);extras(c,i,k);L.forEach(o=>paint(c,o,k));if(live){LIVEO=live;try{paint(c,live,k)}finally{LIVEO=null}}overlay(c,i,k);if(zwOn)zwDraw();
@@ -1698,7 +1717,7 @@ function bind(ink,p,i){
     if(tool=="lasso"){lassoUp(i);return}if(mv){const ch=mv.sn!==0;mv=null;draw(i);if(ch)change();return}
     if(cur){if(sn){const L=cur.p;if((cur.t==="line"||cur.t==="hl")&&L.length===2&&Math.hypot(L[0][0]-L[1][0],L[0][1]-L[1][1])<4)cur=sn.orig;sn=null}else if(autoLn&&(cur.t==="pen"||cur.t==="hl")){const r=autoStraight(cur);if(r)cur=r}if(cur.t=="pen"&&cur.p.length>2&&!cur.sm)freezePen(cur);else if((cur.t=="pen"||cur.t=="hl")&&cur.p.length>3)cur.p=rdp(cur.p,.05,true);snap(i);(anns[i]=anns[i]||[]).push(cur);cur=null;draw(i)}change();};
 }
-/* v1.4.103 — FREEZE ON LIFT. The line you see while writing is penPts(raw points): 2 smoothing passes + (for finger / mouse) a speed-based width.
+/* v1.4.99 — FREEZE ON LIFT. The line you see while writing is penPts(raw points): 2 smoothing passes + (for finger / mouse) a speed-based width.
    Before, lifting the Pencil simplified the RAW points first and then ran those passes again on the shorter list, so the shape, the thickness and
    (Brush) the tip length all changed the moment the Pencil left the glass. Now the finished smoothed points + widths are stored as they were drawn
    (o.sm=1) and are never smoothed again. Brush / Pencil keep every point (their tip length and grain depend on the point count). */
@@ -1975,7 +1994,9 @@ function setZoom(z,fx,fy){const d=$("#doc"),r=d.getBoundingClientRect();if(fx==n
   const ab=a&&a.getBoundingClientRect(),ax=ab?(fx-ab.left)/Math.max(1,ab.width):0,ay=ab?(fy-ab.top)/Math.max(1,ab.height):0,ai=a&&a.dataset.i;
   zoom=Math.max(.5,Math.min(ZMAX,z));$$(".pg").forEach(p=>{const i=+p.dataset.i;sz(p,i);if(vis.has(i)){delete p.dataset.z;render(i)}else free(i)});
   const n=ai!=null&&$(`.pg[data-i="${ai}"]`);if(n){const b=n.getBoundingClientRect();d.scrollLeft+=b.left+ax*b.width-fx;d.scrollTop+=b.top+ay*b.height-fy}}
-$("#zi").onclick=()=>setZoom(zoom+(zoom>=3?.5:.2));$("#zo").onclick=()=>setZoom(zoom-(zoom>3?.5:.2));
+/* v1.4.107 — gentle zoom steps: 0.2 below 300 %, then 25 % steps (300, 325, 350, 375, 400) — never a 50 % jump */
+const zStep=(z,d)=>d>0?(z<3-1e-6?Math.min(3,+(z+.2).toFixed(3)):Math.min(ZMAX,Math.floor(z*4+1e-6)/4+.25)):(z>3+1e-6?Math.max(3,Math.ceil(z*4-1e-6)/4-.25):+(z-.2).toFixed(3));
+$("#zi").onclick=()=>setZoom(zStep(zoom,1));$("#zo").onclick=()=>setZoom(zStep(zoom,-1));
 $("#doc").addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setZoom(zoom*(e.deltaY<0?1.12:1/1.12),e.clientX,e.clientY)}},{passive:false});
 
 /* ===== 2-finger pinch zoom (works while scrolling AND while writing) ===== */
@@ -2978,7 +2999,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.4.103",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.4.108",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
