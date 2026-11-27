@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- Exam Yatri website v2.0 (2026-11-13) -->
-<!-- Quiz GPT build: exam-fixed-74 (laptop-only volume +/- stack beside the speaker; per-question timer (resets to 0 on each new question, revisits continue their own time); result screen: total time + average time per question + time on each question in review) | previous: exam-fixed-73 (every quiz record now carries meta {file, range, createdAt, mode, exam, count, device, src}; shared/transferred quizzes keep the ORIGINAL date + PDF name + details on every device; old quizzes get meta backfilled) | previous: exam-fixed-72 (Durable saves: every quiz/text/practice-log is mirrored localStorage -> IndexedDB and auto-restored; received quiz is saved + verified before it starts (warning + backup file if the browser cannot store); resend never overwrites local progress; saved list shows timer, correct count, source device, attempt history) | previous: exam-fixed-71 (Receive popup: clean SVG icons for QR / Link / Code; link box accepts the full pasted link in any shape (https://…, encoded, with extra text, any domain), Paste button, Enter; 5-digit code also works in the Link box) | previous: exam-fixed-70 (audit: extra CSS guard so the keyboard ring can never show on phone/tablet) | previous: exam-fixed-69 (Laptop-only keyboard control: shortcuts + double-press-to-send + option highlight ring now run only on laptop/desktop; phones and tablets (Android/iPhone/iPad) never get them | previous: exam-fixed-68 (AI Mode prompt: asks for 2-3 relevant web images / labelled diagrams placed inside the matching sections (format unchanged) | previous: exam-fixed-67 (clean UI: removed the "Tap anywhere to start the music" text and the "Popup block hai" toast; blocked audio just starts on the student's next tap, silently | previous: exam-fixed-66 (FM: default = online FM when internet is on (last used station, else Vividh Bharati), offline Lo-fi when there is none; tab hidden -> FM only PAUSES (no teardown), tab back -> instant resume (<20 s away: same connection; longer: same audio element reconnects to live; 3+ min: released, direct reconnect of the exact stream, no station search); internet back -> failed FM retries | previous: exam-fixed-65 (full audit pass: no code changes beyond 62-64 (5 new palettes, short link pill + Copy, single reusable Google AI Mode tab, new explanation prompt); all scripts syntax-checked, no duplicate ids, tag counts balanced | previous: exam-fixed-64 (Google lookup: every [Google] tap reuses ONE named tab (window.open name, no noopener) instead of opening a new tab each time; popup-blocked toast; opener cleared; closed tab -> browser makes a new one | previous: exam-fixed-63 (QR share screen: short tidy link pill under the QR (host/…tail, never the full URL) with a Copy button beside it; tap the pill also copies; clipboard fallback; duplicate link icon button removed | previous: exam-fixed-62 (5 new palettes for site + quiz player: AMOLED black+gold, Synthwave neon, Pastel lilac night, Mocha sand, Arctic silver (11 -> 16 palettes; new glow layouts: diagonal + centered halo) | previous: exam-fixed-61 (Google lookup: [Google] chip button opens Google AI Mode directly (udm=50); new student prompt: Devanagari Hindi with English technical terms kept as-is (no bracket translations), fixed Ek line me + Matlab sections, 1-2 topic-fitting extra headings, 70-120 words total) | previous: exam-fixed-60 (retry audit: after the gateway itself failed (it already tried many AIs for up to 90 s) eyAsk retries only ONCE (was 5x), part-1 unreadable-reply re-ask 2x (was 3x), background auto-retries 3 (was 6)) | previous: exam-fixed-59 (8-unit limit now also checks the PDF page RANGE before extraction (same rule as images: more than 8 -> Exam Yatri off, Gemini on). Earlier: exam-fixed-58 (Exam Yatri limit: more than 8 extracted pages or more than 8 uploaded images -> Exam Yatri is greyed out and blocked (tap + Start), Gemini is auto-selected, a note explains why; Exam Yatri comes back automatically when the input shrinks to 8 or less, unless the student chose another site herself). Earlier: exam-fixed-57 (ALWAYS-SHOW-PAGE: one resolver for every mode (ChatGPT / Claude / Gemini / Exam Yatri API): evidence page -> segment page -> AI PG confirmed in notes -> content search of the notes -> AI PG -> notes page range; tolerant PG parsing ("PG 12", "**PG:** p.12", en-dash ranges); player shows Page N after the question mark in every mode). Earlier: exam-fixed-56 (Page number: Exam Yatri path no longer blanks the AI PG when evidence is not matched (last-resort keeps AI digits); player shows "Page N" after the question in every mode, also from srcPages). Earlier: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
+<!-- Quiz GPT build: exam-fixed-75 (Summary flow: Extract button split in two ("Extract text & create questions" = old flow, "Extract text & summarize it" = new); summary step 4 with Gemini/ChatGPT/Claude picker + Generate summary; bridge script v20 pastes the page-wise-summary prompt + text, sends it and then hides its own panel; saved texts menu got a 4th button "Summarize it") | previous: exam-fixed-74 (laptop-only volume +/- stack beside the speaker; per-question timer (resets to 0 on each new question, revisits continue their own time); result screen: total time + average time per question + time on each question in review) | previous: exam-fixed-73 (every quiz record now carries meta {file, range, createdAt, mode, exam, count, device, src}; shared/transferred quizzes keep the ORIGINAL date + PDF name + details on every device; old quizzes get meta backfilled) | previous: exam-fixed-72 (Durable saves: every quiz/text/practice-log is mirrored localStorage -> IndexedDB and auto-restored; received quiz is saved + verified before it starts (warning + backup file if the browser cannot store); resend never overwrites local progress; saved list shows timer, correct count, source device, attempt history) | previous: exam-fixed-71 (Receive popup: clean SVG icons for QR / Link / Code; link box accepts the full pasted link in any shape (https://…, encoded, with extra text, any domain), Paste button, Enter; 5-digit code also works in the Link box) | previous: exam-fixed-70 (audit: extra CSS guard so the keyboard ring can never show on phone/tablet) | previous: exam-fixed-69 (Laptop-only keyboard control: shortcuts + double-press-to-send + option highlight ring now run only on laptop/desktop; phones and tablets (Android/iPhone/iPad) never get them | previous: exam-fixed-68 (AI Mode prompt: asks for 2-3 relevant web images / labelled diagrams placed inside the matching sections (format unchanged) | previous: exam-fixed-67 (clean UI: removed the "Tap anywhere to start the music" text and the "Popup block hai" toast; blocked audio just starts on the student's next tap, silently | previous: exam-fixed-66 (FM: default = online FM when internet is on (last used station, else Vividh Bharati), offline Lo-fi when there is none; tab hidden -> FM only PAUSES (no teardown), tab back -> instant resume (<20 s away: same connection; longer: same audio element reconnects to live; 3+ min: released, direct reconnect of the exact stream, no station search); internet back -> failed FM retries | previous: exam-fixed-65 (full audit pass: no code changes beyond 62-64 (5 new palettes, short link pill + Copy, single reusable Google AI Mode tab, new explanation prompt); all scripts syntax-checked, no duplicate ids, tag counts balanced | previous: exam-fixed-64 (Google lookup: every [Google] tap reuses ONE named tab (window.open name, no noopener) instead of opening a new tab each time; popup-blocked toast; opener cleared; closed tab -> browser makes a new one | previous: exam-fixed-63 (QR share screen: short tidy link pill under the QR (host/…tail, never the full URL) with a Copy button beside it; tap the pill also copies; clipboard fallback; duplicate link icon button removed | previous: exam-fixed-62 (5 new palettes for site + quiz player: AMOLED black+gold, Synthwave neon, Pastel lilac night, Mocha sand, Arctic silver (11 -> 16 palettes; new glow layouts: diagonal + centered halo) | previous: exam-fixed-61 (Google lookup: [Google] chip button opens Google AI Mode directly (udm=50); new student prompt: Devanagari Hindi with English technical terms kept as-is (no bracket translations), fixed Ek line me + Matlab sections, 1-2 topic-fitting extra headings, 70-120 words total) | previous: exam-fixed-60 (retry audit: after the gateway itself failed (it already tried many AIs for up to 90 s) eyAsk retries only ONCE (was 5x), part-1 unreadable-reply re-ask 2x (was 3x), background auto-retries 3 (was 6)) | previous: exam-fixed-59 (8-unit limit now also checks the PDF page RANGE before extraction (same rule as images: more than 8 -> Exam Yatri off, Gemini on). Earlier: exam-fixed-58 (Exam Yatri limit: more than 8 extracted pages or more than 8 uploaded images -> Exam Yatri is greyed out and blocked (tap + Start), Gemini is auto-selected, a note explains why; Exam Yatri comes back automatically when the input shrinks to 8 or less, unless the student chose another site herself). Earlier: exam-fixed-57 (ALWAYS-SHOW-PAGE: one resolver for every mode (ChatGPT / Claude / Gemini / Exam Yatri API): evidence page -> segment page -> AI PG confirmed in notes -> content search of the notes -> AI PG -> notes page range; tolerant PG parsing ("PG 12", "**PG:** p.12", en-dash ranges); player shows Page N after the question mark in every mode). Earlier: exam-fixed-56 (Page number: Exam Yatri path no longer blanks the AI PG when evidence is not matched (last-resort keeps AI digits); player shows "Page N" after the question in every mode, also from srcPages). Earlier: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
 <html lang="en">
 <head>
 
@@ -1845,6 +1845,20 @@ header::after{background:linear-gradient(90deg,var(--accent),var(--teal),var(--c
 #methodCard .ai-row3 .site-pick.active{box-shadow:0 3px 10px color-mix(in srgb,var(--c) 22%,transparent)!important}
 #methodCard .mode-seg button.active,#methodCard .gen-btn.active{box-shadow:none!important}
 #methodCard .ey-main.active .ey-cur{background:rgba(255,255,255,.14)}
+
+/* ===== exam-fixed-75: split extract buttons + summary step 4 (same look as the quiz step 4) ===== */
+.extract-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.extract-split .btn-main{width:100%;margin-top:0;min-height:56px;padding:12px 16px;border-radius:12px;font-size:.95rem;font-weight:650;letter-spacing:.1px;line-height:1.25;text-align:left;justify-content:flex-start;gap:12px}
+.extract-split .btn-main .xi{flex:0 0 auto;opacity:.95}
+.extract-split .btn-main::after{display:none!important;animation:none!important}
+@media (max-width:560px){.extract-split{grid-template-columns:1fr;gap:10px}}
+body.flow-summary #methodCard,body.flow-summary #methodStepLabel{display:none!important}
+body:not(.flow-summary) #sumCard,body:not(.flow-summary) #sumStepLabel{display:none!important}
+#sumCard .btn-main{box-shadow:0 5px 14px color-mix(in srgb,var(--accent) 20%,transparent)!important}
+#sumCard .btn-main::after{display:none!important;animation:none!important}
+#sumCard .site-pick{box-shadow:0 2px 8px rgba(0,0,0,.2)!important}
+#sumCard .ai-row3 .site-pick.active{box-shadow:0 3px 10px color-mix(in srgb,var(--c) 22%,transparent)!important}
+#sumCard .sum-lang-row{margin-top:14px}
 </style>
 <style id="yaiMatte">
 /* ===== Matte pass: same layout, same buttons — only colour intensity, glow and gloss are toned down =====
@@ -2118,7 +2132,10 @@ body::before{opacity:.8}
       <div id="cloudOcrHint"></div>
     </div>
 
-    <button class="btn-main" id="extractBtn">🔍 <span id="extractBtnTxt">Extract text</span></button>
+    <div class="extract-split" id="extractSplit">
+      <button class="btn-main" id="extractSumBtn"><svg class="xi" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14M5 9h14M5 14h9M5 19h6"/></svg><span id="extractSumBtnTxt">Extract text &amp; summarize it</span></button>
+      <button class="btn-main" id="extractBtn"><svg class="xi" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.5a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1 .9-1 1.6M12 16.8h.01"/></svg><span id="extractBtnTxt">Extract text &amp; create questions</span></button>
+    </div>
 
     <div class="progress-wrap" id="progressWrap">
       <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
@@ -2233,6 +2250,26 @@ body::before{opacity:.8}
       <button class="btn-main ghost" id="eyStartRevBtn" style="display:none">▶️ <span data-i18n="eyStartBtn">Start Quiz</span></button>
       <div class="note" data-i18n="pasteNote">This copies the extracted text plus quiz instructions, then opens the chosen site in a new tab — press Ctrl+V (Cmd+V on Mac) there to paste. Browsers don't allow auto-pasting across sites, so this one manual step is required.</div>
     </div>
+  </div>
+
+  <div id="sumStepLabel" class="step-label" style="display:none;"><div class="num">4</div><span class="txt" data-i18n="step4sum">SUMMARISE THIS WITH AI</span></div>
+  <div class="card" id="sumCard" style="display:none;">
+    <div class="ai-picker">
+      <div class="site-pick-row ai-row3" id="sumAiBar">
+        <button type="button" class="site-pick sum-pick" style="--c:#4285f4" data-sum="gemini"><span class="dot" style="background:#4285f4"></span>Gemini</button>
+        <button type="button" class="site-pick sum-pick" style="--c:#10a37f" data-sum="chatgpt"><span class="dot" style="background:#10a37f"></span>ChatGPT</button>
+        <button type="button" class="site-pick sum-pick" style="--c:#d97757" data-sum="claude"><span class="dot" style="background:#d97757"></span>Claude</button>
+      </div>
+    </div>
+    <div class="row sum-lang-row">
+      <div class="field">
+        <label data-i18n="sumLangLabel">Summary language</label>
+        <input type="text" id="sumLanguage" value="Hindi + English mix" list="quizLangOptions" autocomplete="off" style="width:190px; padding:9px 11px; border-radius:8px; border:1px solid var(--line); background:var(--panel-raised); color:var(--ink); font-size:0.92rem; font-family:var(--sans);" placeholder="e.g. Hindi + English mix, English">
+      </div>
+    </div>
+    <button class="btn-main" id="sumGenBtn">✨ <span data-i18n="sumGenBtn">Generate summary</span></button>
+    <div class="result-actions" style="margin-top:12px;"><button class="btn-sm" id="sumToQuizBtn" type="button">\uD83C\uDFAF Make quiz from this text instead</button></div>
+    <div class="note" data-i18n="sumNote">The AI site opens and the auto-script pastes your extracted text with a page-wise summary prompt and sends it, then its panel disappears so you can read the summary. Come back to this tab when you are done.</div>
   </div>
 
   <div class="card" id="generatingCard" style="display:none;">
@@ -2357,6 +2394,10 @@ const I18N = {
     copyBtn: "Copy",
     downloadBtn: "Download .txt",
     step4label: "TURN THIS INTO A QUIZ",
+    step4sum: "SUMMARISE THIS WITH AI",
+    sumLangLabel: "Summary language",
+    sumGenBtn: "Generate summary",
+    sumNote: "The AI site opens and the auto-script pastes your extracted text with a page-wise summary prompt and sends it, then its panel disappears so you can read the summary. Come back to this tab when you are done.",
     methodAutoTitle: "Auto-generate",
     methodAutoDesc: "One click. The app calls an AI model directly and the quiz opens automatically.",
     methodAutoBadge: "FASTEST",
@@ -2478,6 +2519,10 @@ const I18N = {
     copyBtn: "कॉपी करें",
     downloadBtn: ".txt डाउनलोड करें",
     step4label: "इसे क्विज़ में बदलें",
+    step4sum: "AI से इसकी समरी बनवाएँ",
+    sumLangLabel: "समरी की भाषा",
+    sumGenBtn: "समरी बनाएँ",
+    sumNote: "AI साइट खुलेगी, ऑटो-स्क्रिप्ट आपका टेक्स्ट पेज-वाइज समरी प्रॉम्प्ट के साथ पेस्ट करके भेज देगी और अपना पैनल हटा लेगी, ताकि आप आराम से समरी पढ़ सकें। पढ़कर इसी टैब पर वापस आ जाएँ।",
     methodAutoTitle: "ऑटो-जनरेट करें",
     methodAutoDesc: "एक क्लिक में। ऐप सीधे AI मॉडल को कॉल करता है और क्विज़ अपने आप खुल जाता है।",
     methodAutoBadge: "सबसे तेज़",
@@ -2805,7 +2850,8 @@ function updateStep2Visibility() {
     imgRangeSection.style.display = 'none';
     document.getElementById('step2txt').textContent = 'OCR SETTINGS';
   }
-  document.getElementById('extractBtnTxt').textContent = uploadMode === 'img' ? 'Images se text nikalo' : 'Extract text';
+  document.getElementById('extractBtnTxt').textContent = (uploadMode === 'img' ? 'Images se text nikalo' : 'Extract text') + ' & create questions';
+  document.getElementById('extractSumBtnTxt').textContent = (uploadMode === 'img' ? 'Images se text nikalo' : 'Extract text') + ' & summarize it';
   try { syncCloudUi(); } catch (e) {}
 }
 
@@ -2952,7 +2998,19 @@ async function runExtraction() {
     showToast('Extraction fail: ' + (err && err.message ? err.message : err) + '\nInternet check karo aur dobara try karo.');
   } finally { extractBtn.disabled = false; }
 }
-extractBtn.addEventListener('click', runExtraction);
+/* ----- exam-fixed-75: two extract buttons. Same extraction; the button only decides which step 4 follows (quiz card or summary card). ----- */
+const extractSumBtn = document.getElementById('extractSumBtn');
+function setFlowMode(mode) { document.body.classList.toggle('flow-summary', mode === 'summary'); }
+extractBtn.addEventListener('click', () => { setFlowMode('quiz'); runExtraction(); });
+extractSumBtn.addEventListener('click', () => { if (extractBtn.disabled) return; setFlowMode('summary'); runExtraction(); });
+(function () {   // summary button follows the main button's disabled state; summary cards mirror the quiz step-4 cards' visibility
+  const sumCard = document.getElementById('sumCard'), sumLabel = document.getElementById('sumStepLabel');
+  new MutationObserver(() => { extractSumBtn.disabled = extractBtn.disabled; }).observe(extractBtn, { attributes: true, attributeFilter: ['disabled'] });
+  const mirror = () => { sumCard.style.display = methodCard.style.display; sumLabel.style.display = methodStepLabel.style.display; };
+  new MutationObserver(mirror).observe(methodCard, { attributes: true, attributeFilter: ['style'] });
+  new MutationObserver(mirror).observe(methodStepLabel, { attributes: true, attributeFilter: ['style'] });
+  mirror();
+})();
 
 /* ===== Image OCR pipeline (like top OCR sites): EXIF fix -> auto-rotate 0/90/180/270 -> deskew -> pad -> OCR -> retry with shadow-removal if confidence is low ===== */
 async function ocrLoadCanvas(file) {
@@ -6470,6 +6528,7 @@ const aiGenSub = document.getElementById('aiGenSub');
 let aiAbortController = null;
 
 function showGeneratingStep(numQ, modelLabel) {
+  setFlowMode('quiz');
   resultCard.style.display = 'none';
   resultStepLabel.style.display = 'none';
   methodCard.style.display = 'none';
@@ -7444,6 +7503,7 @@ document.getElementById('nqNewContentBtn').addEventListener('click', () => {
 });
 
 function startNewQuizSameContent() {
+  setFlowMode('quiz');
   saveQuizProgress(); stopQuizTimer(); quizFinished = true; resetPromptState();
   currentQuizId = null;
   closeQuizCard();
@@ -8726,9 +8786,10 @@ function saveExtractedText(from, to, text) {
   });
 })();
 
-function openSavedText(id) {
+function openSavedText(id, flow) {
   const list = loadSavedTexts(), rec = list.find(r => r.id === id);
   if (!rec) return;
+  setFlowMode(flow === 'summary' ? 'summary' : 'quiz');
   saveQuizProgress(); stopQuizTimer();
   if (aiAbortController) aiAbortController.abort();
   closeSavedQuizzesModal(); closeQuizCard();
@@ -8746,7 +8807,7 @@ function openSavedText(id) {
   resultCard.style.display = 'block'; resultStepLabel.style.display = 'flex';
   methodCard.style.display = 'block'; methodStepLabel.style.display = 'flex';
   showToast('\uD83D\uDCC4 ' + rec.name);
-  setTimeout(() => methodStepLabel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+  setTimeout(() => (flow === 'summary' ? document.getElementById('sumStepLabel') : methodStepLabel).scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
 }
 function renameSavedText(id) {
   const list = loadSavedTexts(), rec = list.find(r => r.id === id); if (!rec) return;
@@ -8774,12 +8835,13 @@ function renderSavedTexts() {
       </div>
       <div class="sq-actions">
         <button class="btn-sm primary" data-act="open">\uD83C\uDFAF Make quiz</button>
+        <button class="btn-sm" data-act="summarize">\uD83D\uDCDD Summarize it</button>
         <button class="btn-sm" data-act="rename">\u270F\uFE0F Rename</button>
         <button class="btn-sm" data-act="delete">Delete</button>
       </div>`;
     item.addEventListener('click', e => {
       const act = e.target.closest('[data-act]')?.dataset.act;
-      if (act === 'open') openSavedText(rec.id); else if (act === 'rename') renameSavedText(rec.id); else if (act === 'delete') deleteSavedText(rec.id);
+      if (act === 'open') openSavedText(rec.id); else if (act === 'summarize') openSavedText(rec.id, 'summary'); else if (act === 'rename') renameSavedText(rec.id); else if (act === 'delete') deleteSavedText(rec.id);
     });
     box.appendChild(item);
   });
@@ -8977,7 +9039,7 @@ showResultScreen = function () { _sr(); decorateResult(); };
 /* ===== Step palettes: each step/screen gets its own palette; it rotates every time that step is shown ===== */
 (function () {
   const first = document.querySelector('.container > .step-label'), root = document.documentElement, N = QUIZ_PALETTES.length;
-  const defs = [['s1', [first, first && first.nextElementSibling]], ['s2', ['rangeStepLabel', 'rangeCard']], ['s3', ['resultStepLabel', 'resultCard']], ['s4', ['methodStepLabel', 'methodCard']], ['gen', ['generatingCard']], ['paste', ['pasteCard']], ['res', ['resultScreenCard']]];
+  const defs = [['s1', [first, first && first.nextElementSibling]], ['s2', ['rangeStepLabel', 'rangeCard']], ['s3', ['resultStepLabel', 'resultCard']], ['s4', ['sumStepLabel', 'sumCard', 'methodStepLabel', 'methodCard']], ['gen', ['generatingCard']], ['paste', ['pasteCard']], ['res', ['resultScreenCard']]];
   let store = {}; try { store = JSON.parse(localStorage.yai_stepPal || '{}'); } catch (e) {}
   const cur = {}, vis = {}; let lastKey = null, lastIdx = -1;
   const lum = h => { const n = parseInt(h.slice(1), 16); const c = [n >> 16, (n >> 8) & 255, n & 255].map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; };
@@ -9532,7 +9594,7 @@ header{box-shadow:none!important}
 // ==UserScript==
 // @name         Quiz Auto Bridge
 // @namespace    quiz-auto-bridge
-// @version      4.0
+// @version      4.1
 // @description  Quiz app ke prompt parts AI site me auto-paste + auto-send. Persistent watcher: signup/consent/popup hone par bhi input box aane tak khud rukta hai.
 // @match        __APP_ORIGIN__/*
 // @match        https://gemini.google.com/*
@@ -9550,7 +9612,7 @@ header{box-shadow:none!important}
 (function () {
   'use strict';
   const APP_ORIGIN = '__APP_ORIGIN__';
-  const K_BUNDLE = 'qz_bundle', K_RESULT = 'qz_result', K_POS = 'qz_pos', K_MIN = 'qz_min', K_AT = 'qz_result_at', K_TAKEN = 'qz_result_taken', K_ALIVE = 'qz_app_alive', K_CLAIM = 'qz_claim', K_RUN = 'qz_run', BRIDGE_V = '19', TAB = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  const K_BUNDLE = 'qz_bundle', K_RESULT = 'qz_result', K_POS = 'qz_pos', K_MIN = 'qz_min', K_AT = 'qz_result_at', K_TAKEN = 'qz_result_taken', K_ALIVE = 'qz_app_alive', K_CLAIM = 'qz_claim', K_RUN = 'qz_run', BRIDGE_V = '20', TAB = Math.random().toString(36).slice(2) + Date.now().toString(36);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const buzz = ms => { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(ms); } catch (e) {} };
 
@@ -9881,7 +9943,7 @@ header{box-shadow:none!important}
         if (it.blink) { try { btnAnims.push(b.animate([{ boxShadow: '0 0 0 0 rgba(124,140,255,.9)' }, { boxShadow: '0 0 0 12px rgba(124,140,255,0)' }], { duration: 1000, iterations: Infinity })); } catch (e) {} }
       });
     }
-    return { setStep, setProgress, setButtons, attention, showClose: () => { closeB.style.display = ''; } };
+    return { setStep, setProgress, setButtons, attention, showClose: () => { closeB.style.display = ''; }, remove: () => { clearHighlight(); box.dataset.closed = '1'; box.remove(); } };
   }
 
   /* ---- DOM helpers ---- */
@@ -10682,6 +10744,7 @@ header{box-shadow:none!important}
     }
     const siteReady = await prepareSite(ui, bundle);
     if (!siteReady || stopped) return;
+    if (bundle.kind === 'summary') { await runSummary(bundle, ui); return; }
     for (let i = startI; i < P.length && !stopped && !fatal; i++) {
       const part = P[i], label = 'Part ' + (i + 1) + '/' + P.length;
       ui.setProgress(i, P.length); prog(i);
@@ -10812,6 +10875,44 @@ header{box-shadow:none!important}
     ui.showClose();
   }
 
+  /* ---- summary run: paste text + prompt, send, then remove the panel so the student can read the reply ---- */
+  async function runSummary(bundle, ui) {
+    const part = bundle.prompts[0];
+    toClipboard(part.text);   // fallback: Ctrl+V if auto-paste does not work
+    ui.setStep(1, '\u2460 Summary prompt paste ho raha hai...', 'Thoda ruko, abhi kuch mat dabao.');
+    const ok = await insertPrompt(part.text);
+    if (stopped) return;
+    if (!ok) {
+      highlight(first(INPUT_SEL));
+      ui.setStep(1, '\u26A0\uFE0F Input box nahi mila', 'Prompt clipboard me hai. Blinking box me tap karo \u2192 Paste \u2192 phir Send dabao.', { attention: true });
+      ui.showClose();
+      return;
+    }
+    inCountdown = true; skipWait = false;
+    const secs = Math.round(rnd(2, 4));
+    for (let c = secs; c > 0 && !stopped && !skipWait; c--) {
+      ui.setStep(2, '\u2461 ' + c + ' sec me Send hoga', 'Turant bhejna ho to "Send now", rokna ho to "Stop".');
+      await sleep(1000);
+    }
+    inCountdown = false;
+    if (stopped) return;
+    const sent = await clickSend();
+    let started = false;
+    if (sent) { for (let k = 0; k < 25 && !stopped && !started; k++) { started = isGenerating() || !sendEnabled(); if (!started) await sleep(1000); } }
+    if (stopped) return;
+    if (!started) {   // send click did not visibly work: keep the panel, point at Send, remove the panel only once the AI really starts
+      highlight(sendBtn() || first(INPUT_SEL));
+      ui.setStep(2, '\uD83D\uDC46 Send nahi hua', 'Blinking Send button dabao. Jawab shuru hote hi ye panel hat jayega.', { attention: true });
+      ui.showClose();
+      for (let k = 0; k < 240 && !stopped && !isGenerating(); k++) await sleep(1000);
+      if (stopped || !isGenerating()) return;
+    }
+    clearHighlight();
+    ui.setStep(3, '\u2705 Summary prompt bhej diya', 'Ab AI ka jawab padho. Ye panel abhi hat jayega.');
+    await sleep(1500);
+    ui.remove();
+  }
+
   /* ---- run ownership + crash recovery -------------------------------------------------
      claim  = which page owns this bundle (stops two AI tabs from both running it)
      run    = finished parts, saved after every part so a reload/redirect resumes instead of losing work */
@@ -10856,6 +10957,7 @@ header{box-shadow:none!important}
     // Sirf wahi AI site le bundle jo app ne khola tha
     const fam = h => /gemini/.test(h) ? 'gemini' : /claude/.test(h) ? 'claude' : /chatgpt|openai/.test(h) ? 'chatgpt' : h;
     if (bundle.site && fam(String(bundle.site)) !== SITE) return;
+    if (bundle.kind === 'summary' && Date.now() - bundle.ts > 20 * 60000) return;   // summary: opened-and-forgotten bundles must not fire into a later, unrelated chat
     // consumed = chat screen already reached once. Only an interrupted run (reload/redirect/crash within 10 min) may continue.
     const verdict = claimVerdict(bundle), key = bkey(bundle);
     if (verdict === 'skip' || (bundle.consumed && verdict !== 'resume')) return;
@@ -11967,6 +12069,92 @@ header{box-shadow:none!important}
     setTimeout(function () {
       try { document.querySelectorAll('.modal-backdrop.show').forEach(function (m) { m.classList.remove('show'); }); } catch (_) {}
     }, 150);
+  });
+})();
+</script>
+<script>
+/* ===== exam-fixed-75: summary step 4 (Gemini / ChatGPT / Claude -> Generate summary) ===== */
+(function () {
+  const SITES = { gemini: 'https://gemini.google.com/app', chatgpt: 'https://chatgpt.com/', claude: 'https://claude.ai/new' };
+  const NEED_V = 20;   // bridge script version that understands summary bundles
+  const bar = document.getElementById('sumAiBar'), langEl = document.getElementById('sumLanguage'), genBtn = document.getElementById('sumGenBtn');
+  let site = 'gemini'; try { const s = localStorage.getItem('yai_sum_ai'); if (SITES[s]) site = s; } catch (e) {}
+  function paint() { bar.querySelectorAll('.sum-pick').forEach(b => b.classList.toggle('active', b.dataset.sum === site)); }
+  bar.querySelectorAll('.sum-pick').forEach(b => b.addEventListener('click', () => { site = b.dataset.sum; try { localStorage.setItem('yai_sum_ai', site); } catch (e) {} paint(); }));
+  paint();
+  try { langEl.value = localStorage.getItem('yai_sum_lang') || 'Hindi + English mix'; } catch (e) {}
+  langEl.addEventListener('input', () => { try { localStorage.setItem('yai_sum_lang', langEl.value); } catch (e) {} });
+
+  function buildSummaryPrompt(text, lang) {
+    const mix = /hindi|hinglish/i.test(lang) && /english|mix|hinglish/i.test(lang);
+    const langRule = mix
+      ? '4. LANGUAGE = natural Hindi + English mix (like an Indian teacher explaining in class). Write the sentence structure and connecting words in Hindi (Devanagari): "का मतलब", "होता है", "में", "से", "को", "जब", "इसलिए", "कुल", "सीधे", "ले जाती हैं" etc. Keep every medical / scientific / technical term, name, drug, disease, organ, formula and unit in English exactly as in the book. Example of the exact style: "Cranial nerve palsy का मतलब brain से निकलने वाली किसी एक या ज़्यादा cranial nerves का कमजोर होना या काम करना बंद कर देना है।" and "Human body में कुल 12 pairs of cranial nerves होते हैं।" and "ये nerves सीधे brain से face, eyes, neck और throat तक signals ले जाती हैं।" Do not translate technical terms into Hindi and do not put English translations in brackets.'
+      : '4. Write everything in ' + lang + ', in simple, friendly words. Keep technical / subject terms as they are written in the book.';
+    return [
+      'You are a patient, expert teacher. I am a student who knows NOTHING about this subject. This is the first time I am reading this topic / book and I want your help to understand it quickly, without wasting my time.',
+      '',
+      'Below is the text extracted from my book / notes. It comes from OCR, so it may contain small spelling or formatting mistakes: silently correct them using common sense. The text is divided by markers like "--- Page 12 ---".',
+      '',
+      'TASK: Give me a PAGE-WISE SUMMARY. Go through the pages in the same order and write one summary block for EVERY page, in this shape:',
+      '',
+      '**Page <number>** - <short title: what this page is about>',
+      '- One or two opening lines: the main topic / concept of the page (definition first, if the page defines something).',
+      '- Then the bullet points. Use as many as the page needs (usually 4 to 9; a dense page needs more, a light page fewer). Each bullet is a clear sentence that explains an idea, not just a keyword. Where it really helps, add one small everyday example or analogy.',
+      '- Finish with "Remember:" and one line for the single most important takeaway (or a small memory trick if the page has a list).',
+      '',
+      'COVERAGE PROTOCOL (most important - do it silently for every page, do not print it):',
+      'A. Before writing a page, scan it and note EVERY distinct concept on it: headings and sub-headings, definitions, terms, causes, features, types / classifications, every item of every list, steps of a process, comparisons, exceptions, table rows, figure or box captions, formulas, and every number, cut-off, dose, year, name and unit.',
+      'B. Your summary of that page must contain ALL of them. If space is tight, compress by merging related items into one bullet, NEVER by dropping a concept. A concept that is missing from the summary is a failure.',
+      'C. Lists and tables: name every item (put them together in one compact bullet). Never replace a list with words like "several types" or "various causes". Keep numbers, names and values exact.',
+      'D. Follow the order of the page, so I can match my summary with the book page. If a sentence continues from the previous or onto the next page, cover it on the page where most of it appears and do not repeat it.',
+      'E. Before moving to the next page, silently check once: "did I miss any heading, list item, number or term of this page?" and add it if so.',
+      '',
+      'RULES:',
+      '1. BALANCE: not too long, not too short. A normal page summary takes about 1 minute to read (roughly 100 to 180 words); a very dense page may go up to about 220 words but must still stay quick to read. A first-time learner should understand the whole page and every concept on it from your summary alone.',
+      '2. Explain so that a complete beginner understands: clear cause and effect, no unexplained jargon, no assumed background. Use short, simple sentences.',
+      '3. Do not skip or merge pages. If a page has almost no text (cover, blank page, only a figure or table), say in one line what it contains. Do not copy sentences from the text; re-explain them. Do not add facts that are not in the text, except a short clarification needed to explain a term.',
+      langRule,
+      '5. Do not add source links, citations or reference numbers. Output only the page-wise summaries: no introduction, no closing remarks, no questions. If your reply is about to run out of space, stop cleanly at the end of a page and tell me the next page number so I can say "continue" (never shorten the remaining pages to fit).',
+      '',
+      'TEXT FROM THE BOOK:',
+      '',
+      text
+    ].join('\n');
+  }
+
+  document.getElementById('sumToQuizBtn').addEventListener('click', () => { setFlowMode('quiz'); setTimeout(() => methodStepLabel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); });
+  genBtn.addEventListener('click', async () => {
+    const text = String((resultText && resultText.value) || rawExtractedText || '').trim();
+    if (!text) { showToast('Pehle text extract karo'); return; }
+    if (genBtn.dataset.busy === '1') return;
+    genBtn.dataset.busy = '1'; setTimeout(() => { genBtn.dataset.busy = ''; }, 4000);   // one tap = one AI tab
+    const lang = (langEl.value || '').trim() || 'English', url = SITES[site];
+    const prompt = buildSummaryPrompt(text, lang);
+    let pg = 0; try { pg = countExtractedPages(text); } catch (e) {}
+    if (pg > 12 || prompt.length > 120000) showToast('Zyada pages hain (' + (pg || 'bahut') + '): AI ka reply beech me ruk sakta hai. Ruke to AI ko "continue" likh dena, ya page range chhoti rakho');
+    try { const w = JSON.parse(localStorage.getItem('yai_wait') || 'null'); if (w && w.ts && Date.now() - w.ts < 3600000 && !localStorage.getItem('yai_inbox')) showToast('Dhyan: ek quiz abhi AI se ban raha hai. Summary shuru karne se us quiz ka auto-import ruk sakta hai (AI panel se Copy answer karke paste kar sakte ho)'); } catch (e) {}
+    const bridgeV = parseInt(document.documentElement.getAttribute('data-quiz-bridge-v') || '0', 10) || 0;
+    const bridgeOn = document.documentElement.getAttribute('data-quiz-bridge') === '1' && bridgeV >= NEED_V;
+    const prevUrl = selectedAiUrl; selectedAiUrl = url;
+    try { prepareAiTab(); } finally { selectedAiUrl = prevUrl; }   // open the tab inside the tap (no popup blocker); the quiz step's own AI choice stays untouched
+    if (bridgeOn) {
+      let host = ''; try { host = new URL(url).hostname; } catch (e) {}
+      const b = { id: Date.now(), kind: 'summary', mode: 'summary', total: 0, prompts: [{ text: prompt, q: 0, startN: 1 }], site: host, appUrl: location.href.split('#')[0] };
+      let el = document.getElementById('quizBridgeData');
+      if (!el) { el = document.createElement('script'); el.type = 'application/json'; el.id = 'quizBridgeData'; document.body.appendChild(el); }
+      el.textContent = JSON.stringify(b);
+      document.dispatchEvent(new Event('quizbridge:send'));
+      copyToClipboard(prompt).catch(() => {});   // safety net: if auto-paste fails, Ctrl+V works
+      showToast('Auto-script ON: AI site me text + summary prompt khud paste aur send hoga. Summary padh ke is tab par wapas aao');
+      openAiSite(url);
+      return;
+    }
+    const ok = await copyToClipboard(prompt, 'summary-prompt.txt');
+    const stale = document.documentElement.getAttribute('data-quiz-bridge') === '1';
+    showToast(!ok ? COPY_FAIL_MSG
+      : stale ? 'Auto-script purani hai (menu > Script se dobara copy karke update karo). Abhi prompt copy ho gaya: AI site me paste karke Send karo'
+      : 'Prompt copy ho gaya: AI site me paste (Ctrl+V) karke Send karo');
+    openAiSite(url);
   });
 })();
 </script>
