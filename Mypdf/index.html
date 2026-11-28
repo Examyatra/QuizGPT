@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.5.12">
+<meta name="app-version" content="1.5.13">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -128,7 +128,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 /* Color dot buttons in toolbar */
 #cbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(58px + env(safe-area-inset-bottom,0px));z-index:210;display:flex;flex-direction:row;align-items:center;gap:6px;max-width:94vw;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:12px;padding:6px;box-shadow:var(--panel-shadow)}
 #cbar .pb{padding:6px 9px;min-width:34px}
-.tbc{width:26px;height:26px;border-radius:50%;border:2px solid transparent;box-shadow:inset 0 0 0 1px rgba(128,128,128,.55);padding:0;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font:700 16px/1 system-ui,sans-serif;color:var(--tx);background:var(--btn-bg)}
+.tbc:not(body){width:26px;height:26px;border-radius:50%;border:2px solid transparent;box-shadow:inset 0 0 0 1px rgba(128,128,128,.55);padding:0;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font:700 16px/1 system-ui,sans-serif;color:var(--tx);background:var(--btn-bg)}
 .tbc.on{border-color:var(--ac)}
 .tbc input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;border:0}
 body.pres #cbar{display:none!important}
@@ -603,6 +603,17 @@ body.tbc #tbopen{animation:tbpop .18s ease-out}
 #tbopen{touch-action:none}
 #ahb+span::after{display:block;content:"OFF";opacity:.7}
 #ahb.on+span::after{content:"ON";color:var(--tool-active);opacity:1;font-weight:700}
+/* v1.5.13 — colourful menu button + colour dock (opposite side) */
+#tbopen{width:48px;height:48px;border:2px solid rgba(255,255,255,.92);background:linear-gradient(135deg,#6366f1 0%,#ec4899 55%,#f59e0b 100%);color:#fff;opacity:1;box-shadow:0 4px 14px rgba(99,102,241,.55),0 0 0 4px rgba(99,102,241,.2)}
+#tbopen svg{width:26px;height:26px;stroke-width:2.4;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+#tbcol{position:fixed;z-index:260;display:none;flex-direction:column;align-items:center;gap:9px;padding:9px 7px;border-radius:30px;background:color-mix(in srgb,var(--bar) 90%,transparent);border:1px solid var(--bd);box-shadow:0 4px 14px rgba(0,0,0,.28);max-height:calc(100vh - 90px);overflow-y:auto;scrollbar-width:none;touch-action:pan-y}
+#tbcol::-webkit-scrollbar{display:none}
+#tbcol:not([hidden]){display:flex}
+body.pres #tbcol{display:none!important}
+#tbcol .tbcd{width:34px;height:34px;flex:none;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35),0 2px 5px rgba(0,0,0,.3);padding:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .12s}
+#tbcol .tbcd.on{transform:scale(1.22);box-shadow:0 0 0 3px var(--tool-active),0 3px 8px rgba(0,0,0,.35)}
+@keyframes tbcin{from{opacity:0;scale:.8}to{opacity:1;scale:1}}
+#tbcol:not([hidden]){animation:tbcin .16s ease-out}
 </style>
 <style id="home-css">
 /* v1.5.12 — home page: ink rail, paper content, notebook covers with a spine */
@@ -3210,7 +3221,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.5.12",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.5.13",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -3956,6 +3967,8 @@ function bkRetry(msg){try{
   const DRAW=["pen","hl","er","line","arrow","rect","oval"];
   let col=false,dd=0,armed=false,T=0;const act=new Map();
   document.body.insertAdjacentHTML("beforeend",'<button id="tbopen" title="Show toolbar" aria-label="Show toolbar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>');
+  document.body.insertAdjacentHTML("beforeend",'<div id="tbcol" hidden aria-label="Colours"></div>');
+  const dock=Q("#tbcol");
   const kick=()=>{requestAnimationFrame(()=>{try{dispatchEvent(new Event("resize"))}catch(e){}try{repaintKick()}catch(e){}})};
   const busy=()=>{try{if(typeof down!=="undefined"&&down)return true}catch(e){}const d=Q("#doc");if(d&&d.style.overflow==="hidden")return true;const sm=Q("#sm");return !!(sm&&!sm.hidden)};
   function collapse(n){
@@ -3967,7 +3980,7 @@ function bkRetry(msg){try{
     dd=Math.min(s,H);
     doc.style.setProperty("--tbpad",(H-dd)+"px");
     document.body.classList.add("tbc");col=true;
-    syncViewerTop();doc.scrollTop=s-dd;kick();
+    syncViewerTop();doc.scrollTop=s-dd;kick();try{dockSync()}catch(e){}
   }
   function expand(reset){
     if(!col)return;
@@ -3976,7 +3989,7 @@ function bkRetry(msg){try{
     if(doc)doc.style.removeProperty("--tbpad");
     syncViewerTop();
     if(doc&&!reset)doc.scrollTop=s+dd;
-    dd=0;kick();
+    dd=0;kick();try{dockSync()}catch(e){}
   }
   /* safety net: the collapsed state can never outlive the open notebook, the bar, or presentation mode (no bar + no button = stuck) */
   const guard=()=>{if(!col)return;const d=Q("#doc"),b=Q("#bar");if(!d||d.hidden||!b||b.hidden||document.body.classList.contains("pres"))expand(true)};
@@ -3986,7 +3999,7 @@ function bkRetry(msg){try{
   const tbo=Q("#tbopen");let POS={s:"l",y:8};
   try{const j=JSON.parse(localStorage.getItem("pa_tbpos")||"null");if(j&&(j.s=="l"||j.s=="r")&&isFinite(j.y))POS=j}catch(e){}
   const clampY=y=>{const mn=8,mx=Math.max(mn,innerHeight-60);return Math.min(mx,Math.max(mn,y))};
-  const putPos=()=>{POS.y=clampY(POS.y);tbo.style.top="calc("+POS.y+"px + env(safe-area-inset-top,0px))";if(POS.s=="r"){tbo.style.left="auto";tbo.style.right="10px"}else{tbo.style.right="auto";tbo.style.left="10px"}};
+  const putPos=()=>{try{dockPos()}catch(e){}POS.y=clampY(POS.y);tbo.style.top="calc("+POS.y+"px + env(safe-area-inset-top,0px))";if(POS.s=="r"){tbo.style.left="auto";tbo.style.right="10px"}else{tbo.style.right="auto";tbo.style.left="10px"}try{dockPos()}catch(e){}};
   putPos();addEventListener("resize",putPos,{passive:true});
   let dg=null;
   tbo.addEventListener("pointerdown",e=>{if(e.button>0)return;dg={id:e.pointerId,x:e.clientX,y:e.clientY,r:tbo.getBoundingClientRect(),m:false};try{tbo.setPointerCapture(e.pointerId)}catch(x){}});
@@ -4002,23 +4015,57 @@ function bkRetry(msg){try{
   Q("#tbc").onclick=()=>collapse();
   const ahb=Q("#ahb");
   if(ahb){ahb.classList.toggle("on",AH);ahb.onclick=()=>{AH=!AH;try{localStorage.setItem("pa_autohide",AH?"1":"0")}catch(e){}ahb.classList.toggle("on",AH);if(!AH)expand();try{st(AH?"⤴ Toolbar auto-hides while writing":"⤴ Toolbar stays visible")}catch(e){}}}
+  /* v1.5.13 — auto-collapse trigger rewritten: tracks ONE drawing pointer (pen / mouse / finger when allowed), collapses ~220 ms after that stroke ends.
+     A second finger (pinch / scroll) cancels it. Extra fallback: change() (called after every stroke) also schedules the collapse. */
   const opt={capture:true,passive:true};
+  let dn=null,fb=0;const tp=new Map();
+  const inDoc=e=>{const d=Q("#doc");return !!(d&&!d.hidden&&d.contains(e.target))};
+  const okTool=()=>DRAW.indexOf(tool)>=0;
+  const sched=ms=>{clearTimeout(T);T=setTimeout(()=>{if(dn)return;collapse(0)},ms)};
   document.addEventListener("pointerdown",e=>{
-    clearTimeout(T);{const n=Date.now();act.forEach((t,k)=>{if(n-t>4000)act.delete(k)});act.set(e.pointerId,n)}armed=false;
-    if(!AH||col||e.button>0)return;
-    const d=Q("#doc");if(!d||d.hidden||!d.contains(e.target))return;
-    if(act.size>1||DRAW.indexOf(tool)<0)return;
-    if(e.pointerType==="touch"&&penOnly)return;      /* finger only scrolls when Pen only is ON */
-    armed=true;
+    clearTimeout(T);const now=Date.now();
+    if(e.pointerType==="touch"){tp.forEach((t,k)=>{if(now-t>4000)tp.delete(k)});tp.set(e.pointerId,now);if(tp.size>1){dn=null;fb=0;return}}
+    if(!AH||col||(e.pointerType!=="touch"&&e.button>0)||document.body.classList.contains("pres")){dn=null;fb=0;return}
+    if(!inDoc(e)||!okTool()){dn=null;fb=0;return}
+    if(e.pointerType==="touch"&&penOnly){dn=null;fb=0;return}   /* finger only scrolls when Pen only is ON */
+    dn={id:e.pointerId,x:e.clientX,y:e.clientY,mv:0};fb=now;
   },opt);
-  document.addEventListener("pointermove",e=>{if(act.has(e.pointerId))act.set(e.pointerId,Date.now());if(armed&&act.size>1)armed=false},opt);
-  const reset=()=>{act.clear();armed=false;clearTimeout(T)};
+  document.addEventListener("pointermove",e=>{
+    if(e.pointerType==="touch"&&tp.has(e.pointerId))tp.set(e.pointerId,Date.now());
+    if(dn&&e.pointerId===dn.id){const m=Math.hypot(e.clientX-dn.x,e.clientY-dn.y);if(m>dn.mv)dn.mv=m}},opt);
+  const fin=(e,cancel)=>{tp.delete(e.pointerId);
+    if(!dn||e.pointerId!==dn.id)return;const d=dn;dn=null;
+    if(cancel&&d.mv<6){fb=0;return}                       /* a cancelled touch that never moved = nothing was written */
+    sched(220)};
+  document.addEventListener("pointerup",e=>fin(e,false),opt);
+  document.addEventListener("pointercancel",e=>fin(e,true),opt);
+  const reset=()=>{tp.clear();dn=null;fb=0;clearTimeout(T)};
   addEventListener("blur",reset);document.addEventListener("visibilitychange",()=>{if(document.hidden)reset()});
-  document.addEventListener("pointerup",e=>{
-    act.delete(e.pointerId);
-    if(armed&&act.size===0){armed=false;clearTimeout(T);T=setTimeout(()=>collapse(0),260)}   /* small pause: next stroke cancels it */
-  },opt);
-  document.addEventListener("pointercancel",e=>{act.delete(e.pointerId);armed=false},opt);
+  try{const oc=window.change;if(typeof oc==="function"){window.change=function(){const r=oc.apply(this,arguments);
+    try{if(AH&&!col&&fb&&Date.now()-fb<8000&&okTool()&&!dn)sched(320)}catch(x){}return r}}}catch(e){}
+
+  /* v1.5.13 — colour dock: while the bar is collapsed (and the tool uses colours) a round colour column sits on the side OPPOSITE the menu button */
+  const CT=["pen","hl","line","arrow","rect","oval"];let dsig="";
+  function dockPos(){if(!dock)return;dock.style.top="calc("+POS.y+"px + env(safe-area-inset-top,0px))";
+    if(POS.s=="r"){dock.style.right="auto";dock.style.left="10px"}else{dock.style.left="auto";dock.style.right="10px"}}
+  function dockSync(){
+    if(!dock)return;
+    const d=Q("#doc"),show=col&&CT.indexOf(tool)>=0&&d&&!d.hidden&&!document.body.classList.contains("pres");
+    if(!show){if(!dock.hidden){dock.hidden=true;dsig=""}return}
+    const sws=Array.from(document.querySelectorAll("#sws .sw"));
+    if(!sws.length){dock.hidden=true;return}
+    let ai=sws.findIndex(x=>x.classList.contains("on"));
+    let pick=sws.slice(0,6);if(ai>=6)pick[5]=sws[ai];
+    const items=pick.map(x=>({el:x,bg:getComputedStyle(x).backgroundColor,on:x===sws[ai]}));
+    if(ai<0){let cc="";try{cc=Q("#cc").value}catch(e){}items.unshift({el:null,bg:cc||color,on:true})}   /* custom colour in use */
+    const sg=tool+"|"+POS.s+"|"+POS.y+"|"+items.map(x=>x.bg+(x.on?"*":"")).join(",");
+    if(sg===dsig&&!dock.hidden)return;dsig=sg;
+    dock.textContent="";
+    items.forEach(it=>{const b=document.createElement("button");b.className="tbcd"+(it.on?" on":"");b.style.background=it.bg;b.setAttribute("aria-label","Colour");
+      b.onclick=()=>{if(it.el){try{it.el.click()}catch(e){}}setTimeout(dockSync,0)};dock.append(b)});
+    dockPos();dock.hidden=false}
+  setInterval(()=>{if(col||!dock.hidden)dockSync()},300);
+  document.addEventListener("click",e=>{if(col)setTimeout(dockSync,0)},true);
 })();
 
 /* ===== v1.5.11 — stylus eraser end / barrel button = temporary eraser, and keyboard shortcuts =====
