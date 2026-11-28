@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- Exam Yatri website v2.0 (2026-11-13) -->
-<!-- Quiz GPT build: exam-fixed-81 (Prompt re-tune around the student journey: Summary = beginner-first (big-picture box, new-terms line, star on exam-likely bullets, quick-check question, top-5 box at the end, book examples kept); Simple = memorize-the-notes (every area covered, 1-2 questions per concept when the quota allows, important concepts first when it does not, notes' own examples / mnemonics / list items are tested, explanation re-teaches the line); Complex = real-exam practice (2-3 concepts per question, but the concept sets together touch every major section) | previous: exam-fixed-80 (Prompt audit of Complex / Simple / Summary: language rules now name the real tags (Q, A-D, CON) so bilingual CON no longer clashes with "concept"; type-plan numbers follow the real question numbers in parts 2+; no impossible "every paragraph" mandate; single EV line and PG always required; one CON length rule; difficulty mix by exam level; Simple mode ignores vignette/difficulty hints of the exam style; CLAT/CAT/GRE styles made self-contained and single-answer; no =END in follow-up parts; Summary: plain status line (no nested quotes), divider only between blocks, completeness over length, closing reminder after the text) | previous: exam-fixed-79 (Summary: after the FIRST message is sent the auto-script panel removes itself (no waiting for the reply, no auto next-batch); the student types "next" in the AI chat for each next batch; only the first prompt is handed to the script; Quiz/Create-questions flow untouched) | previous: exam-fixed-78 (Summary: language chips Hindi+English (default) / English / Hinglish; summary is now written in small BATCHES (3/4/5 pages per message, default 5): the auto-script (bridge v21) sends the next batch by itself after every reply; prompt rebuilt: batch plan, no Canvas/tools, unclear-OCR rule, no-drift rule, completeness over word count) | previous: exam-fixed-77 (readable guard: contrast audit on every screen/popup/theme so no text hides behind a colour; every popup now opens with its own different palette) | previous: exam-fixed-76 (audit + fixes: (1) "Max 100 questions" popup no longer shows by itself or in the Summary flow - programmatic checks only fix the number silently, the popup opens only on a real user edit / quiz Start; Exam Yatri 8-page toast hidden in Summary flow; (2) Summary card: broken \uD83C\uDFAF text in the "Make quiz from this text instead" button replaced by a real emoji; (3) Home "Last extracted text" now opens a chooser (Questions banao / Summarize karo / Cancel) instead of starting the quiz flow directly; (4) Extract buttons renamed "Questions banao" and "Summarize karo" (PDF and Images mode); (5) Summary prompt: new PRESENTATION rules (page heading with emoji, divider between pages, empty lines, short bold-keyword bullets, tables/numbered lists, separate Remember line) - content style and coverage rules unchanged; (6) starting a fresh PDF always resets the flow back to Quiz) | previous: exam-fixed-75 (Summary flow: Extract button split in two ("Extract text & create questions" = old flow, "Extract text & summarize it" = new); summary step 4 with Gemini/ChatGPT/Claude picker + Generate summary; bridge script v20 pastes the page-wise-summary prompt + text, sends it and then hides its own panel; saved texts menu got a 4th button "Summarize it") | previous: exam-fixed-74 (laptop-only volume +/- stack beside the speaker; per-question timer (resets to 0 on each new question, revisits continue their own time); result screen: total time + average time per question + time on each question in review) | previous: exam-fixed-73 (every quiz record now carries meta {file, range, createdAt, mode, exam, count, device, src}; shared/transferred quizzes keep the ORIGINAL date + PDF name + details on every device; old quizzes get meta backfilled) | previous: exam-fixed-72 (Durable saves: every quiz/text/practice-log is mirrored localStorage -> IndexedDB and auto-restored; received quiz is saved + verified before it starts (warning + backup file if the browser cannot store); resend never overwrites local progress; saved list shows timer, correct count, source device, attempt history) | previous: exam-fixed-71 (Receive popup: clean SVG icons for QR / Link / Code; link box accepts the full pasted link in any shape (https://…, encoded, with extra text, any domain), Paste button, Enter; 5-digit code also works in the Link box) | previous: exam-fixed-70 (audit: extra CSS guard so the keyboard ring can never show on phone/tablet) | previous: exam-fixed-69 (Laptop-only keyboard control: shortcuts + double-press-to-send + option highlight ring now run only on laptop/desktop; phones and tablets (Android/iPhone/iPad) never get them | previous: exam-fixed-68 (AI Mode prompt: asks for 2-3 relevant web images / labelled diagrams placed inside the matching sections (format unchanged) | previous: exam-fixed-67 (clean UI: removed the "Tap anywhere to start the music" text and the "Popup block hai" toast; blocked audio just starts on the student's next tap, silently | previous: exam-fixed-66 (FM: default = online FM when internet is on (last used station, else Vividh Bharati), offline Lo-fi when there is none; tab hidden -> FM only PAUSES (no teardown), tab back -> instant resume (<20 s away: same connection; longer: same audio element reconnects to live; 3+ min: released, direct reconnect of the exact stream, no station search); internet back -> failed FM retries | previous: exam-fixed-65 (full audit pass: no code changes beyond 62-64 (5 new palettes, short link pill + Copy, single reusable Google AI Mode tab, new explanation prompt); all scripts syntax-checked, no duplicate ids, tag counts balanced | previous: exam-fixed-64 (Google lookup: every [Google] tap reuses ONE named tab (window.open name, no noopener) instead of opening a new tab each time; popup-blocked toast; opener cleared; closed tab -> browser makes a new one | previous: exam-fixed-63 (QR share screen: short tidy link pill under the QR (host/…tail, never the full URL) with a Copy button beside it; tap the pill also copies; clipboard fallback; duplicate link icon button removed | previous: exam-fixed-62 (5 new palettes for site + quiz player: AMOLED black+gold, Synthwave neon, Pastel lilac night, Mocha sand, Arctic silver (11 -> 16 palettes; new glow layouts: diagonal + centered halo) | previous: exam-fixed-61 (Google lookup: [Google] chip button opens Google AI Mode directly (udm=50); new student prompt: Devanagari Hindi with English technical terms kept as-is (no bracket translations), fixed Ek line me + Matlab sections, 1-2 topic-fitting extra headings, 70-120 words total) | previous: exam-fixed-60 (retry audit: after the gateway itself failed (it already tried many AIs for up to 90 s) eyAsk retries only ONCE (was 5x), part-1 unreadable-reply re-ask 2x (was 3x), background auto-retries 3 (was 6)) | previous: exam-fixed-59 (8-unit limit now also checks the PDF page RANGE before extraction (same rule as images: more than 8 -> Exam Yatri off, Gemini on). Earlier: exam-fixed-58 (Exam Yatri limit: more than 8 extracted pages or more than 8 uploaded images -> Exam Yatri is greyed out and blocked (tap + Start), Gemini is auto-selected, a note explains why; Exam Yatri comes back automatically when the input shrinks to 8 or less, unless the student chose another site herself). Earlier: exam-fixed-57 (ALWAYS-SHOW-PAGE: one resolver for every mode (ChatGPT / Claude / Gemini / Exam Yatri API): evidence page -> segment page -> AI PG confirmed in notes -> content search of the notes -> AI PG -> notes page range; tolerant PG parsing ("PG 12", "**PG:** p.12", en-dash ranges); player shows Page N after the question mark in every mode). Earlier: exam-fixed-56 (Page number: Exam Yatri path no longer blanks the AI PG when evidence is not matched (last-resort keeps AI digits); player shows "Page N" after the question in every mode, also from srcPages). Earlier: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
+<!-- Quiz GPT build: exam-fixed-88 (any question count works again (no rounding to 25, no dropdown: the exam-fixed-87 changes are NOT in this build); max 25 questions per part, parts = ceil(total / 25), questions split as evenly as possible (60 = 20+20+20, 110 = 22 x 5); the notes are cut into consecutive pieces IN PROPORTION to each part's question count, so no part's area is under-covered) | previous: exam-fixed-86 (copy-paste flow with ChatGPT / Gemini / Claude, Simple and Complex: 25 questions per part; the notes are cut into the SAME number of consecutive pieces (100 questions = 4 parts = 4 quarters of the notes, 125 = 5 parts ...); part k gets ONLY piece k with its own segments, and the AI judges the importance inside its piece and gives important areas more questions (every area of the piece still gets at least 1 when the quota allows); equal pieces get equal question counts; Exam Yatri API flow untouched) | previous: exam-fixed-85 (copy-paste flow: up to 50 questions per AI reply (30 if bilingual) instead of 25, so a normal quiz is ONE prompt and the AI judges the weightage of the WHOLE notes itself; style line asks for previous-year-inspired exam-type questions) | previous: exam-fixed-84 (AI-first weightage: the app no longer judges importance (SEG_AI_FIRST = true; set false for the old keyword weighting): segments get a neutral starting quota by amount of text only (every area still guaranteed), HIGH/MEDIUM/LOW tags removed from the prompt, and the prompt makes the AI first judge each segment from previous-year papers / syllabus weightage / trend and then re-divide the part's questions (up to 60% may move; every segment keeps at least 1; totals fixed) | previous: exam-fixed-83 (Question distribution rebuilt for Simple / Complex with ChatGPT / Gemini / Claude: (1) importance is now continuous (distance from the notes' own average, generic + Hindi exam cues, per-100-words) instead of a forced 30/40/30 rank split; (2) quota = importance x amount of content, capped by what the text can give; (3) fewer questions than segments: NO random gaps any more - every page gets at least one question when the quota allows, otherwise pages are evenly spaced; unasked areas are attached to a neighbour so COMPLEX questions weave them in; (4) the segment plan now also runs for long notes (> 70000 chars, each part gets only its own segments) and for Self mode; (5) page-wise plan shown under the prompt buttons + console yqPlanReport() | previous: exam-fixed-82 (Simple-mode page order: when a SIMPLE prompt is copied / sent the app remembers it (localStorage yai_pmode, 24 h); the quiz that comes back from that prompt is arranged in book-page order (page 1 questions first, then page 2 ...; several pages = first page; no page = end; same page keeps the AI order) and saved with meta.mode='revision' + meta.order='page', so reopening / practice-again / share keep the same order; Complex and the whole Exam Yatri API flow are untouched: starting Exam Yatri only clears the marker) | previous: exam-fixed-81 (Prompt re-tune around the student journey: Summary = beginner-first (big-picture box, new-terms line, star on exam-likely bullets, quick-check question, top-5 box at the end, book examples kept); Simple = memorize-the-notes (every area covered, 1-2 questions per concept when the quota allows, important concepts first when it does not, notes' own examples / mnemonics / list items are tested, explanation re-teaches the line); Complex = real-exam practice (2-3 concepts per question, but the concept sets together touch every major section) | previous: exam-fixed-80 (Prompt audit of Complex / Simple / Summary: language rules now name the real tags (Q, A-D, CON) so bilingual CON no longer clashes with "concept"; type-plan numbers follow the real question numbers in parts 2+; no impossible "every paragraph" mandate; single EV line and PG always required; one CON length rule; difficulty mix by exam level; Simple mode ignores vignette/difficulty hints of the exam style; CLAT/CAT/GRE styles made self-contained and single-answer; no =END in follow-up parts; Summary: plain status line (no nested quotes), divider only between blocks, completeness over length, closing reminder after the text) | previous: exam-fixed-79 (Summary: after the FIRST message is sent the auto-script panel removes itself (no waiting for the reply, no auto next-batch); the student types "next" in the AI chat for each next batch; only the first prompt is handed to the script; Quiz/Create-questions flow untouched) | previous: exam-fixed-78 (Summary: language chips Hindi+English (default) / English / Hinglish; summary is now written in small BATCHES (3/4/5 pages per message, default 5): the auto-script (bridge v21) sends the next batch by itself after every reply; prompt rebuilt: batch plan, no Canvas/tools, unclear-OCR rule, no-drift rule, completeness over word count) | previous: exam-fixed-77 (readable guard: contrast audit on every screen/popup/theme so no text hides behind a colour; every popup now opens with its own different palette) | previous: exam-fixed-76 (audit + fixes: (1) "Max 100 questions" popup no longer shows by itself or in the Summary flow - programmatic checks only fix the number silently, the popup opens only on a real user edit / quiz Start; Exam Yatri 8-page toast hidden in Summary flow; (2) Summary card: broken \uD83C\uDFAF text in the "Make quiz from this text instead" button replaced by a real emoji; (3) Home "Last extracted text" now opens a chooser (Questions banao / Summarize karo / Cancel) instead of starting the quiz flow directly; (4) Extract buttons renamed "Questions banao" and "Summarize karo" (PDF and Images mode); (5) Summary prompt: new PRESENTATION rules (page heading with emoji, divider between pages, empty lines, short bold-keyword bullets, tables/numbered lists, separate Remember line) - content style and coverage rules unchanged; (6) starting a fresh PDF always resets the flow back to Quiz) | previous: exam-fixed-75 (Summary flow: Extract button split in two ("Extract text & create questions" = old flow, "Extract text & summarize it" = new); summary step 4 with Gemini/ChatGPT/Claude picker + Generate summary; bridge script v20 pastes the page-wise-summary prompt + text, sends it and then hides its own panel; saved texts menu got a 4th button "Summarize it") | previous: exam-fixed-74 (laptop-only volume +/- stack beside the speaker; per-question timer (resets to 0 on each new question, revisits continue their own time); result screen: total time + average time per question + time on each question in review) | previous: exam-fixed-73 (every quiz record now carries meta {file, range, createdAt, mode, exam, count, device, src}; shared/transferred quizzes keep the ORIGINAL date + PDF name + details on every device; old quizzes get meta backfilled) | previous: exam-fixed-72 (Durable saves: every quiz/text/practice-log is mirrored localStorage -> IndexedDB and auto-restored; received quiz is saved + verified before it starts (warning + backup file if the browser cannot store); resend never overwrites local progress; saved list shows timer, correct count, source device, attempt history) | previous: exam-fixed-71 (Receive popup: clean SVG icons for QR / Link / Code; link box accepts the full pasted link in any shape (https://…, encoded, with extra text, any domain), Paste button, Enter; 5-digit code also works in the Link box) | previous: exam-fixed-70 (audit: extra CSS guard so the keyboard ring can never show on phone/tablet) | previous: exam-fixed-69 (Laptop-only keyboard control: shortcuts + double-press-to-send + option highlight ring now run only on laptop/desktop; phones and tablets (Android/iPhone/iPad) never get them | previous: exam-fixed-68 (AI Mode prompt: asks for 2-3 relevant web images / labelled diagrams placed inside the matching sections (format unchanged) | previous: exam-fixed-67 (clean UI: removed the "Tap anywhere to start the music" text and the "Popup block hai" toast; blocked audio just starts on the student's next tap, silently | previous: exam-fixed-66 (FM: default = online FM when internet is on (last used station, else Vividh Bharati), offline Lo-fi when there is none; tab hidden -> FM only PAUSES (no teardown), tab back -> instant resume (<20 s away: same connection; longer: same audio element reconnects to live; 3+ min: released, direct reconnect of the exact stream, no station search); internet back -> failed FM retries | previous: exam-fixed-65 (full audit pass: no code changes beyond 62-64 (5 new palettes, short link pill + Copy, single reusable Google AI Mode tab, new explanation prompt); all scripts syntax-checked, no duplicate ids, tag counts balanced | previous: exam-fixed-64 (Google lookup: every [Google] tap reuses ONE named tab (window.open name, no noopener) instead of opening a new tab each time; popup-blocked toast; opener cleared; closed tab -> browser makes a new one | previous: exam-fixed-63 (QR share screen: short tidy link pill under the QR (host/…tail, never the full URL) with a Copy button beside it; tap the pill also copies; clipboard fallback; duplicate link icon button removed | previous: exam-fixed-62 (5 new palettes for site + quiz player: AMOLED black+gold, Synthwave neon, Pastel lilac night, Mocha sand, Arctic silver (11 -> 16 palettes; new glow layouts: diagonal + centered halo) | previous: exam-fixed-61 (Google lookup: [Google] chip button opens Google AI Mode directly (udm=50); new student prompt: Devanagari Hindi with English technical terms kept as-is (no bracket translations), fixed Ek line me + Matlab sections, 1-2 topic-fitting extra headings, 70-120 words total) | previous: exam-fixed-60 (retry audit: after the gateway itself failed (it already tried many AIs for up to 90 s) eyAsk retries only ONCE (was 5x), part-1 unreadable-reply re-ask 2x (was 3x), background auto-retries 3 (was 6)) | previous: exam-fixed-59 (8-unit limit now also checks the PDF page RANGE before extraction (same rule as images: more than 8 -> Exam Yatri off, Gemini on). Earlier: exam-fixed-58 (Exam Yatri limit: more than 8 extracted pages or more than 8 uploaded images -> Exam Yatri is greyed out and blocked (tap + Start), Gemini is auto-selected, a note explains why; Exam Yatri comes back automatically when the input shrinks to 8 or less, unless the student chose another site herself). Earlier: exam-fixed-57 (ALWAYS-SHOW-PAGE: one resolver for every mode (ChatGPT / Claude / Gemini / Exam Yatri API): evidence page -> segment page -> AI PG confirmed in notes -> content search of the notes -> AI PG -> notes page range; tolerant PG parsing ("PG 12", "**PG:** p.12", en-dash ranges); player shows Page N after the question mark in every mode). Earlier: exam-fixed-56 (Page number: Exam Yatri path no longer blanks the AI PG when evidence is not matched (last-resort keeps AI digits); player shows "Page N" after the question in every mode, also from srcPages). Earlier: exam-fixed-55 (Bridge script v19: no =END anywhere - part is complete when all =Q numbers are present; repair prompt no longer asks for =END; dead needsEnd code removed; version bumped so old scripts show "script purani hai"). Earlier: exam-fixed-54 (Exam Yatri API now has real Simple (line-by-line recall) and Complex (2-3 concepts mixed) prompts like the copy-paste flow; evidence max 10 words everywhere. Earlier: Audit: Start button locked while a quiz is being started (a double tap sent a 2nd full request and the Cancel button lost the live one); no automatic resend after the gateway itself already tried several AIs and failed (it paid twice); gateway 429 now says how long to wait; gateway stops upstream calls when the student cancels or leaves) | previous: exam-fixed-52 (API-call/token saver: 100-question quiz now needs 7 Exam Yatri calls instead of 10 (EY_PART_Q 15); part 1 no longer races 2 AIs (EY_RACE_FIRST=false); client resends failed calls once, never after a 504; 'already made' list trimmed to 20 stems (EY_EXCL_KEEP); top-up call skipped when a 40+ quiz is short by 2 or less (EY_TOPUP_GAP); /models list cached 6 h instead of fetched on every page load; main.ts v4: slow-model hedge window 12-40 s (was 5-15 s) and key-level time hedge off by default) | previous: exam-fixed-51 (Selection highlight rebuilt: the red overlay layer is now the ONLY highlight (no CSS ::highlight dependency, no browser-support gate); clipped to the scrolling quiz body, repositioned every frame (scroll / layout / palette change), auto-clears if the question is re-rendered) | previous: exam-fixed-50 (Quiz lookup: single word -> [Dictionary] + [Google]; 2+ words -> only [Google]; "Meaning" button renamed "Dictionary"; selection highlight is now palette-proof: red overlay + ::selection, so it shows on every background palette) | previous: exam-fixed-49 (Online OCR: max 20 pages / 20 images per run (PDF range and image upload both); Offline OCR: no limit at all; proxy (main.ts v3) rotates smoothly over any number of API keys) | previous: exam-fixed-48 (Online OCR now also for scanned PDF pages (text-layer pages still use the PDF text), max 30 pages / 30 images per run, cleaner UI, proxy tuned for 7 keys) | previous: exam-fixed-47 (Online OCR for images: OCR.space via Val Town proxy, auto ON for eng/hin/eng+hin, forced offline for Sanskrit and PDF, per-image fallback to Tesseract, lazy scheduler, cloud concurrency 3) | previous: exam-fixed-46 (FM: official AIR / Vividh Bharati streams from github.com/codito/akashvani added as DIRECT streams (National + Uttar Pradesh) - a station with a "direct" link plays that link first (no station-list search needed), the old search path stays only as a fallback; Online FM tab now has sections (AIR National / AIR Uttar Pradesh / Private FM); reconnect after a dropped HLS stream now retries the real stream URL instead of the blob: URL hls.js creates; probe timeout 12 s for direct HLS links) | previous: exam-fixed-45 (FM: fixed the 🔄 refresh button never appearing — it's now added/removed live by paintStatus (which runs on every stream state change) instead of only by paintMoodPop (which doesn't run when a stream quietly goes live). Loosened over-strict filters that were silently dropping Vividh Bharati/AIR/Bollywood stations: the station pool no longer requires the radio-browser "hindi" language tag (also merges in "bollywood"-tagged stations) and no longer excludes names containing "news" (AIR/Vividh Bharati legitimately carries news); same for the Radio Garden fallback search. Vividh Bharati's search query loosened from "vividh bharati hindi" to "vividh bharati". Renamed "Akashvani Lucknow/Varanasi" to "AIR Lucknow"/"AIR Varanasi" and fixed their search query/regex to match how these stations are actually named on radio-browser, Radio Garden and official NewsOnAir/Prasar Bharati listings (confirmed via PIB press releases + onlineradiofm.in/thenonstopradio.com: they're indexed as "AIR Lucknow" / "AIR Varanasi", not "Akashvani Lucknow/Varanasi") — the old query was searching for a name these directories don't use, which is why they never matched. Also: a playing station no longer auto-switches channel/variant on its own — a dropped stream only retries itself, never hunts for a different one; only a manual tap or the 🔄 refresh button changes station. FM list cleaned to Lucknow/Varanasi-only stations: removed Ishq FM, Hit 95, Radio One, Radio Nasha (not broadcast there)) | previous: exam-fixed-44 (Vividh Bharati fix: HLS (.m3u8) streams are now played with hls.js, official Vividh Bharati link added, looser name match) | previous: exam-fixed-43 (radio: 2 independent station sources at once - radio-browser + Radio Garden - plus built-in https links; each capped so none can block; | previous: exam-fixed-42 (radio: station list no longer waits for mirror discovery, 12 s per mirror, 120-station list saved on phone, built-in https Hindi streams, failure reason shown) | previous: exam-fixed-41 (FM radio engine = exact copy of exam-fixed-33 (known working); only the station list + tap-to-play tab kept from 39/40) | previous: exam-fixed-40 (FM radio hardened: chosen station first, same-name Hindi streams next, then 3 neighbours; fallback remembered 5 min; dead links skipped only when phone is online; no playlist URLs; seeds tried before list download) | previous: exam-fixed-39 (FM radio: news removed, 14 Hindi music stations with frequencies, nothing auto-fetches until you tap a station, failed station -> same-name Hindi streams -> next stations, working streams + bad streams remembered) | previous: exam-fixed-38 (FM radio for slow internet: station list downloads 1 mirror at a time + smaller, 2 stations tried at once with 8 s each, light streams first, failure reason shown) | previous: exam-fixed-37 (FM radio rebuilt clean: 10 Hindi FM + news chips, last-working station restarts instantly, tab-switch resumes the same station, 5 parallel probes / 5 s; removed mirror discovery + dead retry paths) | previous: exam-fixed-36-10 (FM radio = exact exam-fixed-33 method, optimized: no waiting for mirror discovery, 3 mirrors asked at once, station list saved on phone for instant start; + last-working station remembered, soft Hindi preference, 5 parallel probes / 6 s timeout) | previous: exam-fixed-36-8 (lookup rebuilt: Meaning = parallel dictionaries only (no Wikipedia/Wikidata), Google button opens a new tab, up to 5 words) | previous: exam-fixed-36-7 (lookup: drag handles to widen/shorten selected phrase; sources: retry + REST fallback + failure reason shown) | previous: exam-fixed-36-4 (home screen contrast/visual polish; lookup: no summary label, one sources footer; Wikipedia summary = 3-10 lines of whole sentences; languages limited to Auto/English/Hindi/Sanskrit; builds on exam-fixed-36-3) -->
 <html lang="en">
 <head>
 
@@ -3932,6 +3932,15 @@ FINAL REMINDER: exactly ${count} questions, =Q${startN} to =Q${endN}; output lan
 }
 
 let lastQuizMode = 'exam';
+/* Simple-mode page order: the mode of the prompt that was just copied / sent is remembered (survives a reload while the AI site is open);
+   when that reply comes back as a quiz, a SIMPLE quiz is arranged in book-page order. Complex is never touched. */
+function yqMarkPromptMode(m) { try { localStorage.setItem('yai_pmode', JSON.stringify({ m: m === 'revision' ? 'revision' : 'exam', ts: Date.now() })); } catch (e) {} }
+function yqPromptMode() { try { const o = JSON.parse(localStorage.getItem('yai_pmode') || 'null'); return o && o.ts && Date.now() - o.ts < 24 * 3600000 ? (o.m === 'revision' ? 'revision' : 'exam') : ''; } catch (e) { return ''; } }
+function yqSortByPage(list) {   // page 1 questions first, then page 2 ...; a question on several pages sits at its first page; no page -> end; same page keeps the AI's own order
+  const key = q => { const m = String((q && q.page) || (q && q.srcPages && q.srcPages.join(' ')) || '').match(/\d+/g); return m ? Math.min.apply(null, m.map(Number)) : 1e9; };
+  return list.map((q, i) => ({ q: q, i: i, k: key(q) })).sort((a, b) => (a.k - b.k) || (a.i - b.i)).map(o => o.q);
+}
+const MANUAL_PART_Q = 25;   // v86: copy-paste flow (ChatGPT / Gemini / Claude): questions per part; notes are cut into the SAME number of consecutive pieces
 const MANUAL_MAX_TEXT = 70000; // chars of notes per prompt: keeps clipboard + AI input safe on phones
 let manualPartsPlan = [];
 let manualPartsExpected = 1;
@@ -3959,6 +3968,8 @@ function splitCounts(N, P, capQ) {
 /* ===== Segment engine: coverage + importance decided by the APP (not "silently" by the AI) ===== */
 let _segCache = { key: '', plan: null };
 const SEG_KW = /(most common|commonest|drug of choice|treatment of choice|investigation of choice|gold standard|first[- ]line|criteria|classification|pathognomonic|characteristic|diagnos|complication|contraindicat|side effect|adverse|cut[- ]?off|defin|stage|grade|causes? of|mnemonic|except|\bnever\b|\balways\b|\bonly\b|सबसे|परिभाषा|महत्वपूर्ण)/gi;
+// any-subject cues that a passage is exam-relevant (definitions, laws, formulas, comparisons, "remember" flags; English + Hindi)
+const SEG_KW2 = /(defined as|refers to|is called|is known as|\bmeans\b|formula|theorem|\blaw of\b|\barticle \d+|\bsection \d+|principle|types? of|differ(?:s|ence)? between|advantages?|disadvantages?|features? of|properties|functions? of|important|remember|note that|key point|\brule\b|\bversus\b|\bvs\b\.?|largest|smallest|highest|lowest|उदाहरण|विशेषताएँ|विशेषताएं|प्रकार|अंतर|नियम|सूत्र|याद रखें|ध्यान दें|अपवाद|कारण|लाभ|हानि|\u2605|\u2B50)/gi;
 function segmentNotes(src) {
   const out = [];
   splitPagesText(src).forEach(pg => {
@@ -3974,50 +3985,157 @@ function segmentNotes(src) {
   });
   return out;
 }
+// v84: AI decides importance. true = the app gives every segment a NEUTRAL starting quota (only content amount counts; no HIGH/MEDIUM/LOW guess),
+// the AI judges weightage from its knowledge of previous-year papers and re-divides the part's questions. false = old keyword-importance weighting.
+const SEG_AI_FIRST = true;
+function segTag(s) { return SEG_AI_FIRST ? '' : ', ' + (s.w === 3 ? 'HIGH' : s.w === 2 ? 'MEDIUM' : 'LOW'); }
 function scoreSegs(segs) {
+  const S = segs.length;
   const sets = segs.map(s => new Set(s.text.toLowerCase().match(/[a-z\u0900-\u097F]{5,}/g) || []));
   const df = new Map(); sets.forEach(st => st.forEach(w => df.set(w, (df.get(w) || 0) + 1)));
   segs.forEach((s, i) => {
     const t = s.text;
-    const nums = (t.match(/\d+(?:[.,]\d+)?/g) || []).length, lists = (t.match(/^\s*(?:[-•*●▪]|\d+[.)])\s/gm) || []).length, kw = (t.match(SEG_KW) || []).length;
-    const d = [...sets[i]].map(w => df.get(w)).sort((a, b) => b - a).slice(0, 10);
-    const rec = d.length ? d.reduce((a, b) => a + b, 0) / d.length / segs.length : 0;   // core topics recur across many segments
-    s.score = 1 + Math.min(nums, 6) * 0.3 + Math.min(lists, 8) * 0.2 + Math.min(kw, 5) * 0.8 + rec * 20;
+    s.words = Math.max(1, t.split(/\s+/).filter(Boolean).length);
+    const nums = (t.match(/\d+(?:[.,]\d+)?/g) || []).length, lists = (t.match(/^\s*(?:[-•*●▪]|\d+[.)])\s/gm) || []).length;
+    const kw = (t.match(SEG_KW) || []).length, kw2 = (t.match(SEG_KW2) || []).length, yrs = (t.match(/\b(?:1[5-9]\d\d|20\d\d)\b/g) || []).length;
+    const first = t.split('\n')[0].trim(), head = (first.length > 2 && first.length < 70 && !/[.!?\u0964]$/.test(first) && t.split('\n').length > 1) ? 1 : 0;
+    const feat = Math.min(nums, 6) * 0.3 + Math.min(lists, 8) * 0.2 + Math.min(kw, 5) * 0.8 + Math.min(kw2, 6) * 0.45 + Math.min(yrs, 3) * 0.3 + head * 0.6;
+    // topic words that come back in SEVERAL (not all) segments mark the core topics of the notes
+    const d = [...sets[i]].map(w => df.get(w)).filter(c => c >= 2 && c <= Math.max(2, S * 0.8)).sort((a, b) => b - a).slice(0, 8);
+    const rec = d.length ? d.reduce((a, b) => a + b, 0) / d.length / S : 0;
+    // feature counts grow with length, so they are measured per ~110 words (a long segment is not "important" just because it is long)
+    s.score = feat / Math.sqrt(Math.max(s.words, 50) / 110) + rec * 8;
   });
-  segs.slice().sort((a, b) => b.score - a.score).forEach((s, r) => { const f = r / segs.length; s.w = f < 0.3 ? 3 : f < 0.7 ? 2 : 1; });
+  const mean = segs.reduce((a, s) => a + s.score, 0) / S, sd = Math.sqrt(segs.reduce((a, s) => a + (s.score - mean) * (s.score - mean), 0) / S);
+  segs.forEach(s => {
+    // continuous importance 1..3 from the segment's distance to the average of THESE notes (uniform notes -> everything equal, no forced 30/40/30 split)
+    s.imp = sd < 0.05 ? 2 : 1 + 2 * Math.max(0, Math.min(1, ((s.score - mean) / sd + 1) / 2));
+    s.w = s.imp >= 2.35 ? 3 : s.imp <= 1.65 ? 1 : 2;                      // HIGH / MEDIUM / LOW label shown to the AI
+    s.wt = s.imp * Math.max(0.6, Math.min(1.5, Math.sqrt(s.words / 110)));   // question weight = importance x amount of content
+    if (SEG_AI_FIRST) { s.imp = 2; s.w = 2; s.wt = Math.max(0.6, Math.min(1.5, Math.sqrt(s.words / 110))); }   // neutral: the AI will judge importance
+    s.cap = Math.max(2, Math.ceil(s.words / 20));                          // never more questions than the text can honestly give (~1 per 20 words)
+  });
 }
-function planSegments(src, N, counts) {
-  const key = src.length + '|' + src.slice(0, 40) + '|' + src.slice(-40) + '|' + N + '|' + counts.join(',');
+// Split `total` into integers by weight, never above caps (water-filling). Returns { out, left } (left > 0 only if every cap is full).
+function apportionQ(total, weights, caps) {
+  const n = weights.length, out = new Array(n).fill(0); let left = total, active = [];
+  for (let i = 0; i < n; i++) if (caps[i] > 0) active.push(i);
+  for (let guard = 0; guard < 16 && left > 0 && active.length; guard++) {
+    const W = active.reduce((a, i) => a + weights[i], 0); if (W <= 0) break;
+    const ideal = active.map(i => ({ i, v: left * weights[i] / W })); let given = 0;
+    ideal.forEach(o => { const g = Math.min(Math.floor(o.v), caps[o.i] - out[o.i]); out[o.i] += g; given += g; o.r = o.v - Math.floor(o.v); });
+    left -= given;
+    if (left > 0) ideal.filter(o => out[o.i] < caps[o.i]).sort((a, b) => b.r - a.r || a.i - b.i).slice(0, left).forEach(o => { out[o.i]++; left--; });
+    active = active.filter(i => out[i] < caps[i]);
+  }
+  return { out, left };
+}
+// Zones = the pages of the notes (pasted text without page markers: blocks of ~350 words). Every zone must get a question where the quota allows.
+function zonesOf(segs) {
+  const zones = [], by = new Map(); let cum = 0;
+  segs.forEach((s, i) => {
+    const key = s.page ? 'p' + s.page : 'b' + Math.floor(cum / 350); cum += s.words;
+    if (!by.has(key)) { const z = { key, idx: [], mass: 0 }; by.set(key, z); zones.push(z); }
+    const z = by.get(key); z.idx.push(i); z.mass += s.wt; s.zone = key;
+  });
+  return zones;
+}
+// FEWER questions than segments: choose N segments that are spread over the WHOLE notes (no random gaps), important + content-rich ones first.
+function pickSegments(segs, N) {
+  const zones = zonesOf(segs), Z = zones.length, quota = new Array(segs.length).fill(0);
+  const topIn = (z, k) => z.idx.slice().sort((a, b) => segs[b].wt - segs[a].wt || a - b).slice(0, k);
+  if (N >= Z) {   // every page gets at least one question; the rest follow page weight (importance x content)
+    const ap = apportionQ(N - Z, zones.map(z => z.mass), zones.map(z => z.idx.length - 1));
+    zones.forEach((z, zi) => topIn(z, 1 + ap.out[zi]).forEach(i => { quota[i] = 1; }));
+  } else {        // not even one per page: take N pages evenly spaced along the notes (by weight), best segment of each
+    const T = zones.reduce((a, z) => a + z.mass, 0), chosen = new Set(); let cum = 0, zi = 0;
+    for (let k = 0; k < N; k++) {
+      const pos = (k + 0.5) * T / N;
+      while (zi < Z - 1 && cum + zones[zi].mass < pos) { cum += zones[zi].mass; zi++; }
+      let j = zi, d = 0; while (chosen.has(j)) { d++; j = (zi + d < Z && !chosen.has(zi + d)) ? zi + d : (zi - d >= 0 ? zi - d : zi + d); if (d > Z) break; }
+      chosen.add(j);
+    }
+    chosen.forEach(j => topIn(zones[j], 1).forEach(i => { quota[i] = 1; }));
+  }
+  // the segments that got no question of their own are attached to the nearest asked segment: COMPLEX questions weave their ideas in, so those areas are touched too
+  const asked = quota.map((q, i) => q ? i : -1).filter(i => i >= 0);
+  segs.forEach(s => { s.also = []; });
+  segs.map((s, i) => ({ s, i })).filter(o => !quota[o.i]).sort((a, b) => b.s.wt - a.s.wt).forEach(o => {
+    const near = asked.slice().sort((a, b) => (Math.abs(a - o.i) - Math.abs(b - o.i)) || (segs[a].also.length - segs[b].also.length));
+    const host = near.find(h => segs[h].also.length < 2); if (host !== undefined) segs[host].also.push(o.s.id);
+  });
+  return quota;
+}
+// v86: copy-paste flow with several parts: the notes are cut into P CONSECUTIVE pieces, each as big as its part's share of the questions (piece 1 = first part of the notes, piece 2 = next ...),
+// and piece k gets counts[k] questions. Inside a piece the usual rules apply (every segment gets 1 when the quota allows; the AI judges importance and re-divides).
+function fillContigParts(segs, counts, plan) {
+  const S = segs.length, P = counts.length, N = counts.reduce((a, b) => a + b, 0) || 1, tw = segs.reduce((a, s) => a + s.words, 0) || 1, groups = []; let cur = [], acc = 0, cq = 0;
+  segs.forEach((s, i) => {
+    cur.push(i); acc += s.words;
+    const g = groups.length, left = S - i - 1, need = P - g - 1;
+    if (need > 0 && left >= need && (acc >= tw * (cq + counts[g]) / N || left === need)) { groups.push(cur); cur = []; cq += counts[g]; }   // v88: a piece of notes is as big as its share of the questions (a 10-question part gets 10/110 of the notes, not 1/5)
+  });
+  if (cur.length) groups.push(cur);
+  groups.forEach((idx, k) => {
+    const gs = idx.map(i => segs[i]), q = counts[k], Sg = gs.length; let quota;
+    if (q >= Sg) {
+      const ap = apportionQ(q - Sg, gs.map(s => s.wt), gs.map(s => Math.max(0, s.cap - 1)));
+      quota = ap.out.map(v => v + 1);
+      if (ap.left > 0) { const ex = apportionQ(ap.left, gs.map(s => s.wt), gs.map(() => 99)); ex.out.forEach((v, i) => { quota[i] += v; }); }
+    } else quota = pickSegments(gs, q);
+    gs.forEach((s, i) => { if (quota[i] > 0) plan.parts[k].push({ id: s.id, page: s.page, w: s.w, q: quota[i], also: s.also.slice() }); });
+  });
+}
+function planSegments(src, N, counts, contig) {
+  const key = 'v86|' + (contig ? 'c' : 's') + '|' + src.length + '|' + src.slice(0, 40) + '|' + src.slice(-40) + '|' + N + '|' + counts.join(',');
   if (_segCache.key === key && _segCache.plan) return _segCache.plan;
-  const segs = segmentNotes(src); segs.forEach((s, i) => { s.id = 'S' + (i + 1); s.flat = flatTxt(s.text); });
+  const segs = segmentNotes(src); segs.forEach((s, i) => { s.id = 'S' + (i + 1); s.flat = flatTxt(s.text); s.also = []; });
   const S = segs.length, P = counts.length;
-  const plan = { segs, S, len: src.length, parts: counts.map(() => []), marked: src };
+  const plan = { segs, S, len: src.length, parts: counts.map(() => []), marked: src, pageQ: {} };
   if (S) {
     scoreSegs(segs);
-    const quota = new Array(S).fill(0);
-    if (N >= S) {   // every segment gets 1; the rest goes to important segments
-      quota.fill(1); let left = N - S; const tot = segs.reduce((a, s) => a + s.w, 0);
-      const ex = segs.map((s, i) => ({ i, v: left * s.w / tot })); ex.forEach(o => { quota[o.i] += Math.floor(o.v); });
-      left -= ex.reduce((a, o) => a + Math.floor(o.v), 0);
-      ex.sort((a, b) => (b.v - Math.floor(b.v)) - (a.v - Math.floor(a.v))).slice(0, left).forEach(o => quota[o.i]++);
-    } else {        // fewer questions than segments: weighted random pick (important first, but spread everywhere)
-      segs.map((s, i) => ({ i, k: Math.pow(Math.random(), 1 / s.w) })).sort((a, b) => b.k - a.k).slice(0, N).forEach(o => { quota[o.i] = 1; });
-    }
+    if (contig && P > 1 && S >= P) { plan.contig = true; fillContigParts(segs, counts, plan); } else {
+    let quota;
+    if (N >= S) {   // every segment gets 1; the rest goes by importance x content, capped by what the text can give
+      const ap = apportionQ(N - S, segs.map(s => s.wt), segs.map(s => Math.max(0, s.cap - 1)));
+      quota = ap.out.map(v => v + 1);
+      if (ap.left > 0) { const ex = apportionQ(ap.left, segs.map(s => s.wt), segs.map(() => 99)); ex.out.forEach((v, i) => { quota[i] += v; }); }
+    } else quota = pickSegments(segs, N);
     const cap = counts.slice();   // a segment's questions all stay in ONE part => parts never overlap
-    segs.map((s, i) => ({ s, q: quota[i] })).filter(o => o.q > 0).sort((a, b) => b.q - a.q || Math.random() - 0.5).forEach(o => {
+    segs.map((s, i) => ({ s, q: quota[i], i })).filter(o => o.q > 0).sort((a, b) => b.q - a.q || a.i - b.i).forEach(o => {
       let k = 0; for (let j = 1; j < P; j++) if (cap[j] > cap[k]) k = j;
-      const q = Math.min(o.q, cap[k]); if (q > 0) { plan.parts[k].push({ id: o.s.id, page: o.s.page, w: o.s.w, q }); cap[k] -= q; }
+      const q = Math.min(o.q, cap[k]); if (q > 0) { plan.parts[k].push({ id: o.s.id, page: o.s.page, w: o.s.w, q, also: o.s.also.slice() }); cap[k] -= q; }
     });
     for (let k = 0; k < P; k++) { let g = 0; const arr = plan.parts[k].slice().sort((a, b) => b.w - a.w); while (cap[k] > 0 && arr.length) { arr[g % arr.length].q++; cap[k]--; g++; } }
+    }
     plan.parts.forEach(a => a.sort((x, y) => parseInt(x.id.slice(1)) - parseInt(y.id.slice(1))));
+    plan.parts.forEach(a => a.forEach(o => { const p = o.page || '-'; plan.pageQ[p] = (plan.pageQ[p] || 0) + o.q; }));
     let lastPg = null;
     plan.marked = segs.map(s => (s.page && s.page !== lastPg ? (lastPg = s.page, '--- Page ' + s.page + ' ---\n') : '') + '[' + s.id + (s.page ? ' | p.' + s.page : '') + ']\n' + s.text).join('\n\n');
   }
   _segCache = { key, plan }; return plan;
 }
 function segSelectionRule(tier, count, examName, mode) {
-  const list = tier.segs.map(s => s.id + ' (p.' + (s.page || '?') + ', ' + (s.w === 3 ? 'HIGH' : s.w === 2 ? 'MEDIUM' : 'LOW') + ') x' + s.q).join('; ');
   const rev = mode === 'revision';
+  const list = tier.segs.map(s => s.id + ' (p.' + (s.page || '?') + segTag(s) + ') x' + s.q + ((!rev && !tier.slim && s.also && s.also.length) ? ' [Complex: where it truly connects, also weave in a related idea of ' + s.also.join(' / ') + ' so that area is touched too]' : '')).join('; ');
+  if (!SEG_AI_FIRST) return segSelectionRuleOld(tier, count, examName, mode);
+  const move = Math.max(1, Math.round(count * 0.6));
+  return `SEGMENT PLAN (PART ${tier.k} of ${tier.P}): the notes are cut into numbered segments; each starts with a marker like [S12 | p.5]. The app only made sure that EVERY area of the notes is represented: it picked which segments belong to this part and wrote a NEUTRAL starting number of questions for each (by amount of text, NOT by importance). The app has NOT judged importance at all. YOU decide the weightage. All other segments are covered by other parts, so every corner of the notes is revised.
+${list}
+STEP A - JUDGE (silent, before writing any question): read every listed segment. Using your knowledge of previous-year ${examName} papers, the syllabus weightage, topics the exam repeats and the latest trend, decide for each segment (1) how exam-important it is (high / medium / low) and (2) how many DIFFERENT good questions its text can honestly give.
+STEP B - DECIDE THE FINAL NUMBERS: start from the listed numbers and re-divide the ${count} questions of this part the way a ${examName} paper-setter would: high-yield and content-rich segments get MORE questions (on different lines / facts), low-yield or thin segments get fewer. You may change ANY listed number (up to ${move} questions may move) under these limits: the total stays exactly ${count}; every listed segment keeps at least 1 question unless it has nothing testable (blank, figure-only, index, references); no segment gets more questions than it has distinct testable facts.${(rev || tier.slim) ? '' : ' If you are SURE an unlisted segment of the same page is clearly more exam-relevant than a listed thin one, you may swap them.'}
+Only after STEP B start writing the questions.
+1. Do not use unlisted segments${(rev || tier.slim) ? '' : ' as the main topic (a question may pull ONE related fact from any other segment to make a mixed-topic question)'}.
+2. If a segment gets 2 or more questions, they must test DIFFERENT lines/facts of that segment, taken from different parts of it (beginning, middle, end). NEVER ask the same line or fact twice, not even from another angle.
+3. In every question give the ID(s) of the segment(s) holding the tested facts (the SEG line) and the page shown in that segment's marker (the PG line; copy it, never guess), using exactly the field/tag layout of the OUTPUT FORMAT below, never key=value pairs. The evidence phrase (EV line) must be copied from inside those segments.
+4. ORDER: ${rev ? 'ascending segment number (so the student revises the notes in sequence).' : 'shuffled - do not group by segment or by importance.'}
+5. LEVEL AND STYLE: write real exam-type questions, inspired by how ${examName} previous-year questions are framed (pattern, wording, traps, difficulty); no school-level or childish questions.
+6. ${rev ? 'MEMORY LINES: inside each segment also test the examples, cases, analogies, mnemonics, table rows and list items of the notes, not only the definitions, so the student can memorize the notes line by line.' : 'COVERAGE: inside each segment build the questions on its main concepts and let important concepts return with a different combination, so that together the questions touch every concept of the listed segments.'}
+`;
+}
+function segSelectionRuleOld(tier, count, examName, mode) {
+  const rev = mode === 'revision';
+  const list = tier.segs.map(s => s.id + ' (p.' + (s.page || '?') + ', ' + (s.w === 3 ? 'HIGH' : s.w === 2 ? 'MEDIUM' : 'LOW') + ') x' + s.q + ((!rev && !tier.slim && s.also && s.also.length) ? ' [Complex: where it truly connects, also weave in a related idea of ' + s.also.join(' / ') + ' so that area is touched too]' : '')).join('; ');
   return `SEGMENT PLAN (PART ${tier.k} of ${tier.P}): the notes are cut into numbered segments; each starts with a marker like [S12 | p.5]. The app decided WHICH segments this part covers and a STARTING number of questions for each. Its HIGH/MEDIUM/LOW tags are only a ROUGH guess from keywords - the app cannot judge exam relevance, YOU can. All other segments are covered by other parts, so every corner of the notes is revised.
 ${list}
 1. Write exactly the number of questions listed for each segment (total ${count}). Do not skip a listed segment and do not use unlisted segments${(rev || tier.slim) ? '' : ' as the main topic (a question may pull ONE related fact from any other segment to make a mixed-topic question)'}.
@@ -4028,6 +4146,7 @@ ${list}
 6. YOU ARE THE EXAM EXPERT: using your knowledge of ${examName} previous-year papers, latest trend, repeated topics and standard weightage, judge which of these segments are truly high-yield. If a tag is clearly wrong, correct it: move up to ${Math.max(1, Math.round(count * 0.3))} questions from segments you judge low-yield to segments you judge high-yield (extra questions on DIFFERENT facts). Every listed segment keeps at least 1 question and the total stays ${count}. Never add questions to a segment just because it is tagged HIGH if it holds little testable content.
 7. LEVEL: every question must match ${examName} standard; no school-level or childish questions.
 8. ${rev ? 'MEMORY LINES: inside each segment also test the examples, cases, analogies, mnemonics, table rows and list items of the notes, not only the definitions, so the student can memorize the notes line by line.' : 'COVERAGE: inside each segment build the questions on its main concepts and let important concepts return with a different combination, so that together the questions touch every concept of the listed segments.'}
+9. SPREAD INSIDE A SEGMENT: when a segment has x2 or more, take the questions from DIFFERENT parts of it (beginning, middle and end), never only from its first lines.
 `;
 }
 function coverageOfQuiz(list) {
@@ -4052,19 +4171,33 @@ function planManualParts(srcText, N) {
   // Exam Yatri (direct API): smaller, evenly sized parts => better question quality and no cut-off replies
   // (20 per part; 15 when the quiz is bilingual/multilingual because every question is then twice as long). 100 questions -> 5 (or 7) parts.
   const ey = (typeof eyActive !== 'undefined' && eyActive);
-  const capQ = ey ? ((lang === 'english' || lang === 'hindi') ? EY_PART_Q : Math.max(4, EY_PART_Q - 2)) : 25;   // copy-paste flow keeps 25 per reply
+  const capQ = ey ? ((lang === 'english' || lang === 'hindi') ? EY_PART_Q : Math.max(4, EY_PART_Q - 2)) : MANUAL_PART_Q;   // v86: copy-paste flow = MANUAL_PART_Q (25) questions per part; each part gets its own consecutive piece of the notes (v85 sent up to 50 per reply)
   const evenSplit = (N, P) => { const b = Math.floor(N / P), x = N - b * P; return Array.from({ length: P }, (_, k) => b + (k < x ? 1 : 0)); };
   const splitQ = (N, P) => ey ? evenSplit(N, P) : splitCounts(N, P, capQ);
   // Exam Yatri: a SMALL first part (EY_FIRST_Q questions) so the quiz can start in a few seconds;
   // the remaining parts are generated in the background while the student already plays.
   const eyHead = (ey && N > EY_FIRST_Q + 2) ? EY_FIRST_Q : 0;
-  if (String(srcText || '').length <= MANUAL_MAX_TEXT || eyHead) {   // Exam Yatri: long notes ALSO get the segment plan (each part is sent only its own segments, so length is no problem)
-    const counts = eyHead
-      ? [eyHead, ...evenSplit(N - eyHead, Math.max(1, Math.ceil((N - eyHead) / capQ)))]
-      : splitQ(N, Math.max(1, Math.ceil(N / capQ)));
-    const P = counts.length;
-    const sp = planSegments(String(srcText || ''), N, counts);
-    return counts.map((q, k) => ({ tier: P > 1, text: srcText, q, from: '', to: '', i: k + 1, P, label: 'mixed pages', nPages: sp.S, must: [], segs: sp.parts[k], marked: (ey && EY_SLICE_NOTES && sp.parts[k].length) ? eyMarkedFor(sp, sp.parts[k]) : sp.marked }));
+  // v83: the segment plan (every page/area gets questions, important ones more) now runs for EVERY length of notes.
+  // Long notes (> MANUAL_MAX_TEXT chars) are sent in slices: each part gets only the segments planned for it (never the whole book).
+  {
+  const _src = String(srcText || ''), longText = _src.length > MANUAL_MAX_TEXT;
+  let counts;
+  if (eyHead) counts = [eyHead, ...evenSplit(N - eyHead, Math.max(1, Math.ceil((N - eyHead) / capQ)))];
+  else if (longText) {
+    const S0 = segmentNotes(_src).length; let P0 = Math.max(1, Math.ceil(N / capQ));
+    if (N >= S0) P0 = Math.max(P0, Math.ceil(_src.length * 1.25 / MANUAL_MAX_TEXT));   // every segment is used: keep each slice small enough
+    counts = evenSplit(N, Math.min(N, P0));
+  } else counts = ey ? splitQ(N, Math.max(1, Math.ceil(N / capQ))) : evenSplit(N, Math.max(1, Math.min(Math.ceil(N / capQ), segmentNotes(_src).length || 1)));   // v86: equal pieces of notes => equal question counts (100 -> 25+25+25+25, 125 -> 5x25, 60 -> 20+20+20)
+  const P = counts.length;
+  const sp = planSegments(_src, N, counts, !ey);   // v86: copy-paste flow cuts the notes into consecutive pieces (Exam Yatri API flow unchanged)
+  if (sp.S || !longText) {
+    const sliced = longText || (ey && EY_SLICE_NOTES) || !!sp.contig;
+    return counts.map((q, k) => {
+      const cut = !!(sliced && sp.parts[k].length), pgs = sp.contig ? sp.parts[k].map(o => parseInt(o.page, 10)).filter(Number.isFinite) : [];
+      const pf = pgs.length ? Math.min.apply(null, pgs) : '', pt2 = pgs.length ? Math.max.apply(null, pgs) : '';
+      return { tier: P > 1, sliced: cut, contig: !!sp.contig, text: srcText, q, from: sp.contig ? String(pf) : '', to: sp.contig ? String(pt2) : '', i: k + 1, P, label: sp.contig ? (pgs.length ? 'p' + pf + (pt2 > pf ? '-' + pt2 : '') : 'hissa ' + (k + 1)) : 'mixed pages', nPages: sp.S, must: [], segs: sp.parts[k], marked: cut ? eyMarkedFor(sp, sp.parts[k]) : sp.marked };
+    });
+  }
   }
   const pages = splitPagesText(srcText);
   const P = Math.min(pages.length, Math.max(1, Math.ceil(String(srcText || '').length / MANUAL_MAX_TEXT), Math.ceil(N / capQ)));
@@ -4105,15 +4238,16 @@ function usedLinesOf(prev) {
 }
 function buildTierPrompt(pt, prev, srcText, mode, examName) {
   examName = (examName && examName.trim()) ? examName.trim() : DEFAULT_EXAM_NAME;
-  const eySlim = typeof eyActive !== 'undefined' && eyActive && EY_SLICE_NOTES && pt.segs && pt.segs.length;   // Exam Yatri: parts own DISJOINT segments, so earlier lines can never come back
+  const eySlim = (typeof eyActive !== 'undefined' && eyActive && EY_SLICE_NOTES && pt.segs && pt.segs.length) || (pt.sliced && pt.segs && pt.segs.length);   // Exam Yatri: parts own DISJOINT segments, so earlier lines can never come back
   const usedLines = eySlim ? [] : usedLinesOf(prev);
   const excl = prev.slice(eySlim ? -EY_EXCL_KEEP : -100).map(q => '- ' + String(q.question).replace(/\s+/g, ' ').slice(0, 70)).join('\n');
   let head = YAI_HEAD + 'TASK: PART ' + pt.i + ' of ' + pt.P + ' (mixed pages). Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from the study notes below. The whole quiz of ' + lastRequestedCount + ' questions is written in ' + pt.P + ' parts. EVERY part samples the WHOLE notes (random pages, important topics a little more often) and together the parts cover every page. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.';
   if (eySlim) head = YAI_HEAD + 'TASK: PART ' + pt.i + ' of ' + pt.P + '. Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from the study-note segments below (the segments chosen for this part; the other parts cover the rest of the notes). The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.';
   else if (pt.P > 1) head += '\n\nIf more parts follow in this chat, they will arrive as short messages later: in THIS reply write ONLY part ' + pt.i + '.';
+  if (pt.contig) head = YAI_HEAD + 'TASK: PART ' + pt.i + ' of ' + pt.P + '. The whole quiz of ' + lastRequestedCount + ' questions is written in ' + pt.P + ' parts, and the study notes were cut into ' + pt.P + ' consecutive pieces: this message holds ONLY piece ' + pt.i + (pt.from ? ' (pages ' + pt.from + (pt.to && pt.to !== pt.from ? '-' + pt.to : '') + ')' : '') + ' of the notes. Create EXACTLY ' + pt.q + ' ' + examName + '-level quiz questions from the notes below. Read every segment of this piece, decide yourself which areas matter most for the exam and give them more questions, but leave no area of this piece without questions. The other pieces are handled by the other parts. The full instructions come AFTER the notes: read the notes first, then follow the instructions exactly.';   // v86
   if (excl) head += '\n\nQUESTIONS ALREADY MADE (do NOT repeat these or their concepts):\n' + excl;
   if (usedLines.length) head += '\n\nSOURCE LINES ALREADY USED BY EARLIER PARTS (these exact lines already gave a question \u2014 this part MUST pick DIFFERENT lines/facts; do not build a new question from any line below, even with a different angle):\n' + usedLines.slice(-150).map(e => '- ' + e).join('\n');
-  return head + '\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (pt.marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 1000000, mode || 'exam', srcText, { k: pt.i, P: pt.P, must: pt.must, nPages: pt.nPages, usedLines, segs: pt.segs, slim: !!eySlim }, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
+  return head + '\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (pt.marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(pt.q, 1000000, mode || 'exam', (pt.contig && pt.marked ? pt.marked : srcText), { k: pt.i, P: pt.P, must: pt.must, nPages: pt.nPages, usedLines, segs: pt.segs, slim: !!eySlim }, manualPartsPlan.slice(0, pt.i - 1).reduce((a, x) => a + x.q, 0) + 1, examName);
 }
 /* =====================================================================================================
    Exam Yatri compact prompt (V2) - used ONLY by the direct-API flow (copy-paste prompts for ChatGPT / Gemini / Claude are untouched).
@@ -4279,8 +4413,8 @@ function eyBuildPrompt(o) {
   t.push('Write EXACTLY ' + count + ' questions, numbered =Q' + startN + ' through =Q' + endN + '. Never stop early and never ask whether to continue.');
   if (plan) t.push('TYPE PLAN (mandatory; ' + (rev ? 'write TYPE: tf for true_false and TYPE: fill for fill_blank' : 'set TYPE for tf') + '): ' + plan.map((x, i) => 'Q' + (startN + i) + ': ' + x.type + (x.truth ? ' (statement must be ' + x.truth.toUpperCase() + ')' : '')).join(', ') + '.');
   if (segs) {
-    const list = segs.map(s => s.id + ' (p.' + (s.page || '?') + ', ' + (s.w === 3 ? 'HIGH' : s.w === 2 ? 'MEDIUM' : 'LOW') + ') x' + s.q).join('; ');
-    t.push('SEGMENT PLAN: the notes are cut into segments marked [S12 | p.5]. This part covers ONLY these segments, each with a starting quota (the HIGH/MEDIUM/LOW tags are the app\'s rough keyword guess; YOU judge real exam relevance): ' + list);
+    const list = segs.map(s => s.id + ' (p.' + (s.page || '?') + segTag(s) + ') x' + s.q).join('; ');
+    t.push('SEGMENT PLAN: the notes are cut into segments marked [S12 | p.5]. This part covers ONLY these segments, each with a starting quota' + (SEG_AI_FIRST ? ' (neutral, by amount of text; the app did NOT judge importance: first judge each segment\'s exam weightage yourself from your knowledge of previous-year papers, then re-divide the questions)' : ' (the HIGH/MEDIUM/LOW tags are the app\'s rough keyword guess; YOU judge real exam relevance)') + ': ' + list);
     t.push('Write exactly the listed number of questions per segment (total ' + count + '); never use unlisted segments as the main topic; a x2 / x3 quota must test DIFFERENT lines; if a segment has fewer testable facts than its quota (or none: blank, figure-only, index), give the extra questions to unused facts of other listed segments. Set SEG and PG from the marker; EV must come from inside those segments. ' + (rev ? 'Keep the order of the notes.' : 'Shuffle the order.') + ' Using your knowledge of ' + exam + ' previous-year papers you may move up to ' + Math.max(1, Math.round(count * 0.3)) + ' questions from segments you judge low-yield to high-yield segments (different facts); every listed segment keeps at least 1 question and the total stays ' + count + '.');
   }
   if (prev.length) t.push('ALREADY MADE (do NOT repeat these or their concepts):\n' + prev.join('\n'));
@@ -4328,7 +4462,7 @@ function getManualPromptText(mode, partIdx, frozen) {
     return eyBuildPrompt({ count: p1.q, startN: manualPartsPlan.slice(0, i1 - 1).reduce((a, x) => a + x.q, 0) + 1, i: i1, P: parts.length, N: qn, notes: p1.marked || p1.text || srcText, segs: p1.segs, exam: examName, prev: prevL, src: srcText, mode: mode });
   }
   if (parts.length === 1) {
-    return YAI_HEAD + 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (parts[0].marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 1000000, mode || 'exam', srcText, (parts[0].segs && parts[0].segs.length) ? { k: 1, P: 1, segs: parts[0].segs } : null, 1, examName);
+    return YAI_HEAD + 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (parts[0].marked || srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 1000000, mode || 'exam', srcText, (parts[0].segs && parts[0].segs.length) ? { k: 1, P: 1, segs: parts[0].segs, slim: !!parts[0].sliced } : null, 1, examName);
   }
   const pt = parts[Math.min(Math.max(partIdx || 1, 1), parts.length) - 1];
   if (pt.tier) {
@@ -4392,7 +4526,7 @@ function buildChatBundle(mode) {
   const parts = manualPartsPlan.slice();
   const prompts = []; let startN = 1;
   parts.forEach((pt, k) => {
-    const text = k === 0 ? first : (pt.tier ? buildContinuePrompt(pt, startN, mode) : getManualPromptText(mode, k + 1));
+    const text = k === 0 ? first : ((pt.tier && !pt.sliced) ? buildContinuePrompt(pt, startN, mode) : getManualPromptText(mode, k + 1));
     prompts.push({ text, q: pt.q, startN });
     startN += pt.q;
   });
@@ -4411,6 +4545,16 @@ function sendBundleToScript(mode) {
     return true;
   } catch (e) { console.warn('bundle failed', e); return false; }
 }
+// Page-wise question plan of the current prompt (shown to the student so they can see which page gives how many questions)
+function yqPageSplitText() {
+  const sp = _segCache.plan; if (!sp || !sp.S || !sp.pageQ) return '';
+  const ks = Object.keys(sp.pageQ).filter(k => k !== '-').sort((a, b) => a - b);
+  if (!ks.length) return '';
+  const all = [...new Set(sp.segs.map(s => s.page).filter(Boolean))], miss = all.filter(p => !sp.pageQ[p]).sort((a, b) => a - b);
+  let t = ks.length > 16 ? ks.length + ' pages me questions baante gaye (har area se, important se zyada)' : ks.map(k => 'p' + k + ': ' + sp.pageQ[k]).join(' \u00B7 ');
+  if (miss.length) t += ' \u2014 bina question: ' + (miss.length > 12 ? miss.length + ' pages' : miss.map(p => 'p' + p).join(', ')) + ' (questions kam hain, number badhao to ye bhi aayenge)';
+  return t;
+}
 function renderPartsBar(mode) {
   let bar = document.getElementById('partsBar');
   if (!bar) {
@@ -4418,11 +4562,17 @@ function renderPartsBar(mode) {
     document.getElementById('openAiRevBtn').parentNode.appendChild(bar);
   }
   bar.innerHTML = '';
-  if (manualPartsExpected < 2) { bar.style.display = 'none'; return; }
+  const _pg = yqPageSplitText();
+  if (manualPartsExpected < 2) {
+    if (!_pg) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    const one = document.createElement('div'); one.style.cssText = 'width:100%;font-size:13px;opacity:.85;'; one.textContent = '\uD83D\uDCCD Starting plan (AI importance dekhkar final bantega): ' + _pg; bar.appendChild(one); return;
+  }
   bar.style.display = 'flex';
   const info = document.createElement('div'); info.style.cssText = 'width:100%;font-size:13px;opacity:.85;';
-  info.textContent = '\uD83E\uDDE9 ' + (manualPartsPlan[0] && manualPartsPlan[0].tier ? lastRequestedCount + ' questions ' + manualPartsExpected + ' parts me bante hain: har part poore notes se random pages uthata hai (important topics thode zyada), aur sab parts milke saare pages cover karte hain. Part ka reply copy karke wapas aao (auto-import).' : lastRequestedCount + ' questions ek AI reply me nahi aate, isliye ' + manualPartsExpected + ' parts bane (har part = alag pages). Part ka prompt copy karo \u2192 AI \u2192 reply copy \u2192 wapas yahin aao (auto-import).');
-  if (_segCache.plan && _segCache.plan.S) info.textContent += ' \uD83D\uDCCA ' + _segCache.plan.S + ' segments: ' + (lastRequestedCount < _segCache.plan.S ? 'poore coverage ke liye ' + _segCache.plan.S + '+ questions rakho.' : 'har segment se 1+ question, important se zyada.');
+  info.textContent = '\uD83E\uDDE9 ' + (manualPartsPlan[0] && manualPartsPlan[0].contig ? lastRequestedCount + ' questions ' + manualPartsExpected + ' parts me bante hain: notes bhi ' + manualPartsExpected + ' hisson me bante hain, har hissa apne part ke questions ke hisaab se (Part 1 = notes ka pehla hissa, Part 2 = agla ...). Har part me AI apne hisse ke important areas khud dekhkar un par zyada questions banata hai, koi area chhodta nahi. Part ka reply copy karke wapas aao (auto-import).' : manualPartsPlan[0] && manualPartsPlan[0].tier ? lastRequestedCount + ' questions ' + manualPartsExpected + ' parts me bante hain: har part poore notes se random pages uthata hai (important topics thode zyada), aur sab parts milke saare pages cover karte hain. Part ka reply copy karke wapas aao (auto-import).' : lastRequestedCount + ' questions ek AI reply me nahi aate, isliye ' + manualPartsExpected + ' parts bane (har part = alag pages). Part ka prompt copy karo \u2192 AI \u2192 reply copy \u2192 wapas yahin aao (auto-import).');
+  if (_segCache.plan && _segCache.plan.S) info.textContent += ' \uD83D\uDCCA ' + _segCache.plan.S + ' segments: ' + (lastRequestedCount < _segCache.plan.S ? 'poore coverage ke liye ' + _segCache.plan.S + '+ questions rakho.' : 'har segment se 1+ question; importance AI decide karega.');
+  if (_pg) info.textContent += ' \uD83D\uDCCD Starting plan (AI final decide karega): ' + _pg;
   bar.appendChild(info);
   for (let k = 1; k <= manualPartsExpected; k++) {
     const b = document.createElement('button'); const pl = manualPartsPlan[k - 1] || {}; b.className = 'btn-sm'; b.textContent = 'Part ' + k + '/' + manualPartsExpected + (pl.tier ? ' \u00B7 ' + pl.label : (pl.from ? ' \u00B7 p' + pl.from + '-' + pl.to : '')) + (pl.q ? ' \u00B7 ' + pl.q + 'Q' : '');
@@ -4595,8 +4745,9 @@ function getSelfPromptText(mode) {
   if (!isUnnamedExam(examName)) localStorage.setItem('yai_examName', examName);
   lastRequestedCount = qn;
   try { localStorage.setItem('yai_pending', JSON.stringify({ n: qn, ts: Date.now() })); } catch (e) {}
-  // Always treat as single part — Self mode user handles token limits themselves
-  return YAI_HEAD + 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + srcText + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 1000000, mode || 'exam', srcText, null, 1, examName);
+  // Always treat as single part — Self mode user handles token limits themselves (v83: with the same page-wise segment plan as the auto flow)
+  const _sp = planSegments(srcText, qn, [qn]), _hasPlan = !!(_sp.S && _sp.parts[0].length);
+  return YAI_HEAD + 'TASK: Create EXACTLY ' + qn + ' ' + examName + '-level quiz questions (this count is mandatory) from the study notes below. The full instructions come AFTER the notes (at the end of this message): read the notes first, then follow the instructions exactly.\n\n=== STUDY NOTES (OCR-extracted) ===\n' + (_hasPlan ? _sp.marked : srcText) + '\n=== END OF NOTES ===' + buildQuizInstruction(qn, 1000000, mode || 'exam', srcText, _hasPlan ? { k: 1, P: 1, segs: _sp.parts[0] } : null, 1, examName);
 }
 
 /* ========== Self mode: paste card opened from header button — no auto-start ========== */
@@ -4628,13 +4779,13 @@ copyBtn.addEventListener('click', async () => {
 });
 
 openAiBtn.addEventListener('click', async () => {
-  lastQuizMode = 'exam';
+  lastQuizMode = 'exam'; yqMarkPromptMode('exam');
   if (genMode === 'self') {
     // Self mode: single prompt, copy to clipboard, open AI site, show paste card (manual paste, no auto-start)
     const _p = getSelfPromptText('exam');
     const _ok = await copyToClipboard(_p, 'quiz-prompt.txt');
     if (!_ok) { showToast(COPY_FAIL_MSG); return; }
-    showToast('Prompt copy ho gaya ✅ — AI site me paste karo, answer copy karo, wapas aao aur neeche paste karo');
+    showToast('Prompt copy ho gaya ✅ — AI site me paste karo, answer copy karo, wapas aao aur neeche paste karo' + (yqPageSplitText() ? '\n\uD83D\uDCCD ' + yqPageSplitText() : ''));
     openAiSite();
     _pasteCardOpenedBySelf = true; // Self mode: block onBack() auto-import — user will paste manually
     pasteCard.style.display = 'block';
@@ -4660,12 +4811,12 @@ openAiBtn.addEventListener('click', async () => {
 
 const openAiRevBtn = document.getElementById('openAiRevBtn');
 openAiRevBtn.addEventListener('click', async () => {
-  lastQuizMode = 'revision';
+  lastQuizMode = 'revision'; yqMarkPromptMode('revision');
   if (genMode === 'self') {
     const _p = getSelfPromptText('revision');
     const _ok = await copyToClipboard(_p, 'quiz-prompt.txt');
     if (!_ok) { showToast(COPY_FAIL_MSG); return; }
-    showToast('Revision prompt copy ho gaya ✅ — AI site me paste karo, answer copy karo, wapas aao aur neeche paste karo');
+    showToast('Revision prompt copy ho gaya ✅ — AI site me paste karo, answer copy karo, wapas aao aur neeche paste karo' + (yqPageSplitText() ? '\n\uD83D\uDCCD ' + yqPageSplitText() : ''));
     openAiSite();
     _pasteCardOpenedBySelf = true; // Self mode: block onBack() auto-import — user will paste manually
     pasteCard.style.display = 'block';
@@ -4861,7 +5012,8 @@ function currentElapsedSeconds() {
   if (quizElapsedInterval && quizStartTs) return (Date.now() - quizStartTs) / 1000;
   return quizTotalSeconds || 0;
 }
-function createQuizRecord() {
+function createQuizRecord(opts) {
+  opts = opts || {};
   // Quiz name = SAME format as saved Texts: "Book Name \u00B7 pages 25\u201330 \u00B7 26/10 09:45"
   let _base = currentFileBase, _range = currentPageRange;
   if (currentTextId) {
@@ -4882,7 +5034,8 @@ function createQuizRecord() {
     submitted: false, attempts: 1,
     meta: {
       file: _base, range: _range || '', createdAt: Date.now(), count: quizData.length, src: 'generated', device: yqDeviceLabel(),
-      mode: (function () { try { return localStorage.getItem('yai_mode2') === 'exam' ? 'exam' : 'revision'; } catch (e) { return ''; } })(),
+      mode: opts.mode || (function () { try { return localStorage.getItem('yai_mode2') === 'exam' ? 'exam' : 'revision'; } catch (e) { return ''; } })(),
+      order: opts.order || '',
       exam: (function () { try { return localStorage.getItem('yai_examName') || ''; } catch (e) { return ''; } })()
     }
   });
@@ -6523,14 +6676,15 @@ function attemptStartQuiz(showErrors) {
   }
 
   _startLockTs = Date.now();
+  const _srcMode = yqPromptMode(), _byPage = _srcMode === 'revision' && normalized.length > 1;   // Simple prompt -> page-order quiz
   notifyParseQuality(normalized);
   try { const cv = coverageOfQuiz(normalized); if (cv && cv.done) setTimeout(() => showToast('\uD83D\uDCDA Coverage: ' + cv.done + '/' + cv.S + ' segments' + (cv.pages.length ? ' \u00B7 chhoote pages: ' + cv.pages.slice(0, 12).join(', ') + (cv.highMiss ? ' (' + cv.highMiss + ' important)' : '') : ' \u00B7 poora notes cover \u2705')), 2800); } catch (e) {}
-  try { localStorage.removeItem('yai_inbox'); localStorage.removeItem('yai_wait'); } catch (e) {}
+  try { localStorage.removeItem('yai_inbox'); localStorage.removeItem('yai_wait'); localStorage.removeItem('yai_pmode'); } catch (e) {}
   resetPromptState();
-  quizData = normalized;
+  quizData = _byPage ? yqSortByPage(normalized) : normalized;
   userAnswers = new Array(quizData.length).fill(-1);
   currentQ = 0;
-  createQuizRecord();
+  createQuizRecord({ mode: _srcMode, order: _byPage ? 'page' : '' });
   showParseStatus('ok', t('parseOk'));
 
   setTimeout(() => {
@@ -6978,7 +7132,7 @@ async function eyRunBackground(run) {
 function eyBeginQuiz(list, run) {
   _startLockTs = Date.now();
   lastRequestedCount = 0; try { notifyParseQuality(list); } catch (e) {} lastRequestedCount = run.N;   // "N asked, 5 got" would be misleading here
-  try { localStorage.removeItem('yai_inbox'); localStorage.removeItem('yai_wait'); } catch (e) {}
+  try { localStorage.removeItem('yai_inbox'); localStorage.removeItem('yai_wait'); localStorage.removeItem('yai_pmode'); } catch (e) {}
   quizData = list;
   userAnswers = new Array(quizData.length).fill(-1);
   currentQ = 0;
@@ -7028,6 +7182,13 @@ eyAsk = async function () {
 };
 
 
+// Console helper: yqPlanReport() -> table of the current plan (segment, page, importance, questions) + page-wise totals
+window.yqPlanReport = function () {
+  const sp = _segCache.plan; if (!sp || !sp.S) { console.log('No plan yet: press Copy prompt first.'); return null; }
+  const q = {}; sp.parts.forEach((a, k) => a.forEach(o => { q[o.id] = { part: k + 1, q: o.q }; }));
+  const rows = sp.segs.map(s => ({ seg: s.id, page: s.page || '-', words: s.words, importance: s.imp.toFixed(2), tag: s.w === 3 ? 'HIGH' : s.w === 2 ? 'MEDIUM' : 'LOW', part: (q[s.id] || {}).part || '-', questions: (q[s.id] || {}).q || 0, also: (s.also || []).join(',') }));
+  console.table(rows); console.log('Page-wise:', JSON.stringify(sp.pageQ)); return rows;
+};
 // Console helper (A/B): eyPromptStats() -> size of the OLD prompt vs the V2 prompt for the notes currently extracted (part 1 of a quiz)
 window.eyPromptStats = function () {
   const src = (resultText.value || rawExtractedText || '').trim();
@@ -7057,7 +7218,7 @@ async function generateQuizWithEY(mode) {
 }
 async function _generateQuizWithEY(mode) {
   mode = (mode === 'revision') ? 'revision' : 'exam';
-  lastQuizMode = mode;
+  lastQuizMode = mode; try { localStorage.removeItem('yai_pmode'); } catch (e) {}   // Exam Yatri API is never page-sorted; also drops an old copy-paste marker so it cannot leak into this quiz
   eyEffort = EY_EFFORT[mode] || '';
   const pmode = EY_FORCE_COMPLEX ? 'exam' : mode;   // prompt level: the API flow always asks for COMPLEX (exam-level) questions
   if (!(resultText.value || rawExtractedText || '').trim()) { showToast('Pehle text extract karo'); return; }
