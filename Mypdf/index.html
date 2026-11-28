@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.5.05">
+<meta name="app-version" content="1.5.12">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -586,7 +586,82 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
 /* v1.4.91 — a closed dialog / page can never stay painted or catch taps; no backdrop blur on full-screen layers (iOS can leave a "ghost" of it on screen) */
 #sm[hidden],.mod[hidden],#home[hidden],#doc[hidden],#bar[hidden]{display:none!important;visibility:hidden!important;pointer-events:none!important;animation:none!important}
 #sm,.mod{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-</style></head><body>
+</style><style id="tbc-css">
+/* v1.5.06 — toolbar collapses into one corner button while writing */
+#doc{padding-top:calc(16px + var(--tbpad,0px))}
+body.pres #doc{padding-top:16px}
+body.tbc #bar{display:none!important}
+#tbopen{position:fixed;left:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:260;width:44px;height:44px;border-radius:50%;border:1px solid var(--bd);background:var(--bar);color:var(--tx);box-shadow:0 2px 10px rgba(0,0,0,.22);display:none;align-items:center;justify-content:center;padding:0;cursor:pointer;opacity:.92;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#tbopen svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#tbopen:active{opacity:1;transform:scale(.94)}
+body.tbc #tbopen{display:flex}body.pres #tbopen{display:none!important}
+@keyframes tbin{from{opacity:0}to{opacity:1}}
+@keyframes tbpop{from{opacity:0;scale:.6}to{opacity:.92;scale:1}}
+body:not(.tbc) #bar:not([hidden]){animation:tbin .18s ease-out}
+body.tbc #tbopen{animation:tbpop .18s ease-out}
+#tbopen.drag{opacity:1;box-shadow:0 6px 18px rgba(0,0,0,.35);cursor:grabbing}
+#tbopen{touch-action:none}
+#ahb+span::after{display:block;content:"OFF";opacity:.7}
+#ahb.on+span::after{content:"ON";color:var(--tool-active);opacity:1;font-weight:700}
+</style>
+<style id="home-css">
+/* v1.5.12 — home page: ink rail, paper content, notebook covers with a spine */
+:root{--hx-paper:#f4f5f8;--hx-surface:#fff;--hx-line:rgba(20,26,51,.11);--hx-tx:#161a2e;--hx-mute:rgba(22,26,46,.6);--hx-act:#3f4fd1;--hx-hl:#ffd23f;--hx-rail:#12172e;--hx-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Noto Serif Devanagari",serif}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--hx-paper:#0e1016;--hx-surface:#171a24;--hx-line:rgba(255,255,255,.1);--hx-tx:#eef0f7;--hx-mute:rgba(238,240,247,.6);--hx-act:#5667ee;--hx-rail:#0a0d1c}}
+:root[data-theme="dark"]{--hx-paper:#0e1016;--hx-surface:#171a24;--hx-line:rgba(255,255,255,.1);--hx-tx:#eef0f7;--hx-mute:rgba(238,240,247,.6);--hx-act:#5667ee;--hx-rail:#0a0d1c}
+#home{background:var(--hx-paper)}
+#hside{flex-basis:232px;max-width:260px;background:var(--hx-rail);border-right:0;padding:22px 14px calc(16px + env(safe-area-inset-bottom,0px));gap:4px}
+#hside .hbrand{display:flex;align-items:center;gap:11px;padding:2px 8px 22px;color:#fff}
+#hside .hlg{width:36px;height:36px;border-radius:11px;background:var(--hx-hl);color:var(--hx-rail);display:flex;align-items:center;justify-content:center;flex:none}
+#hside .hlg svg{width:21px;height:21px}
+#hside .hwm{font-family:var(--hx-serif);font-size:23px;font-weight:700;letter-spacing:-.02em}
+#hside .hnav{position:relative;color:#b9c0e4;background:transparent;box-shadow:none;border-radius:11px;padding:11px 12px;font-size:14.5px;font-weight:600;min-height:46px}
+#hside .hnav svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#hside .hnav:hover{background:rgba(255,255,255,.07);color:#fff}
+#hside .hnav.on{background:rgba(255,255,255,.11);color:#fff;box-shadow:none}
+#hside .hnav.on::before{content:"";position:absolute;left:-14px;top:11px;bottom:11px;width:4px;border-radius:0 4px 4px 0;background:var(--hx-hl)}
+#hside .ver{color:rgba(255,255,255,.38);opacity:1}
+#hmain{padding:30px 36px 120px;color:var(--hx-tx)}
+#hmain .hti{font-family:var(--hx-serif);font-size:34px;font-weight:600;letter-spacing:-.015em;margin:8px 0 4px;color:var(--hx-tx)}
+#hmain .hsub{font-size:14px;color:var(--hx-mute);min-height:1.3em;margin:0 0 6px}
+#hcorner{gap:10px}
+#hcorner .th-btn{background:var(--hx-surface);color:var(--hx-tx);border:1px solid var(--hx-line);border-radius:999px;padding:8px 16px;font-size:13.5px;font-weight:600;box-shadow:0 1px 2px rgba(20,26,51,.06)}
+#hcorner .th-btn:hover{background:var(--hx-surface);border-color:var(--hx-act)}
+#hcorner .thb{background:var(--hx-surface);border:1px solid var(--hx-line);border-radius:50%;width:38px;height:38px}
+#nbs{grid-template-columns:repeat(auto-fill,minmax(164px,1fr));gap:34px 24px;margin-top:24px}
+.nb{align-items:stretch;text-align:left;gap:3px}
+.tb{border-radius:3px 9px 9px 3px;background:var(--hx-surface);box-shadow:0 1px 1px rgba(20,26,51,.14),0 12px 24px -10px rgba(20,26,51,.42);transition:transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s}
+.tb::before{content:"";position:absolute;inset:0 auto 0 0;width:11px;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.34),rgba(0,0,0,.1) 55%,rgba(255,255,255,.2) 72%,rgba(255,255,255,0))}
+.tb::after{content:"";position:absolute;inset:3px 0 3px auto;width:3px;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,rgba(255,255,255,.35) 1px 3px)}
+.tb:hover{transform:translateY(-4px);box-shadow:0 1px 1px rgba(20,26,51,.14),0 20px 30px -12px rgba(20,26,51,.5)}
+.tb:active{transform:translateY(-1px) scale(.99)}
+.tb.cv{background:linear-gradient(150deg,#2b3685,#141a33)}
+.ag{left:18px;bottom:9px;z-index:2;font-size:11px;font-weight:600;background:rgba(18,23,46,.78);border-radius:999px;padding:2px 9px}
+.dl{top:8px;right:9px;z-index:2}
+.nb b{font-size:14px;font-weight:600;color:var(--hx-tx);padding:7px 2px 0}
+.nb small{font-size:12px;color:var(--hx-mute);opacity:1;padding:0 2px}
+#empty{max-width:420px;margin:40px 0;padding:34px 26px;border:1.5px dashed var(--hx-line);border-radius:18px;display:flex;flex-direction:column;gap:6px;color:var(--hx-mute);line-height:1.5}
+#empty b{font-family:var(--hx-serif);font-size:21px;font-weight:600;color:var(--hx-tx)}
+#hmain>.cta{display:flex;align-items:center;gap:8px;border-radius:999px;padding:13px 22px 13px 18px;font-size:15.5px;font-weight:650;background:var(--hx-act);box-shadow:0 10px 24px -8px color-mix(in srgb,var(--hx-act) 70%,transparent)}
+#hmain>.cta:hover{background:var(--hx-act);filter:brightness(1.08)}
+#hmain>.cta svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+#hmain>#mkpdf{background:var(--hx-surface);color:var(--hx-tx);border:1px solid var(--hx-line);box-shadow:0 2px 8px rgba(20,26,51,.1);padding:11px 20px;font-size:14.5px;font-weight:600}
+#hmain>#mkpdf:hover{background:var(--hx-surface);border-color:var(--hx-act)}
+#hp-bk .bkc{background:var(--hx-surface);border:1px solid var(--hx-line);border-radius:16px;box-shadow:0 1px 2px rgba(20,26,51,.05)}
+#hp-bk .bkb{background:var(--hx-act);border-radius:999px;box-shadow:0 8px 20px -8px color-mix(in srgb,var(--hx-act) 70%,transparent)}
+#hp-bk .bks{background:transparent;border:1px solid var(--hx-line);border-radius:999px;color:var(--hx-tx)}
+#hp-tools .tlg{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:18px}
+#hp-tools .tlc{background:var(--hx-surface);border:1px solid var(--hx-line);border-radius:14px;padding:14px 16px;color:var(--hx-tx);box-shadow:0 1px 2px rgba(20,26,51,.05);transition:border-color .15s,transform .15s}
+#hp-tools .tlc:hover{background:var(--hx-surface);border-color:var(--hx-act);transform:translateY(-1px)}
+#hp-tools .tlc b{display:flex;align-items:center;gap:13px;font-size:15px;font-weight:600}
+#hp-tools .tli{flex:none;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--hx-act);background:color-mix(in srgb,var(--hx-act) 12%,transparent)}
+#hp-tools .tli svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#hp-tools .tlc.need{opacity:.55}
+.hnav:focus-visible,.tb:focus-visible,#hmain .cta:focus-visible,.tlc:focus-visible{outline:2px solid var(--hx-hl);outline-offset:2px}
+@media(max-width:600px){#hside{flex-basis:84px;min-width:84px;padding:16px 6px}#hside .hbrand{justify-content:center;padding:2px 0 16px}#hside .hwm{display:none}#hside .hnav{flex-direction:column;justify-content:center;gap:5px;padding:10px 2px;font-size:11px;text-align:center;min-height:56px}#hside .hnav .hi{flex-basis:auto}#hside .hnav.on::before{left:-6px}#hmain{padding:22px 14px 120px}#hmain .hti{font-size:27px}#nbs{grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:26px 16px}}
+@media(prefers-reduced-motion:reduce){.tb,#hp-tools .tlc{transition:none}.tb:hover{transform:none}}
+</style>
+</head><body>
 
 <!-- ===== TOP BAR ===== -->
 <div id="bar" hidden>
@@ -601,6 +676,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
     <button class="ibtn" id="saveb" title="Export annotated PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4"/><path d="M8 8l4-4 4 4"/><path d="M5 13v5.5a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5V13"/></svg></button>
     <button class="ibtn thb" title="Theme"></button>
     <span id="net" role="status" aria-label="Internet connection status" title="Internet connection status"></span>
+    <button class="ibtn" id="tbc" title="Hide toolbar" aria-label="Hide toolbar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
   </div>
   <div id="tools-wrap"><div id="tstrip">
     <button class="ibtn" id="pgsb" style="--c:#38bdf8" title="Pages (thumbnails)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg></button>
@@ -636,6 +712,7 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
     <div class="mcell"><button class="ibtn" id="shp" title="Shape recognition (pause at the end of a stroke)">◇</button><span>Shape snap</span></div>
     <div class="mcell"><button class="ibtn on" id="palm" title="Palm rejection"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 013 0V11"/><path d="M11 10.5V4a1.5 1.5 0 013 0v6.5"/><path d="M14 10.5V5.5a1.5 1.5 0 013 0v7"/><path d="M17 9.5a1.5 1.5 0 013 0V14c0 4-3 7-7 7h-.5c-3 0-4.5-1.5-6-4l-2-3.4a1.5 1.5 0 012.5-1.6L8 14"/></svg></button><span>Palm rejection</span></div>
     <div class="mcell"><button class="ibtn" id="po" title="Write with pen only">✍️</button><span>Pen only</span></div>
+    <div class="mcell"><button class="ibtn on" id="ahb" title="Auto-hide toolbar while writing">⤴</button><span>Auto-hide bar</span></div>
   </div></div>
 <div id="legacy-tools" hidden>
     <div class="mcell"><button class="ibtn" id="sbt" title="Pages / Bookmarks / Search"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg></button><span>Pages</span></div>
@@ -741,11 +818,11 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
 <!-- ===== HOME ===== -->
 <div id="home" hidden>
   <nav id="hside" aria-label="Home">
-    <div class="hbrand">📓 Vpdf</div>
-    <button class="hnav on" data-ht="nb"><span class="hi">📓</span>Notebook</button>
-    <button class="hnav" data-ht="bk"><span class="hi">✈️</span>Backup</button>
-    <button class="hnav" id="rs" title="Select the backup .zip files you downloaded from Telegram"><span class="hi">♻️</span>Restore</button>
-    <button class="hnav" data-ht="tools"><span class="hi">🧰</span>PDF tools</button>
+    <div class="hbrand"><span class="hlg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h11a1.5 1.5 0 011.5 1.5v14a1.5 1.5 0 01-1.5 1.5H6z"/><path d="M6 3.5v17M10 8.5h5M10 12.5h5"/></svg></span><span class="hwm">Vpdf</span></div>
+    <button class="hnav on" data-ht="nb"><span class="hi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h11a1.5 1.5 0 011.5 1.5v14a1.5 1.5 0 01-1.5 1.5H6z"/><path d="M6 3.5v17M10 8.5h5M10 12.5h5"/></svg></span>Notebooks</button>
+    <button class="hnav" data-ht="bk"><span class="hi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 4L3.5 11l6 2.5L12 20z"/><path d="M9.5 13.5L20.5 4"/></svg></span>Backup</button>
+    <button class="hnav" id="rs" title="Select the backup .zip files you downloaded from Telegram"><span class="hi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 102.6-5.9"/><path d="M4 4.5v4h4"/><path d="M12 8v4l2.5 1.5"/></svg></span>Restore</button>
+    <button class="hnav" data-ht="tools"><span class="hi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5a4 4 0 00-5 5L4 17l3 3 5.5-5.5a4 4 0 005-5l-2.5 2.5-2.5-.5-.5-2.5z"/></svg></span>PDF tools</button>
   </nav>
   <main id="hmain">
     <div id="hcorner">
@@ -753,12 +830,13 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
       <button class="th-btn" id="tg">⚙️ Settings</button>
     </div>
     <section id="hp-nb">
-      <h1 class="hti">📓 Notebooks</h1>
+      <h1 class="hti">Notebooks</h1>
+      <p class="hsub" id="hsub"></p>
       <div id="nbs"></div>
-      <div id="empty" hidden>📄 No notebooks yet.<br>Tap "＋ Add PDF" below.</div>
+      <div id="empty" hidden><b>No notebooks yet</b><span>Add a PDF to start writing on it.</span></div>
     </section>
     <section id="hp-bk" hidden>
-      <h1 class="hti">✈️ Back up to Telegram</h1>
+      <h1 class="hti">Back up to Telegram</h1>
       <div class="bkc">
         <div id="hbk"></div>
         <div class="bkr"><button class="bkb" id="bknow">⬆️ Backup now</button><button class="bks" id="bkset">⚙️ Telegram settings</button></div>
@@ -775,19 +853,19 @@ body.kbd .mod>div,body.kbd #sm>div{max-height:calc(var(--vvh,100vh) - 32px);over
       </div>
     </section>
     <section id="hp-tools" hidden>
-      <h1 class="hti">🧰 PDF tools</h1>
+      <h1 class="hti">PDF tools</h1>
       <div id="htm" role="status"></div>
       <div class="tlg">
-        <button class="tlc" data-tl="merge"><b>🧩 Merge multiple PDFs</b></button>
-        <button class="tlc" data-tl="img"><b>🖼 Images → PDF</b></button>
-        <button class="tlc" data-tl="sig"><b>🖋 Create new signature</b></button>
-        <button class="tlc need" data-tl="ext"><b>✂️ Extract pages / Split</b></button>
-        <button class="tlc need" data-tl="cmp"><b>🗜 PDF Compress</b></button>
-        <button class="tlc need" data-tl="blank"><b>📄 Blank page after current page</b></button>
+        <button class="tlc" data-tl="merge"><b><i class="tli"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="9" height="11" rx="2"/><rect x="11.5" y="9.5" width="9" height="11" rx="2"/></svg></i>Merge multiple PDFs</b></button>
+        <button class="tlc" data-tl="img"><b><i class="tli"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></svg></i>Images to PDF</b></button>
+        <button class="tlc" data-tl="sig"><b><i class="tli"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 17c3-6 5-9 6.5-9s-.5 6 1.5 6 2.5-4 4-4 .5 3 2 3 2.5-1 3-1.5"/><path d="M3.5 20.5h17"/></svg></i>Create a signature</b></button>
+        <button class="tlc need" data-tl="ext"><b><i class="tli"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6.5" r="2.3"/><circle cx="6" cy="17.5" r="2.3"/><path d="M8 8l12 8.5M8 16L20 7.5"/></svg></i>Extract pages or split</b></button>
+        <button class="tlc need" data-tl="cmp"><b><i class="tli"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l6 6M10 5v5H5M20 20l-6-6M14 19v-5h5"/></svg></i>Compress PDF</b></button>
+        <button class="tlc need" data-tl="blank"><b><i class="tli"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h8l4.5 4.5v12.5H6z"/><path d="M14 3.5V8h4.5M12 11v6M9 14h6"/></svg></i>Add a blank page</b></button>
       </div>
     </section>
-    <button class="cta" id="mkpdf">📄 Create PDF</button>
-    <button class="cta" id="open">＋ Add PDF</button>
+    <button class="cta" id="mkpdf">Create PDF</button>
+    <button class="cta" id="open"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add PDF</button>
   </main>
   <div id="htoast" role="status" aria-live="polite" hidden></div>
 </div>
@@ -1368,7 +1446,7 @@ const bGet=id=>btx("readonly",o=>o.get(id)),bPut=v=>btx("readwrite",o=>o.put(v))
 const thGet=id=>thx("readonly",o=>o.get(id)),thPut=(id,b)=>thx("readwrite",o=>o.put(b,id)),thDel=id=>thx("readwrite",o=>o.delete(id));
 const isGen=id=>typeof id=="string"&&id.startsWith("gen:");   /* notebooks made with "Create PDF": the blank PDF is rebuilt from the page count, so it never has to be stored or backed up */
 const IM={};
-async function ldImg(id,cb){IM[id]=1;const r=await iGet(id);if(!r){delete IM[id];return}const im=new Image();im.onload=()=>{IM[id]=im;cb()};im.src=URL.createObjectURL(new Blob([r]))}
+async function ldImg(id,cb){IM[id]=1;let r;try{r=await iGet(id)}catch(e){delete IM[id];return}if(!r){delete IM[id];return}const im=new Image();im.onload=()=>{IM[id]=im;cb()};im.src=URL.createObjectURL(new Blob([r]))}
 const dbGet=id=>tx("readonly",o=>o.get(id)),dbPut=v=>tx("readwrite",o=>o.put(v)),dbDel=async id=>{try{const r=await dbGet(id);if(r)await metaPut("trash:"+id,{t:Date.now(),doc:r})}catch(e){}mirDel(id);opfsDel(id);const dr=await tx("readwrite",o=>o.delete(id));try{localStorage.setItem("pa_had",String(((await dbAll())||[]).length))}catch(e){}return dr},dbAll=()=>tx("readonly",o=>o.getAll());
 
 let saveChain=Promise.resolve(),saveRevision=0,dirtySince=0,maxSaveTimer=0,saveRetryTimer=0;
@@ -1407,7 +1485,7 @@ function change(){
 }
 
 let want=null,THU=[];const FILES={};
-function syncViewerTop(){const b=$("#bar");if(b&&!b.hidden)document.documentElement.style.setProperty("--viewer-top",Math.ceil(b.getBoundingClientRect().bottom)+"px")}
+function syncViewerTop(){const b=$("#bar");if(document.body.classList.contains("tbc")){document.documentElement.style.setProperty("--viewer-top","env(safe-area-inset-top,0px)");return}if(b&&!b.hidden)document.documentElement.style.setProperty("--viewer-top",Math.ceil(b.getBoundingClientRect().bottom)+"px")}
 addEventListener("resize",syncViewerTop,{passive:true});
 function homeTab(t){$$("#hside [data-ht]").forEach(b=>b.classList.toggle("on",b.dataset.ht===t));$("#hp-nb").hidden=t!=="nb";$("#hp-bk").hidden=t!=="bk";$("#hp-tools").hidden=t!=="tools";$("#open").hidden=t!=="nb";$("#mkpdf").hidden=t!=="nb";const m=$("#hmain");if(m)m.scrollTop=0}
 function fsEnter(){try{const e=document.documentElement,f=e.requestFullscreen||e.webkitRequestFullscreen;if(f&&!document.fullscreenElement&&!document.webkitFullscreenElement){const r=f.call(e);if(r&&r.catch)r.catch(()=>{})}}catch(x){}}
@@ -1417,7 +1495,7 @@ let fsTry=0;const isApp=()=>{try{return matchMedia("(display-mode: standalone)")
 document.addEventListener("pointerup",()=>{if(fsTry||!pdf||isApp()||document.fullscreenElement||document.webkitFullscreenElement)return;const d=document.getElementById("doc");if(!d||d.hidden)return;fsTry=1;fsEnter()},{capture:true,passive:true});
 function fsExit(){try{if(document.fullscreenElement||document.webkitFullscreenElement){const f=document.exitFullscreen||document.webkitExitFullscreen,r=f.call(document);if(r&&r.catch)r.catch(()=>{})}}catch(x){}}
 ["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>{requestAnimationFrame(()=>{syncViewerTop();dispatchEvent(new Event("resize"));repaintKick()})}));
-const go=v=>{const h=v=="home";try{smShut();closeAllPanels()}catch(e){}if(h){try{unstick()}catch(e){}}if(h){fsExit();fsTry=0}if(h&&$("#home").hidden)homeTab("nb");if(h)try{onHome()}catch(e){}$("#home").hidden=!h;$("#bar").hidden=h;$("#doc").hidden=h;if(!h)requestAnimationFrame(syncViewerTop);scrollTo(0,0);repaintKick()};
+const go=v=>{const h=v=="home";if(h)try{tbExpand(true)}catch(e){}try{smShut();closeAllPanels()}catch(e){}if(h){try{unstick()}catch(e){}}if(h){fsExit();fsTry=0}if(h&&$("#home").hidden)homeTab("nb");if(h)try{onHome()}catch(e){}$("#home").hidden=!h;$("#bar").hidden=h;$("#doc").hidden=h;if(!h)requestAnimationFrame(syncViewerTop);scrollTo(0,0);repaintKick()};
 /* v1.4.91 — iOS sometimes leaves a hidden layer painted (or a dead one under the finger) after a full-screen change: nudge the layers so they are re-composited */
 function repaintKick(){try{const ids=["#home","#sm","#bar","#doc"];ids.forEach(q=>{const e=$(q);if(e&&!e.hidden)e.style.opacity=".999"});requestAnimationFrame(()=>requestAnimationFrame(()=>ids.forEach(q=>{const e=$(q);if(e)e.style.opacity=""})))}catch(e){}}
 const age=t=>{const x=(Date.now()-t)/1e3;return x<3600?Math.max(1,Math.floor(x/60))+"m":x<86400?Math.floor(x/3600)+"h":x<604800?Math.floor(x/86400)+"d":x<2592e3?Math.floor(x/604800)+"w":Math.floor(x/2592e3)+"M"};
@@ -1659,7 +1737,9 @@ function hit(o,x,y,r){
   if(o.t=="text"){const B=tBox(o);return x>o.x-r&&x<o.x+B.w+r&&y>o.y-r&&y<o.y+B.h+r}
   const[a,b]=o.p;return x>Math.min(a[0],b[0])-r&&x<Math.max(a[0],b[0])+r&&y>Math.min(a[1],b[1])-r&&y<Math.max(a[1],b[1])+r;
 }
-function snap(i){hist.push([i,JSON.stringify(anns[i]||[])]);if(hist.length>40)hist.shift();redo=[]}
+function snap(i){hist.push([i,JSON.stringify(anns[i]||[])]);if(hist.length>40)hist.shift();
+  {const cap=LOW?1.2e7:4e7;let t=0;for(let k=hist.length-1;k>0;k--){const e=hist[k][1];t+=typeof e=="string"?e.length:0;if(t>cap){hist.splice(0,k);break}}}   /* v1.5.10: dense pages = big snapshots; keep the newest ones within a memory budget (the newest is always kept) */
+  redo=[]}
 function bind(ink,p,i){
   let cur=null,down=false,mv=null,mt=null,pid=-1,dT=0,R=null,rq=0,lastRaw=null,lastMul=null,drawnTo=0,pT=null,pX=0,pY=0,pSp=0,pred=[];
   /* v1.4.85 — glitch guard. Safari / iPadOS sometimes delivers a stray sample inside getCoalescedEvents() (position 0,0, a different pointer, or a
@@ -2037,23 +2117,26 @@ function textSheet(i,q,note,ex,voice){
     if(listening){const busy=VR.busy&&VR.busy(),g=got;micOff();msg("⏳ Last words aa rahe hain…");
       if(busy){const t0=Date.now();while(Date.now()-t0<5000&&got===g&&VR.busy&&VR.busy())await new Promise(r=>setTimeout(r,120));await new Promise(r=>setTimeout(r,150))}else await new Promise(r=>setTimeout(r,450))}
     msg("💾 Saving…");btn.disabled=false;commit(t.value.trim())};
+  const init=ex?String(ex.v||""):"";
+  const cancel=()=>{const v=t.value.trim();if(v&&v!==init.trim()&&!confirm("Ye text abhi save nahi hua — discard karna hai?\n\nOK = discard\nCancel = wapas edit karo"))return;close()};   /* v1.5.10 */
   $("#spk-ok").onclick=save;
-  $("#spk-x").onclick=()=>{close()};
+  $("#spk-x").onclick=cancel;
   $("#spk-del").onclick=()=>commit("");
   m.onclick=e=>{if(e.target===m)save()};   /* tap outside = save (nothing is ever lost) */
-  function kd(e){if(e.key=="Escape"){e.preventDefault();close()}else if(e.key=="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();save()}}
+  function kd(e){if(e.key=="Escape"){e.preventDefault();cancel()}else if(e.key=="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();save()}}
   document.addEventListener("keydown",kd,true);
   sty();ui();
   if(SRC&&!ex)micOn();else{const n=t.value.length;kbFocus(t);try{t.setSelectionRange(n,n)}catch(e){}
     if(!VR.ok&&voice)msg("🎤 Browser me voice nahi — ⌨️ type karo");
     else if(!SRC)msg(ex?"✏️ Edit karo, phir Save":"✏️ Likhna shuru karo")}}
+let PGR=0;   /* v1.5.10: a page-action undo/redo is running */
 function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;if(CROP)cropCancel();IMS=null;if(selT){selT=null}
-  const top=a[a.length-1];if(top&&top[0]==="__page__"){a.pop();b.push(top);restorePageState(r?top[1].after:top[1].before).then(()=>st(r?"↪ Page action restored":"↶ Page action undone")).catch(()=>st("❌ Couldn't restore page history"));return}
+  const top=a[a.length-1];if(top&&top[0]==="__page__"){if(PGR)return;PGR=1;a.pop();b.push(top);restorePageState(r?top[1].after:top[1].before).then(()=>st(r?"↪ Page action restored":"↶ Page action undone")).catch(()=>st("❌ Couldn't restore page history")).then(()=>{PGR=0});return}
   const[i,s]=a.pop();b.push([i,JSON.stringify(anns[i]||[])]);anns[i]=JSON.parse(s);draw(i);change()}
 $("#un").onclick=()=>undo(0);$("#re").onclick=()=>undo(1);
 /* v1.4.52: zoom around a focal point (screen x,y). The page-relative position under that point stays under it, horizontally AND vertically,
    so buttons / ctrl+wheel / pinch all zoom "into" what you are looking at (GoodNotes-style) instead of jumping to another place. */
-function setZoom(z,fx,fy){const d=$("#doc"),r=d.getBoundingClientRect();if(fx==null)fx=r.left+r.width/2;if(fy==null)fy=r.top+r.height/2;
+function setZoom(z,fx,fy){if(!isFinite(z))return;const d=$("#doc"),r=d.getBoundingClientRect();if(fx==null)fx=r.left+r.width/2;if(fy==null)fy=r.top+r.height/2;
   let a=null,bd=1e9;for(const p of $$(".pg")){const b=p.getBoundingClientRect(),dy=fy<b.top?b.top-fy:fy>b.bottom?fy-b.bottom:0;if(dy<bd){bd=dy;a=p}}
   const ab=a&&a.getBoundingClientRect(),ax=ab?(fx-ab.left)/Math.max(1,ab.width):0,ay=ab?(fy-ab.top)/Math.max(1,ab.height):0,ai=a&&a.dataset.i;
   zoom=Math.max(.5,Math.min(ZMAX,z));$$(".pg").forEach(p=>{const i=+p.dataset.i;sz(p,i);if(vis.has(i)){delete p.dataset.z;render(i)}else free(i)});
@@ -2422,22 +2505,24 @@ function flush(manual,force,full){if(!manual&&!force&&Date.now()-lastInk<8000){c
   try{
     if(pdf&&docId)await persist();
     if(full){for(const r of (await dbAll())||[])await bPut({id:r.id,name:r.name,last:{},imgs:[],parts:[{n:1,es:[],ids:[],bytes:0,dirty:0}]})}   /* full backup: rebuild every notebook's backup from scratch and send it all */
-    for(const r of (await dbAll())||[]){await syncOne(r);await new Promise(y=>setTimeout(y,0))}
+    let fe=null;   /* v1.5.09: first non-network error — every other notebook / part is still processed, then it is reported + retried */
+    for(const r of (await dbAll())||[]){try{await syncOne(r)}catch(e){fe=fe||e;try{errLog("syncOne",(e&&e.message)||e)}catch(x){}}await new Promise(y=>setTimeout(y,0))}
     const tg=TG(),out=[];let n=0;
     if(!tg){if(!manual)return;
       if(confirm("Telegram backup isn't set up yet.\n\nOK = set up Telegram now (recommended)\nCancel = just save a backup file on this device")){$("#tg").click();smView("tg");return}}
     if(tg&&!manual&&navigator.onLine===false)return;   /* offline: retried automatically later */
     for(const b of (await bAll())||[])for(const p of b.parts){if(!p.dirty)continue;if(manual)st(`⏳ Sending ${b.name} (part ${p.n}) to Telegram…`);
-      const f=await zipOf(b,p);
-      if(tg){const old=p.mid,ck=!!old&&!p.sealed&&Date.now()-(p.ck||p.sent||0)>CKMS,nm=await tgSend(tg,f,capOf(b,p,f),ck?0:p.mid);
+      let f;try{f=await zipOf(b,p)}catch(e){fe=fe||e;try{errLog("zipOf",(e&&e.message)||e)}catch(x){}continue}
+      if(tg){try{const old=p.mid,ck=!!old&&!p.sealed&&Date.now()-(p.ck||p.sent||0)>CKMS,nm=await tgSend(tg,f,capOf(b,p,f),ck?0:p.mid);
         if(ck){p.hist=[old,...(p.hist||[])];p.ck=Date.now();for(const m of p.hist.splice(2))tgDel(tg,m)}else if(!p.ck)p.ck=Date.now();   /* old copies are deleted only after the new one is stored and verified */
-        p.mid=nm;done(p);await bPut(b);n++}else out.push([b,p,f])}
+        p.mid=nm;done(p);await bPut(b);n++}catch(e){if(!e||!e.api)throw e;fe=fe||e;try{errLog("tgSend",(e&&e.message)||e)}catch(x){}}}else out.push([b,p,f])}   /* Telegram API refusal for ONE part (e.g. too big) never stops the other parts; network errors still stop at once (they would all fail) */
     if(out.length){const fs=out.map(x=>x[2]);
       try{if(navigator.canShare&&navigator.canShare({files:fs}))await navigator.share({files:fs,title:"PDF annotation backup",text:"#annotations_backup"});else throw 0}
       catch(e){if(e&&e.name=="AbortError"){st("Backup cancelled");return}for(const f of fs){const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=f.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),6e4)}}
       for(const[b,p]of out){done(p);await bPut(b)}n=out.length}
     if(n){if(!manual)autoSaved();try{localStorage.setItem("pa_lastbackup",Date.now())}catch(e){}$("#bn").hidden=true;if(tg){tgNote(1);bkN=0}if(!pdf)await showLib();st(tg?`✈️ ${n} backup file(s) sent to Telegram`:"🛟 Backup saved on this device")}
-    else if(manual)st(tg?"✈️ Telegram backup is up to date — nothing new to send":"🛟 Nothing new to back up")
+    else if(manual)st(tg?"✈️ Telegram backup is up to date — nothing new to send":"🛟 Nothing new to back up");
+    if(fe)throw fe
   }catch(e){const msg=(e&&e.message)||String(e);
     if(TG()){if(!document.hidden)tgNote(0,msg);if(!pdf){showLib();checkBackup()}st("❌ Telegram backup failed: "+msg)}else if(manual)st("❌ Backup failed: "+msg);
     if(!manual)bkRetry(msg);if(manual)alert("❌ Backup failed\n\n"+msg+"\n\nYour notes are still safe on this device, and the app will retry automatically.")}
@@ -3125,7 +3210,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.5.05",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.5.12",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -3861,4 +3946,115 @@ function bkRetry(msg){try{
     await showLib();st("↩️ Restore undone — "+k+" notebook(s) put back")}
   catch(e){st("❌ Couldn't undo the restore — "+((e&&e.message)||"unknown error"))}}
 }catch(e){}})();
+
+/* ===== v1.5.06 — auto-hide toolbar while writing (GoodNotes style) =====
+   Pen / highlighter / eraser / shape stroke finished -> whole #bar collapses into one round button (#tbopen, top-left).
+   Tap it (or the ⌃ in the bar) to bring the bar back. Page does not jump: --tbpad + scrollTop compensate the height change. */
+(function(){
+  const Q=s=>document.querySelector(s);
+  let AH=true;try{AH=localStorage.getItem("pa_autohide")!=="0"}catch(e){}
+  const DRAW=["pen","hl","er","line","arrow","rect","oval"];
+  let col=false,dd=0,armed=false,T=0;const act=new Map();
+  document.body.insertAdjacentHTML("beforeend",'<button id="tbopen" title="Show toolbar" aria-label="Show toolbar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>');
+  const kick=()=>{requestAnimationFrame(()=>{try{dispatchEvent(new Event("resize"))}catch(e){}try{repaintKick()}catch(e){}})};
+  const busy=()=>{try{if(typeof down!=="undefined"&&down)return true}catch(e){}const d=Q("#doc");if(d&&d.style.overflow==="hidden")return true;const sm=Q("#sm");return !!(sm&&!sm.hidden)};
+  function collapse(n){
+    if(col||document.body.classList.contains("pres"))return;
+    if(busy()){if((n|0)<8){clearTimeout(T);T=setTimeout(()=>collapse((n|0)+1),300)}return}
+    const bar=Q("#bar"),doc=Q("#doc");if(!bar||bar.hidden||!doc||doc.hidden)return;
+    try{closeAllPanels()}catch(e){}
+    const H=Math.ceil(bar.getBoundingClientRect().height),s=doc.scrollTop;
+    dd=Math.min(s,H);
+    doc.style.setProperty("--tbpad",(H-dd)+"px");
+    document.body.classList.add("tbc");col=true;
+    syncViewerTop();doc.scrollTop=s-dd;kick();
+  }
+  function expand(reset){
+    if(!col)return;
+    const doc=Q("#doc"),s=doc?doc.scrollTop:0;
+    document.body.classList.remove("tbc");col=false;
+    if(doc)doc.style.removeProperty("--tbpad");
+    syncViewerTop();
+    if(doc&&!reset)doc.scrollTop=s+dd;
+    dd=0;kick();
+  }
+  /* safety net: the collapsed state can never outlive the open notebook, the bar, or presentation mode (no bar + no button = stuck) */
+  const guard=()=>{if(!col)return;const d=Q("#doc"),b=Q("#bar");if(!d||d.hidden||!b||b.hidden||document.body.classList.contains("pres"))expand(true)};
+  try{new MutationObserver(guard).observe(document.body,{attributes:true,attributeFilter:["class"]});["#doc","#bar"].forEach(x=>{const el=Q(x);if(el)new MutationObserver(guard).observe(el,{attributes:true,attributeFilter:["hidden"]})})}catch(e){}
+  window.tbExpand=expand;window.tbCollapse=collapse;
+  /* tbopen: tap = show bar; drag = move it, it snaps to the nearest left / right edge and the place is remembered */
+  const tbo=Q("#tbopen");let POS={s:"l",y:8};
+  try{const j=JSON.parse(localStorage.getItem("pa_tbpos")||"null");if(j&&(j.s=="l"||j.s=="r")&&isFinite(j.y))POS=j}catch(e){}
+  const clampY=y=>{const mn=8,mx=Math.max(mn,innerHeight-60);return Math.min(mx,Math.max(mn,y))};
+  const putPos=()=>{POS.y=clampY(POS.y);tbo.style.top="calc("+POS.y+"px + env(safe-area-inset-top,0px))";if(POS.s=="r"){tbo.style.left="auto";tbo.style.right="10px"}else{tbo.style.right="auto";tbo.style.left="10px"}};
+  putPos();addEventListener("resize",putPos,{passive:true});
+  let dg=null;
+  tbo.addEventListener("pointerdown",e=>{if(e.button>0)return;dg={id:e.pointerId,x:e.clientX,y:e.clientY,r:tbo.getBoundingClientRect(),m:false};try{tbo.setPointerCapture(e.pointerId)}catch(x){}});
+  tbo.addEventListener("pointermove",e=>{if(!dg||e.pointerId!=dg.id)return;
+    if(!dg.m&&Math.hypot(e.clientX-dg.x,e.clientY-dg.y)>9){dg.m=true;tbo.classList.add("drag")}
+    if(dg.m){const l=dg.r.left+e.clientX-dg.x,t=dg.r.top+e.clientY-dg.y;tbo.style.right="auto";tbo.style.left=l+"px";tbo.style.top=t+"px"}});
+  const dEnd=e=>{if(!dg||e.pointerId!=dg.id)return;const d=dg;dg=null;tbo.classList.remove("drag");
+    if(d.m){const r=tbo.getBoundingClientRect();POS.s=(r.left+r.width/2<innerWidth/2)?"l":"r";
+      const sat=(()=>{const x=document.createElement("div");x.style.cssText="position:fixed;top:env(safe-area-inset-top,0px);visibility:hidden";document.body.append(x);const v=x.getBoundingClientRect().top;x.remove();return v})();
+      POS.y=clampY(r.top-sat);putPos();try{localStorage.setItem("pa_tbpos",JSON.stringify(POS))}catch(x){}}
+    else if(e.type=="pointerup")expand()};
+  tbo.addEventListener("pointerup",dEnd);tbo.addEventListener("pointercancel",dEnd);
+  Q("#tbc").onclick=()=>collapse();
+  const ahb=Q("#ahb");
+  if(ahb){ahb.classList.toggle("on",AH);ahb.onclick=()=>{AH=!AH;try{localStorage.setItem("pa_autohide",AH?"1":"0")}catch(e){}ahb.classList.toggle("on",AH);if(!AH)expand();try{st(AH?"⤴ Toolbar auto-hides while writing":"⤴ Toolbar stays visible")}catch(e){}}}
+  const opt={capture:true,passive:true};
+  document.addEventListener("pointerdown",e=>{
+    clearTimeout(T);{const n=Date.now();act.forEach((t,k)=>{if(n-t>4000)act.delete(k)});act.set(e.pointerId,n)}armed=false;
+    if(!AH||col||e.button>0)return;
+    const d=Q("#doc");if(!d||d.hidden||!d.contains(e.target))return;
+    if(act.size>1||DRAW.indexOf(tool)<0)return;
+    if(e.pointerType==="touch"&&penOnly)return;      /* finger only scrolls when Pen only is ON */
+    armed=true;
+  },opt);
+  document.addEventListener("pointermove",e=>{if(act.has(e.pointerId))act.set(e.pointerId,Date.now());if(armed&&act.size>1)armed=false},opt);
+  const reset=()=>{act.clear();armed=false;clearTimeout(T)};
+  addEventListener("blur",reset);document.addEventListener("visibilitychange",()=>{if(document.hidden)reset()});
+  document.addEventListener("pointerup",e=>{
+    act.delete(e.pointerId);
+    if(armed&&act.size===0){armed=false;clearTimeout(T);T=setTimeout(()=>collapse(0),260)}   /* small pause: next stroke cancels it */
+  },opt);
+  document.addEventListener("pointercancel",e=>{act.delete(e.pointerId);armed=false},opt);
+})();
+
+/* ===== v1.5.11 — stylus eraser end / barrel button = temporary eraser, and keyboard shortcuts =====
+   Added from OUTSIDE the stroke code (document-level listeners) so the pen / eraser code itself is untouched. */
+(function(){
+  const Q=s=>document.querySelector(s);
+  let TMPT=null;
+  const setTool=t=>{tool=t;document.querySelectorAll("[data-t]").forEach(b=>b.classList.toggle("on",b.dataset.t===t))};
+  /* 1) Pen eraser end (buttons&32) or barrel button (buttons&2) while the Pen / Highlighter is selected -> erases for that one stroke, then the tool comes back */
+  document.addEventListener("pointerdown",e=>{try{
+    if(TMPT||e.pointerType!=="pen"||!((e.buttons&32)||(e.buttons&2)))return;
+    if(tool!=="pen"&&tool!=="hl")return;
+    const d=Q("#doc");if(!d||d.hidden||!d.contains(e.target))return;
+    TMPT=tool;setTool("er")}catch(x){TMPT=null}},true);
+  const back=()=>{if(!TMPT)return;const t=TMPT;TMPT=null;try{setTool(t)}catch(x){}};
+  document.addEventListener("pointerup",back);            /* bubble phase = after the page's own pointerup has ended the erase stroke */
+  document.addEventListener("pointercancel",back);
+  addEventListener("blur",back);document.addEventListener("visibilitychange",()=>{if(document.hidden)back()});
+  /* 2) keyboard shortcuts (laptop): P pen · H highlighter · E eraser · T text · L lasso · I image · + / - zoom */
+  const KEYS={p:["pen","✏️ Pen"],h:["hl","🖍 Highlighter"],e:["er","🧽 Eraser"],t:["text","🔤 Text"],l:["lasso","➰ Lasso"]};
+  document.addEventListener("keydown",e=>{try{
+    if(e.ctrlKey||e.metaKey||e.altKey||e.repeat||e.isComposing)return;
+    const a=document.activeElement,tg=(a&&a.tagName)||"";if(/INPUT|TEXTAREA|SELECT/.test(tg)||(a&&a.isContentEditable))return;
+    const d=Q("#doc");if(!pdf||!d||d.hidden||document.body.classList.contains("pres"))return;
+    const sm=Q("#sm"),sp=Q("#spk");if((sm&&!sm.hidden)||(sp&&!sp.hidden)||Q(".mod:not([hidden])"))return;
+    const k=e.key&&e.key.length==1?e.key.toLowerCase():e.key;
+    if(k=="+"||k=="="){e.preventDefault();setZoom(zStep(zoom,1));return}
+    if(k=="-"||k=="_"){e.preventDefault();setZoom(zStep(zoom,-1));return}
+    if(k=="i"){const b=Q("#imb");if(b){e.preventDefault();b.click()}return}
+    const m=KEYS[k];if(!m)return;
+    const b=Q('#tstrip [data-t="'+m[0]+'"]')||Q('[data-t="'+m[0]+'"]');if(!b)return;
+    e.preventDefault();b.click();st(m[1])}catch(x){}});
+})();
+
+/* v1.5.12 — "N notebooks" line under the Notebooks title */
+(function(){try{const g=document.getElementById("nbs"),h=document.getElementById("hsub");if(!g||!h)return;
+  const upd=()=>{const n=g.children.length;h.textContent=n?(n+(n==1?" notebook":" notebooks")):""};
+  new MutationObserver(upd).observe(g,{childList:true});upd()}catch(e){}})();
 </script></body></html>
