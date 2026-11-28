@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.5.16">
+<meta name="app-version" content="1.5.17">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -623,6 +623,7 @@ body.pres #tbcol{display:none!important}
 #tbcol .tbcu svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 #tbcol .tbcu:active{transform:scale(.9)}
 #tbcol .tbcu.off{opacity:.3}
+#tbcol .tbcu.on{background:var(--tool-active);color:#fff}
 #tbcol .tbcs{width:14px;height:1px;flex:none;background:var(--bd)}
 @keyframes tbcin{from{opacity:0;scale:.8}to{opacity:1;scale:1}}
 #tbcol:not([hidden]){animation:tbcin .16s ease-out}
@@ -3233,7 +3234,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.5.16",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.5.17",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -4057,13 +4058,15 @@ function bkRetry(msg){try{
     try{if(AH&&!col&&fb&&Date.now()-fb<8000&&okTool()&&!dn)sched(320)}catch(x){}return r}}}catch(e){}
 
   /* v1.5.13 — colour dock: while the bar is collapsed (and the tool uses colours) a round colour column sits on the side OPPOSITE the menu button */
-  const CT=["pen","hl","line","arrow","rect","oval"];let dsig="";
+  const CT=["pen","hl","line","arrow","rect","oval"];let dsig="",LDT="pen";
+  const toolBtn=t=>Q('#tstrip [data-t="'+t+'"]')||Q('[data-t="'+t+'"]');
   function dockPos(){if(!dock)return;dock.style.top="calc("+POS.y+"px + env(safe-area-inset-top,0px))";
     if(POS.s=="r"){dock.style.right="auto";dock.style.left="10px"}else{dock.style.left="auto";dock.style.right="10px"}}
   function dockSync(){
     if(!dock)return;
-    const d=Q("#doc"),show=col&&CT.indexOf(tool)>=0&&d&&!d.hidden&&!document.body.classList.contains("pres");
+    const d=Q("#doc"),show=col&&(CT.indexOf(tool)>=0||tool=="er")&&d&&!d.hidden&&!document.body.classList.contains("pres");
     if(!show){if(!dock.hidden){dock.hidden=true;dsig=""}return}
+    if(CT.indexOf(tool)>=0)LDT=tool;
     const sws=Array.from(document.querySelectorAll("#sws .sw"));
     if(!sws.length){dock.hidden=true;return}
     let ai=sws.findIndex(x=>x.classList.contains("on"));
@@ -4075,10 +4078,14 @@ function bkRetry(msg){try{
     if(sg===dsig&&!dock.hidden)return;dsig=sg;
     dock.textContent="";
     items.forEach(it=>{const b=document.createElement("button");b.className="tbcd"+(it.on?" on":"");b.style.background=it.bg;b.setAttribute("aria-label","Colour");
-      b.onclick=()=>{if(it.el){try{it.el.click()}catch(e){}}setTimeout(dockSync,0)};dock.append(b)});
+      b.onclick=()=>{if(tool=="er"){const pb=toolBtn(LDT);if(pb)try{pb.click()}catch(e){}}if(it.el){try{it.el.click()}catch(e){}}setTimeout(dockSync,0)};dock.append(b)});
     const UI={un:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg>',re:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 000 12h3"/></svg>'};
     [["un","Undo",hn],["re","Redo",rn]].forEach(a=>{const b=document.createElement("button");b.className="tbcu"+(a[2]?"":" off");b.innerHTML=UI[a[0]];b.setAttribute("aria-label",a[1]);
       b.onclick=()=>{const r=Q("#"+a[0]);if(r)try{r.click()}catch(e){}setTimeout(dockSync,0)};dock.append(b)});
+    {const sp=document.createElement("div");sp.className="tbcs";dock.append(sp);
+     const e=document.createElement("button"),isE=tool=="er";e.className="tbcu"+(isE?" on":"");e.setAttribute("aria-label","Eraser");
+     e.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 15l9-9.5 7 7-6.2 6.5H7z"/><path d="M9 9.5l7 7M13 19h7.5"/></svg>';
+     e.onclick=()=>{const b=toolBtn(isE?LDT:"er");if(b)try{b.click()}catch(x){}setTimeout(dockSync,0)};dock.append(e)}
     dockPos();dock.hidden=false}
   setInterval(()=>{if(col||!dock.hidden)dockSync()},300);
   document.addEventListener("click",e=>{if(col)setTimeout(dockSync,0)},true);
