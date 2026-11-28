@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.5.17">
+<meta name="app-version" content="1.5.18">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -3234,7 +3234,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.5.17",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.5.18",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -4064,8 +4064,16 @@ function bkRetry(msg){try{
     if(POS.s=="r"){dock.style.right="auto";dock.style.left="10px"}else{dock.style.left="auto";dock.style.right="10px"}}
   function dockSync(){
     if(!dock)return;
-    const d=Q("#doc"),show=col&&(CT.indexOf(tool)>=0||tool=="er")&&d&&!d.hidden&&!document.body.classList.contains("pres");
+    const d=Q("#doc"),show=col&&(CT.indexOf(tool)>=0||tool=="er"||tool=="laser")&&d&&!d.hidden&&!document.body.classList.contains("pres");
     if(!show){if(!dock.hidden){dock.hidden=true;dsig=""}return}
+    if(tool=="laser"){   /* presentation tool: only the laser colours (no undo / redo / eraser / pen colours) */
+      let lc="",lcs=[];try{lc=String(LZ.col).toLowerCase();lcs=LZCOLS.slice()}catch(e){}
+      if(!lcs.length){dock.hidden=true;return}
+      const sg2="laser|"+POS.s+"|"+POS.y+"|"+lc;
+      if(sg2===dsig&&!dock.hidden)return;dsig=sg2;dock.textContent="";
+      lcs.forEach(c=>{const b=document.createElement("button");b.className="tbcd"+(c.toLowerCase()==lc?" on":"");b.style.background=c;b.setAttribute("aria-label","Laser colour");
+        b.onclick=()=>{const r=Array.from(document.querySelectorAll(".lzd")).find(x=>(x.dataset.c||"").toLowerCase()==c.toLowerCase());if(r)try{r.click()}catch(e){}else try{LZ.col=c}catch(e){}setTimeout(dockSync,0)};dock.append(b)});
+      dockPos();dock.hidden=false;return}
     if(CT.indexOf(tool)>=0)LDT=tool;
     const sws=Array.from(document.querySelectorAll("#sws .sw"));
     if(!sws.length){dock.hidden=true;return}
