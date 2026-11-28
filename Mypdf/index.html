@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.5.19">
+<meta name="app-version" content="1.5.20">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -3234,7 +3234,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.5.19",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.5.20",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -3977,7 +3977,7 @@ function bkRetry(msg){try{
 (function(){
   const Q=s=>document.querySelector(s);
   let AH=true;try{AH=localStorage.getItem("pa_autohide")!=="0"}catch(e){}
-  const DRAW=["pen","hl","er","line","arrow","rect","oval"];
+  const DRAW=["pen","hl","er","line","arrow","rect","oval","laser"];
   let col=false,dd=0,armed=false,T=0;const act=new Map();
   document.body.insertAdjacentHTML("beforeend",'<button id="tbopen" title="Show toolbar" aria-label="Show toolbar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>');
   document.body.insertAdjacentHTML("beforeend",'<div id="tbcol" hidden aria-label="Colours"></div>');
