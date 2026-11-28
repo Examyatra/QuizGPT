@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.5.20">
+<meta name="app-version" content="1.5.21">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -1654,14 +1654,19 @@ async function draw1(i){
   const k=Math.min(zoom*DPR,Math.sqrt(MAXPX/(v1.width*v1.height))),vp=virt?{width:v1.width*k,height:v1.height*k}:page.getViewport({scale:k});
   /* v1.4.47: smooth zoom — the new page is drawn on hidden canvases while the old picture stays on screen (just stretched);
      the two are swapped in one step, so the page never goes blank/white/black between zoom levels. */
-  const c=document.createElement("canvas"),ink=document.createElement("canvas");c.width=vp.width;c.height=vp.height;
+  const c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;
+  if(virt){const x=c.getContext("2d");x.fillStyle=DK?DKBG:"#fff";x.fillRect(0,0,c.width,c.height)}
+  else{try{const rt=page.render({canvasContext:c.getContext("2d"),viewport:vp});CURT=rt;await rt.promise;if(DK&&c.width&&p.dataset.z==zoom)try{await darken(page,vp,c)}catch(e){}}
+    catch(e){if(p.dataset.z!=zoom){c.width=c.height=0;return}throw e}   /* v1.5.21: zoom changed -> render cancelled on purpose: not a failure, no retry count */
+    finally{page.cleanup()}}
+  if(!vis.has(i)||p.dataset.z!=zoom){c.width=c.height=0;return}
+  /* v1.5.21: the ink canvas is created only now (after the slow page render), so the peak memory while rendering is ~30 MB lower */
+  const ink=document.createElement("canvas");
   /* v1.4.99: the ink layer has its own (higher) pixel budget. Zoomed in, the page was capped at 5 Mpx and the handwriting was stretched (soft edges); now the ink stays sharp up to 7.5 Mpx (same size as the page whenever the page is not capped) */
   {const ki=Math.max(k,Math.min(zoom*DPR,Math.sqrt(INKPX/(v1.width*v1.height))));ink.width=Math.max(1,Math.round(v1.width*ki));ink.height=Math.max(1,Math.round(v1.height*ki));
     try{if(!ink.getContext("2d")){ink.width=c.width;ink.height=c.height}}catch(e){ink.width=c.width;ink.height=c.height}}   /* out of canvas memory: fall back to the page size */
   ink.style.touchAction=penOnly?"pan-x pan-y":"none";bind(ink,p,i);
-  if(virt){const x=c.getContext("2d");x.fillStyle=DK?DKBG:"#fff";x.fillRect(0,0,c.width,c.height)}
-  else{try{const rt=page.render({canvasContext:c.getContext("2d"),viewport:vp});CURT=rt;await rt.promise;if(DK&&c.width)try{await darken(page,vp,c)}catch(e){}}
-    finally{page.cleanup()}}
+
   {const t0=Date.now();while(PEN_DOWN&&PEN_DOWN.i===i&&Date.now()-PEN_DOWN.t<6000&&Date.now()-t0<6000)await new Promise(r=>setTimeout(r,60))}   /* v1.5.05: a finished render must not replace the page while the Pencil is writing on it (it cut the stroke short) */
   if(!vis.has(i)||p.dataset.z!=zoom){c.width=c.height=ink.width=ink.height=0;return}   /* page left the screen or zoom changed meanwhile: drop it */
   p.querySelectorAll("canvas").forEach(o=>{o.width=o.height=0});p.replaceChildren(c,ink);
@@ -2160,10 +2165,15 @@ function undo(r){const a=r?redo:hist,b=r?hist:redo;if(!a.length)return;if(CROP)c
 $("#un").onclick=()=>undo(0);$("#re").onclick=()=>undo(1);
 /* v1.4.52: zoom around a focal point (screen x,y). The page-relative position under that point stays under it, horizontally AND vertically,
    so buttons / ctrl+wheel / pinch all zoom "into" what you are looking at (GoodNotes-style) instead of jumping to another place. */
+let ZRT=0;
+function zRender(){ZRT=0;if(!pdf)return;const d=$("#doc").getBoundingClientRect(),cy=d.top+d.height/2,L=[];
+  $$(".pg").forEach(p=>{const i=+p.dataset.i;if(vis.has(i)&&p.dataset.z!=zoom){const b=p.getBoundingClientRect();L.push([Math.abs((b.top+b.bottom)/2-cy),i])}});
+  L.sort((a,b)=>a[0]-b[0]);L.forEach(a=>render(a[1]))}
 function setZoom(z,fx,fy){if(!isFinite(z))return;const d=$("#doc"),r=d.getBoundingClientRect();if(fx==null)fx=r.left+r.width/2;if(fy==null)fy=r.top+r.height/2;
   let a=null,bd=1e9;for(const p of $$(".pg")){const b=p.getBoundingClientRect(),dy=fy<b.top?b.top-fy:fy>b.bottom?fy-b.bottom:0;if(dy<bd){bd=dy;a=p}}
   const ab=a&&a.getBoundingClientRect(),ax=ab?(fx-ab.left)/Math.max(1,ab.width):0,ay=ab?(fy-ab.top)/Math.max(1,ab.height):0,ai=a&&a.dataset.i;
-  zoom=Math.max(.5,Math.min(ZMAX,z));$$(".pg").forEach(p=>{const i=+p.dataset.i;sz(p,i);if(vis.has(i)){delete p.dataset.z;render(i)}else free(i)});
+  zoom=Math.max(.5,Math.min(ZMAX,z));try{CURT&&CURT.cancel()}catch(e){}lcDrop();   /* v1.5.21: stop the old-zoom render, free the live-ink cache */
+  $$(".pg").forEach(p=>{const i=+p.dataset.i;sz(p,i);if(vis.has(i))delete p.dataset.z;else free(i)});clearTimeout(ZRT);ZRT=setTimeout(zRender,90);   /* v1.5.21: pages are re-drawn once, 90 ms after the LAST zoom change, nearest to the screen centre first */
   const n=ai!=null&&$(`.pg[data-i="${ai}"]`);if(n){const b=n.getBoundingClientRect();d.scrollLeft+=b.left+ax*b.width-fx;d.scrollTop+=b.top+ay*b.height-fy}}
 /* v1.4.107 — gentle zoom steps: 0.2 below 300 %, then 25 % steps (300, 325, 350, 375, 400) — never a 50 % jump */
 const zStep=(z,d)=>d>0?(z<3-1e-6?Math.min(3,+(z+.2).toFixed(3)):Math.min(ZMAX,Math.floor(z*4+1e-6)/4+.25)):(z>3+1e-6?Math.max(3,Math.ceil(z*4-1e-6)/4-.25):+(z-.2).toFixed(3));
@@ -2172,7 +2182,7 @@ document.body.insertAdjacentHTML("beforeend",'<div id="zbd" aria-live="off"></di
 (()=>{const st_=document.createElement("style");st_.textContent="#zbd{position:fixed;left:10px;bottom:calc(58px + env(safe-area-inset-bottom,0px));z-index:141;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:12px;padding:5px 12px;box-shadow:var(--panel-shadow);font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:inherit;opacity:0;transform:translateY(6px);transition:opacity .22s ease,transform .22s ease;pointer-events:none}#zbd.on{opacity:1;transform:none}body.pres #zbd{display:none!important}";document.head.appendChild(st_)})();
 let zbdT=0;function zShow(z){const b=$("#zbd");if(!b)return;b.textContent=Math.round(z*100)+"%";b.classList.add("on");clearTimeout(zbdT);zbdT=setTimeout(()=>b.classList.remove("on"),1000)}
 
-$("#doc").addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setZoom(zoom*(e.deltaY<0?1.12:1/1.12),e.clientX,e.clientY);zShow(zoom)}},{passive:false});
+$("#doc").addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();const nz=Math.max(.5,Math.min(ZMAX,zoom*(e.deltaY<0?1.12:1/1.12)));if(Math.abs(nz-zoom)>1e-6)setZoom(nz,e.clientX,e.clientY);zShow(zoom)}},{passive:false});
 
 /* ===== 2-finger pinch zoom (works while scrolling AND while writing) ===== */
 let pz=null;const docEl=$("#doc");
@@ -3234,7 +3244,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.5.20",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.5.21",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
