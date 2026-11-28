@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.5.13">
+<meta name="app-version" content="1.5.15">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -612,6 +612,18 @@ body.tbc #tbopen{animation:tbpop .18s ease-out}
 body.pres #tbcol{display:none!important}
 #tbcol .tbcd{width:34px;height:34px;flex:none;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35),0 2px 5px rgba(0,0,0,.3);padding:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .12s}
 #tbcol .tbcd.on{transform:scale(1.22);box-shadow:0 0 0 3px var(--tool-active),0 3px 8px rgba(0,0,0,.35)}
+/* v1.5.14 — dark-mode friendly menu button; compact colour dock = 4 colours + undo + redo in the old 4-dot height */
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) #tbopen{border:1.5px solid rgba(255,255,255,.18);background:linear-gradient(145deg,#2c3050 0%,#1f2238 100%);color:#c9cdf5;box-shadow:0 3px 10px rgba(0,0,0,.55),0 0 0 3px rgba(99,102,241,.14)}:root:not([data-theme="light"]) #tbopen svg{filter:none}}
+:root[data-theme="dark"] #tbopen{border:1.5px solid rgba(255,255,255,.18);background:linear-gradient(145deg,#2c3050 0%,#1f2238 100%);color:#c9cdf5;box-shadow:0 3px 10px rgba(0,0,0,.55),0 0 0 3px rgba(99,102,241,.14)}
+:root[data-theme="dark"] #tbopen svg{filter:none}
+#tbcol{gap:5px;padding:6px 5px;border-radius:18px}
+#tbcol .tbcd{width:19px;height:19px;border-width:1.5px}
+#tbcol .tbcd.on{transform:scale(1.08);box-shadow:0 0 0 2px var(--tool-active),0 2px 4px rgba(0,0,0,.35)}
+#tbcol .tbcu{width:19px;height:19px;flex:none;display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:50%;background:color-mix(in srgb,var(--tx) 10%,transparent);color:var(--tx);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#tbcol .tbcu svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#tbcol .tbcu:active{transform:scale(.9)}
+#tbcol .tbcu.off{opacity:.3}
+#tbcol .tbcs{width:14px;height:1px;flex:none;background:var(--bd)}
 @keyframes tbcin{from{opacity:0;scale:.8}to{opacity:1;scale:1}}
 #tbcol:not([hidden]){animation:tbcin .16s ease-out}
 </style>
@@ -3221,7 +3233,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.5.13",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.5.15",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -4055,14 +4067,18 @@ function bkRetry(msg){try{
     const sws=Array.from(document.querySelectorAll("#sws .sw"));
     if(!sws.length){dock.hidden=true;return}
     let ai=sws.findIndex(x=>x.classList.contains("on"));
-    let pick=sws.slice(0,6);if(ai>=6)pick[5]=sws[ai];
+    let pick=sws;
     const items=pick.map(x=>({el:x,bg:getComputedStyle(x).backgroundColor,on:x===sws[ai]}));
     if(ai<0){let cc="";try{cc=Q("#cc").value}catch(e){}items.unshift({el:null,bg:cc||color,on:true})}   /* custom colour in use */
-    const sg=tool+"|"+POS.s+"|"+POS.y+"|"+items.map(x=>x.bg+(x.on?"*":"")).join(",");
+    let hn=0,rn=0;try{hn=hist.length;rn=redo.length}catch(e){}
+    const sg=tool+"|"+POS.s+"|"+POS.y+"|"+(hn?1:0)+(rn?1:0)+"|"+items.map(x=>x.bg+(x.on?"*":"")).join(",");
     if(sg===dsig&&!dock.hidden)return;dsig=sg;
     dock.textContent="";
     items.forEach(it=>{const b=document.createElement("button");b.className="tbcd"+(it.on?" on":"");b.style.background=it.bg;b.setAttribute("aria-label","Colour");
       b.onclick=()=>{if(it.el){try{it.el.click()}catch(e){}}setTimeout(dockSync,0)};dock.append(b)});
+    const UI={un:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg>',re:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 000 12h3"/></svg>'};
+    [["un","Undo",hn],["re","Redo",rn]].forEach(a=>{const b=document.createElement("button");b.className="tbcu"+(a[2]?"":" off");b.innerHTML=UI[a[0]];b.setAttribute("aria-label",a[1]);
+      b.onclick=()=>{const r=Q("#"+a[0]);if(r)try{r.click()}catch(e){}setTimeout(dockSync,0)};dock.append(b)});
     dockPos();dock.hidden=false}
   setInterval(()=>{if(col||!dock.hidden)dockSync()},300);
   document.addEventListener("click",e=>{if(col)setTimeout(dockSync,0)},true);
