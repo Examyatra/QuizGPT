@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.5.15">
+<meta name="app-version" content="1.5.16">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -130,7 +130,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 #cbar .pb{padding:6px 9px;min-width:34px}
 .tbc:not(body){width:26px;height:26px;border-radius:50%;border:2px solid transparent;box-shadow:inset 0 0 0 1px rgba(128,128,128,.55);padding:0;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font:700 16px/1 system-ui,sans-serif;color:var(--tx);background:var(--btn-bg)}
 .tbc.on{border-color:var(--ac)}
-.tbc input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;border:0}
+.tbc:not(body) input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;border:0}
 body.pres #cbar{display:none!important}
 /* v1.4.51: voice bar (shown while a text box is open) + move/size buttons for selected text */
 #lpm{position:fixed;z-index:245;display:flex;flex-wrap:wrap;gap:6px;align-items:center;max-width:min(92vw,300px);padding:8px;background:var(--panel-bg);border:1px solid var(--panel-bd);border-radius:12px;box-shadow:var(--panel-shadow)}
@@ -3233,7 +3233,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.5.15",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.5.16",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
