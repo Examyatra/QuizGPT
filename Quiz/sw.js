@@ -2,7 +2,7 @@
  * VERSION must always equal APP_VERSION in index.html (run: python3 check_version.py).
  * Changing this file (the VERSION line) is what makes browsers install an update.
  */
-const VERSION = '1.1.1';
+const VERSION = '1.1.2';
 
 const SHELL_CACHE = 'quizgpt-shell-v' + VERSION;   // app files: replaced on every version
 const LIB_CACHE = 'quizgpt-libs-v1';               // CDN libraries + fonts: kept across versions
