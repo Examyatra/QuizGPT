@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Vpdf"><meta name="theme-color" content="#1a1a2e">
 <script>try{var _t=localStorage.getItem("pa_theme");if(_t&&_t!="auto")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" type="image/png" href="icon-192.png">
-<meta name="app-version" content="1.5.21">
+<meta name="app-version" content="1.5.24">
 <title>Vpdf</title>
 <style>
 /* ===== CSS TOKENS ===== */
@@ -601,6 +601,7 @@ body:not(.tbc) #bar:not([hidden]){animation:tbin .18s ease-out}
 body.tbc #tbopen{animation:tbpop .18s ease-out}
 #tbopen.drag{opacity:1;box-shadow:0 6px 18px rgba(0,0,0,.35);cursor:grabbing}
 #tbopen{touch-action:none}
+body.tbx #bar{pointer-events:none!important}
 #ahb+span::after{display:block;content:"OFF";opacity:.7}
 #ahb.on+span::after{content:"ON";color:var(--tool-active);opacity:1;font-weight:700}
 /* v1.5.13 — colourful menu button + colour dock (opposite side) */
@@ -2475,7 +2476,18 @@ $("#open").onclick=()=>{want=null;$("#fi").click()};
 $("#fi").onchange=async e=>{fsEnter();const f=e.target.files[0];e.target.value="";if(!f)return;const w=want;want=null;let wid=null;
   try{if(w){const fp=await fpOf(f),r=await dbGet(w);if(r&&(r.fp?r.fp==fp:w==f.name+"|"+f.size))wid=w;else if(!confirm("This doesn't look like the same PDF — a new notebook will be created. Open anyway?"))return}}catch(x){}
   openFile(f,wid).catch(openFail)};
-$("#lib").onclick=()=>{if(location.hash=="#read")history.back();else showLib()};
+/* v1.5.24 — ← (Home) button asks "Are you sure?" first, so a stray tap can never close the notebook */
+function goHome(){if(location.hash=="#read")history.back();else showLib()}
+function askLeave(){
+  if(document.getElementById("leave-dlg"))return;
+  const d=document.createElement("div");d.className="mod";d.id="leave-dlg";
+  d.innerHTML='<div role="dialog" aria-modal="true" aria-labelledby="leave-t"><h3 id="leave-t">Home par jana hai?</h3><p style="margin:0 0 10px;opacity:.75;font-size:14px">Aapka kaam save rehta hai. Are you sure you want to go back?</p><div class="zr"><button class="pb on" id="leave-stay">Nahi, yahin raho</button><button class="pb" id="leave-go">Haan, back jao</button></div></div>';
+  const close=()=>{d.remove();document.removeEventListener("keydown",key,true)};
+  const key=e=>{if(e.key=="Escape"){e.preventDefault();close()}};
+  d.addEventListener("click",e=>{if(e.target===d||e.target.id=="leave-stay"){close();return}if(e.target.id=="leave-go"){close();goHome()}});
+  document.addEventListener("keydown",key,true);document.body.append(d);
+  const b=d.querySelector("#leave-stay");try{b.focus()}catch(x){}}
+$("#lib").onclick=askLeave;
 addEventListener("hashchange",()=>{if(location.hash!="#read"&&pdf)showLib()});
 
 /* ===== BACKUP ===== */
@@ -3244,7 +3256,7 @@ if("launchQueue"in window)launchQueue.setConsumer(async p=>{if(p.files&&p.files[
 
 
 /* ===== VERSION + SAFE STORAGE ===== */
-const APP_VERSION="1.5.21",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
+const APP_VERSION="1.5.24",SCHEMA=2;  /* change APP_VERSION together with APP_VERSION in sw.js; bump SCHEMA only when the data format changes */
 let curFp="",curPfp="",SWV="",updating=false;
 const sid=id=>{let h=5381;for(const c of String(id))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36).slice(0,6)};
 async function fpOf(f){try{const b=await new Blob([String(f.size),f.slice(0,262144),f.size>524288?f.slice(f.size-262144):new Blob()]).arrayBuffer();
@@ -3988,7 +4000,7 @@ function bkRetry(msg){try{
   const Q=s=>document.querySelector(s);
   let AH=true;try{AH=localStorage.getItem("pa_autohide")!=="0"}catch(e){}
   const DRAW=["pen","hl","er","line","arrow","rect","oval","laser"];
-  let col=false,dd=0,armed=false,T=0;const act=new Map();
+  let col=false,dd=0,armed=false,T=0,BARH=120;const act=new Map();
   document.body.insertAdjacentHTML("beforeend",'<button id="tbopen" title="Show toolbar" aria-label="Show toolbar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>');
   document.body.insertAdjacentHTML("beforeend",'<div id="tbcol" hidden aria-label="Colours"></div>');
   const dock=Q("#tbcol");
@@ -4000,10 +4012,11 @@ function bkRetry(msg){try{
     const bar=Q("#bar"),doc=Q("#doc");if(!bar||bar.hidden||!doc||doc.hidden)return;
     try{closeAllPanels()}catch(e){}
     const H=Math.ceil(bar.getBoundingClientRect().height),s=doc.scrollTop;
+    if(H>40)BARH=H+(parseFloat(getComputedStyle(document.documentElement).paddingTop)||0);
     dd=Math.min(s,H);
     doc.style.setProperty("--tbpad",(H-dd)+"px");
     document.body.classList.add("tbc");col=true;
-    syncViewerTop();doc.scrollTop=s-dd;kick();try{dockSync()}catch(e){}
+    syncViewerTop();doc.scrollTop=s-dd;kick();try{putPos()}catch(e){}try{dockSync()}catch(e){}
   }
   function expand(reset){
     if(!col)return;
@@ -4019,12 +4032,13 @@ function bkRetry(msg){try{
   try{new MutationObserver(guard).observe(document.body,{attributes:true,attributeFilter:["class"]});["#doc","#bar"].forEach(x=>{const el=Q(x);if(el)new MutationObserver(guard).observe(el,{attributes:true,attributeFilter:["hidden"]})})}catch(e){}
   window.tbExpand=expand;window.tbCollapse=collapse;
   /* tbopen: tap = show bar; drag = move it, it snaps to the nearest left / right edge and the place is remembered */
-  const tbo=Q("#tbopen");let POS={s:"l",y:8};
-  try{const j=JSON.parse(localStorage.getItem("pa_tbpos")||"null");if(j&&(j.s=="l"||j.s=="r")&&isFinite(j.y))POS=j}catch(e){}
-  const clampY=y=>{const mn=8,mx=Math.max(mn,innerHeight-60);return Math.min(mx,Math.max(mn,y))};
+  const tbo=Q("#tbopen");let POS={s:"l",y:BARH+12};
+  try{const j=JSON.parse(localStorage.getItem("pa_tbpos2")||"null");if(j&&(j.s=="l"||j.s=="r")&&isFinite(j.y))POS=j}catch(e){}
+  /* v1.5.23: the button can never sit inside the area the open bar covers (BARH = measured bar height), so no bar button can ever appear under the finger */
+  const clampY=y=>{const mn=BARH+12,mx=Math.max(mn,innerHeight-60);return Math.min(mx,Math.max(mn,y))};
   const putPos=()=>{try{dockPos()}catch(e){}POS.y=clampY(POS.y);tbo.style.top="calc("+POS.y+"px + env(safe-area-inset-top,0px))";if(POS.s=="r"){tbo.style.left="auto";tbo.style.right="10px"}else{tbo.style.right="auto";tbo.style.left="10px"}try{dockPos()}catch(e){}};
   putPos();addEventListener("resize",putPos,{passive:true});
-  let dg=null;
+  let dg=null,lastDrag=0,swallowUntil=0;
   tbo.addEventListener("pointerdown",e=>{if(e.button>0)return;dg={id:e.pointerId,x:e.clientX,y:e.clientY,r:tbo.getBoundingClientRect(),m:false};try{tbo.setPointerCapture(e.pointerId)}catch(x){}});
   tbo.addEventListener("pointermove",e=>{if(!dg||e.pointerId!=dg.id)return;
     if(!dg.m&&Math.hypot(e.clientX-dg.x,e.clientY-dg.y)>9){dg.m=true;tbo.classList.add("drag")}
@@ -4032,9 +4046,15 @@ function bkRetry(msg){try{
   const dEnd=e=>{if(!dg||e.pointerId!=dg.id)return;const d=dg;dg=null;tbo.classList.remove("drag");
     if(d.m){const r=tbo.getBoundingClientRect();POS.s=(r.left+r.width/2<innerWidth/2)?"l":"r";
       const sat=(()=>{const x=document.createElement("div");x.style.cssText="position:fixed;top:env(safe-area-inset-top,0px);visibility:hidden";document.body.append(x);const v=x.getBoundingClientRect().top;x.remove();return v})();
-      POS.y=clampY(r.top-sat);putPos();try{localStorage.setItem("pa_tbpos",JSON.stringify(POS))}catch(x){}}
-    else if(e.type=="pointerup")expand()};
+      POS.y=clampY(r.top-sat);putPos();try{localStorage.setItem("pa_tbpos2",JSON.stringify(POS))}catch(x){}}
+    if(d.m)lastDrag=Date.now()};
   tbo.addEventListener("pointerup",dEnd);tbo.addEventListener("pointercancel",dEnd);
+  /* v1.5.22 — FIX (Android): the bar used to open on pointerup; its ← Home button appears exactly under #tbopen, so the click that follows the touch hit ← and the whole PDF closed to Home.
+     Now the bar opens on the CLICK itself (nothing is left to be delivered after it), a drag never opens it, and for 600 ms after opening any stray tap on #bar is swallowed. */
+  tbo.addEventListener("click",e=>{if(Date.now()-lastDrag<500){e.preventDefault();return}e.preventDefault();e.stopPropagation();expand();swallowUntil=Date.now()+600;document.body.classList.add("tbx");setTimeout(()=>document.body.classList.remove("tbx"),550)});
+  /* v1.5.23 — touch lock after opening: #bar ignores touches for 550 ms (CSS body.tbx), every click / dblclick anywhere is swallowed for 600 ms, and pointerup / mouseup / touchend on #bar too (pointerdown is never blocked, so a stroke can't get stuck) */
+  const swallow=e=>{if(Date.now()>=swallowUntil)return;const inBar=e.target&&e.target.closest&&e.target.closest("#bar");if(e.type=="click"||e.type=="dblclick"||inBar){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation()}};
+  ["click","dblclick","pointerup","mouseup","touchend"].forEach(t=>document.addEventListener(t,swallow,true));
   Q("#tbc").onclick=()=>collapse();
   const ahb=Q("#ahb");
   if(ahb){ahb.classList.toggle("on",AH);ahb.onclick=()=>{AH=!AH;try{localStorage.setItem("pa_autohide",AH?"1":"0")}catch(e){}ahb.classList.toggle("on",AH);if(!AH)expand();try{st(AH?"⤴ Toolbar auto-hides while writing":"⤴ Toolbar stays visible")}catch(e){}}}
